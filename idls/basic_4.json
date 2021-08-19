@@ -1,0 +1,57 @@
+{
+  "version": "0.0.0",
+  "name": "basic_4",
+  "instructions": [],
+  "state": {
+    "struct": {
+      "name": "Counter",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    "methods": [
+      {
+        "name": "new",
+        "accounts": [
+          {
+            "name": "authority",
+            "isMut": false,
+            "isSigner": true
+          }
+        ],
+        "args": []
+      },
+      {
+        "name": "increment",
+        "accounts": [
+          {
+            "name": "authority",
+            "isMut": false,
+            "isSigner": true
+          }
+        ],
+        "args": []
+      }
+    ]
+  },
+  "errors": [
+    {
+      "code": 300,
+      "name": "Unauthorized",
+      "msg": "You are not authorized to perform this action."
+    }
+  ],
+  "metadata": {
+    "address": "Hm8sgTVBuMLKEsPqb6SZ1otaAy8aacVKJ8nZf1xqJd94"
+  }
+}

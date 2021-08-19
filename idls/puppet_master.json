@@ -1,0 +1,30 @@
+{
+  "version": "0.0.0",
+  "name": "puppet_master",
+  "instructions": [
+    {
+      "name": "pullStrings",
+      "accounts": [
+        {
+          "name": "puppet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "puppetProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "data",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "address": "3UDzsDD9WWPAgHASFHyFdqZz1hFmWpWVCZzLPZabDJxe"
+  }
+}

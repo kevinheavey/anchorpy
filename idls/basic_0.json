@@ -1,0 +1,14 @@
+{
+  "version": "0.0.0",
+  "name": "basic_0",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [],
+      "args": []
+    }
+  ],
+  "metadata": {
+    "address": "8nA4T4UFdYz1sKuEFdnj2mYcJ6hp79Tw14sPvTQVWwVb"
+  }
+}
