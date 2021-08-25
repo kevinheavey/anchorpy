@@ -12,6 +12,7 @@ httpx = "^0.18.2"
 typedload = "^2.8"
 pydantic = "^1.8.2"
 inflection = "^0.5.1"
+sumtypes = "^0.1a5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
