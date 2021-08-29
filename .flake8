@@ -1,5 +1,5 @@
 [flake8]
-ignore = Q000,WPS110,WPS111,WPS115,WPS221,WPS306,WPS305,WPS430,WPS432,DAR201
+ignore = Q000,WPS110,WPS111,WPS115,WPS221,WPS306,WPS305,WPS326,WPS430,WPS432,DAR201
 exclude = .git,__pycache__,docs/source/conf.py,old,build,dist
 max-line-length = 88
 per-file-ignores = anchorpy/idl.py: WPS202,WPS226
