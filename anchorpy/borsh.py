@@ -1,39 +1,93 @@
-import enum
+from typing import Optional, cast, List, Tuple, Any, TYPE_CHECKING
 import struct
-from typing import Callable, Tuple, Optional, Union, Protocol, NamedTuple, cast
-from dataclasses import dataclass
-import io
-import traceback
-from abc import ABC, abstractmethod
-from types import SimpleNamespace
-from typing import Dict, List, Any, Tuple
-from construct_typed import DataclassMixin
 from construct import (
-    Int8ul,
-    Flag,
-    Int8sl,
-    Int16sl,
-    Int16ul,
-    Int32sl,
-    Int32ul,
-    Int64ul,
-    Int64sl,
+    Flag as Bool,
+    Int8ul as U8,
+    Int8sl as I8,
+    Int16ul as U16,
+    Int16sl as I16,
+    Int32ul as U32,
+    Int32sl as I32,
+    Int64ul as U64,
+    Int64sl as I64,
     BytesInteger,
-    Container,
     Adapter,
-    Default,
     GreedyBytes,
     Prefixed,
-    GreedyString,
-    Enum,
+    PrefixedArray,
+    Sequence as TupleStruct,
+    stream_read,
+    stream_write,
+    Struct as CStruct,
+    Subconstruct,
+    Construct,
+    SizeofError,
+    Renamed,
+    Container,
+    Array,
+    FormatField,
+    FormatFieldError,
+    singleton,
 )
-import construct
 
+if TYPE_CHECKING:
+    from construct import (
+        SubconBuildTypes,
+        BuildTypes,
+        SubconParsedType,
+        ParsedType,
+        Context,
+        PathType,
+    )
 from sumtypes import sumtype, constructor
 from solana import publickey
 import attr
+from math import isnan
 
 TUPLE_DATA = "tuple_data"
+
+
+class FormatFieldNoNan(FormatField):
+    """Adapted form of `construct.FormatField` that forbids nan."""
+
+    def _parse(self, stream, context, path):
+        data = stream_read(stream, self.length, path)
+        try:
+            parsed = struct.unpack(self.fmtstr, data)[0]
+        except Exception:  # noqa: F821
+            raise FormatFieldError(
+                "struct %r error during parsing" % self.fmtstr,  # noqa: WPS323
+                path=path,
+            )
+        if isnan(parsed):
+            raise ValueError("Borsh does not support nan.")
+        return parsed
+
+    def _build(self, obj, stream, context, path):
+        if isnan(obj):
+            raise ValueError("Borsh does not support nan.")
+        try:
+            data = struct.pack(self.fmtstr, obj)
+        except Exception:  # noqa: F821
+            raise FormatFieldError(
+                "struct %r error during building, given value %r"  # noqa: WPS323
+                % (self.fmtstr, obj),
+                path=path,
+            )
+        stream_write(stream, data, self.length, path)
+        return obj
+
+
+@singleton
+def F32() -> FormatFieldNoNan:  # noqa: N802
+    """Little endian, 32-bit IEEE floating point number."""
+    return FormatFieldNoNan("<", "f")
+
+
+@singleton
+def F64() -> FormatFieldNoNan:  # noqa: N802
+    """Little endian, 64-bit IEEE floating point number."""
+    return FormatFieldNoNan("<", "d")
 
 
 def rust_enum(klass):
@@ -63,118 +117,11 @@ def clike_struct(*fields: str):
     return constructor(*fields)
 
 
-@rust_enum
-class MyType:
-    # constructors specify names for their arguments
-    MyConstructor = tuple_struct()
-    AnotherConstructor = clike_struct("x", "y")
-    Argless = unit_struct()
-    Argless2 = unit_struct()
+def Vec(subcon: Construct) -> Array:  # noqa: N802
+    return PrefixedArray(U32, subcon)
 
 
-@rust_enum
-class Message:
-    Quit = unit_struct()
-    Move = clike_struct("x", "y")
-    Write = tuple_struct()
-    ChangeColor = tuple_struct()
-
-
-class Layout(ABC):
-    def __init__(self, field_name: str):
-        self.field_name = field_name
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}<{self.field_name}>"
-
-    @abstractmethod
-    def encode(self, data: Any) -> bytes:
-        ...
-
-    @abstractmethod
-    def decode(self, b: bytes) -> Any:
-        """
-        Modifies b in place
-        """
-        ...
-
-
-class Dataclass(Protocol):
-    # as already noted in comments, checking for this attribute is currently
-    # the most reliable way to ascertain that something is a dataclass
-    __dataclass_fields__: Dict
-
-
-class BorshSimpleType2(Layout, ABC):
-    def __init__(self, field_name: str, fmt: Any):
-        super().__init__(field_name)
-        self.fmt = fmt
-
-    def encode(self, data: Any) -> bytes:
-        return self.fmt.build(data)
-
-    def decode(self, b: bytes) -> Any:
-        return self.fmt.parse(b)
-
-
-class Bool(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        super().__init__(field_name, Flag)
-
-
-class U8(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        super().__init__(field_name, Int8ul)
-
-
-class I8(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        super().__init__(field_name, Int8sl)
-
-
-class U16(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        super().__init__(field_name, Int16ul)
-
-
-class I16(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        super().__init__(field_name, Int16sl)
-
-
-class U32(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        super().__init__(field_name, Int32ul)
-
-
-class I32(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        super().__init__(field_name, Int32sl)
-
-
-class U64(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        super().__init__(field_name, Int64ul)
-
-
-class I64(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        super().__init__(field_name, Int64sl)
-
-
-class U128(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        n_bytes = 16
-        super().__init__(field_name, BytesInteger(n_bytes, signed=False, swapped=True))
-
-
-class I128(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        n_bytes = 16
-        super().__init__(field_name, BytesInteger(n_bytes, signed=True, swapped=True))
-
-
-BorshBytes = Prefixed(Int32ul, GreedyBytes)
+Bytes = Prefixed(U32, GreedyBytes)
 
 
 class StringAdapter(Adapter):
@@ -185,12 +132,9 @@ class StringAdapter(Adapter):
         return bytes(obj, "utf8")
 
 
-BorshString = StringAdapter(BorshBytes)
-
-
-class String(BorshSimpleType2):
-    def __init__(self, field_name: str):
-        super().__init__(field_name, BorshString)
+String = StringAdapter(Bytes)
+U128 = BytesInteger(16, signed=False, swapped=True)
+I128 = BytesInteger(16, signed=True, swapped=True)
 
 
 class PublicKeyAdapter(Adapter):
@@ -201,224 +145,182 @@ class PublicKeyAdapter(Adapter):
         return str(obj)
 
 
-PublicKey = PublicKeyAdapter(BorshString)
+PublicKey = PublicKeyAdapter(String)
 
 
-class BorshOption(construct.Subconstruct):
+class Option(Subconstruct):
     def __init__(self, subcon):
         super().__init__(subcon)
         self.is_none_flag = b"\x00"
         self.is_some_flag = b"\x01"
 
     def _parse(self, stream, context, path):
-        discriminator = construct.stream_read(stream, 1, path)
+        discriminator = stream_read(stream, 1, path)
         if discriminator == self.is_none_flag:
             return None
-        return self.subcon._parse(stream, context, path)
+        return self.subcon._parse(stream, context, path)  # noqa: WPS437
 
     def _build(self, obj, stream, context, path):
         if obj is None:
-            return construct.stream_write(stream, self.is_none_flag, 1, path)
-        construct.stream_write(stream, self.is_some_flag, 1, path)
-        buildret = self.subcon._build(obj, stream, context, path)
-        return buildret
+            return stream_write(stream, self.is_none_flag, 1, path)
+        stream_write(stream, self.is_some_flag, 1, path)
+        return self.subcon._build(obj, stream, context, path)  # noqa: WPS437
 
     def _sizeof(self, context, path):
-        raise construct.SizeofError(path=path)
+        raise SizeofError(path=path)
 
 
-class BorshEnum(construct.Construct):
+def _check_name_not_null(name: Optional[str]) -> None:
+    if name is None:
+        raise ValueError("Unnamed struct fields not allowed.")
+
+
+def _check_variant_name(name: Optional[str]) -> None:
+    _check_name_not_null(name)
+    if not isinstance(name, str):
+        raise ValueError("Variant names must be strings.")
+    if name == TUPLE_DATA:
+        raise ValueError(
+            f"The name {TUPLE_DATA} is reserved. If you encountered this "
+            "error it's either a wild coincidence or you're doing it wrong."
+        )
+    if name[0] == "_":
+        raise ValueError("Variant names cannot start with an underscore.")
+
+
+def _handle_cstruct_variant(underlying_variant, variant_name, enum_def) -> None:
+    subcon_names: List[str] = []
+    for s in underlying_variant.subcons:
+        name = s.name
+        _check_variant_name(name)
+        subcon_names.append(cast(str, name))
+    setattr(enum_def, variant_name, clike_struct(*subcon_names))
+
+
+def _handle_struct_variant(variant, enum_def) -> None:
+    variant_name = variant.name
+    if variant_name is None:
+        raise ValueError("Unnamed enum variants not allowed.")
+    underlying_variant = variant.subcon if isinstance(variant, Renamed) else variant
+    if isinstance(underlying_variant, TupleStruct):
+        setattr(enum_def, variant_name, tuple_struct())
+    elif isinstance(underlying_variant, CStruct):
+        _handle_cstruct_variant(underlying_variant, variant_name, enum_def)
+    else:
+        variant_type = type(underlying_variant)
+        raise ValueError(f"Unrecognized variant type: {variant_type}")
+
+
+def _make_enum(*variants):
+    class EnumDef:  # noqa: WPS431
+        """Python representation of Rust's Enum type."""
+
+    for variant in variants:
+        if isinstance(variant, str):
+            setattr(EnumDef, variant, unit_struct())
+        else:
+            _handle_struct_variant(variant, EnumDef)
+
+    return rust_enum(EnumDef)
+
+
+class Enum(Construct):
     def __init__(self, *variants) -> None:
         super().__init__()
+        self.enum = _make_enum(*variants)
         self.variants = variants
 
-        class EnumDef:
-            pass
-
-        for variant in variants:
-            if isinstance(variant, str):
-                setattr(EnumDef, variant, unit_struct())
-            else:
-                variant_name = variant.name
-                if variant_name is None:
-                    raise ValueError("Unnamed enum variants not allowed.")
-                underlying_variant = (
-                    variant.subcon
-                    if isinstance(variant, construct.Renamed)
-                    else variant
-                )
-                if isinstance(underlying_variant, construct.Sequence):
-                    setattr(EnumDef, variant_name, tuple_struct())
-                elif isinstance(underlying_variant, construct.Struct):
-                    subcon_names: List[str] = []
-                    for s in underlying_variant.subcons:
-                        name = s.name
-                        if not isinstance(name, str):
-                            raise ValueError("Variant names must be strings.")
-                        if name is None:
-                            raise ValueError("Unnamed struct fields not allowed.")
-                        if name == TUPLE_DATA:
-                            raise ValueError(
-                                f"The name {TUPLE_DATA} is reserved. If you encountered this "
-                                "error it's either a wild coincidence or you're doing it wrong."
-                            )
-                        if name[0] == "_":
-                            raise ValueError(
-                                "Variant names cannot start with an underscore."
-                            )
-                        subcon_names.append(cast(str, name))
-                    setattr(EnumDef, variant_name, clike_struct(*subcon_names))
-                else:
-                    raise ValueError(
-                        f"Unrecognized variant type: {type(underlying_variant)}"
-                    )
-
-        self.enum = rust_enum(EnumDef)
-
-    def _parse(self, stream, context, path):
-        index_bytes = construct.stream_read(stream, 1, path)
-        index = Int8ul.parse(index_bytes)
+    def _parse(self, stream, context, path):  # noqa: WPS210
+        index_bytes = stream_read(stream, 1, path)
+        index = U8.parse(index_bytes)
         variant = self.enum.getitem(index)
         parser = self.variants[index]
         if isinstance(parser, str):
             return variant()
-        container = parser._parse(stream, context, path)
-        if isinstance(container, construct.Container):
+        container = parser._parse(stream, context, path)  # noqa: WPS437
+        if isinstance(container, Container):
             as_dict = {key: val for key, val in container.items() if key[0] != "_"}
             return variant(**as_dict)
         return variant(tuple(container))
 
     def _build(self, obj, stream, context, path):
         index = obj.index
-        index_as_bytes = Int8ul.build(index)
         builder = self.variants[index]
         as_dict = attr.asdict(obj)
-        buildret = construct.stream_write(stream, index_as_bytes, 1, path)
+        buildret = stream_write(stream, U8.build(index), 1, path)
         if as_dict:
             try:
                 to_build = as_dict[TUPLE_DATA]
             except KeyError:
                 to_build = as_dict
-            return builder._build(to_build, stream, context, path)
+            return builder._build(to_build, stream, context, path)  # noqa: WPS437
         return buildret
 
     def _sizeof(self, context, path):
-        raise construct.SizeofError(path=path)
+        raise SizeofError(path=path)
 
 
-class Vector(Layout):
-    def __init__(self, layout: Layout, name: str = ""):
-        super().__init__(name)
-        self.layout = layout
-
-    def encode(self, data: Any) -> bytes:
-        vec_len_byte = struct.pack("<I", len(data))
-        b = bytes()
-        for d in data:
-            b += self.layout.encode(d)
-        return vec_len_byte + b
-
-    def decode(self, b: bytes) -> Tuple[bytes, Any]:
-        vec = list()
-        vec_len = struct.unpack("<I", b[:4])[0]
-        bytes_left = b[4:]
-        for idx in range(vec_len):
-            bytes_left, decoded = self.layout.decode(bytes_left)
-            vec.append(decoded)
-        return bytes_left, vec
-
-
-class Array(Layout):
-    def __init__(self, layout: Layout, length: int, name: str = ""):
-        super().__init__(name)
-        self.layout = layout
-        self.length = length
-
-    def __repr__(self):
-        return (
-            f"Array<layout={self.layout}, length={self.length}, name={self.field_name}>"
-        )
-
-    def encode(self, data: List[Any]) -> bytes:
-        if len(data) != self.length:
-            raise Exception(
-                f"Array {self.field_name} expected length {self.length}, got {len(data)}"
+def _calc_bytes_to_read(stream, path, subcon: Construct) -> Tuple[int, Any]:
+    aux = None
+    try:
+        bytes_to_read = subcon.sizeof()
+    except SizeofError:
+        if isinstance(subcon, Option):
+            discriminator = stream_read(stream, 1, path)
+            bytes_to_read = (
+                0
+                if discriminator == subcon.is_none_flag
+                else _calc_bytes_to_read(stream, path, subcon)
             )
-        b = bytes()
-        for d in data:
-            b += self.layout.encode(d)
-        return b
-
-    def decode(self, b: bytes) -> Tuple[bytes, List[Any]]:
-        decoded = list()
-        bytes_left = b
-        for i in range(self.length):
-            bytes_left, d = self.layout.decode(bytes_left)
-            decoded.append(d)
-        return bytes_left, decoded
-
-
-class CStruct(Adapter):
-    def __init__(self, defn) -> None:
-        super().__init__()
-        self.defn = defn
-
-    def _decode(self, obj: bytes, context, path) -> str:
-        return self.defn(**obj)
-
-    def _encode(self, obj: str, context, path) -> bytes:
-        return obj
+        elif isinstance(subcon, Enum):
+            index_bytes = stream_read(stream, 1, path)
+            index = U8.parse(index_bytes)
+            subsubcon = subcon.variants[index]
+            if isinstance(subsubcon, str):
+                bytes_to_read = 0
+                aux = subcon.enum.getitem(index)()
+            else:
+                bytes_to_read = _calc_bytes_to_read(stream, path, subsubcon)
+                aux = index
+        else:
+            raise ValueError(f"Unexpected type: {subcon}")
+    return bytes_to_read, aux
 
 
-class Struct(Layout):
-    def __init__(self, field_layouts: List[Layout], name: str = ""):
-        super().__init__(name)
-        self.field_layouts = field_layouts
-
-    def __repr__(self):
-        return f"Struct<name={self.field_name}, field_layouts={self.field_layouts}>"
-
-    def encode(self, data: Any) -> bytes:
-        if len(data) != len(self.field_layouts):
-            raise Exception(f"{len(data)} != {len(self.field_layouts)}")
-        b = bytes()
-        for layout in self.field_layouts:
-            encoded = layout.encode(data[layout.field_name])
-            b += encoded
-        return b
-
-    def decode(self, b: bytes) -> Tuple[bytes, Any]:
-        ret = SimpleNamespace()
-        bytes_left = b
-        for layout in self.field_layouts:
-            # decode modifies b in place so the offsets are computed automatically for the next layout
-            try:
-                # print(f"decoding: {layout.field_name}, {layout.__class__.__name__}bytes={bytes_left}", flush=True)
-                bytes_left, decoded = layout.decode(bytes_left)
-                setattr(ret, layout.field_name, decoded)
-            except:
-                print(traceback.format_exc(), flush=True)
-                raise
-        return bytes_left, ret
+def _parse_key_or_val(stream, context, path, subcon):
+    bytes_to_read, aux = _calc_bytes_to_read(stream, path, subcon)
+    if bytes_to_read == 0:
+        if isinstance(subcon, Option):
+            return None
+        return aux  # Enum
+    to_parse = stream_read(stream, bytes_to_read, path)
+    if isinstance(subcon, Enum):
+        to_parse = U32.build(aux) + to_parse
+    return subcon.parse(to_parse)
 
 
-class Struct2(BorshSimpleType2):
-    def __init__(self, field_layouts: construct.Struct, name: str = ""):
-        super().__init__(field_name=name, fmt=field_layouts)
+class HashMap(Adapter):
+    def __init__(self, key_subcon, value_subcon) -> None:
+        super().__init__(PrefixedArray(U32, TupleStruct(key_subcon, value_subcon)))
 
-    def __repr__(self):
-        return f"Struct<name={self.field_name}, field_layouts={self.fmt}>"
+    def _decode(self, obj: List[Tuple], context, path) -> dict:
+        return dict(obj)
 
-    def encode(self, data: Dict[str, Any]) -> bytes:
-        return self.fmt.build(data)
-
-    def decode(self, b: bytes) -> Container:
-        return self.fmt.parse(b)
+    def _encode(self, obj, context, path) -> List[Tuple]:
+        return sorted(obj.items())
 
 
-class Option(BorshSimpleType2):
-    def __init__(self, field_name: str, fmt: Any):
-        super().__init__(field_name=field_name, fmt=BorshOption(fmt))
+class HashSet(Adapter):
+    def __init__(self, subcon) -> None:
+        super().__init__(PrefixedArray(U32, subcon))
+
+    def _decode(
+        self, obj: "SubconBuildTypes", context: "Context", path: "PathType"
+    ) -> set:
+        return set(obj)
+
+    def _encode(self, obj: "BuildTypes", context: "Context", path: "PathType") -> list:
+        return sorted(obj)
 
 
 def main():
@@ -440,26 +342,21 @@ def main():
     ]
 
     for datatype, input_val in TEST_CASES:
-        t = datatype("foo")
-        # print(f"Datatype={datatype}, input={input_val}")
 
-        encoded = t.encode(input_val)
-        decoded = t.decode(encoded)
+        encoded = datatype.build(input_val)
+        decoded = datatype.parse(encoded)
         try:
             assert input_val == decoded
         except AssertionError:
             print(f"input val: {input_val}")
             print(f"decoded: {decoded}")
 
-    s = Struct2(
-        construct.Struct(
-            "myu128" / BytesInteger(16, signed=False, swapped=True),
-            "string_field" / BorshString,
-            "myu128_1" / BytesInteger(16, signed=False, swapped=True),
-        ),
-        "struct_name",
+    s = CStruct(
+        "myu128" / U128,
+        "string_field" / String,
+        "myu128_1" / U128,
     )
-    struct_encoded = s.encode(
+    struct_encoded = s.build(
         {
             "myu128": 123456,
             "string_field": "abc",
@@ -467,7 +364,7 @@ def main():
         }
     )
     print(f"struct_encoded: {list(struct_encoded)}")
-    ret = s.decode(struct_encoded)
+    ret = s.parse(struct_encoded)
     assert ret.string_field == "abc"
     assert ret.myu128 == 123456
     assert ret.myu128_1 == 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -475,19 +372,17 @@ def main():
     pk = publickey.PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99")
     assert PublicKey.parse(PublicKey.build(pk)) == pk
 
-    v = Vector(U128("foo"), "vector")
-    encoded = v.encode([1, 2, 3, 4])
-    # print(encoded)
-    # print(len(encoded))
-    bytes_left, decoded = v.decode(v.encode([1, 2, 3, 4]))
+    v = Vec(U128)
+    encoded = v.build([1, 2, 3, 4])
+    decoded = v.parse(v.build([1, 2, 3, 4]))
     assert decoded == [1, 2, 3, 4]
 
-    v2 = Vector(String("s"), "vector")
-    bytes_left, decoded = v2.decode(v2.encode(["a", "b", "c", "d", "e"]))
+    v2 = Vec(String)
+    decoded = v2.parse(v2.build(["a", "b", "c", "d", "e"]))
     print(decoded)
 
-    a = Array(String(""), 5, "some_arr")
-    bytes_left, decoded = a.decode(a.encode(["a", "b", "c", "d", "e", "f"]))
+    a = String[5]
+    decoded = a.parse(a.build(["a", "b", "c", "d", "e", "f"]))
     print(decoded)
 
 
