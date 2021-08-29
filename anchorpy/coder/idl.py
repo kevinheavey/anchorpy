@@ -1,14 +1,32 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 
 import inflection
 
-from shitty_borsh.borsh import Layout, Struct, RustEnum, Vector, Array
+from anchorpy.borsh import (
+    CStruct,
+    TupleStruct,
+    Enum,
+    Vec,
+    Array,
+    Bool,
+    U8,
+    I8,
+    U16,
+    I16,
+    U32,
+    I32,
+    U64,
+    I64,
+    U128,
+    I128,
+    Bytes,
+    String,
+    PublicKey,
+)
 from anchorpy.idl import IdlField, IdlTypeDef
 
-from shitty_borsh.borsh import Bool, U8, I8, U16, I16, U32, I32, U64, I64, U128, I128, Bytes, String, \
-    PublicKey, Layout
 
-FIELD_TYPE_MAP: Dict[str, Layout] = {
+FIELD_TYPE_MAP: Dict[str, Any] = {
     "bool": Bool,
     "u8": U8,
     "i8": I8,
@@ -28,24 +46,28 @@ FIELD_TYPE_MAP: Dict[str, Layout] = {
 
 class IdlCoder(object):
     @staticmethod
-    def typedef_layout(typedef: IdlTypeDef, types: List[IdlTypeDef], name: str = "") -> Layout:
+    def typedef_layout(
+        typedef: IdlTypeDef, types: List[IdlTypeDef], name: str = ""
+    ) -> Layout:
         if typedef.type_of.kind == "struct":
-            field_layouts = [IdlCoder.field_layout(field, types) for field in typedef.type_of.fields]
-            return Struct(field_layouts, name)
+            field_layouts = [
+                IdlCoder.field_layout(field, types) for field in typedef.type_of.fields
+            ]
+            return CStruct(field_layouts, name)
         elif typedef.type_of.kind == "enum":
             variants = []
             for variant in typedef.type_of.variants:
                 name = inflection.camelize(variant.name)
                 if not variant.fields:
-                    variants.append(Struct([], name))
+                    variants.append(CStruct([], name))
                 else:
                     fields = []
                     for f in variant.fields:
                         if not f.name:
                             raise Exception("Tuple enum variants not yet implemented")
                         fields.append(IdlCoder.field_layout(f, types))
-                    variants.append(Struct(fields, name))
-            return RustEnum(variants, name)
+                    variants.append(CStruct(fields, name))
+            return Enum(variants, name)
         else:
             raise Exception(f"Unknown type {typedef.type_of.kind}")
 
@@ -58,23 +80,29 @@ class IdlCoder(object):
         else:
             type_of = list(field.type_of.keys())[0]
             if type_of == "vec":
-                return Vector(IdlCoder.field_layout(IdlField(
-                    name="",
-                    type_of=field.type_of["vec"]
-                ), types), field_name)
+                return Vector(
+                    IdlCoder.field_layout(
+                        IdlField(name="", type_of=field.type_of["vec"]), types
+                    ),
+                    field_name,
+                )
             elif type_of == "option":
                 raise Exception("TODO: option type")
             elif type_of == "defined":
                 if not types:
                     raise Exception("User defined types not provided")
-                filtered = list(filter(lambda t: t.name == field.type_of["defined"], types))
+                filtered = list(
+                    filter(lambda t: t.name == field.type_of["defined"], types)
+                )
                 if len(filtered) != 1:
                     raise Exception(f"Type not found {field.type_of['defined']}")
                 return IdlCoder.typedef_layout(filtered[0], types, field_name)
             elif type_of == "array":
                 array_ty = field.type_of["array"][0]
                 array_len = field.type_of["array"][1]
-                inner_layout = IdlCoder.field_layout(IdlField(name="", type_of=array_ty), types)
+                inner_layout = IdlCoder.field_layout(
+                    IdlField(name="", type_of=array_ty), types
+                )
                 return Array(inner_layout, array_len, field_name)
             else:
                 raise Exception(f"Field {field} not implemented yet")

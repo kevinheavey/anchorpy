@@ -10,7 +10,7 @@ ACCOUNT_DISCRIMINATOR_SIZE = 8  # bytes
 
 class AccountsCoder(object):
     def __init__(self, idl: Idl):
-        self._accounts_layout: Dict[str, Layout] = dict()
+        self._accounts_layout: Dict[str, Layout] = {}
         for acc in idl.accounts:
             self._accounts_layout[acc.name] = IdlCoder.typedef_layout(acc, idl.types)
 

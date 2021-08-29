@@ -1,50 +1,64 @@
-from typing import Any
+from typing import Any, Tuple, Optional
 import inflection
 
-from anchorpy.program.namespace.rpc import RpcNamespace, RpcNamespaceFactory
-from anchorpy.program.namespace.transaction import TransactionNamespace, TransactionNamespaceFactory
+from anchorpy.program.namespace.rpc import (
+    RpcNamespace,
+    build_rpc_item,
+)
+from anchorpy.program.namespace.transaction import (
+    TransactionNamespace,
+    build_transaction_fn,
+)
 from anchorpy.coder.coder import Coder
-from anchorpy.program.namespace.account import AccountFactory
+from anchorpy.program.namespace.account import build_account
 from anchorpy.program.namespace.simulate import SimulateFactory, SimulateNamespace
-from anchorpy.program.namespace.instruction import InstructionNamespaceFactory, InstructionNamespace
-from anchorpy.program.namespace.state import StateFactory
+from anchorpy.program.namespace.instruction import (
+    build_instruction_fn,
+    InstructionNamespace,
+)
+from anchorpy.program.namespace.state import StateClient, build_state
 from anchorpy.program.common import parse_idl_errors
 from anchorpy.idl import Idl
 from anchorpy.provider import Provider
-from anchorpy.public_key import PublicKey
+from solana.publickey import PublicKey
 
 
-class NamespaceFactory(object):
-    @staticmethod
-    def build(idl: Idl, coder: Coder, program_id: PublicKey, provider: Provider):
-        idl_errors = parse_idl_errors(idl)
+def build_namespace(  # ts: NamespaceFactory.build
+    idl: Idl, coder: Coder, program_id: PublicKey, provider: Provider
+) -> Tuple[
+    RpcNamespace,
+    InstructionNamespace,
+    TransactionNamespace,
+    object,
+    SimulateNamespace,
+    Optional[StateClient],
+]:
+    idl_errors = parse_idl_errors(idl)
 
-        rpc = RpcNamespace()
-        instruction = InstructionNamespace()
-        transaction = TransactionNamespace()
-        simulate = SimulateNamespace()
+    rpc = RpcNamespace()
+    instruction = InstructionNamespace()
+    transaction = TransactionNamespace()
+    simulate = SimulateNamespace()
 
-        state = StateFactory.build(
-            idl,
-            coder,
-            program_id,
-            provider
+    state = build_state(idl, coder, program_id, provider)
+
+    for idl_ix in idl.instructions:
+
+        def encode_fn(ix_name: str, ix: Any) -> bytes:
+            return coder.instruction.encode(ix_name, ix)
+
+        ix_item = build_instruction_fn(idl_ix, encode_fn, program_id)
+        tx_item = build_transaction_fn(idl_ix, ix_item)
+        rpc_item = build_rpc_item(idl_ix, tx_item, idl_errors, provider)
+        simulate_item = SimulateFactory.build(
+            idl_ix, tx_item, idl_errors, provider, coder, program_id, idl
         )
 
-        for idl_ix in idl.instructions:
-            def encode_fn(ix_name: str, ix: Any) -> bytes:
-                return coder.instruction.encode(ix_name, ix)
+        name = inflection.camelize(idl_ix.name, False)
+        setattr(instruction, name, ix_item)
+        setattr(transaction, name, tx_item)
+        setattr(rpc, name, rpc_item)
+        setattr(simulate, name, simulate_item)
 
-            ix_item = InstructionNamespaceFactory.build(idl_ix, encode_fn, program_id)
-            tx_item = TransactionNamespaceFactory.build(idl_ix, ix_item)
-            rpc_item = RpcNamespaceFactory.build(idl_ix, tx_item, idl_errors, provider)
-            simulate_item = SimulateFactory.build(idl_ix, tx_item, idl_errors, provider, coder, program_id, idl)
-
-            name = inflection.camelize(idl_ix.name, False)
-            setattr(instruction, name, ix_item)
-            setattr(transaction, name, tx_item)
-            setattr(rpc, name, rpc_item)
-            setattr(simulate, name, simulate_item)
-
-        account = AccountFactory.build(idl, coder, program_id, provider) if idl.accounts else {}
-        return rpc, instruction, transaction, account, simulate, state
+    account = build_account(idl, coder, program_id, provider) if idl.accounts else {}
+    return rpc, instruction, transaction, account, simulate, state

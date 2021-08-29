@@ -16,7 +16,7 @@ from solana.rpc.api import Client
 from solana.rpc.commitment import Single, Commitment, Max
 from solana.transaction import Transaction
 
-from anchorpy.public_key import PublicKey
+from solana.publickey import PublicKey
 
 
 class Provider(Client):
@@ -25,16 +25,20 @@ class Provider(Client):
         self.wallet = wallet
         self.opts = opts
 
-    def send(self,
-             tx: Transaction,
-             signers: Optional[List[Account]] = None,
-             opts: types.TxOpts = None):
+    def send(
+        self,
+        tx: Transaction,
+        signers: Optional[List[Account]] = None,
+        opts: types.TxOpts = None,
+    ):
         if not signers:
             signers = []
         if not opts:
             opts = self.opts
 
-        recent_blockhash = self.get_recent_blockhash(opts.preflight_commitment)["result"]["value"]["blockhash"]
+        recent_blockhash = self.get_recent_blockhash(opts.preflight_commitment)[
+            "result"
+        ]["value"]["blockhash"]
 
         tx.fee_payer = self.wallet.account.public_key()
         tx.recent_blockhash = recent_blockhash
@@ -45,7 +49,9 @@ class Provider(Client):
         tx_id = self.send_raw_transaction(raw_tx, opts)
         return tx_id
 
-    def send_raw_transaction(self, txn: Union[bytes, str], opts: types.TxOpts = types.TxOpts()) -> types.RPCResponse:
+    def send_raw_transaction(
+        self, txn: Union[bytes, str], opts: types.TxOpts = types.TxOpts()
+    ) -> types.RPCResponse:
         if isinstance(txn, bytes):
             txn = b64encode(txn).decode("utf-8")
 
@@ -63,7 +69,9 @@ class Provider(Client):
 
         return self.__post_send(resp, opts.skip_confirmation, opts.preflight_commitment)
 
-    def __post_send(self, resp: types.RPCResponse, skip_confirm: bool, conf_comm: Commitment) -> types.RPCResponse:
+    def __post_send(
+        self, resp: types.RPCResponse, skip_confirm: bool, conf_comm: Commitment
+    ) -> types.RPCResponse:
         if resp.get("error"):
             self._provider.logger.error(resp.get("error"))
         if not resp.get("result"):
@@ -72,20 +80,25 @@ class Provider(Client):
             return resp
 
         self._provider.logger.info(
-            "Transaction sent to %s. Signature %s: ", self._provider.endpoint_uri, resp["result"]
+            "Transaction sent to %s. Signature %s: ",
+            self._provider.endpoint_uri,
+            resp["result"],
         )
 
         return self.__confirm_transaction(resp["result"], conf_comm)
 
-    def __confirm_transaction(self, tx_sig: str, commitment: Commitment = Max) -> types.RPCResponse:
+    def __confirm_transaction(
+        self, tx_sig: str, commitment: Commitment = Max
+    ) -> types.RPCResponse:
         # TODO: This is incredibly hacky and needs to be cleaned up post-hackathon, use websockets...
 
         TIMEOUT = time.time() + 30  # 30 seconds  pylint: disable=invalid-name
         while time.time() < TIMEOUT:
             sig_status = self.get_signature_statuses([tx_sig])
             print(f"{sig_status=}", flush=True)
-            if sig_status["result"]["value"][0] and \
-                    sig_status["result"]["value"][0]["confirmationStatus"] in {commitment, "finalized"}:
+            if sig_status["result"]["value"][0] and sig_status["result"]["value"][0][
+                "confirmationStatus"
+            ] in {commitment, "finalized"}:
                 return sig_status
             print(f"sig_status: {sig_status}", flush=True)
             # if resp["result"]:

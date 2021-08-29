@@ -56,7 +56,20 @@ class IdlAccounts:
     accounts: List["IdlAccountItem"]
 
 
+@dataclass
+class IdlAccounts0:
+    name: str
+    accounts: List[IdlAccount]
+
+
+@dataclass
+class IdlAccounts1:
+    name: str
+    accounts: List[Union[IdlAccount, IdlAccounts0]]
+
+
 IdlAccountItem = Union[IdlAccount, IdlAccounts]
+IdlAccountItem1 = Union[IdlAccounts1, IdlAccounts0, IdlAccount]
 
 
 @dataclass
@@ -68,7 +81,7 @@ class IdlState:
 @dataclass
 class IdlInstruction:
     name: str
-    accounts: List[IdlAccount]
+    accounts: List[IdlAccountItem1]
     args: List[IdlField]
 
 
