@@ -124,7 +124,10 @@ def Vec(subcon: Construct) -> Array:  # noqa: N802
 Bytes = Prefixed(U32, GreedyBytes)
 
 
-class StringAdapter(Adapter):
+class String(Adapter):
+    def __init__(self) -> None:
+        super().__init__(Bytes)
+
     def _decode(self, obj: bytes, context, path) -> str:
         return obj.decode("utf8")
 
@@ -132,20 +135,19 @@ class StringAdapter(Adapter):
         return bytes(obj, "utf8")
 
 
-String = StringAdapter(Bytes)
 U128 = BytesInteger(16, signed=False, swapped=True)
 I128 = BytesInteger(16, signed=True, swapped=True)
 
 
-class PublicKeyAdapter(Adapter):
+class PublicKey(Adapter):
+    def __init__(self) -> None:
+        super().__init__(String)
+
     def _decode(self, obj: str, context, path) -> publickey.PublicKey:
         return publickey.PublicKey(obj)
 
     def _encode(self, obj: publickey.PublicKey, context, path) -> str:
         return str(obj)
-
-
-PublicKey = PublicKeyAdapter(String)
 
 
 class Option(Subconstruct):
