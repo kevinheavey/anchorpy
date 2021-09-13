@@ -51,31 +51,15 @@ class FormatFieldNoNan(FormatField):
     """Adapted form of `construct.FormatField` that forbids nan."""
 
     def _parse(self, stream, context, path):
-        data = stream_read(stream, self.length, path)
-        try:
-            parsed = struct.unpack(self.fmtstr, data)[0]
-        except Exception:  # noqa: F821
-            raise FormatFieldError(
-                "struct %r error during parsing" % self.fmtstr,  # noqa: WPS323
-                path=path,
-            )
-        if isnan(parsed):
-            raise ValueError("Borsh does not support nan.")
-        return parsed
+        result = super()._parse(stream, context, path)
+        if isnan(result):
+            raise FormatFieldError("Borsh does not support nan.")
+        return result
 
     def _build(self, obj, stream, context, path):
         if isnan(obj):
             raise ValueError("Borsh does not support nan.")
-        try:
-            data = struct.pack(self.fmtstr, obj)
-        except Exception:  # noqa: F821
-            raise FormatFieldError(
-                "struct %r error during building, given value %r"  # noqa: WPS323
-                % (self.fmtstr, obj),
-                path=path,
-            )
-        stream_write(stream, data, self.length, path)
-        return obj
+        return super()._build(obj, stream, context, path)
 
 
 @singleton
