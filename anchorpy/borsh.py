@@ -124,15 +124,15 @@ def Vec(subcon: Construct) -> Array:  # noqa: N802
 Bytes = Prefixed(U32, GreedyBytes)
 
 
-class String(Adapter):
-    def __init__(self) -> None:
-        super().__init__(Bytes)
-
+class StringAdapter(Adapter):
     def _decode(self, obj: bytes, context, path) -> str:
         return obj.decode("utf8")
 
     def _encode(self, obj: str, context, path) -> bytes:
         return bytes(obj, "utf8")
+
+
+String = StringAdapter(Bytes)
 
 
 U128 = BytesInteger(16, signed=False, swapped=True)
@@ -326,66 +326,281 @@ class HashSet(Adapter):
 
 
 def main():
-    TEST_CASES = [
-        (Bool, True),
-        (Bool, False),
-        (U8, 10),
-        (I8, -126),
-        (U16, 0xDEAD),
-        (I16, 0xEAD),
-        (U32, 0xDEADBEEF),
-        (I32, 0xEADBEEF),
-        (U64, 0xDEADBEEFDEADBEEF),
-        (I64, 0xEADBEEFDEADBEEF),
-        (U128, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
-        (I128, 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
-        (I128, -1),
-        (String, "testing 1234"),
+    enum = Enum(
+        "Unit",
+        "TupleVariant" / TupleStruct(U128, String, I64, Option(U16)),
+        "CStructVariant"
+        / CStruct("u128_field" / U128, "string_field" / String, "vec_field" / Vec(U16)),
+    )
+    type_input_expected = [
+        (U8, 255, [255]),
+        (I8, -128, [128]),
+        (U16, 65535, [255, 255]),
+        (I16, -32768, [0, 128]),
+        (U32, 4294967295, [255, 255, 255, 255]),
+        (I32, -2147483648, [0, 0, 0, 128]),
+        (U64, 18446744073709551615, [255, 255, 255, 255, 255, 255, 255, 255]),
+        (I64, -9223372036854775808, [0, 0, 0, 0, 0, 0, 0, 128]),
+        (
+            U128,
+            340282366920938463463374607431768211455,
+            [
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+            ],
+        ),
+        (
+            I128,
+            -170141183460469231731687303715884105728,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128],
+        ),
+        (F32, 0.2, [205, 204, 76, 62]),
+        (F64, -0.2, [154, 153, 153, 153, 153, 153, 201, 191]),
+        (I16[3], [1, 2, 3], [1, 0, 2, 0, 3, 0]),
+        (Vec(I16), [1, 1], [2, 0, 0, 0, 1, 0, 1, 0]),
+        (
+            TupleStruct(U128, String, I64, Option(U16)),
+            [123, "hello", 1400, 13],
+            [
+                123,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                5,
+                0,
+                0,
+                0,
+                104,
+                101,
+                108,
+                108,
+                111,
+                120,
+                5,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                13,
+                0,
+            ],
+        ),
+        (
+            CStruct(
+                "u128_field" / U128, "string_field" / String, "vec_field" / Vec(U16)
+            ),
+            {"u128_field": 1033, "string_field": "hello", "vec_field": [1, 2, 3]},
+            [
+                9,
+                4,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                5,
+                0,
+                0,
+                0,
+                104,
+                101,
+                108,
+                108,
+                111,
+                3,
+                0,
+                0,
+                0,
+                1,
+                0,
+                2,
+                0,
+                3,
+                0,
+            ],
+        ),
+        (enum, enum.enum.Unit(), [0]),
+        (
+            enum,
+            enum.enum.TupleVariant([10, "hello", 13, 12]),
+            [
+                1,
+                10,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                5,
+                0,
+                0,
+                0,
+                104,
+                101,
+                108,
+                108,
+                111,
+                13,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                12,
+                0,
+            ],
+        ),
+        (
+            enum,
+            enum.enum.CStructVariant(
+                u128_field=15,
+                string_field="hi",
+                vec_field=[3, 2, 1],
+            ),
+            [
+                2,
+                15,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                104,
+                105,
+                3,
+                0,
+                0,
+                0,
+                3,
+                0,
+                2,
+                0,
+                1,
+                0,
+            ],
+        ),
+        (
+            HashMap(U8, enum),
+            {2: enum.enum.Unit(), 1: enum.enum.TupleVariant([11, "hello", 123, None])},
+            [
+                2,
+                0,
+                0,
+                0,
+                1,
+                1,
+                11,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                5,
+                0,
+                0,
+                0,
+                104,
+                101,
+                108,
+                108,
+                111,
+                123,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+            ],
+        ),
+        (HashSet(U8), {1, 2, 3}, [3, 0, 0, 0, 1, 2, 3]),
+        (String, "🚀", [4, 0, 0, 0, 240, 159, 154, 128]),
     ]
+    for type_, input_, expected in type_input_expected:
+        result = list(type_.build(input_))
+        assert result == expected
 
-    for datatype, input_val in TEST_CASES:
-
-        encoded = datatype.build(input_val)
-        decoded = datatype.parse(encoded)
-        try:
-            assert input_val == decoded
-        except AssertionError:
-            print(f"input val: {input_val}")
-            print(f"decoded: {decoded}")
-
-    s = CStruct(
-        "myu128" / U128,
-        "string_field" / String,
-        "myu128_1" / U128,
-    )
-    struct_encoded = s.build(
-        {
-            "myu128": 123456,
-            "string_field": "abc",
-            "myu128_1": 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-        }
-    )
-    print(f"struct_encoded: {list(struct_encoded)}")
-    ret = s.parse(struct_encoded)
-    assert ret.string_field == "abc"
-    assert ret.myu128 == 123456
-    assert ret.myu128_1 == 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-
-    pk = publickey.PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99")
-    assert PublicKey.parse(PublicKey.build(pk)) == pk
-
-    v = Vec(U128)
-    encoded = v.build([1, 2, 3, 4])
-    decoded = v.parse(v.build([1, 2, 3, 4]))
-    assert decoded == [1, 2, 3, 4]
-
-    v2 = Vec(String)
-    decoded = v2.parse(v2.build(["a", "b", "c", "d", "e"]))
-    print(decoded)
-
-    a = String[5]
-    decoded = a.parse(a.build(["a", "b", "c", "d", "e", "f"]))
-    print(decoded)
+    # pk = publickey.PublicKey("J3dxNj7nDRRqRRXuEMynDG57DkZK4jYRuv3Garmb1i99")
+    # assert PublicKey.parse(PublicKey.build(pk)) == pk
 
 
 if __name__ == "__main__":
