@@ -29,8 +29,6 @@ from construct import (
 
 if TYPE_CHECKING:
     from construct import (
-        SubconBuildTypes,
-        BuildTypes,
         Context,
         PathType,
     )
@@ -132,28 +130,6 @@ class PublicKey(Adapter):
         return str(obj)
 
 
-# class Option(Subconstruct):
-#     def __init__(self, subcon):
-#         super().__init__(subcon)
-#         self.is_none_flag = b"\x00"
-#         self.is_some_flag = b"\x01"
-
-#     def _parse(self, stream, context, path):
-#         discriminator = stream_read(stream, 1, path)
-#         if discriminator == self.is_none_flag:
-#             return None
-#         return self.subcon._parse(stream, context, path)  # noqa: WPS437
-
-#     def _build(self, obj, stream, context, path):
-#         if obj is None:
-#             return stream_write(stream, self.is_none_flag, 1, path)
-#         stream_write(stream, self.is_some_flag, 1, path)
-#         return self.subcon._build(obj, stream, context, path)  # noqa: WPS437
-
-#     def _sizeof(self, context, path):
-#         raise SizeofError(path=path)
-
-
 class Option(Adapter):
     _discriminator_key = "discriminator"
     _value_key = "value"
@@ -169,7 +145,7 @@ class Option(Adapter):
     def _decode(self, obj: Any, context, path) -> Any:
         return obj[self._value_key]
 
-    def _encode(self, obj: Any, context, path) -> str:
+    def _encode(self, obj: Any, context, path) -> dict:
         discriminator = 0 if obj is None else 1
         return {self._discriminator_key: discriminator, self._value_key: obj}
 
@@ -271,7 +247,7 @@ class HashMap(Adapter):
     def __init__(self, key_subcon, value_subcon) -> None:
         super().__init__(PrefixedArray(U32, TupleStruct(key_subcon, value_subcon)))
 
-    def _decode(self, obj: List[Tuple], context, path) -> dict:
+    def _decode(self, obj: List[Tuple[Any, Any]], context, path) -> dict:
         return dict(obj)
 
     def _encode(self, obj, context, path) -> List[Tuple]:
@@ -282,12 +258,10 @@ class HashSet(Adapter):
     def __init__(self, subcon) -> None:
         super().__init__(PrefixedArray(U32, subcon))
 
-    def _decode(
-        self, obj: "SubconBuildTypes", context: "Context", path: "PathType"
-    ) -> set:
+    def _decode(self, obj: Any, context: "Context", path: "PathType") -> set:
         return set(obj)
 
-    def _encode(self, obj: "BuildTypes", context: "Context", path: "PathType") -> list:
+    def _encode(self, obj: Any, context: "Context", path: "PathType") -> list:
         return sorted(obj)
 
 
