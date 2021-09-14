@@ -1,5 +1,4 @@
 from typing import Optional, cast, List, Tuple, Any, TYPE_CHECKING
-import struct
 from construct import (
     Flag as Bool,
     Int8ul as U8,
@@ -16,26 +15,22 @@ from construct import (
     Prefixed,
     PrefixedArray,
     Sequence as TupleStruct,
-    stream_read,
-    stream_write,
     Struct as CStruct,
-    Subconstruct,
     Construct,
-    SizeofError,
     Renamed,
-    Container,
     Array,
     FormatField,
     FormatFieldError,
     singleton,
+    Switch,
+    IfThenElse,
+    Pass,
 )
 
 if TYPE_CHECKING:
     from construct import (
         SubconBuildTypes,
         BuildTypes,
-        SubconParsedType,
-        ParsedType,
         Context,
         PathType,
     )
@@ -108,7 +103,10 @@ def Vec(subcon: Construct) -> Array:  # noqa: N802
 Bytes = Prefixed(U32, GreedyBytes)
 
 
-class StringAdapter(Adapter):
+class _String(Adapter):
+    def __init__(self) -> None:
+        super().__init__(Bytes)
+
     def _decode(self, obj: bytes, context, path) -> str:
         return obj.decode("utf8")
 
@@ -116,7 +114,7 @@ class StringAdapter(Adapter):
         return bytes(obj, "utf8")
 
 
-String = StringAdapter(Bytes)
+String = _String()
 
 
 U128 = BytesInteger(16, signed=False, swapped=True)
@@ -134,26 +132,46 @@ class PublicKey(Adapter):
         return str(obj)
 
 
-class Option(Subconstruct):
-    def __init__(self, subcon):
-        super().__init__(subcon)
-        self.is_none_flag = b"\x00"
-        self.is_some_flag = b"\x01"
+# class Option(Subconstruct):
+#     def __init__(self, subcon):
+#         super().__init__(subcon)
+#         self.is_none_flag = b"\x00"
+#         self.is_some_flag = b"\x01"
 
-    def _parse(self, stream, context, path):
-        discriminator = stream_read(stream, 1, path)
-        if discriminator == self.is_none_flag:
-            return None
-        return self.subcon._parse(stream, context, path)  # noqa: WPS437
+#     def _parse(self, stream, context, path):
+#         discriminator = stream_read(stream, 1, path)
+#         if discriminator == self.is_none_flag:
+#             return None
+#         return self.subcon._parse(stream, context, path)  # noqa: WPS437
 
-    def _build(self, obj, stream, context, path):
-        if obj is None:
-            return stream_write(stream, self.is_none_flag, 1, path)
-        stream_write(stream, self.is_some_flag, 1, path)
-        return self.subcon._build(obj, stream, context, path)  # noqa: WPS437
+#     def _build(self, obj, stream, context, path):
+#         if obj is None:
+#             return stream_write(stream, self.is_none_flag, 1, path)
+#         stream_write(stream, self.is_some_flag, 1, path)
+#         return self.subcon._build(obj, stream, context, path)  # noqa: WPS437
 
-    def _sizeof(self, context, path):
-        raise SizeofError(path=path)
+#     def _sizeof(self, context, path):
+#         raise SizeofError(path=path)
+
+
+class Option(Adapter):
+    _discriminator_key = "discriminator"
+    _value_key = "value"
+
+    def __init__(self, subcon: Construct) -> None:
+        option_struct = CStruct(
+            self._discriminator_key / U8,
+            self._value_key
+            / IfThenElse(lambda this: this[self._discriminator_key] == 0, Pass, subcon),
+        )
+        super().__init__(option_struct)
+
+    def _decode(self, obj: Any, context, path) -> Any:
+        return obj[self._value_key]
+
+    def _encode(self, obj: Any, context, path) -> str:
+        discriminator = 0 if obj is None else 1
+        return {self._discriminator_key: discriminator, self._value_key: obj}
 
 
 def _check_name_not_null(name: Optional[str]) -> None:
@@ -210,79 +228,43 @@ def _make_enum(*variants):
     return rust_enum(EnumDef)
 
 
-class Enum(Construct):
+class Enum(Adapter):
+    _index_key = "index"
+    _value_key = "value"
+
     def __init__(self, *variants) -> None:
-        super().__init__()
         self.enum = _make_enum(*variants)
         self.variants = variants
+        switch_cases = {}
+        for idx, var in enumerate(variants):
+            if isinstance(var, str):
+                parser = Pass
+            else:
+                parser = var
+            switch_cases[idx] = parser
+        enum_struct = CStruct(
+            self._index_key / U8,
+            self._value_key / Switch(lambda this: this.index, switch_cases),
+        )
+        super().__init__(enum_struct)
 
-    def _parse(self, stream, context, path):  # noqa: WPS210
-        index_bytes = stream_read(stream, 1, path)
-        index = U8.parse(index_bytes)
-        variant = self.enum.getitem(index)
-        parser = self.variants[index]
-        if isinstance(parser, str):
-            return variant()
-        container = parser._parse(stream, context, path)  # noqa: WPS437
-        if isinstance(container, Container):
-            as_dict = {key: val for key, val in container.items() if key[0] != "_"}
-            return variant(**as_dict)
-        return variant(tuple(container))
+    def _decode(self, obj: Any, context, path) -> Any:
+        enum_variant = self.enum.getitem(obj.index)
+        if obj.value is None:
+            return enum_variant()
+        return enum_variant(obj.value)
 
-    def _build(self, obj, stream, context, path):
+    def _encode(self, obj: Any, context, path) -> str:
         index = obj.index
-        builder = self.variants[index]
         as_dict = attr.asdict(obj)
-        buildret = stream_write(stream, U8.build(index), 1, path)
         if as_dict:
             try:
                 to_build = as_dict[TUPLE_DATA]
             except KeyError:
                 to_build = as_dict
-            return builder._build(to_build, stream, context, path)  # noqa: WPS437
-        return buildret
-
-    def _sizeof(self, context, path):
-        raise SizeofError(path=path)
-
-
-def _calc_bytes_to_read(stream, path, subcon: Construct) -> Tuple[int, Any]:
-    aux = None
-    try:
-        bytes_to_read = subcon.sizeof()
-    except SizeofError:
-        if isinstance(subcon, Option):
-            discriminator = stream_read(stream, 1, path)
-            bytes_to_read = (
-                0
-                if discriminator == subcon.is_none_flag
-                else _calc_bytes_to_read(stream, path, subcon)
-            )
-        elif isinstance(subcon, Enum):
-            index_bytes = stream_read(stream, 1, path)
-            index = U8.parse(index_bytes)
-            subsubcon = subcon.variants[index]
-            if isinstance(subsubcon, str):
-                bytes_to_read = 0
-                aux = subcon.enum.getitem(index)()
-            else:
-                bytes_to_read = _calc_bytes_to_read(stream, path, subsubcon)
-                aux = index
         else:
-            raise ValueError(f"Unexpected type: {subcon}")
-    return bytes_to_read, aux
-
-
-def _parse_key_or_val(stream, context, path, subcon):
-    bytes_to_read, aux = _calc_bytes_to_read(stream, path, subcon)
-    if bytes_to_read == 0:
-        if isinstance(subcon, Option):
-            return None
-        return aux  # Enum
-    to_parse = stream_read(stream, bytes_to_read, path)
-    if isinstance(subcon, Enum):
-        to_parse = U32.build(aux) + to_parse
-    return subcon.parse(to_parse)
+            to_build = None
+        return {self._index_key: index, self._value_key: to_build}
 
 
 class HashMap(Adapter):
