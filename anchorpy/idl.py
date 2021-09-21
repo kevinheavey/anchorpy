@@ -49,11 +49,11 @@ class IdlAccount:
     is_signer: bool = field(metadata={"name": "isSigner"})
 
 
-@dataclass
-class IdlAccounts:
-    # Nested/recursive version of IdlAccount
-    name: str
-    accounts: List["IdlAccountItem"]
+# @dataclass
+# class IdlAccounts:
+#     # Nested/recursive version of IdlAccount
+#     name: str
+#     accounts: List["IdlAccountItem"]
 
 
 @dataclass
@@ -68,27 +68,26 @@ class IdlAccounts1:
     accounts: List[Union[IdlAccount, IdlAccounts0]]
 
 
-IdlAccountItem = Union[IdlAccount, IdlAccounts]
-IdlAccountItem1 = Union[IdlAccounts1, IdlAccounts0, IdlAccount]
+class IdlAccounts2:
+    name: str
+    accounts: List[Union[IdlAccount, IdlAccounts0, IdlAccounts1]]
 
 
-@dataclass
-class IdlState:
-    struct: "IdlTypeDef"
-    methods: List["IdlStateMethod"]
+# IdlAccountItem = Union[IdlAccount, IdlAccounts]
+IdlAccountItem = Union[IdlAccounts2, IdlAccounts1, IdlAccounts0, IdlAccount]
 
 
 @dataclass
 class IdlInstruction:
     name: str
-    accounts: List[IdlAccountItem1]
+    accounts: List[IdlAccountItem]
     args: List[IdlField]
 
 
 @dataclass
 class IdlEnumVariant:
     name: str
-    fields: Union[List[IdlField], List[IdlType]]
+    fields: Optional[Union[List[IdlField], List[IdlType]]] = None
 
 
 @dataclass
@@ -124,9 +123,6 @@ class IdlErrorCode:
     msg: str = ""
 
 
-IdlStateMethod = IdlInstruction
-
-
 @dataclass
 class Metadata:
     address: PublicKey
@@ -137,7 +133,6 @@ class Idl:
     version: str
     name: str
     instructions: List[IdlInstruction]
-    state: Optional[IdlState] = None
     accounts: List[IdlTypeDef] = field(default_factory=list)
     types: List[IdlTypeDef] = field(default_factory=list)
     events: List[IdlEvent] = field(default_factory=list)

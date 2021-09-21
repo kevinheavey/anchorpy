@@ -2,7 +2,7 @@ import hashlib
 from typing import Dict, Any
 
 from shitty_borsh.borsh import Layout
-from anchorpy.coder.idl import IdlCoder
+from anchorpy.coder.idl import typedef_layout
 from anchorpy.idl import Idl
 
 ACCOUNT_DISCRIMINATOR_SIZE = 8  # bytes
@@ -12,7 +12,7 @@ class AccountsCoder(object):
     def __init__(self, idl: Idl):
         self._accounts_layout: Dict[str, Layout] = {}
         for acc in idl.accounts:
-            self._accounts_layout[acc.name] = IdlCoder.typedef_layout(acc, idl.types)
+            self._accounts_layout[acc.name] = typedef_layout(acc, idl.types)
 
     def encode(self, account_name: str, account: Any) -> bytes:
         buffer = bytes([0] * 1000)

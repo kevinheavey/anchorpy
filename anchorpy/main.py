@@ -208,26 +208,6 @@ def test_basic_3():
     assert puppet_account.data == 111
 
 
-def test_basic_4():
-    program = load_program(
-        os.path.expanduser(
-            "~/l/anchor/examples/tutorial/basic-4/target/idl/basic_4.json"
-        )
-    )
-    program.state.rpc.new(
-        {"accounts": {"authority": program.provider.wallet.public_key}}
-    )
-
-    state = program.state.fetch()
-    assert state.count == 0
-
-    program.state.rpc.increment(
-        {"accounts": {"authority": program.provider.wallet.public_key}}
-    )
-    state = program.state.fetch()
-    assert state.count == 1
-
-
 def test_basic_5():
     program = load_program(
         os.path.expanduser(
@@ -268,34 +248,13 @@ def test_basic_5():
     assert account.mint == mint.public_key()
 
 
-def test_vpn_registry():
-    program = load_program(
-        os.path.expanduser("~/l/wireguard-py/sol-vpn/target/idl/vpn_registry.json")
-    )
-
-    # It creates a user wallet
-    authority = program.provider.wallet.account
-
-    # TODO: figure out create_user shit
-
-    program.state.rpc.new(
-        {"accounts": {"authority": program.provider.wallet.public_key}}
-    )
-
-    state = program.state.fetch()
-    print(state)
-
-
 def main():
     pass
     # test_basic_0()
     # test_basic_1()
     # test_basic_2()
-    # test_basic_3()
     # test_basic_4()
     # test_basic_5()
-
-    # test_vpn_registry()
 
 
 if __name__ == "__main__":

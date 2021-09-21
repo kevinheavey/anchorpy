@@ -17,7 +17,7 @@ class IdlError(Exception):
     pass
 
 
-class InstructionNamespace(object):
+class InstructionNamespace:
     pass
 
 
@@ -58,7 +58,11 @@ def accounts_array(
 ) -> List[AccountMeta]:
     accounts_ret: List[AccountMeta] = []
     for acc in accounts:
-        if isinstance(acc, IdlAccounts):
+        if isinstance(
+            acc,
+            IdlAccounts1,
+            IdlAccounts0,
+        ):
             rpc_accs = cast(Accounts, ctx[acc.name])
             acc_arr = accounts_array(rpc_accs, acc.accounts)
             to_append: List[AccountMeta] = list(

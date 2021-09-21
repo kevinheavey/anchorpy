@@ -12,7 +12,7 @@ class Program(object):
         self.provider = provider
         self.coder = Coder(idl)
 
-        rpc, instruction, transaction, account, simulate, state = build_namespace(
+        rpc, instruction, transaction, account, simulate = build_namespace(
             idl,
             self.coder,
             program_id,
@@ -24,4 +24,3 @@ class Program(object):
         self.transaction = transaction
         self.account = account
         self.simulate = simulate
-        self.state = state

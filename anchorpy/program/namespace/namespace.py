@@ -16,7 +16,6 @@ from anchorpy.program.namespace.instruction import (
     build_instruction_fn,
     InstructionNamespace,
 )
-from anchorpy.program.namespace.state import StateClient, build_state
 from anchorpy.program.common import parse_idl_errors
 from anchorpy.idl import Idl
 from anchorpy.provider import Provider
@@ -31,7 +30,6 @@ def build_namespace(  # ts: NamespaceFactory.build
     TransactionNamespace,
     object,
     SimulateNamespace,
-    Optional[StateClient],
 ]:
     idl_errors = parse_idl_errors(idl)
 
@@ -39,8 +37,6 @@ def build_namespace(  # ts: NamespaceFactory.build
     instruction = InstructionNamespace()
     transaction = TransactionNamespace()
     simulate = SimulateNamespace()
-
-    state = build_state(idl, coder, program_id, provider)
 
     for idl_ix in idl.instructions:
 
@@ -61,4 +57,4 @@ def build_namespace(  # ts: NamespaceFactory.build
         setattr(simulate, name, simulate_item)
 
     account = build_account(idl, coder, program_id, provider) if idl.accounts else {}
-    return rpc, instruction, transaction, account, simulate, state
+    return rpc, instruction, transaction, account, simulate

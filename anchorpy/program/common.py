@@ -4,7 +4,6 @@ from solana.publickey import PublicKey
 from anchorpy.idl import (
     Idl,
     IdlAccounts,
-    IdlStateMethod,
     IdlInstruction,
     IdlAccountItem,
 )
@@ -23,7 +22,7 @@ def parse_idl_errors(idl: Idl) -> Dict[int, str]:
     return errors
 
 
-def to_instruction(idl_ix: Union[IdlInstruction, IdlStateMethod], args: List[Any]):
+def to_instruction(idl_ix: IdlInstruction, args: List[Any]):
     if len(idl_ix.args) != len(args):
         raise ValueError("Invalid argument length")
     ix: Dict[str, Any] = {}
