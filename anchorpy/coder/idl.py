@@ -46,12 +46,12 @@ FIELD_TYPE_MAP: Dict[str, Any] = {
 def typedef_layout(
     typedef: IdlTypeDef, types: List[IdlTypeDef], name: str = ""
 ) -> Construct:
-    if typedef.type_of.kind == "struct":
-        field_layouts = [field_layout(field, types) for field in typedef.type_of.fields]
+    if typedef.type.kind == "struct":
+        field_layouts = [field_layout(field, types) for field in typedef.type.fields]
         return CStruct(field_layouts, name)
-    elif typedef.type_of.kind == "enum":
+    elif typedef.type.kind == "enum":
         variants = []
-        for variant in typedef.type_of.variants:
+        for variant in typedef.type.variants:
             name = inflection.camelize(variant.name)
             if not variant.fields:
                 variants.append(CStruct([], name))
@@ -64,34 +64,34 @@ def typedef_layout(
                 variants.append(CStruct(fields, name))
         return Enum(variants, name)
     else:
-        raise Exception(f"Unknown type {typedef.type_of.kind}")
+        raise Exception(f"Unknown type {typedef.type.kind}")
 
 
 def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
     # This method might diverge a bit from anchor.ts stuff but the behavior should be the sames
     field_name = inflection.camelize(field.name, False) if field.name else ""
-    if not isinstance(field.type_of, dict) and field.type_of in FIELD_TYPE_MAP:
-        return field_name / FIELD_TYPE_MAP[field.type_of]
+    if not isinstance(field.type, dict) and field.type in FIELD_TYPE_MAP:
+        return field_name / FIELD_TYPE_MAP[field.type]
     else:
-        type_of = list(field.type_of.keys())[0]
-        if type_of == "vec":
+        type_ = list(field.type.keys())[0]
+        if type_ == "vec":
             return Vector(
-                field_layout(IdlField(name="", type_of=field.type_of["vec"]), types),
+                field_layout(IdlField(name="", type=field.type["vec"]), types),
                 field_name,
             )
-        elif type_of == "option":
+        elif type_ == "option":
             raise Exception("TODO: option type")
-        elif type_of == "defined":
+        elif type_ == "defined":
             if not types:
                 raise Exception("User defined types not provided")
-            filtered = list(filter(lambda t: t.name == field.type_of["defined"], types))
+            filtered = list(filter(lambda t: t.name == field.type["defined"], types))
             if len(filtered) != 1:
-                raise Exception(f"Type not found {field.type_of['defined']}")
+                raise Exception(f"Type not found {field.type['defined']}")
             return typedef_layout(filtered[0], types, field_name)
-        elif type_of == "array":
-            array_ty = field.type_of["array"][0]
-            array_len = field.type_of["array"][1]
-            inner_layout = field_layout(IdlField(name="", type_of=array_ty), types)
+        elif type_ == "array":
+            array_ty = field.type["array"][0]
+            array_len = field.type["array"][1]
+            inner_layout = field_layout(IdlField(name="", type=array_ty), types)
             return Array(inner_layout, array_len, field_name)
         else:
             raise Exception(f"Field {field} not implemented yet")

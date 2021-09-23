@@ -48,8 +48,8 @@ def type_size(idl: Idl, ty: IdlType) -> int:
 
 
 def account_size(idl: Idl, idl_account: IdlTypeDef) -> int:
-    if idl_account.type_of.kind == "enum":
+    if idl_account.type.kind == "enum":
         raise Exception("account_size not implemented for enum")
-    if not idl_account.type_of.fields:
+    if not idl_account.type.fields:
         return 0
-    return sum([type_size(idl, f.type_of) for f in idl_account.type_of.fields])
+    return sum([type_size(idl, f.type) for f in idl_account.type.fields])

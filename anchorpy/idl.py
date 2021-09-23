@@ -39,7 +39,7 @@ class IdlTypeDefined:
 @dataclass
 class IdlField:
     name: str
-    type_of: IdlType = field(metadata={"name": "type"})
+    type: IdlType
 
 
 @dataclass
@@ -100,13 +100,13 @@ class IdlTypeDefTy:
 @dataclass
 class IdlTypeDef:
     name: str
-    type_of: IdlTypeDefTy = field(metadata={"name": "type"})
+    type: IdlTypeDefTy = field(metadata={"name": "type"})
 
 
 @dataclass
 class IdlEventField:
     name: str
-    type_of: str = field(metadata={"name": "type"})
+    type: str = field(metadata={"name": "type"})
     index: bool
 
 
