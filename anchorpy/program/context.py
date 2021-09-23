@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Any, Tuple, Dict, Union, Optional
 
 from solana.account import Account
@@ -20,10 +20,10 @@ Accounts = Dict[str, Union[PublicKey, Any]]
 
 @dataclass
 class Context:
-    accounts: Accounts = {}
-    remaining_accounts: List[AccountMeta] = []
-    signers: List[Account] = []
-    instructions: List[TransactionInstruction] = []
+    accounts: Accounts = field(default_factory=dict)
+    remaining_accounts: List[AccountMeta] = field(default_factory=list)
+    signers: List[Account] = field(default_factory=list)
+    instructions: List[TransactionInstruction] = field(default_factory=list)
     options: Optional[TxOpts] = None
 
 

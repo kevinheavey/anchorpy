@@ -1,13 +1,12 @@
 from typing import List, Dict, Any
 
 import inflection
-
-from anchorpy.borsh import (
+from construct import Construct
+from borsh import (
     CStruct,
     TupleStruct,
     Enum,
     Vec,
-    Array,
     Bool,
     U8,
     I8,
@@ -21,8 +20,8 @@ from anchorpy.borsh import (
     I128,
     Bytes,
     String,
-    PublicKey,
 )
+from anchorpy.borsh_extension import PublicKey
 from anchorpy.idl import IdlField, IdlTypeDef
 
 
@@ -46,7 +45,7 @@ FIELD_TYPE_MAP: Dict[str, Any] = {
 
 def typedef_layout(
     typedef: IdlTypeDef, types: List[IdlTypeDef], name: str = ""
-) -> Layout:
+) -> Construct:
     if typedef.type_of.kind == "struct":
         field_layouts = [field_layout(field, types) for field in typedef.type_of.fields]
         return CStruct(field_layouts, name)
@@ -68,11 +67,11 @@ def typedef_layout(
         raise Exception(f"Unknown type {typedef.type_of.kind}")
 
 
-def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Layout:
+def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
     # This method might diverge a bit from anchor.ts stuff but the behavior should be the sames
     field_name = inflection.camelize(field.name, False) if field.name else ""
     if not isinstance(field.type_of, dict) and field.type_of in FIELD_TYPE_MAP:
-        return FIELD_TYPE_MAP[field.type_of](field_name)
+        return field_name / FIELD_TYPE_MAP[field.type_of]
     else:
         type_of = list(field.type_of.keys())[0]
         if type_of == "vec":

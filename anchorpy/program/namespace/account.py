@@ -1,6 +1,6 @@
 import base64
 from types import SimpleNamespace
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Callable
 
 import inflection
 from solana.account import Account
@@ -19,12 +19,11 @@ from solana.publickey import PublicKey
 
 def build_account(
     idl: Idl, coder: Coder, program_id: PublicKey, provider: Provider
-) -> SimpleNamespace:
-    accounts_fns = SimpleNamespace()
+) -> Dict[str, "AccountClient"]:
+    accounts_fns = {}
     for idl_account in idl.accounts:
-        name = inflection.camelize(idl_account.name, uppercase_first_letter=False)
         account_client = AccountClient(idl, idl_account, coder, program_id, provider)
-        setattr(accounts_fns, name, account_client)
+        accounts_fns[idl_account.name] = account_client
     return accounts_fns
 
 

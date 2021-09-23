@@ -14,8 +14,7 @@ def sighash(namespace: str, ix_name: str) -> bytes:
       return Buffer.from(sha256.digest(preimage)).slice(0, 8);
     }
     """
-    name = inflection.underscore(ix_name) # TODO (LB): might run into issues here
-    formatted_str = f"{namespace}:{name}"
+    formatted_str = f"{namespace}:{ix_name}"
     digest = bytes(hashlib.sha256(formatted_str.encode("utf-8")).digest())
     return digest[:8]
 

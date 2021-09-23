@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Union, cast
+from typing import Dict, List, Any, Union, cast, get_args
 
 from solana.publickey import PublicKey
 from anchorpy.idl import (
@@ -33,7 +33,7 @@ def to_instruction(idl_ix: IdlInstruction, args: List[Any]):
 
 def validate_accounts(ix_accounts: List[IdlAccountItem], accounts):
     for acc in ix_accounts:
-        if isinstance(acc, IdlAccounts):
+        if isinstance(acc, get_args(IdlAccounts)):
             idl_accounts = cast(IdlAccounts, acc)
             validate_accounts(idl_accounts.accounts, accounts[acc.name])
         elif acc.name not in accounts:

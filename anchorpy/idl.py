@@ -73,7 +73,7 @@ class IdlAccounts2:
     accounts: List[Union[IdlAccount, IdlAccounts0, IdlAccounts1]]
 
 
-# IdlAccountItem = Union[IdlAccount, IdlAccounts]
+IdlAccounts = Union[IdlAccounts2, IdlAccounts1, IdlAccounts0]
 IdlAccountItem = Union[IdlAccounts2, IdlAccounts1, IdlAccounts0, IdlAccount]
 
 

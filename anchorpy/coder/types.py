@@ -1,13 +1,13 @@
 from typing import Dict, Any
 
-from shitty_borsh.borsh import Layout
+from construct import Construct
 from anchorpy.coder.idl import typedef_layout
 from anchorpy.idl import Idl
 
 
 class TypesCoder(object):
     def __init__(self, idl: Idl):
-        self._layouts: Dict[str, Layout] = dict()
+        self._layouts: Dict[str, Construct] = dict()
 
         for acc in idl.types:
             self._layouts[acc.name] = typedef_layout(acc, idl.types)

@@ -7,19 +7,13 @@ from anchorpy.provider import Provider
 from solana.publickey import PublicKey
 
 
-class SimulateFactory(object):
-    @staticmethod
-    def build(
-        idl_ix: IdlInstruction,
-        tx_fn: TransactionFn,
-        idl_errors: Dict[int, str],
-        provider: Provider,
-        coder: Coder,
-        program_id: PublicKey,
-        idl: Idl,
-    ):
-        pass
-
-
-class SimulateNamespace(object):
+def build_simulate_item(
+    idl_ix: IdlInstruction,
+    tx_fn: TransactionFn,
+    idl_errors: Dict[int, str],
+    provider: Provider,
+    coder: Coder,
+    program_id: PublicKey,
+    idl: Idl,
+):
     pass
