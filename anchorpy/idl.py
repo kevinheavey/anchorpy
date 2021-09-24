@@ -3,8 +3,7 @@ from typing import List, Union, Optional, Dict, Any, Literal, Tuple
 
 from apischema import deserialize, alias
 
-
-IdlType = Union[
+LiteralStrings = Union[
     Literal["bool"],
     Literal["u8"],
     Literal["i8"],
@@ -19,6 +18,10 @@ IdlType = Union[
     Literal["bytes"],
     Literal["string"],
     Literal["publicKey"],
+]
+
+IdlType = Union[
+    LiteralStrings,
     "IdlTypeVec",
     "IdlTypeOption",
     "IdlTypeDefined",

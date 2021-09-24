@@ -56,7 +56,6 @@ class InstructionCoder(Adapter):
     def _encode(
         self, obj: InstructionToSerialize, context: Container, path
     ) -> Tuple[bytes, Any]:
-        context["ix_name"] = obj["name"]
         return (self.sighashes[obj["name"]], obj["data"])
 
 

@@ -1,6 +1,6 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, cast, Union
+from dataclasses import fields
 
-import inflection
 from construct import Construct
 from borsh import (
     CStruct,
@@ -20,9 +20,17 @@ from borsh import (
     I128,
     Bytes,
     String,
+    Option,
 )
 from anchorpy.borsh_extension import PublicKey
-from anchorpy.idl import IdlField, IdlTypeDef
+from anchorpy.idl import (
+    IdlField,
+    IdlTypeArray,
+    IdlTypeDef,
+    IdlTypeDefined,
+    IdlTypeOption,
+    IdlTypeVec,
+)
 
 
 FIELD_TYPE_MAP: Dict[str, Any] = {
@@ -57,40 +65,50 @@ def typedef_layout(
                 variants.append(name)
             else:
                 fields = []
-                for f in variant.fields:
-                    if not f.name:
+                for fld in variant.fields:
+                    if not fld.name:
                         raise ValueError("Tuple enum variants not yet implemented")
-                    fields.append(field_layout(f, types))
+                    fields.append(field_layout(fld, types))
                 variants.append(name / CStruct(*fields))
         return name / Enum(*variants)
-    else:
-        raise ValueError(f"Unknown type {typedef.type.kind}")
+    unknown_type = typedef.type.kind
+    raise ValueError(f"Unknown type {unknown_type}")
 
 
 def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
     # This method might diverge a bit from anchor.ts stuff but the behavior should be the sames
     field_name = field.name if field.name else ""
-    if not isinstance(field.type, dict) and field.type in FIELD_TYPE_MAP:
-        return field_name / FIELD_TYPE_MAP[field.type]
-    else:
-        type_ = list(field.type.keys())[0]
-        if type_ == "vec":
-            return field_name / Vec(
-                field_layout(IdlField(name=None, type=field.type["vec"]), types),
-            )
-        elif type_ == "option":
-            raise Exception("TODO: option type")
-        elif type_ == "defined":
-            if not types:
-                raise Exception("User defined types not provided")
-            filtered = list(filter(lambda t: t.name == field.type["defined"], types))
-            if len(filtered) != 1:
-                raise Exception(f"Type not found {field.type['defined']}")
-            return typedef_layout(filtered[0], types, field_name)
-        elif type_ == "array":
-            array_ty = field.type["array"][0]
-            array_len = field.type["array"][1]
-            inner_layout = field_layout(IdlField(name="", type=array_ty), types)
-            return Array(inner_layout, array_len, field_name)
-        else:
-            raise Exception(f"Field {field} not implemented yet")
+    if field.type in FIELD_TYPE_MAP:
+        field_type_str = cast(str, field.type)
+        return field_name / FIELD_TYPE_MAP[field_type_str]
+    field_type = cast(
+        Union[IdlTypeVec, IdlTypeOption, IdlTypeDefined, IdlTypeArray],
+        field.type,
+    )
+    type_ = fields(field_type)[0].name
+    if type_ == "vec":
+        field_type_vec = cast(IdlTypeVec, field.type)
+        return field_name / Vec(
+            field_layout(IdlField(name="", type=field_type_vec.vec), types),
+        )
+    elif type_ == "option":
+        field_type_option = cast(IdlTypeOption, field.type)
+        return field_name / Option(
+            field_layout(IdlField(name="", type=field_type_option.option), types)
+        )
+    elif type_ == "defined":
+        field_type_defined = cast(IdlTypeDefined, field.type)
+        defined = field_type_defined.defined
+        if not types:
+            raise ValueError("User defined types not provided")
+        filtered = [t for t in types if t.name == defined]
+        if len(filtered) != 1:
+            raise ValueError(f"Type not found {defined}")
+        return typedef_layout(filtered[0], types, field_name)
+    elif type_ == "array":
+        field_type_array = cast(IdlTypeArray, field.type)
+        array_ty = field_type_array.array[0]
+        array_len = field_type_array.array[1]
+        inner_layout = field_layout(IdlField(name="", type=array_ty), types)
+        return field_name / inner_layout[array_len]
+    raise ValueError(f"Field {field} not implemented yet")
