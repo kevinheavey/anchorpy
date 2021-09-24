@@ -3,7 +3,12 @@ from typing import Callable, List, Any, Sequence, cast, get_args
 
 from solana.transaction import TransactionInstruction, AccountMeta
 
-from anchorpy.program.common import to_instruction, validate_accounts, translate_address
+from anchorpy.program.common import (
+    to_instruction,
+    validate_accounts,
+    translate_address,
+    InstructionToSerialize,
+)
 from anchorpy.program.context import split_args_and_context, Accounts
 from solana.publickey import PublicKey
 from anchorpy.idl import IdlInstruction, IdlAccountItem, IdlAccounts, IdlAccount
@@ -13,22 +18,14 @@ InstructionEncodeFn = Callable[[str, str], List[bytes]]
 InstructionFn = Callable[[Any], Any]
 
 
-class IdlError(Exception):
-    pass
-
-
-class InstructionNamespace:
-    pass
-
-
 def build_instruction_fn(  # ts: InstructionNamespaceFactory.build
     idl_ix: IdlInstruction,
-    encode_fn: Callable[[str, Any], bytes],
+    encode_fn: Callable[[InstructionToSerialize], bytes],
     program_id: PublicKey,
     accounts_method=None,
 ) -> InstructionFn:
     if idl_ix.name == "_inner":
-        raise IdlError("_inner name is reserved")
+        raise ValueError("_inner name is reserved")
 
     def instruction_method(*args) -> TransactionInstruction:
         def accounts(accs: Accounts) -> List[AccountMeta]:
@@ -47,7 +44,7 @@ def build_instruction_fn(  # ts: InstructionNamespaceFactory.build
         return TransactionInstruction(
             keys=keys,
             program_id=program_id,
-            data=encode_fn(idl_ix.name, to_instruction(idl_ix, split_args)),
+            data=encode_fn(to_instruction(idl_ix, split_args)),
         )
 
     return instruction_method

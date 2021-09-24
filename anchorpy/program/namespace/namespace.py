@@ -2,11 +2,9 @@ from typing import Any, Tuple, Optional
 import inflection
 
 from anchorpy.program.namespace.rpc import (
-    RpcNamespace,
     build_rpc_item,
 )
 from anchorpy.program.namespace.transaction import (
-    TransactionNamespace,
     build_transaction_fn,
 )
 from anchorpy.coder.coder import Coder
@@ -16,7 +14,6 @@ from anchorpy.program.namespace.simulate import (
 )
 from anchorpy.program.namespace.instruction import (
     build_instruction_fn,
-    InstructionNamespace,
 )
 from anchorpy.program.common import parse_idl_errors
 from anchorpy.idl import Idl
@@ -36,10 +33,7 @@ def build_namespace(  # ts: NamespaceFactory.build
 
     for idl_ix in idl.instructions:
 
-        def encode_fn(ix_name: str, ix: Any) -> bytes:
-            return coder.instruction.encode(ix_name, ix)
-
-        ix_item = build_instruction_fn(idl_ix, encode_fn, program_id)
+        ix_item = build_instruction_fn(idl_ix, coder.instruction.build, program_id)
         tx_item = build_transaction_fn(idl_ix, ix_item)
         rpc_item = build_rpc_item(idl_ix, tx_item, idl_errors, provider)
         simulate_item = build_simulate_item(

@@ -69,7 +69,7 @@ def typedef_layout(
 
 def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
     # This method might diverge a bit from anchor.ts stuff but the behavior should be the sames
-    field_name = inflection.camelize(field.name, False) if field.name else ""
+    field_name = field.name if field.name else ""
     if not isinstance(field.type, dict) and field.type in FIELD_TYPE_MAP:
         return field_name / FIELD_TYPE_MAP[field.type]
     else:

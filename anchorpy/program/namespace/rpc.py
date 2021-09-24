@@ -10,10 +10,6 @@ from anchorpy.program.namespace.transaction import TransactionFn
 RpcFn = Callable[[Any], TransactionSignature]
 
 
-class RpcNamespace(object):
-    pass
-
-
 def build_rpc_item(  # ts: RpcFactory
     idl_ix: IdlInstruction,
     tx_fn: TransactionFn,
