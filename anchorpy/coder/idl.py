@@ -1,10 +1,10 @@
-from typing import List, Dict, Any, cast, Union
+from typing import List, Mapping, cast, Union
+from types import MappingProxyType
 from dataclasses import fields
 
 from construct import Construct
 from borsh import (
     CStruct,
-    TupleStruct,
     Enum,
     Vec,
     Bool,
@@ -27,56 +27,67 @@ from anchorpy.idl import (
     IdlField,
     IdlTypeArray,
     IdlTypeDef,
+    IdlTypeDefTyEnum,
     IdlTypeDefined,
     IdlTypeOption,
     IdlTypeVec,
 )
 
 
-FIELD_TYPE_MAP: Dict[str, Any] = {
-    "bool": Bool,
-    "u8": U8,
-    "i8": I8,
-    "u16": U16,
-    "i16": I16,
-    "u32": U32,
-    "i32": I32,
-    "u64": U64,
-    "i64": I64,
-    "u128": U128,
-    "i128": I128,
-    "bytes": Bytes,
-    "string": String,
-    "publicKey": PublicKey,
-}
+FIELD_TYPE_MAP: Mapping[str, Construct] = MappingProxyType(
+    {
+        "bool": Bool,
+        "u8": U8,
+        "i8": I8,
+        "u16": U16,
+        "i16": I16,
+        "u32": U32,
+        "i32": I32,
+        "u64": U64,
+        "i64": I64,
+        "u128": U128,
+        "i128": I128,
+        "bytes": Bytes,
+        "string": String,
+        "publicKey": PublicKey,
+    },
+)
+
+
+def _handle_enum_variants(typedef: IdlTypeDef, types: List[IdlTypeDef]) -> Enum:
+    variants = []
+    idl_enum = cast(IdlTypeDefTyEnum, typedef.type)
+    for variant in idl_enum.variants:
+        name = variant.name
+        if variant.fields is None:
+            variants.append(name)
+        else:
+            fields_ = []
+            variant_fields = variant.fields
+            for fld in variant_fields:
+                if not hasattr(fld, "name"):  # noqa: WPS421
+                    raise NotImplementedError("Tuple enum variants not yet implemented")
+                named_field = cast(IdlField, fld)
+                fields_.append(field_layout(named_field, types))
+            variants.append(name / CStruct(*fields))
+    return name / Enum(*variants)
 
 
 def typedef_layout(
-    typedef: IdlTypeDef, types: List[IdlTypeDef], name: str = ""
+    typedef: IdlTypeDef,
+    types: List[IdlTypeDef],
+    name: str = "",
 ) -> Construct:
     if typedef.type.kind == "struct":
         field_layouts = [field_layout(field, types) for field in typedef.type.fields]
         return name / CStruct(*field_layouts)
     elif typedef.type.kind == "enum":
-        variants = []
-        for variant in typedef.type.variants:
-            name = variant.name
-            if variant.fields is None:
-                variants.append(name)
-            else:
-                fields = []
-                for fld in variant.fields:
-                    if not fld.name:
-                        raise ValueError("Tuple enum variants not yet implemented")
-                    fields.append(field_layout(fld, types))
-                variants.append(name / CStruct(*fields))
-        return name / Enum(*variants)
+        return _handle_enum_variants(typedef, types)
     unknown_type = typedef.type.kind
     raise ValueError(f"Unknown type {unknown_type}")
 
 
 def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
-    # This method might diverge a bit from anchor.ts stuff but the behavior should be the sames
     field_name = field.name if field.name else ""
     if field.type in FIELD_TYPE_MAP:
         field_type_str = cast(str, field.type)

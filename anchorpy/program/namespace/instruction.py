@@ -1,5 +1,5 @@
 import itertools
-from typing import Callable, List, Any, Sequence, cast, get_args
+from typing import Callable, List, Any, Sequence, cast
 
 from solana.transaction import TransactionInstruction, AccountMeta
 
@@ -55,7 +55,7 @@ def accounts_array(
 ) -> List[AccountMeta]:
     accounts_ret: List[AccountMeta] = []
     for acc in accounts:
-        if isinstance(acc, get_args(IdlAccounts)):
+        if isinstance(acc, IdlAccounts):
             rpc_accs = cast(Accounts, ctx[acc.name])
             acc_arr = accounts_array(rpc_accs, acc.accounts)
             to_append: List[AccountMeta] = list(

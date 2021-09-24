@@ -19,14 +19,10 @@ LiteralStrings = Union[
     Literal["string"],
     Literal["publicKey"],
 ]
-
-IdlType = Union[
-    LiteralStrings,
-    "IdlTypeVec",
-    "IdlTypeOption",
-    "IdlTypeDefined",
-    "IdlTypeArray",
+NonLiteralIdlTypes = Union[
+    "IdlTypeVec", "IdlTypeOption", "IdlTypeDefined", "IdlTypeArray"
 ]
+IdlType = Union[LiteralStrings, NonLiteralIdlTypes]
 
 
 @dataclass
