@@ -52,14 +52,14 @@ def typedef_layout(
     elif typedef.type.kind == "enum":
         variants = []
         for variant in typedef.type.variants:
-            name = inflection.camelize(variant.name)
+            name = variant.name
             if not variant.fields:
-                variants.append(CStruct([], name))
+                variants.append(name)
             else:
                 fields = []
                 for f in variant.fields:
                     if not f.name:
-                        raise Exception("Tuple enum variants not yet implemented")
+                        raise ValueError("Tuple enum variants not yet implemented")
                     fields.append(field_layout(f, types))
                 variants.append(CStruct(fields, name))
         return Enum(variants, name)
@@ -75,9 +75,8 @@ def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
     else:
         type_ = list(field.type.keys())[0]
         if type_ == "vec":
-            return Vector(
-                field_layout(IdlField(name="", type=field.type["vec"]), types),
-                field_name,
+            return field_name / Vec(
+                field_layout(IdlField(name=None, type=field.type["vec"]), types),
             )
         elif type_ == "option":
             raise Exception("TODO: option type")

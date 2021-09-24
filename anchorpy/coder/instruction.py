@@ -17,18 +17,6 @@ from solana.sysvar import SYSVAR_RENT_PUBKEY
 SIGHASH_GLOBAL_NAMESPACE = "global"
 
 
-class InstructionCoderOld:
-    def __init__(self, idl: Idl):
-        self._ix_layout: Dict[str, Construct] = _parse_ix_layout(idl)
-
-    def encode(self, ix_name: str, ix: Any) -> bytes:
-        return self._encode(SIGHASH_GLOBAL_NAMESPACE, ix_name, ix)
-
-    def _encode(self, namespace: str, ix_name: str, ix: Any) -> bytes:
-        data = self._ix_layout[ix_name].build(ix)
-        return sighash(namespace, ix_name) + data
-
-
 class Sighash(Adapter):
     def __init__(self, namespace: str) -> None:
         super().__init__(Bytes(8))  # type: ignore
