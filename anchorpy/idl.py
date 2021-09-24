@@ -2,10 +2,6 @@ from dataclasses import dataclass, field
 from typing import List, Union, Optional, Dict, Any, Literal, Tuple
 
 from apischema import deserialize, alias
-from apischema.conversions import as_str
-from solana import publickey
-
-as_str(publickey.PublicKey)
 
 
 IdlType = Union[
@@ -47,7 +43,7 @@ class IdlTypeDefined:
 
 @dataclass
 class IdlField:
-    name: Optional[str]
+    name: str
     type: IdlType
 
 
@@ -65,24 +61,6 @@ class IdlAccounts:
     accounts: List["IdlAccountItem"]
 
 
-# @dataclass
-# class IdlAccounts0:
-#     name: str
-#     accounts: List[IdlAccount]
-
-
-# @dataclass
-# class IdlAccounts1:
-#     name: str
-#     accounts: List[Union[IdlAccount, IdlAccounts0]]
-
-
-# class IdlAccounts2:
-#     name: str
-#     accounts: List[Union[IdlAccount, IdlAccounts0, IdlAccounts1]]
-
-
-# IdlAccounts = Union[IdlAccounts2, IdlAccounts1, IdlAccounts0]
 IdlAccountItem = Union[IdlAccounts, IdlAccount]
 
 
@@ -93,17 +71,33 @@ class IdlInstruction:
     args: List[IdlField]
 
 
+IdlEnumFieldsNamed = List[IdlField]
+IdlEnumFieldsTuple = List[IdlType]
+IdlEnumFields = Union[IdlEnumFieldsNamed, IdlEnumFieldsTuple]
+
+
 @dataclass
 class IdlEnumVariant:
     name: str
-    fields: Optional[Union[List[IdlField], List[IdlType]]] = None
+    fields: Optional[IdlEnumFields] = None
+
+
+IdlTypeDefStruct = List[IdlField]
 
 
 @dataclass
-class IdlTypeDefTy:
-    kind: str
-    fields: Optional[List[IdlField]] = None
-    variants: Optional[List[IdlEnumVariant]] = None
+class IdlTypeDefTyStruct:
+    fields: IdlTypeDefStruct
+    kind: Literal["struct"] = "struct"
+
+
+@dataclass
+class IdlTypeDefTyEnum:
+    variants: List[IdlEnumVariant]
+    kind: Literal["enum"] = "enum"
+
+
+IdlTypeDefTy = Union[IdlTypeDefTyEnum, IdlTypeDefTyStruct]
 
 
 @dataclass
@@ -120,7 +114,7 @@ class IdlTypeArray:
 @dataclass
 class IdlEventField:
     name: str
-    type: str
+    type: IdlType
     index: bool
 
 
@@ -134,12 +128,11 @@ class IdlEvent:
 class IdlErrorCode:
     code: int
     name: str
-    msg: str = ""
+    msg: Optional[str] = None
 
 
 @dataclass
 class Metadata:
-    # address: publickey.PublicKey
     address: str
 
 
@@ -173,4 +166,3 @@ if __name__ == "__main__":
     defined = deserialize(IdlTypeDefined, {"defined": "Message"})
     arr = deserialize(IdlTypeArray, {"array": [{"defined": "Message"}, 33607]})
     idl = Idl.from_json(data)
-    breakpoint()

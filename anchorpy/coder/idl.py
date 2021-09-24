@@ -48,12 +48,12 @@ def typedef_layout(
 ) -> Construct:
     if typedef.type.kind == "struct":
         field_layouts = [field_layout(field, types) for field in typedef.type.fields]
-        return CStruct(field_layouts, name)
+        return name / CStruct(*field_layouts)
     elif typedef.type.kind == "enum":
         variants = []
         for variant in typedef.type.variants:
             name = variant.name
-            if not variant.fields:
+            if variant.fields is None:
                 variants.append(name)
             else:
                 fields = []
@@ -61,10 +61,10 @@ def typedef_layout(
                     if not f.name:
                         raise ValueError("Tuple enum variants not yet implemented")
                     fields.append(field_layout(f, types))
-                variants.append(CStruct(fields, name))
-        return Enum(variants, name)
+                variants.append(name / CStruct(*fields))
+        return name / Enum(*variants)
     else:
-        raise Exception(f"Unknown type {typedef.type.kind}")
+        raise ValueError(f"Unknown type {typedef.type.kind}")
 
 
 def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:

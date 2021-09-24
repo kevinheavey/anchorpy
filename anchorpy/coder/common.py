@@ -1,4 +1,3 @@
-import inflection
 import hashlib
 
 from anchorpy.idl import Idl, IdlType, IdlTypeDef
