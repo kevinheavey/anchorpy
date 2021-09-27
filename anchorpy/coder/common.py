@@ -1,6 +1,16 @@
+from typing import Dict, Union, cast
 import hashlib
 
-from anchorpy.idl import Idl, IdlType, IdlTypeDef
+from anchorpy.idl import (
+    Idl,
+    IdlType,
+    IdlTypeDef,
+    IdlTypeOption,
+    IdlTypeArray,
+    IdlTypeDefined,
+    IdlTypeVec,
+    LiteralStrings,
+)
 
 
 def sighash(namespace: str, ix_name: str) -> bytes:
@@ -18,32 +28,47 @@ def sighash(namespace: str, ix_name: str) -> bytes:
     return digest[:8]
 
 
-# Returns the size of the type in bytes. For variable length types, just return 1.
-# Users should override this value in such cases.
 def type_size(idl: Idl, ty: IdlType) -> int:
-    if isinstance(ty, dict):
-        if "vec" in ty:
-            return 1
-        if "option" in ty:
-            raise Exception("Option not implemented")
-        if "defined" in ty:
-            raise Exception("Defined not implemented")
-        if "array" in ty:
-            raise Exception("Array  not implemented")
-    elif ty in {"bool", "u8", "i8", "bytes", "string"}:
-        return 1
-    elif ty in {"i16", "u16"}:
-        return 2
-    elif ty in {"u32", "i32"}:
-        return 4
-    elif ty in {"u64", "i64"}:
-        return 8
-    elif ty in {"u128", "i128"}:
-        return 16
-    elif ty == "publicKey":
-        return 32
-    else:
-        raise Exception(f"type_size not implemented for {ty}")
+    """Return the size of the type in bytes.
+
+    For variable length types, just return 1. Users should override this value in such cases.
+    """
+    sizes: Dict[Union[LiteralStrings, IdlTypeVec], int] = {
+        "bool": 1,
+        "u8": 1,
+        "i8": 1,
+        "bytes": 1,
+        "string": 1,
+        "i16": 2,
+        "u16": 2,
+        "u32": 4,
+        "i32": 4,
+        "u64": 8,
+        "i64": 8,
+        "u128": 16,
+        "i128": 16,
+        "publicKey": 32,
+    }
+    try:
+        return sizes[ty]  # type: ignore
+    except KeyError:
+        if ty is IdlTypeOption:
+            option_ty = cast(IdlTypeOption, ty)
+            return 1 + type_size(idl, option_ty.option)
+        if ty is IdlTypeDefined:
+            field_type_defined = cast(IdlTypeDefined, ty)
+            defined = field_type_defined.defined
+            filtered = [t for t in idl.types if t.name == defined]
+            if len(filtered) != 1:
+                raise ValueError(f"Type not found {field_type_defined}")
+            type_def = filtered[0]
+            return account_size(idl, type_def)
+        if ty is IdlTypeArray:
+            array_ty = cast(IdlTypeArray, ty)
+            element_type = array_ty.array[0]
+            array_size = array_ty.array[1]
+            return type_size(idl, element_type) * array_size
+        raise ValueError(f"type_size not implemented for {ty}")
 
 
 def account_size(idl: Idl, idl_account: IdlTypeDef) -> int:
