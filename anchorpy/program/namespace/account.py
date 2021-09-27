@@ -52,7 +52,9 @@ class AccountClient(object):
 
     def fetch(self, address: PublicKey) -> SimpleNamespace:
         account_info = self._provider.get_account_info(
-            address, encoding="base64", commitment=Processed
+            address,
+            encoding="base64",
+            commitment=Processed,
         )
         if not account_info["result"]["value"]:
             raise AccountDoesNotExistError(f"Account {address} does not exist")

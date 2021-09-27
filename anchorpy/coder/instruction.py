@@ -1,9 +1,8 @@
 from anchorpy.program.context import split_args_and_context
-from typing import Dict, Any, Tuple, TypedDict
-from dataclasses import asdict
+from typing import Dict, Any, Tuple
 
 
-from borsh import CStruct, String
+from borsh import CStruct
 from construct import Sequence, Bytes
 from construct import Construct, Adapter, Switch, Container
 from anchorpy.coder.common import sighash

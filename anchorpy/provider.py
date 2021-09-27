@@ -13,15 +13,17 @@ from solana.blockhash import Blockhash
 from solana.account import Account
 from solana.rpc import types
 from solana.rpc.api import Client
-from solana.rpc.commitment import Single, Commitment, Max
+from solana.rpc.commitment import Commitment, Recent, 
 from solana.transaction import Transaction
 
 from solana.publickey import PublicKey
 
 
-class Provider(Client):
-    def __init__(self, url, wallet: Wallet, opts=types.TxOpts()):
-        super().__init__(url)
+class Provider:
+    def __init__(
+        self, client: Client, wallet: Wallet, opts: types.TxOpts = types.TxOpts()
+    ):
+        self.client = client
         self.wallet = wallet
         self.opts = opts
 
@@ -36,7 +38,7 @@ class Provider(Client):
         if not opts:
             opts = self.opts
 
-        recent_blockhash = self.get_recent_blockhash(opts.preflight_commitment)[
+        recent_blockhash = self.client.get_recent_blockhash(opts.preflight_commitment)[
             "result"
         ]["value"]["blockhash"]
 

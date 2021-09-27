@@ -7,10 +7,9 @@ from anchorpy.idl import Idl
 
 class TypesCoder(object):
     def __init__(self, idl: Idl):
-        self._layouts: Dict[str, Construct] = dict()
-
-        for acc in idl.types:
-            self._layouts[acc.name] = typedef_layout(acc, idl.types)
+        self._layouts: Dict[str, Construct] = {
+            acc.name: typedef_layout(acc, idl.types, acc.name) for acc in idl.types
+        }
 
     def encode(self, account_name: str, account: Any) -> bytes:
         buf = bytes([0] * 1000)
