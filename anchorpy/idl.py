@@ -3,21 +3,21 @@ from typing import List, Union, Optional, Dict, Any, Literal, Tuple
 
 from apischema import deserialize, alias
 
-LiteralStrings = Union[
-    Literal["bool"],
-    Literal["u8"],
-    Literal["i8"],
-    Literal["u16"],
-    Literal["i16"],
-    Literal["u32"],
-    Literal["i32"],
-    Literal["u64"],
-    Literal["i64"],
-    Literal["u128"],
-    Literal["i128"],
-    Literal["bytes"],
-    Literal["string"],
-    Literal["publicKey"],
+LiteralStrings = Literal[
+    "bool",
+    "u8",
+    "i8",
+    "u16",
+    "i16",
+    "u32",
+    "i32",
+    "u64",
+    "i64",
+    "u128",
+    "i128",
+    "bytes",
+    "string",
+    "publicKey",
 ]
 NonLiteralIdlTypes = Union[
     "IdlTypeVec", "IdlTypeOption", "IdlTypeDefined", "IdlTypeArray"
@@ -155,13 +155,11 @@ if __name__ == "__main__":
     import json
     from pathlib import Path
 
-    with Path("/home/kheavey/anchorpy/idls/chat.json").open() as f:
-        data = json.load(f)
+    idls = []
     for path in Path("/home/kheavey/anchorpy/idls/").glob("*"):
         print(path)
         with path.open() as f:
             data = json.load(f)
         idl = Idl.from_json(data)
-    defined = deserialize(IdlTypeDefined, {"defined": "Message"})
-    arr = deserialize(IdlTypeArray, {"array": [{"defined": "Message"}, 33607]})
-    idl = Idl.from_json(data)
+        idls.append(idl)
+    breakpoint()
