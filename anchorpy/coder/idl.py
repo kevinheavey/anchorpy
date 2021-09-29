@@ -1,6 +1,5 @@
-from typing import List, Mapping, cast, Union
+from typing import List, Mapping, cast
 from types import MappingProxyType
-from dataclasses import fields
 
 from construct import Construct
 from borsh import (
@@ -28,9 +27,11 @@ from anchorpy.idl import (
     IdlTypeArray,
     IdlTypeDef,
     IdlTypeDefTyEnum,
+    IdlTypeDefTyStruct,
     IdlTypeDefined,
     IdlTypeOption,
     IdlTypeVec,
+    NonLiteralIdlTypes,
 )
 
 
@@ -54,9 +55,8 @@ FIELD_TYPE_MAP: Mapping[str, Construct] = MappingProxyType(
 )
 
 
-def _handle_enum_variants(typedef: IdlTypeDef, types: List[IdlTypeDef]) -> Enum:
+def _handle_enum_variants(idl_enum: IdlTypeDefTyEnum, types: List[IdlTypeDef]) -> Enum:
     variants = []
-    idl_enum = cast(IdlTypeDefTyEnum, typedef.type)
     for variant in idl_enum.variants:
         name = variant.name
         if variant.fields is None:
@@ -65,10 +65,9 @@ def _handle_enum_variants(typedef: IdlTypeDef, types: List[IdlTypeDef]) -> Enum:
             fields_ = []
             variant_fields = variant.fields
             for fld in variant_fields:
-                if not hasattr(fld, "name"):  # noqa: WPS421
+                if not isinstance(fld, IdlField):  # noqa: WPS421
                     raise NotImplementedError("Tuple enum variants not yet implemented")
-                named_field = cast(IdlField, fld)
-                fields_.append(field_layout(named_field, types))
+                fields_.append(field_layout(fld, types))
             variants.append(name / CStruct(*fields))
     return name / Enum(*variants)
 
@@ -78,12 +77,13 @@ def typedef_layout(
     types: List[IdlTypeDef],
     name: str = "",
 ) -> Construct:
-    if typedef.type.kind == "struct":
-        field_layouts = [field_layout(field, types) for field in typedef.type.fields]
+    typedef_type = typedef.type
+    if isinstance(typedef_type, IdlTypeDefTyStruct):
+        field_layouts = [field_layout(field, types) for field in typedef_type.fields]
         return name / CStruct(*field_layouts)
-    elif typedef.type.kind == "enum":
-        return _handle_enum_variants(typedef, types)
-    unknown_type = typedef.type.kind
+    elif isinstance(typedef_type, IdlTypeDefTyEnum):
+        return _handle_enum_variants(typedef_type, types)
+    unknown_type = typedef_type.kind
     raise ValueError(f"Unknown type {unknown_type}")
 
 
@@ -93,33 +93,28 @@ def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
         field_type_str = cast(str, field.type)
         return field_name / FIELD_TYPE_MAP[field_type_str]
     field_type = cast(
-        Union[IdlTypeVec, IdlTypeOption, IdlTypeDefined, IdlTypeArray],
+        NonLiteralIdlTypes,
         field.type,
     )
-    type_ = fields(field_type)[0].name
-    if type_ == "vec":
-        field_type_vec = cast(IdlTypeVec, field.type)
+    if isinstance(field_type, IdlTypeVec):
         return field_name / Vec(
-            field_layout(IdlField(name="", type=field_type_vec.vec), types),
+            field_layout(IdlField(name="", type=field_type.vec), types),
         )
-    elif type_ == "option":
-        field_type_option = cast(IdlTypeOption, field.type)
+    elif isinstance(field_type, IdlTypeOption):
         return field_name / Option(
-            field_layout(IdlField(name="", type=field_type_option.option), types)
+            field_layout(IdlField(name="", type=field_type.option), types)
         )
-    elif type_ == "defined":
-        field_type_defined = cast(IdlTypeDefined, field.type)
-        defined = field_type_defined.defined
+    elif isinstance(field_type, IdlTypeDefined):
+        defined = field_type.defined
         if not types:
             raise ValueError("User defined types not provided")
         filtered = [t for t in types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
         return typedef_layout(filtered[0], types, field_name)
-    elif type_ == "array":
-        field_type_array = cast(IdlTypeArray, field.type)
-        array_ty = field_type_array.array[0]
-        array_len = field_type_array.array[1]
+    elif isinstance(field_type, IdlTypeArray):
+        array_ty = field_type.array[0]
+        array_len = field_type.array[1]
         inner_layout = field_layout(IdlField(name="", type=array_ty), types)
         return field_name / inner_layout[array_len]
     raise ValueError(f"Field {field} not implemented yet")
