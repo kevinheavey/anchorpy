@@ -3,8 +3,11 @@ import hashlib
 
 from anchorpy.idl import (
     Idl,
+    IdlEnumVariant,
+    IdlField,
     IdlType,
     IdlTypeDef,
+    IdlTypeDefTyEnum,
     IdlTypeOption,
     IdlTypeArray,
     IdlTypeDefined,
@@ -33,7 +36,7 @@ def type_size(idl: Idl, ty: IdlType) -> int:
 
     For variable length types, just return 1. Users should override this value in such cases.
     """
-    sizes: Dict[Union[LiteralStrings, IdlTypeVec], int] = {
+    sizes: Dict[LiteralStrings, int] = {
         "bool": 1,
         "u8": 1,
         "i8": 1,
@@ -52,10 +55,12 @@ def type_size(idl: Idl, ty: IdlType) -> int:
     try:
         return sizes[ty]  # type: ignore
     except KeyError:
-        if ty is IdlTypeOption:
+        if isinstance(ty, IdlTypeVec):
+            return 1
+        if isinstance(ty, IdlTypeOption):
             option_ty = cast(IdlTypeOption, ty)
             return 1 + type_size(idl, option_ty.option)
-        if ty is IdlTypeDefined:
+        if isinstance(ty, IdlTypeDefined):
             field_type_defined = cast(IdlTypeDefined, ty)
             defined = field_type_defined.defined
             filtered = [t for t in idl.types if t.name == defined]
@@ -63,7 +68,7 @@ def type_size(idl: Idl, ty: IdlType) -> int:
                 raise ValueError(f"Type not found {field_type_defined}")
             type_def = filtered[0]
             return account_size(idl, type_def)
-        if ty is IdlTypeArray:
+        if isinstance(ty, IdlTypeArray):
             array_ty = cast(IdlTypeArray, ty)
             element_type = array_ty.array[0]
             array_size = array_ty.array[1]
@@ -71,9 +76,29 @@ def type_size(idl: Idl, ty: IdlType) -> int:
         raise ValueError(f"type_size not implemented for {ty}")
 
 
-def account_size(idl: Idl, idl_account: IdlTypeDef) -> int:
-    if idl_account.type.kind == "enum":
-        raise Exception("account_size not implemented for enum")
-    if not idl_account.type.fields:
+def _variant_field_size(idl: Idl, field: Union[IdlField, IdlType]) -> int:
+    if isinstance(field, IdlField):
+        return type_size(idl, field.type)
+    raise NotImplementedError("Tuple enum variants not yet implemented.")
+
+
+def _variant_size(idl: Idl, variant: IdlEnumVariant) -> int:
+    if variant.fields is None:
         return 0
-    return sum([type_size(idl, f.type) for f in idl_account.type.fields])
+    field_sizes = []
+    field: Union[IdlField, IdlType]
+    for field in variant.fields:
+        field_sizes.append(_variant_field_size(idl, field))
+    return sum(field_sizes)
+
+
+def account_size(idl: Idl, idl_account: IdlTypeDef) -> int:
+    idl_account_type = idl_account.type
+    if isinstance(idl_account_type, IdlTypeDefTyEnum):
+        variant_sizes = (
+            _variant_size(idl, variant) for variant in idl_account_type.variants
+        )
+        return max(variant_sizes) + 1
+    if idl_account_type.fields is None:
+        return 0
+    return sum(type_size(idl, f.type) for f in idl_account_type.fields)
