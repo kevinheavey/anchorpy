@@ -62,12 +62,12 @@ def _handle_enum_variants(idl_enum: IdlTypeDefTyEnum, types: List[IdlTypeDef]) -
         if variant.fields is None:
             variants.append(name)
         else:
-            fields_ = []
+            fields = []
             variant_fields = variant.fields
             for fld in variant_fields:
                 if not isinstance(fld, IdlField):  # noqa: WPS421
                     raise NotImplementedError("Tuple enum variants not yet implemented")
-                fields_.append(field_layout(fld, types))
+                fields.append(field_layout(fld, types))
             variants.append(name / CStruct(*fields))
     return name / Enum(*variants)
 

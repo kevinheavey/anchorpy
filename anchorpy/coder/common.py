@@ -58,20 +58,17 @@ def type_size(idl: Idl, ty: IdlType) -> int:
         if isinstance(ty, IdlTypeVec):
             return 1
         if isinstance(ty, IdlTypeOption):
-            option_ty = cast(IdlTypeOption, ty)
-            return 1 + type_size(idl, option_ty.option)
+            return 1 + type_size(idl, ty.option)
         if isinstance(ty, IdlTypeDefined):
-            field_type_defined = cast(IdlTypeDefined, ty)
-            defined = field_type_defined.defined
+            defined = ty.defined
             filtered = [t for t in idl.types if t.name == defined]
             if len(filtered) != 1:
-                raise ValueError(f"Type not found {field_type_defined}")
+                raise ValueError(f"Type not found {ty}")
             type_def = filtered[0]
             return account_size(idl, type_def)
         if isinstance(ty, IdlTypeArray):
-            array_ty = cast(IdlTypeArray, ty)
-            element_type = array_ty.array[0]
-            array_size = array_ty.array[1]
+            element_type = ty.array[0]
+            array_size = ty.array[1]
             return type_size(idl, element_type) * array_size
         raise ValueError(f"type_size not implemented for {ty}")
 
@@ -79,7 +76,7 @@ def type_size(idl: Idl, ty: IdlType) -> int:
 def _variant_field_size(idl: Idl, field: Union[IdlField, IdlType]) -> int:
     if isinstance(field, IdlField):
         return type_size(idl, field.type)
-    raise NotImplementedError("Tuple enum variants not yet implemented.")
+    return type_size(idl, field)
 
 
 def _variant_size(idl: Idl, variant: IdlEnumVariant) -> int:
