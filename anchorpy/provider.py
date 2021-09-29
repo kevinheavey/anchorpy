@@ -3,17 +3,15 @@ from __future__ import annotations
 import json
 import os.path
 
-from abc import abstractmethod, ABC, abstractproperty
+from abc import abstractmethod, ABC
 from base64 import b64encode
-from dataclasses import dataclass
 import time
 from typing import List, Optional, Union
 
-from solana.blockhash import Blockhash
 from solana.account import Account
 from solana.rpc import types
 from solana.rpc.api import Client
-from solana.rpc.commitment import Commitment, Recent, 
+from solana.rpc.commitment import Commitment, Max
 from solana.transaction import Transaction
 
 from solana.publickey import PublicKey

@@ -13,22 +13,36 @@ from anchorpy.idl import (
     IdlTypeDefined,
     IdlTypeVec,
     LiteralStrings,
+    NonLiteralIdlTypes,
 )
 
 
 def sighash(namespace: str, ix_name: str) -> bytes:
-    """
-    // Not technically sighash, since we don't include the arguments, as Rust
-    // doesn't allow function overloading.
-    export function sighash(nameSpace: string, ixName: string): Buffer {
-      let name = snakeCase(ixName);
-      let preimage = `${nameSpace}:${name}`;
-      return Buffer.from(sha256.digest(preimage)).slice(0, 8);
-    }
-    """
+    """Not technically sighash, since we don't include the arguments.
+
+    (Because Rust doesn't allow function overloading.)"""
     formatted_str = f"{namespace}:{ix_name}"
     digest = bytes(hashlib.sha256(formatted_str.encode("utf-8")).digest())
     return digest[:8]
+
+
+def _type_size_compound_type(idl: Idl, ty: NonLiteralIdlTypes) -> int:
+    if isinstance(ty, IdlTypeVec):
+        return 1
+    if isinstance(ty, IdlTypeOption):
+        return 1 + type_size(idl, ty.option)
+    if isinstance(ty, IdlTypeDefined):
+        defined = ty.defined
+        filtered = [t for t in idl.types if t.name == defined]
+        if len(filtered) != 1:
+            raise ValueError(f"Type not found {ty}")
+        type_def = filtered[0]
+        return account_size(idl, type_def)
+    if isinstance(ty, IdlTypeArray):
+        element_type = ty.array[0]
+        array_size = ty.array[1]
+        return type_size(idl, element_type) * array_size
+    raise ValueError(f"type_size not implemented for {ty}")
 
 
 def type_size(idl: Idl, ty: IdlType) -> int:
@@ -55,22 +69,7 @@ def type_size(idl: Idl, ty: IdlType) -> int:
     try:
         return sizes[ty]  # type: ignore
     except KeyError:
-        if isinstance(ty, IdlTypeVec):
-            return 1
-        if isinstance(ty, IdlTypeOption):
-            return 1 + type_size(idl, ty.option)
-        if isinstance(ty, IdlTypeDefined):
-            defined = ty.defined
-            filtered = [t for t in idl.types if t.name == defined]
-            if len(filtered) != 1:
-                raise ValueError(f"Type not found {ty}")
-            type_def = filtered[0]
-            return account_size(idl, type_def)
-        if isinstance(ty, IdlTypeArray):
-            element_type = ty.array[0]
-            array_size = ty.array[1]
-            return type_size(idl, element_type) * array_size
-        raise ValueError(f"type_size not implemented for {ty}")
+        return _type_size_compound_type(idl, ty)  # type: ignore
 
 
 def _variant_field_size(idl: Idl, field: Union[IdlField, IdlType]) -> int:
