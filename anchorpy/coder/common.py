@@ -1,5 +1,5 @@
 from typing import Dict, Union, cast
-import hashlib
+from hashlib import sha256
 
 from anchorpy.idl import (
     Idl,
@@ -22,8 +22,7 @@ def sighash(namespace: str, ix_name: str) -> bytes:
 
     (Because Rust doesn't allow function overloading.)"""
     formatted_str = f"{namespace}:{ix_name}"
-    digest = bytes(hashlib.sha256(formatted_str.encode("utf-8")).digest())
-    return digest[:8]
+    return sha256(formatted_str.encode()).digest()[:8]
 
 
 def _type_size_compound_type(idl: Idl, ty: NonLiteralIdlTypes) -> int:

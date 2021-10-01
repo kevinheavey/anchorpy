@@ -83,8 +83,7 @@ if __name__ == "__main__":
             },
         },
     )
-    arg_list = list(args)
-    split_args, ctx = split_args_and_context(idl_ix, arg_list)
+    split_args, ctx = split_args_and_context(idl_ix, args)
     ix = to_instruction(idl_ix, split_args)
     coder = InstructionCoder(idl)
     encoded = coder.build(ix)

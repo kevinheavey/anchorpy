@@ -18,8 +18,7 @@ def build_rpc_item(  # ts: RpcFactory
 ) -> RpcFn:
     def rpc_fn(*args: Any) -> TransactionSignature:
         tx = tx_fn(*args)
-        args_list = list(args)
-        _, ctx = split_args_and_context(idl_ix, args_list)
+        _, ctx = split_args_and_context(idl_ix, args)
         # try:
         tx_sig = provider.send(tx, ctx.signers, ctx.options)
         return tx_sig["result"]

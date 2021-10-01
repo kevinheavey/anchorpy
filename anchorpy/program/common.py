@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Union, cast, get_args, TypedDict
+from typing import Dict, List, Any, Union, cast, get_args, TypedDict, Tuple
 
 from solana.publickey import PublicKey
 from anchorpy.idl import (
@@ -27,7 +27,7 @@ class InstructionToSerialize(TypedDict):
     name: str
 
 
-def to_instruction(idl_ix: IdlInstruction, args: List[Any]) -> InstructionToSerialize:
+def to_instruction(idl_ix: IdlInstruction, args: Tuple) -> InstructionToSerialize:
     if len(idl_ix.args) != len(args):
         raise ValueError("Invalid argument length")
     ix: Dict[str, Any] = {}

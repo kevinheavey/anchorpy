@@ -28,8 +28,9 @@ class Context:
 
 
 def split_args_and_context(
-    idl_ix: IdlInstruction, args: List[Any]
-) -> Tuple[List[Any], Context]:
+    idl_ix: IdlInstruction,
+    args: Tuple,
+) -> Tuple[Tuple, Context]:
     options = {}
     new_args = args
     if len(args) > len(idl_ix.args):

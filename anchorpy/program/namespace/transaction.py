@@ -17,8 +17,7 @@ class TransactionNamespace(object):
 # ts TransactionNamespaceFactory.build
 def build_transaction_fn(idl_ix: IdlInstruction, ix_fn: InstructionFn) -> TransactionFn:
     def tx_fn(*args: List[Any]) -> Transaction:
-        arg_list = list(args)
-        _, ctx = split_args_and_context(idl_ix, arg_list)
+        _, ctx = split_args_and_context(idl_ix, args)
         tx = Transaction()
         if ctx.instructions:
             tx.add(*ctx.instructions)

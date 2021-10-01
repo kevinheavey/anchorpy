@@ -1,4 +1,4 @@
-import hashlib
+from hashlib import sha256
 from typing import Tuple, Any
 from construct import Container, Adapter, Sequence, Bytes, Switch
 
@@ -40,7 +40,7 @@ class AccountsCoder(Adapter):
 
 def account_discriminator(name: str) -> bytes:
     """Calculate unique 8 byte discriminator prepended to all anchor accounts."""
-    return bytes(hashlib.sha256(f"account:{name}".encode("utf-8")).digest())[:8]
+    return sha256(f"account:{name}".encode()).digest()[:8]
 
 
 if __name__ == "__main__":

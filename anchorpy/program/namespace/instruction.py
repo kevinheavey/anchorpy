@@ -1,5 +1,5 @@
 import itertools
-from typing import Callable, List, Any, Sequence, cast
+from typing import Callable, List, Any, Sequence, cast, Tuple
 
 from solana.transaction import TransactionInstruction, AccountMeta
 
@@ -31,8 +31,7 @@ def build_instruction_fn(  # ts: InstructionNamespaceFactory.build
         def accounts(accs: Accounts) -> List[AccountMeta]:
             return accounts_array(accs, idl_ix.accounts)
 
-        arg_list = list(args)
-        split_args, ctx = split_args_and_context(idl_ix, arg_list)
+        split_args, ctx = split_args_and_context(idl_ix, args)
         validate_accounts(idl_ix.accounts, ctx.accounts)
         validate_instruction(idl_ix, split_args)
 
@@ -74,6 +73,6 @@ def accounts_array(
     return accounts_ret
 
 
-def validate_instruction(ix: IdlInstruction, args: List[Any]):
+def validate_instruction(ix: IdlInstruction, args: Tuple):
     # TODO
     pass

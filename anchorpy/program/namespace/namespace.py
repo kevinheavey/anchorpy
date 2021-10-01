@@ -23,7 +23,7 @@ from solana.publickey import PublicKey
 
 def build_namespace(  # ts: NamespaceFactory.build
     idl: Idl, coder: Coder, program_id: PublicKey, provider: Provider
-) -> Tuple[dict]:
+) -> Tuple[dict, dict, dict, dict, dict]:
     idl_errors = parse_idl_errors(idl)
 
     rpc = {}
