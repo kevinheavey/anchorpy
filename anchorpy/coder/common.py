@@ -1,4 +1,4 @@
-from typing import Dict, Union, cast
+from typing import Dict, Union
 from hashlib import sha256
 
 from anchorpy.idl import (
@@ -47,7 +47,8 @@ def _type_size_compound_type(idl: Idl, ty: NonLiteralIdlTypes) -> int:
 def type_size(idl: Idl, ty: IdlType) -> int:
     """Return the size of the type in bytes.
 
-    For variable length types, just return 1. Users should override this value in such cases.
+    For variable length types, just return 1.
+    Users should override this value in such cases.
     """
     sizes: Dict[LiteralStrings, int] = {
         "bool": 1,

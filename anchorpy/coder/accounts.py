@@ -1,6 +1,6 @@
 from hashlib import sha256
 from typing import Tuple, Any
-from construct import Container, Adapter, Sequence, Bytes, Switch
+from construct import Adapter, Sequence, Bytes, Switch
 
 from anchorpy.coder.idl import typedef_layout
 from anchorpy.idl import Idl

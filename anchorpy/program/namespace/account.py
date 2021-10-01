@@ -1,8 +1,7 @@
 import base64
 from types import SimpleNamespace
-from typing import List, Optional, Dict, Callable
+from typing import List, Optional, Dict
 
-import inflection
 from solana.account import Account
 from solana.system_program import create_account, CreateAccountParams
 from solana.transaction import TransactionInstruction
