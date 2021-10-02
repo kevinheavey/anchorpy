@@ -93,7 +93,7 @@ class AccountClient(object):
         return self.fetch(addr)
 
     def all(self, filter: Optional[bytes] = None) -> List[Dict]:
-        all_accounts = list()
+        all_accounts = []
 
         b = account_discriminator(self._idl_account.name)
         if filter:
