@@ -3,5 +3,6 @@ ignore = Q000,WPS110,WPS111,WPS115,WPS120,WPS210,WPS221,WPS306,WPS305,WPS326,WPS
 exclude = .git,__pycache__,docs/source/conf.py,old,build,dist
 max-line-length = 88
 per-file-ignores = 
-    anchorpy/idl.py: WPS202,WPS226
-    
+    src/anchorpy/idl.py: WPS202,WPS226
+    src/anchorpy/__init__.py: D104,WPS412
+
