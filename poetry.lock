@@ -592,6 +592,14 @@ colors = ["colorama (>=0.4.3,<0.5.0)"]
 plugins = ["setuptools"]
 
 [[package]]
+name = "jsonrpcclient"
+version = "4.0.1"
+description = "Send JSON-RPC requests"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "jsonschema"
 version = "3.2.0"
 description = "An implementation of JSON Schema validation for Python"
@@ -1131,7 +1139,7 @@ typing_extensions = ">=3.6,<4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "95d7034072bab107cc814b4b85f9c08ed963b2bf6e557f1c4796accd52f4ccc7"
+content-hash = "957d224bfaefaf5314f5fdcf4b2023785dea785a30ef3ac9ffcf0e38f6111f4b"
 
 [metadata.files]
 anyio = [
@@ -1381,6 +1389,9 @@ inflection = [
 isort = [
     {file = "isort-5.9.3-py3-none-any.whl", hash = "sha256:e17d6e2b81095c9db0a03a8025a957f334d6ea30b26f9ec70805411e5c7c81f2"},
     {file = "isort-5.9.3.tar.gz", hash = "sha256:9c2ea1e62d871267b78307fe511c0838ba0da28698c5732d54e2790bf3ba9899"},
+]
+jsonrpcclient = [
+    {file = "jsonrpcclient-4.0.1.tar.gz", hash = "sha256:fbc57c5150d210e350dcb54737a18c39dcd7e2d0ce43e517839ff457334011d5"},
 ]
 jsonschema = [
     {file = "jsonschema-3.2.0-py2.py3-none-any.whl", hash = "sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163"},

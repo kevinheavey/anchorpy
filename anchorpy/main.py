@@ -54,9 +54,9 @@ def test_basic_1():
                 from_pubkey=program.provider.wallet.public_key,
                 new_account_pubkey=my_account.public_key(),
                 space=8 + 8,
-                lamports=program.provider.get_minimum_balance_for_rent_exemption(8 + 8)[
-                    "result"
-                ],
+                lamports=program.provider.client.get_minimum_balance_for_rent_exemption(
+                    8 + 8
+                )["result"],
                 program_id=program.program_id,
             )
         )
@@ -92,7 +92,7 @@ def test_basic_1():
                         from_pubkey=program.provider.wallet.public_key,
                         new_account_pubkey=my_account.public_key(),
                         space=8 + 8,
-                        lamports=program.provider.get_minimum_balance_for_rent_exemption(
+                        lamports=program.provider.client.get_minimum_balance_for_rent_exemption(
                             8 + 8
                         )[
                             "result"

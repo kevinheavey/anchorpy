@@ -74,9 +74,9 @@ class AccountClient(object):
                 from_pubkey=self._provider.wallet.public_key,
                 new_account_pubkey=signer.public_key(),
                 space=space,
-                lamports=self._provider.get_minimum_balance_for_rent_exemption(space)[
-                    "result"
-                ],
+                lamports=self._provider.client.get_minimum_balance_for_rent_exemption(
+                    space
+                )["result"],
                 program_id=self._program_id,
             )
         )
