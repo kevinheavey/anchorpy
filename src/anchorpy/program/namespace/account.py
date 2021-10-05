@@ -2,7 +2,7 @@ import base64
 from types import SimpleNamespace
 from typing import List, Optional, Dict
 
-from solana.account import Account
+from solana.keypair import Keypair
 from solana.system_program import create_account, CreateAccountParams
 from solana.transaction import TransactionInstruction
 from solana.rpc.commitment import Processed
@@ -60,19 +60,18 @@ class AccountClient(object):
         data = base64.b64decode(account_info["result"]["value"]["data"][0])
         discriminator = account_discriminator(self._idl_account.name)
         if discriminator != data[:8]:
-            raise AccountInvalidDiscriminator(
-                f"Account {address} has an invalid discriminator"
-            )
-        return self._coder.accounts.decode(self._idl_account.name, data)
+            msg = f"Account {address} has an invalid discriminator"
+            raise AccountInvalidDiscriminator(msg)
+        return self._coder.accounts.parse(data)
 
     def create_instruction(
-        self, signer: Account, size_override: int = 0
+        self, signer: Keypair, size_override: int = 0
     ) -> TransactionInstruction:
         space = size_override if size_override else self._size
         return create_account(
             CreateAccountParams(
                 from_pubkey=self._provider.wallet.public_key,
-                new_account_pubkey=signer.public_key(),
+                new_account_pubkey=signer.public_key,
                 space=space,
                 lamports=self._provider.client.get_minimum_balance_for_rent_exemption(
                     space
@@ -82,11 +81,8 @@ class AccountClient(object):
         )
 
     def associated_address(self, *args: PublicKey) -> PublicKey:
-        seeds = b"anchor"
-        for arg in args:
-            seeds += bytes(arg)
-        assoc = PublicKey.find_program_address([seeds], self._program_id)[0]
-        return assoc
+        seeds = b"anchor" + b"".join(bytes(arg) for arg in args)  # noqa: WPS336
+        return PublicKey.find_program_address([seeds], self._program_id)[0]
 
     def associated(self, *args: PublicKey) -> SimpleNamespace:
         addr = self.associated_address(*args)
@@ -97,24 +93,22 @@ class AccountClient(object):
 
         b = account_discriminator(self._idl_account.name)
         if filter:
-            b = b + filter
+            b += filter
 
         # TODO: use memcmp_opts here, something fucked up
-        resp = self._provider.get_program_accounts(
+        resp = self._provider.client.get_program_accounts(
             self._program_id,
             commitment=Processed,
             encoding="base64",
         )
         for r in resp["result"]:
             account_data = r["account"]["data"][0]
-            account_data = bytes(base64.b64decode(account_data))
+            account_data = base64.b64decode(account_data)
             if account_data.startswith(b):
                 all_accounts.append(
                     {
                         "public_key": PublicKey(r["pubkey"]),
-                        "account": self._coder.accounts.decode(
-                            self._idl_account.name, account_data
-                        ),
+                        "account": self._coder.accounts.parse(account_data),
                     }
                 )
         return all_accounts

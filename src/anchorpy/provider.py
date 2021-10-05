@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from os import getenv
+from os import getenv, environ
 import json
 from jsonrpcclient import parse
 
@@ -11,6 +11,7 @@ from typing import List, Optional, Union, NamedTuple
 from solana.keypair import Keypair
 from solana.rpc import types
 from solana.rpc.api import Client
+from solana.rpc.commitment import Processed
 from solana.transaction import Transaction, TransactionSignature
 
 from solana.publickey import PublicKey
@@ -21,11 +22,14 @@ class SendTxRequest(NamedTuple):
     signers: List[Keypair]
 
 
+DEFAULT_OPTIONS = types.TxOpts(preflight_commitment=Processed)
+
+
 class Provider:
     """The network and wallet context used to send transactions paid for and signed by the provider."""  # noqa: E501
 
     def __init__(
-        self, client: Client, wallet: Wallet, opts: types.TxOpts = types.TxOpts()
+        self, client: Client, wallet: Wallet, opts: types.TxOpts = DEFAULT_OPTIONS
     ) -> None:
         """Initialize the Provider.
 
@@ -37,6 +41,29 @@ class Provider:
         self.client = client
         self.wallet = wallet
         self.opts = opts
+
+    @classmethod
+    def local(
+        cls, url: Optional[str] = None, opts: types.TxOpts = DEFAULT_OPTIONS
+    ) -> Provider:
+        """Create a `Provider` with a wallet read from the local filesystem.
+
+        Args:
+            url: The network cluster url.
+            opts: The default transaction confirmation options.
+        """
+        client = Client(url, opts.preflight_commitment)
+        wallet = LocalWallet.local()
+        return cls(client, wallet, opts)
+
+    @classmethod
+    def env(cls) -> Provider:
+        """Create a `Provider` using the `ANCHOR_PROVIDER_URL` environment variable."""
+        url = environ["ANCHOR_PROVIDER_URL"]
+        options = DEFAULT_OPTIONS
+        client = Client(url, options.preflight_commitment)
+        wallet = LocalWallet.local()
+        return cls(client, wallet, options)
 
     def send(
         self,
@@ -165,4 +192,4 @@ class LocalWallet(Wallet):
         path = Path(getenv("ANCHOR_WALLET", Path.home() / ".config/solana/id.json"))
         with path.open() as f:
             keypair = json.load(f)
-        return cls(Keypair.from_secret_key(keypair))
+        return cls(Keypair.from_secret_key(bytes(keypair)))

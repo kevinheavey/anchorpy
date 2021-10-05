@@ -20,8 +20,7 @@ def build_rpc_item(  # ts: RpcFactory
         tx = tx_fn(*args)
         _, ctx = split_args_and_context(idl_ix, args)
         # try:
-        tx_sig = provider.send(tx, ctx.signers, ctx.options)
-        return tx_sig["result"]
+        return provider.send(tx, ctx.signers, ctx.options)
         # except Exception as e:
         #     # translated_err = translate_err(idl_errors, tx_sig["error"])
         #     # TODO

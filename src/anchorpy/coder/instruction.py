@@ -2,14 +2,14 @@ from anchorpy.program.context import split_args_and_context
 from typing import Dict, Any, Tuple
 
 
-from borsh import CStruct
+from borsh_construct import CStruct
 from construct import Sequence, Bytes
 from construct import Construct, Adapter, Switch, Container
 from anchorpy.coder.common import sighash
 from anchorpy.program.common import to_instruction, InstructionToSerialize
 from anchorpy.coder.idl import field_layout
 from anchorpy.idl import Idl
-from solana.account import Account
+from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 
 
@@ -73,12 +73,12 @@ if __name__ == "__main__":
     data = loads((Path.home() / "anchorpy/idls/basic_1.json").read_text())
     idl = Idl.from_json(data)
     idl_ix = idl.instructions[0]
-    my_account = Account()
+    my_account = Keypair()
     args = (
         1234,
         {
             "accounts": {
-                "myAccount": my_account.public_key(),
+                "myAccount": my_account.public_key,
                 "rent": SYSVAR_RENT_PUBKEY,
             },
         },

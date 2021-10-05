@@ -3,6 +3,7 @@ from typing import List, Union, Optional, Dict, Any, Literal, Tuple
 
 from apischema import deserialize, alias
 
+
 LiteralStrings = Literal[
     "bool",
     "u8",

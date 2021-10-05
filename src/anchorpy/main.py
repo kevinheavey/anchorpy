@@ -22,7 +22,7 @@ def get_provider() -> Provider:
 
 
 def load_program(fpath: str) -> Program:
-    with open(fpath) as f:
+    with open(fpath, "r") as f:
         idl = Idl.from_json(json.load(f))
     assert idl.metadata is not None
     return Program(idl, idl.metadata.address, get_provider())

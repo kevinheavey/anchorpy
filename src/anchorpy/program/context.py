@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Any, Tuple, Dict, Union, Optional
 
-from solana.account import Account
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.types import TxOpts
 from solana.transaction import AccountMeta, TransactionInstruction
@@ -22,7 +22,7 @@ Accounts = Dict[str, Union[PublicKey, Any]]
 class Context:
     accounts: Accounts = field(default_factory=dict)
     remaining_accounts: List[AccountMeta] = field(default_factory=list)
-    signers: List[Account] = field(default_factory=list)
+    signers: List[Keypair] = field(default_factory=list)
     instructions: List[TransactionInstruction] = field(default_factory=list)
     options: Optional[TxOpts] = None
 
