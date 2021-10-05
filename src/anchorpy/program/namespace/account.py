@@ -50,7 +50,7 @@ class AccountClient(object):
         self._size = ACCOUNT_DISCRIMINATOR_SIZE + account_size(idl, idl_account)
 
     def fetch(self, address: PublicKey) -> SimpleNamespace:
-        account_info = self._provider.get_account_info(
+        account_info = self._provider.client.get_account_info(
             address,
             encoding="base64",
             commitment=Processed,

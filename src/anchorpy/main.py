@@ -9,14 +9,14 @@ from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import Transaction
 
 from anchorpy.program import Program
-from anchorpy.provider import Provider, NodeWallet
+from anchorpy.provider import Provider, LocalWallet
 from anchorpy.idl import Idl
 
 
 def get_provider() -> Provider:
     return Provider(
         "http://localhost:8899",
-        NodeWallet.local(),
+        LocalWallet.local(),
         types.TxOpts(skip_confirmation=False, preflight_commitment=Single),
     )
 

@@ -122,7 +122,7 @@ class Wallet(ABC):
         """Must implement signing multiple transactions."""
 
 
-class NodeWallet(Wallet):
+class LocalWallet(Wallet):
     """Python wallet object."""
 
     @property
@@ -156,7 +156,7 @@ class NodeWallet(Wallet):
         return txs
 
     @classmethod
-    def local(cls) -> NodeWallet:
+    def local(cls) -> LocalWallet:
         """Create a wallet instance from the filesystem.
 
         Uses the path at the ANCHOR_WALLET env var if set,

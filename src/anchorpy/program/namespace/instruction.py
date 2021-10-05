@@ -57,10 +57,10 @@ def accounts_array(
         if isinstance(acc, IdlAccounts):
             rpc_accs = cast(Accounts, ctx[acc.name])
             acc_arr = accounts_array(rpc_accs, acc.accounts)
-            to_append: List[AccountMeta] = list(
+            to_add: List[AccountMeta] = list(
                 itertools.chain.from_iterable(acc_arr),  # type: ignore
             )
-            accounts_ret.extend(to_append)
+            accounts_ret.extend(to_add)
         else:
             account: IdlAccount = acc
             accounts_ret.append(
