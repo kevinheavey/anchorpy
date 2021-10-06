@@ -22,7 +22,7 @@ class SendTxRequest(NamedTuple):
     signers: List[Keypair]
 
 
-DEFAULT_OPTIONS = types.TxOpts(preflight_commitment=Processed)
+DEFAULT_OPTIONS = types.TxOpts(skip_confirmation=False, preflight_commitment=Processed)
 
 
 class Provider:

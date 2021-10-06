@@ -62,7 +62,7 @@ class AccountClient(object):
         if discriminator != data[:8]:
             msg = f"Account {address} has an invalid discriminator"
             raise AccountInvalidDiscriminator(msg)
-        return self._coder.accounts.parse(data)
+        return self._coder.accounts.parse(data)["data"]
 
     def create_instruction(
         self, signer: Keypair, size_override: int = 0

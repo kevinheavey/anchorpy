@@ -22,7 +22,6 @@ def build_instruction_fn(  # ts: InstructionNamespaceFactory.build
     idl_ix: IdlInstruction,
     encode_fn: Callable[[InstructionToSerialize], bytes],
     program_id: PublicKey,
-    accounts_method=None,
 ) -> InstructionFn:
     if idl_ix.name == "_inner":
         raise ValueError("_inner name is reserved")
@@ -35,11 +34,9 @@ def build_instruction_fn(  # ts: InstructionNamespaceFactory.build
         validate_accounts(idl_ix.accounts, ctx.accounts)
         validate_instruction(idl_ix, split_args)
 
-        keys = (
-            accounts_method(ctx.accounts) if accounts_method else accounts(ctx.accounts)
-        )
+        keys = accounts(ctx.accounts)
         if ctx.remaining_accounts:
-            keys.append(ctx.remaining_accounts)
+            keys.extend(ctx.remaining_accounts)
         return TransactionInstruction(
             keys=keys,
             program_id=program_id,
