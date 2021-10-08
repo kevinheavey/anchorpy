@@ -86,16 +86,16 @@ class Provider:
             signers = []
         if opts is None:
             opts = self.opts
-        tx.fee_payer = self.wallet.public_key
         tx.recent_blockhash = self.client.get_recent_blockhash(
             opts.preflight_commitment,
         )["result"]["value"]["blockhash"]
-        self.wallet.sign_transaction(tx)
-        for signer in signers:
-            tx.sign_partial(signer)
-        return self.client.simulate_transaction(
+        all_signers = [self.wallet.payer] + signers
+        tx.sign(*all_signers)
+        resp = self.client.simulate_transaction(
             tx, sig_verify=True, commitment=opts.preflight_commitment
-        )["result"]
+        )
+        print(resp)
+        return resp["result"]
 
     def send(
         self,

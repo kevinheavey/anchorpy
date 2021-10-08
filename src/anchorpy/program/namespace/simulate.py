@@ -34,3 +34,5 @@ def build_simulate_item(
         logs = resp["value"]["logs"]
         events = []
         print(logs)
+
+    return simulate_fn
