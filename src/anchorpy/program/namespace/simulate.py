@@ -1,10 +1,16 @@
-from typing import Dict
+from typing import Dict, Any, List, NamedTuple
 
 from anchorpy.coder.coder import Coder
 from anchorpy.idl import IdlInstruction, Idl
 from anchorpy.program.namespace.transaction import TransactionFn
 from anchorpy.provider import Provider
+from anchorpy.program.context import split_args_and_context
 from solana.publickey import PublicKey
+
+
+class SimulateResponse(NamedTuple):
+    events: List[Event]
+    raw: List[str]
 
 
 def build_simulate_item(
@@ -16,4 +22,10 @@ def build_simulate_item(
     program_id: PublicKey,
     idl: Idl,
 ):
-    pass
+    def simulate_fn(*args: Any) -> SimulateResponse:
+        tx = tx_fn(*args)
+        _, ctx = split_args_and_context(idl_ix, args)
+        resp = provider.simulate(tx, ctx.signers, ctx.options)
+        logs = resp["value"]["logs"]
+        events = []
+        print(logs)

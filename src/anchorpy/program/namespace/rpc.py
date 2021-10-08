@@ -7,6 +7,7 @@ from anchorpy.idl import IdlInstruction
 from anchorpy.provider import Provider
 from anchorpy.program.namespace.transaction import TransactionFn
 
+
 RpcFn = Callable[[Any], TransactionSignature]
 
 
