@@ -2,7 +2,7 @@ from typing import Dict, cast
 from json import load
 from pathlib import Path
 from solana.publickey import PublicKey
-from anchorpy.program import Program
+from anchorpy.program.core import Program
 from anchorpy.provider import Provider
 from anchorpy.idl import Idl, Metadata
 

@@ -70,7 +70,7 @@ class Provider:
         tx: Transaction,
         signers: Optional[List[Keypair]] = None,
         opts: types.TxOpts = None,
-    ) -> TransactionSignature:
+    ) -> types.RPCResponse:
         """Simulates the given transaction, returning emitted logs from execution.
 
         Args:
@@ -94,8 +94,7 @@ class Provider:
         resp = self.client.simulate_transaction(
             tx, sig_verify=True, commitment=opts.preflight_commitment
         )
-        print(resp)
-        return resp["result"]
+        return resp
 
     def send(
         self,

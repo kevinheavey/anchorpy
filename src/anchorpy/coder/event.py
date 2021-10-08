@@ -1,5 +1,4 @@
 from anchorpy.coder.idl import typedef_layout
-from base64 import b64encode
 from hashlib import sha256
 from typing import Dict, Tuple, Any
 from construct import Adapter, Construct, Sequence, Bytes, Switch
@@ -32,15 +31,14 @@ class EventCoder(Adapter):
             layouts = {}
         self.layouts = layouts
         self.discriminators: Dict[bytes, str] = {
-            b64encode(event_discriminator(event.name)): event.name
-            for event in idl_events
+            event_discriminator(event.name): event.name for event in idl_events
         }
         self.discriminator_to_layout = {
             disc: self.layouts[event_name]
             for disc, event_name in self.discriminators.items()
         }
         subcon = Sequence(
-            "discriminator" / Bytes(8),
+            "discriminator" / Bytes(8),  # not base64-encoded here
             Switch(lambda this: this.discriminator, self.discriminator_to_layout),
         )
         super().__init__(subcon)  # type: ignore
