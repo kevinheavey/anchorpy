@@ -65,6 +65,38 @@ class Provider:
         wallet = LocalWallet.local()
         return cls(client, wallet, options)
 
+    def simulate(
+        self,
+        tx: Transaction,
+        signers: Optional[List[Keypair]] = None,
+        opts: types.TxOpts = None,
+    ) -> TransactionSignature:
+        """Simulates the given transaction, returning emitted logs from execution.
+
+        Args:
+            tx: The transaction to send.
+            signers: The set of signers in addition to the provider wallet that will
+                sign the transaction.
+            opts: Transaction confirmation options.
+
+        Returns:
+            The transaction signature from the RPC server.
+        """
+        if signers is None:
+            signers = []
+        if opts is None:
+            opts = self.opts
+        tx.fee_payer = self.wallet.public_key
+        tx.recent_blockhash = self.client.get_recent_blockhash(
+            opts.preflight_commitment,
+        )["result"]["value"]["blockhash"]
+        self.wallet.sign_transaction(tx)
+        for signer in signers:
+            tx.sign_partial(signer)
+        return self.client.simulate_transaction(
+            tx, sig_verify=True, commitment=opts.preflight_commitment
+        )["result"]
+
     def send(
         self,
         tx: Transaction,
