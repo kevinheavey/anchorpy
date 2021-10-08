@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Any, Tuple, Dict, Union, Optional
+from typing import List, Any, Tuple, Union, Optional, Dict
 
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
@@ -15,7 +15,7 @@ class ArgsError(Exception):
 
 # should be Dict[str, Union[PublicKey, Accounts]]
 # but mypy doesn't support recursive types
-Accounts = Dict[str, Union[PublicKey, Any]]
+Accounts = Dict[str, Any]
 
 
 @dataclass
