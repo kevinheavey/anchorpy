@@ -94,3 +94,4 @@ class LogScanner:
             log = self.logs[0]
             self.logs = self.logs[1:]
             return log
+        return None

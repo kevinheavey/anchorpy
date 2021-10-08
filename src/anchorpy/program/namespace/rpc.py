@@ -1,6 +1,8 @@
 from typing import Any, Callable, Dict
+from solana.rpc.core import RPCException
 
 from solana.transaction import TransactionSignature
+from anchorpy.error import ProgramError
 
 from anchorpy.program.context import split_args_and_context
 from anchorpy.idl import IdlInstruction
@@ -20,18 +22,13 @@ def build_rpc_item(  # ts: RpcFactory
     def rpc_fn(*args: Any) -> TransactionSignature:
         tx = tx_fn(*args)
         _, ctx = split_args_and_context(idl_ix, args)
-        # try:
-        return provider.send(tx, ctx.signers, ctx.options)
-        # except Exception as e:
-        #     # translated_err = translate_err(idl_errors, tx_sig["error"])
-        #     # TODO
-        #     """
-        #     let translatedErr = translateError(idlErrors, err);
-        #     if (translatedErr === null) {
-        #       throw err;
-        #     }
-        #     throw translatedErr;
-        #     """
-        #     print(f"Translating error: {e}", flush=True)
+        try:
+            return provider.send(tx, ctx.signers, ctx.options)
+        except RPCException as e:
+            err_info = e.args[0]
+            translated_err = ProgramError.parse(err_info, idl_errors)
+            if translated_err is not None:
+                raise translated_err from e
+            raise
 
     return rpc_fn

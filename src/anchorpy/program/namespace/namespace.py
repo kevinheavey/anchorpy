@@ -1,5 +1,4 @@
-from typing import Any, Tuple, Optional
-import inflection
+from typing import Tuple
 
 from anchorpy.program.namespace.rpc import (
     build_rpc_item,

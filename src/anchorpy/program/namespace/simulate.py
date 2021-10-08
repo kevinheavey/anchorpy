@@ -1,14 +1,17 @@
-from typing import Dict, Any, List, NamedTuple
+from typing import Dict, Any, List, NamedTuple, Union, cast
 
-from solana.keypair import Keypair
+from solana.rpc.types import RPCError
+
 
 from anchorpy.coder.coder import Coder
+from anchorpy.error import ExtendedRPCError, ProgramError
 from anchorpy.idl import IdlInstruction, Idl
 from anchorpy.program.event import EventParser, Event
 from anchorpy.program.namespace.transaction import TransactionFn
 from anchorpy.provider import Provider
 from anchorpy.program.context import split_args_and_context
 from solana.publickey import PublicKey
+from solana.rpc.core import RPCException
 
 
 class SimulateResponse(NamedTuple):
@@ -32,9 +35,11 @@ def build_simulate_item(
         try:
             ok_res = resp["result"]
         except KeyError:
-            err_res = resp["error"]
-            translated_err = ""
-            raise translated_err
+            err_res = cast(Union[ExtendedRPCError, RPCError], resp["error"])
+            translated_err = ProgramError.parse(err_res, idl_errors)
+            if translated_err is not None:
+                raise translated_err
+            raise RPCException(err_res)
         logs = ok_res["value"]["logs"]
         events = []
         if idl.events is not None:

@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from os import getenv, environ
 import json
-from jsonrpcclient import parse
 
 from abc import abstractmethod, ABC
 from typing import List, Optional, Union, NamedTuple
@@ -118,6 +117,7 @@ class Provider:
         if opts is None:
             opts = self.opts
         all_signers = [self.wallet.payer] + signers
+        print(opts)
         return self.client.send_transaction(tx, *all_signers, opts=opts)["result"]
 
     def send_all(

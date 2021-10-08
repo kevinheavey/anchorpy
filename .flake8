@@ -1,5 +1,5 @@
 [flake8]
-ignore = Q000,WPS110,WPS111,WPS115,WPS120,WPS210,WPS221,WPS306,WPS305,WPS326,WPS430,WPS432,W503,DAR201
+ignore = Q000,WPS110,WPS111,WPS115,WPS120,WPS210,WPS221,WPS232,WPS306,WPS305,WPS326,WPS430,WPS432,W503,DAR201
 exclude = .git,__pycache__,docs/source/conf.py,old,build,dist
 max-line-length = 88
 per-file-ignores = 

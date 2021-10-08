@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List, Any, Tuple, Union, Optional, Dict
+from typing import List, Any, Tuple, Optional, Dict
 
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
 from solana.rpc.types import TxOpts
 from solana.transaction import AccountMeta, TransactionInstruction
 
