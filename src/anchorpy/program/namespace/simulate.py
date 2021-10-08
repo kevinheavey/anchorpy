@@ -8,6 +8,11 @@ from anchorpy.program.context import split_args_and_context
 from solana.publickey import PublicKey
 
 
+class Event(NamedTuple):
+    name: str
+    data: dict
+
+
 class SimulateResponse(NamedTuple):
     events: List[Event]
     raw: List[str]
