@@ -3,14 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 from os import getenv, environ
 import json
+import time
 
 from abc import abstractmethod, ABC
-from typing import List, Optional, Union, NamedTuple
+from typing import List, Optional, Union, NamedTuple, cast
 
 from solana.keypair import Keypair
 from solana.rpc import types
 from solana.rpc.api import Client
-from solana.rpc.commitment import Processed
+from solana.rpc.commitment import Finalized, Processed, Commitment
+from solana.rpc.core import RPCException
 from solana.transaction import Transaction, TransactionSignature
 
 from solana.publickey import PublicKey
@@ -22,6 +24,10 @@ class SendTxRequest(NamedTuple):
 
 
 DEFAULT_OPTIONS = types.TxOpts(skip_confirmation=False, preflight_commitment=Processed)
+
+
+class UnconfirmedTxError(Exception):
+    pass
 
 
 class Provider:
@@ -117,8 +123,50 @@ class Provider:
         if opts is None:
             opts = self.opts
         all_signers = [self.wallet.payer] + signers
-        print(opts)
-        return self.client.send_transaction(tx, *all_signers, opts=opts)["result"]
+        resp = cast(
+            TransactionSignature,
+            self.client.send_transaction(
+                tx, *all_signers, opts=opts._replace(skip_preflight=True)
+            )["result"],
+        )
+        if opts.skip_preflight:
+            return resp
+        self._confirm_transaction(resp)
+        return resp
+
+    def _confirm_transaction(
+        self,
+        tx_sig: str,
+        commitment: Commitment = Finalized,
+    ) -> types.RPCResponse:
+        timeout = time.time() + 30  # 30 seconds  pylint: disable=invalid-name
+        while time.time() < timeout:
+            resp = self.client.get_signature_statuses([tx_sig])
+            resp_value = resp["result"]["value"][0]
+            if resp_value is not None:
+                if resp_value["confirmationStatus"] in {commitment, Finalized}:
+                    break
+            time.sleep(0.5)
+        else:
+            maybe_rpc_error = resp.get("error")
+            if maybe_rpc_error is not None:
+                raise RPCException(maybe_rpc_error)
+            raise UnconfirmedTxError(f"Unable to confirm transaction {tx_sig}")
+        return resp
+
+    def _send_raw_transaction(
+        self, txn: Union[bytes, str], opts: types.TxOpts = types.TxOpts()
+    ) -> TransactionSignature:
+        signature = cast(
+            TransactionSignature,
+            self.client.send_raw_transaction(
+                txn, opts._replace(skip_confirmation=True)
+            )["result"],
+        )
+        if opts.skip_confirmation:
+            return signature
+        self._confirm_transaction(signature, opts.preflight_commitment)
+        return signature
 
     def send_all(
         self,
@@ -147,8 +195,8 @@ class Provider:
         signed_txs = self.wallet.sign_all_transactions(txs)
         sigs = []
         for signed in signed_txs:
-            res = self.client.send_raw_transaction(signed.serialize(), opts=opts)
-            sigs.append(res["result"])
+            res = self._send_raw_transaction(signed.serialize(), opts=opts)
+            sigs.append(res)
         return sigs
 
 
