@@ -1,6 +1,7 @@
 import base64
+from base58 import b58encode
 from types import SimpleNamespace
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Union
 
 from solana.keypair import Keypair
 from solana.system_program import create_account, CreateAccountParams
@@ -14,6 +15,9 @@ from anchorpy.coder.coder import Coder
 from anchorpy.idl import Idl, IdlTypeDef
 from anchorpy.provider import Provider
 from solana.publickey import PublicKey
+from solana.rpc.types import MemcmpOpts, DataSliceOpts
+
+GetProgramAccountsFilter = Union[MemcmpOpts, DataSliceOpts]
 
 
 def build_account(
@@ -88,27 +92,42 @@ class AccountClient(object):
         addr = self.associated_address(*args)
         return self.fetch(addr)
 
-    def all(self, filter: Optional[bytes] = None) -> List[Dict]:
+    def all(
+        self,
+        pubkey: PublicKey,
+        memcmp_opts: Optional[List[MemcmpOpts]],
+        data_size: Optional[int] = None,
+    ) -> List[Dict]:
         all_accounts = []
-
-        b = account_discriminator(self._idl_account.name)
-        if filter:
-            b += filter
-
-        # TODO: use memcmp_opts here, something fucked up
+        discriminator = account_discriminator(self._idl_account.name)
+        memcmp_bytes = (
+            discriminator + pubkey.to_base58() if pubkey is not None else discriminator
+        )
+        full_memcmp_opts = (
+            [
+                MemcmpOpts(
+                    offset=0,
+                    bytes=b58encode(memcmp_bytes).decode("ascii"),
+                ),
+            ]
+            + []
+            if memcmp_opts is None
+            else memcmp_opts
+        )
         resp = self._provider.client.get_program_accounts(
             self._program_id,
             commitment=Processed,
             encoding="base64",
+            data_size=data_size,
+            memcmp_opts=full_memcmp_opts,
         )
         for r in resp["result"]:
             account_data = r["account"]["data"][0]
             account_data = base64.b64decode(account_data)
-            if account_data.startswith(b):
-                all_accounts.append(
-                    {
-                        "public_key": PublicKey(r["pubkey"]),
-                        "account": self._coder.accounts.parse(account_data),
-                    }
-                )
+            all_accounts.append(
+                {
+                    "public_key": PublicKey(r["pubkey"]),
+                    "account": self._coder.accounts.parse(account_data),
+                }
+            )
         return all_accounts

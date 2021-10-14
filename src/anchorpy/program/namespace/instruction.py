@@ -67,7 +67,7 @@ def accounts_array(
 
 
 def validate_instruction(ix: IdlInstruction, args: Tuple):
-    # TODO
+    # TODO: this isn't implemented in the TS client yet
     pass
 
 
