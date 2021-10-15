@@ -138,6 +138,8 @@ class Metadata:
 
 @dataclass
 class Idl:
+    """A parsed IDL object."""
+
     version: str
     name: str
     instructions: List[IdlInstruction]
@@ -150,17 +152,3 @@ class Idl:
     @classmethod
     def from_json(cls, idl: Dict[str, Any]) -> "Idl":
         return deserialize(cls, idl)
-
-
-if __name__ == "__main__":
-    import json
-    from pathlib import Path
-
-    idls = []
-    for path in Path("/home/kheavey/anchorpy/idls/").glob("*"):
-        print(path)
-        with path.open() as f:
-            data = json.load(f)
-        idl = Idl.from_json(data)
-        idls.append(idl)
-    breakpoint()

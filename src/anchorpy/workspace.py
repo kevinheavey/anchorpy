@@ -8,6 +8,8 @@ from anchorpy.idl import Idl, Metadata
 
 
 def create_workspace() -> Dict[str, Program]:
+    """Get a workspace from the current working directory."""
+
     result = {}
     project_root = Path.cwd()
     idl_folder = project_root / "target/idl"

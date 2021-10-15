@@ -10,6 +10,8 @@ ACCOUNT_DISCRIMINATOR_SIZE = 8  # bytes
 
 
 class AccountsCoder(Adapter):
+    """Encodes and decodes account data."""
+
     def __init__(self, idl: Idl) -> None:
         self._accounts_layout = {
             acc.name: typedef_layout(acc, idl.types) for acc in idl.accounts
