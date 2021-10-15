@@ -1,7 +1,6 @@
 import base64
 from base58 import b58encode
-from types import SimpleNamespace
-from typing import List, Optional, Dict, Union
+from typing import Any, List, Optional, Dict
 
 from solana.keypair import Keypair
 from solana.system_program import create_account, CreateAccountParams
@@ -15,9 +14,7 @@ from anchorpy.coder.coder import Coder
 from anchorpy.idl import Idl, IdlTypeDef
 from anchorpy.provider import Provider
 from solana.publickey import PublicKey
-from solana.rpc.types import MemcmpOpts, DataSliceOpts
-
-GetProgramAccountsFilter = Union[MemcmpOpts, DataSliceOpts]
+from solana.rpc.types import MemcmpOpts
 
 
 def build_account(
@@ -31,11 +28,11 @@ def build_account(
 
 
 class AccountDoesNotExistError(Exception):
-    pass
+    """Raise if account doesn't exist."""
 
 
 class AccountInvalidDiscriminator(Exception):
-    pass
+    """Raise if account discriminator doesn't match the IDL."""
 
 
 class AccountClient(object):
@@ -53,7 +50,16 @@ class AccountClient(object):
         self._coder = coder
         self._size = ACCOUNT_DISCRIMINATOR_SIZE + account_size(idl, idl_account)
 
-    def fetch(self, address: PublicKey) -> SimpleNamespace:
+    def fetch(self, address: PublicKey) -> Any:
+        """Return a deserialized account.
+
+        Args:
+            address: The address of the account to fetch.
+
+        Raises:
+            AccountDoesNotExistError: If the account doesn't exist.
+            AccountInvalidDiscriminator: If the discriminator doesn't match the IDL.
+        """
         account_info = self._provider.client.get_account_info(
             address,
             encoding="base64",
@@ -63,7 +69,7 @@ class AccountClient(object):
             raise AccountDoesNotExistError(f"Account {address} does not exist")
         data = base64.b64decode(account_info["result"]["value"]["data"][0])
         discriminator = account_discriminator(self._idl_account.name)
-        if discriminator != data[:8]:
+        if discriminator != data[:ACCOUNT_DISCRIMINATOR_SIZE]:
             msg = f"Account {address} has an invalid discriminator"
             raise AccountInvalidDiscriminator(msg)
         return self._coder.accounts.parse(data)["data"]
@@ -71,6 +77,7 @@ class AccountClient(object):
     def create_instruction(
         self, signer: Keypair, size_override: int = 0
     ) -> TransactionInstruction:
+        """Return an instruction for creating this account."""
         space = size_override if size_override else self._size
         return create_account(
             CreateAccountParams(
@@ -88,26 +95,30 @@ class AccountClient(object):
         seeds = b"anchor" + b"".join(bytes(arg) for arg in args)  # noqa: WPS336
         return PublicKey.find_program_address([seeds], self._program_id)[0]
 
-    def associated(self, *args: PublicKey) -> SimpleNamespace:
+    def associated(self, *args: PublicKey) -> Any:
         addr = self.associated_address(*args)
         return self.fetch(addr)
 
     def all(
         self,
-        pubkey: PublicKey,
-        memcmp_opts: Optional[List[MemcmpOpts]],
+        memcmp_opts: Optional[List[MemcmpOpts]] = None,
         data_size: Optional[int] = None,
     ) -> List[Dict]:
+        """Return all instances of this account type for the program.
+
+        Args:
+            memcmp_opts: Options to compare a provided series of bytes with program
+                account data at a particular offset.
+            data_size: Option to compare the program account data length with the
+                provided data size.
+        """
         all_accounts = []
         discriminator = account_discriminator(self._idl_account.name)
-        memcmp_bytes = (
-            discriminator + pubkey.to_base58() if pubkey is not None else discriminator
-        )
         full_memcmp_opts = (
             [
                 MemcmpOpts(
                     offset=0,
-                    bytes=b58encode(memcmp_bytes).decode("ascii"),
+                    bytes=b58encode(discriminator).decode("ascii"),
                 ),
             ]
             + []
@@ -131,3 +142,23 @@ class AccountClient(object):
                 }
             )
         return all_accounts
+
+    @property
+    def size(self) -> int:
+        """Return the number of bytes in this account."""
+        return self._size
+
+    @property
+    def program_id(self) -> PublicKey:
+        """Return the program ID owning all accounts."""
+        return self._program_id
+
+    @property
+    def provider(self) -> Provider:
+        """Return the client's wallet and network provider."""
+        return self._provider
+
+    @property
+    def coder(self) -> Coder:
+        """Return the coder."""
+        return self._coder

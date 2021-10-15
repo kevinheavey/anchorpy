@@ -1,16 +1,30 @@
-from typing import Any, Callable, Dict
+from typing import Any, Dict, Protocol
 from solana.rpc.core import RPCException
 
 from solana.transaction import TransactionSignature
 from anchorpy.error import ProgramError
 
-from anchorpy.program.context import split_args_and_context
+from anchorpy.program.context import EMPTY_CONTEXT, Context, check_args_length
 from anchorpy.idl import IdlInstruction
 from anchorpy.provider import Provider
 from anchorpy.program.namespace.transaction import TransactionFn
 
 
-RpcFn = Callable[[Any], TransactionSignature]
+class RpcFn(Protocol):
+    """RpcFn is a single RPC method generated from an IDL, sending a transaction paid for and signed by the configured provider."""  # noqa: E501
+
+    def __call__(
+        self,
+        *args: Any,
+        ctx: Context = EMPTY_CONTEXT,
+    ) -> TransactionSignature:
+        """
+        Args:
+            *args: The positional arguments for the program. The type and number
+                of these arguments depend on the program being used.
+            ctx: non-argument parameters to pass to the method.
+        """
+        ...
 
 
 def build_rpc_item(  # ts: RpcFactory
@@ -19,9 +33,9 @@ def build_rpc_item(  # ts: RpcFactory
     idl_errors: Dict[int, str],
     provider: Provider,
 ) -> RpcFn:
-    def rpc_fn(*args: Any) -> TransactionSignature:
-        tx = tx_fn(*args)
-        _, ctx = split_args_and_context(idl_ix, args)
+    def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> TransactionSignature:
+        tx = tx_fn(*args, ctx=ctx)
+        check_args_length(idl_ix, args)
         try:
             return provider.send(tx, ctx.signers, ctx.options)
         except RPCException as e:

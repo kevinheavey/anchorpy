@@ -1,6 +1,7 @@
-from typing import Callable, List, Any, Sequence, cast, Tuple
+from typing import Callable, List, Any, Sequence, cast, Tuple, Protocol
 
 from solana.transaction import TransactionInstruction, AccountMeta
+from solana.publickey import PublicKey
 
 from anchorpy.program.common import (
     to_instruction,
@@ -8,13 +9,30 @@ from anchorpy.program.common import (
     translate_address,
     InstructionToSerialize,
 )
-from anchorpy.program.context import split_args_and_context, Accounts
-from solana.publickey import PublicKey
+from anchorpy.program.context import EMPTY_CONTEXT, Context, check_args_length, Accounts
 from anchorpy.idl import IdlInstruction, IdlAccountItem, IdlAccounts, IdlAccount
 
-InstructionEncodeFn = Callable[[str, str], List[bytes]]
 
-InstructionFn = Callable[[Any], Any]
+class InstructionFn(Protocol):
+    """Function to create a `TransactionInstruction` generated from an IDL.
+
+    Additionally it provides an `accounts` utility method, returning a list
+    of ordered accounts for the instruction.
+    """
+
+    def __call__(
+        self,
+        *args: Any,
+        ctx: Context = EMPTY_CONTEXT,
+    ) -> TransactionInstruction:
+        """
+
+        Args:
+            *args: The positional arguments for the program. The type and number
+                of these arguments depend on the program being used.
+            ctx: non-argument parameters to pass to the method.
+        """
+        ...
 
 
 def build_instruction_fn(  # ts: InstructionNamespaceFactory.build
@@ -25,13 +43,16 @@ def build_instruction_fn(  # ts: InstructionNamespaceFactory.build
     if idl_ix.name == "_inner":
         raise ValueError("_inner name is reserved")
 
-    def instruction_method(*args) -> TransactionInstruction:
+    def instruction_method(
+        *args: Any,
+        ctx: Context = EMPTY_CONTEXT,
+    ) -> TransactionInstruction:
         def accounts(accs: Accounts) -> List[AccountMeta]:
             return accounts_array(accs, idl_ix.accounts)
 
-        split_args, ctx = split_args_and_context(idl_ix, args)
+        check_args_length(idl_ix, args)
         validate_accounts(idl_ix.accounts, ctx.accounts)
-        validate_instruction(idl_ix, split_args)
+        validate_instruction(idl_ix, args)
 
         keys = accounts(ctx.accounts)
         if ctx.remaining_accounts:
@@ -39,14 +60,15 @@ def build_instruction_fn(  # ts: InstructionNamespaceFactory.build
         return TransactionInstruction(
             keys=keys,
             program_id=program_id,
-            data=encode_fn(to_instruction(idl_ix, split_args)),
+            data=encode_fn(to_instruction(idl_ix, args)),
         )
 
     return instruction_method
 
 
 def accounts_array(
-    ctx: Accounts, accounts: Sequence[IdlAccountItem]
+    ctx: Accounts,
+    accounts: Sequence[IdlAccountItem],
 ) -> List[AccountMeta]:
     accounts_ret: List[AccountMeta] = []
     for acc in accounts:
@@ -67,6 +89,7 @@ def accounts_array(
 
 
 def validate_instruction(ix: IdlInstruction, args: Tuple):
+    """Throws error if any argument required for the `ix` is not given."""
     # TODO: this isn't implemented in the TS client yet
     pass
 

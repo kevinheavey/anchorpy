@@ -1,6 +1,7 @@
-from typing import Tuple
+from typing import Dict, Tuple
 
 from anchorpy.program.namespace.rpc import (
+    RpcFn,
     build_rpc_item,
 )
 from anchorpy.program.namespace.transaction import (
@@ -22,7 +23,7 @@ from solana.publickey import PublicKey
 
 def build_namespace(  # ts: NamespaceFactory.build
     idl: Idl, coder: Coder, program_id: PublicKey, provider: Provider
-) -> Tuple[dict, dict, dict, dict, dict]:
+) -> Tuple[Dict[str, RpcFn], dict, dict, dict, dict]:
     idl_errors = parse_idl_errors(idl)
 
     rpc = {}
