@@ -1,8 +1,8 @@
-from anchorpy.program.context import split_args_and_context
+from anchorpy.program.context import Context, check_args_length
 from typing import Dict, Any, Tuple
 
 
-from borsh_construct import CStruct
+from borsh_construct_tmp import CStruct
 from construct import Sequence, Bytes
 from construct import Construct, Adapter, Switch, Container
 from anchorpy.coder.common import sighash
@@ -74,17 +74,15 @@ if __name__ == "__main__":
     idl = Idl.from_json(data)
     idl_ix = idl.instructions[0]
     my_account = Keypair()
-    args = (
-        1234,
-        {
-            "accounts": {
-                "myAccount": my_account.public_key,
-                "rent": SYSVAR_RENT_PUBKEY,
-            },
-        },
+    args = (1234,)
+    ctx = Context(
+        accounts={
+            "myAccount": my_account.public_key,
+            "rent": SYSVAR_RENT_PUBKEY,
+        }
     )
-    split_args, ctx = split_args_and_context(idl_ix, args)
-    ix = to_instruction(idl_ix, split_args)
+    check_args_length(idl_ix, args)
+    ix = to_instruction(idl_ix, args)
     coder = InstructionCoder(idl)
     encoded = coder.build(ix)
     assert encoded == b"\xaf\xafm\x1f\r\x98\x9b\xed\xd2\x04\x00\x00\x00\x00\x00\x00"
