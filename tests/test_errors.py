@@ -12,7 +12,8 @@ program = workspace["errors"]
 provider = program.provider
 
 
-def test() -> None:
+def test_hello_err() -> None:
+    """Test error from hello func."""
     with pytest.raises(ProgramError) as excinfo:
         program.rpc["hello"]()
     assert excinfo.value.code == 300
@@ -20,21 +21,33 @@ def test() -> None:
     assert excinfo.value.msg == expected_msg
     assert expected_msg in str(excinfo)
 
+
+def test_hello_no_msg_err() -> None:
+    """Test error from helloNoMsg func."""
     with pytest.raises(ProgramError) as excinfo:
         program.rpc["helloNoMsg"]()
     assert excinfo.value.msg == "HelloNoMsg"
     assert excinfo.value.code == 300 + 123
 
+
+def test_hello_next_err() -> None:
+    """Test error from helloNext func."""
     with pytest.raises(ProgramError) as excinfo:
         program.rpc["helloNext"]()
     assert excinfo.value.msg == "HelloNext"
     assert excinfo.value.code == 300 + 124
 
+
+def test_mut_err() -> None:
+    """Test mmut error."""
     with pytest.raises(ProgramError) as excinfo:
         program.rpc["mutError"](ctx=Context(accounts={"myAccount": SYSVAR_RENT_PUBKEY}))
     assert excinfo.value.msg == "A mut constraint was violated"
     assert excinfo.value.code == 140
 
+
+def test_has_one_err() -> None:
+    """Test hasOneError."""
     account = Keypair()
     with pytest.raises(ProgramError) as excinfo:
         program.rpc["hasOneError"](
@@ -53,7 +66,9 @@ def test() -> None:
     assert excinfo.value.msg == "A has_one constraint was violated"
     assert excinfo.value.code == 141
 
-    account = Keypair()
+
+def test_signer_err() -> None:
+    """Test signer error."""
     tx = Transaction()
     tx.add(
         TransactionInstruction(

@@ -1,14 +1,25 @@
+from pytest import fixture
+from anchorpy.program.core import Program
+from anchorpy.provider import Provider
 from anchorpy.workspace import create_workspace
 from anchorpy.program.context import Context
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
-workspace = create_workspace()
-program = workspace["basic_2"]
-provider = program.provider
+
+@fixture(scope="session")
+def program() -> Program:
+    return create_workspace()["basic_1"]
 
 
-def test():
+@fixture(scope="session")
+def provider(program: Program) -> Provider:
+    return program.provider
+
+
+@fixture(scope="session")
+def test_create_counter(program: Program, provider: Provider) -> Keypair:
+    """Test creating a counter."""
     counter = Keypair()
 
     program.rpc["create"](
@@ -25,6 +36,14 @@ def test():
     counter_account = program.account["Counter"].fetch(counter.public_key)
     assert counter_account["authority"] == provider.wallet.public_key
     assert counter_account["count"] == 0
+    return counter
+
+
+def test_update_counter(
+    test_create_counter: Keypair, program: Program, provider: Provider
+) -> None:
+    """Test updating the counter."""
+    counter = test_create_counter
     program.rpc["increment"](
         ctx=Context(
             accounts={

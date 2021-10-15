@@ -5,4 +5,5 @@ max-line-length = 88
 per-file-ignores = 
     src/anchorpy/idl.py: WPS202,WPS226
     src/anchorpy/__init__.py: D104,WPS412
+    tests/test_errors.py: WPS204,WPS441
 
