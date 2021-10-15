@@ -1,5 +1,6 @@
-from typing import List, Mapping, cast
+"""IDL coding."""
 from types import MappingProxyType
+from typing import List, Mapping, cast
 
 from construct import Construct
 from borsh_construct_tmp import (
@@ -21,6 +22,7 @@ from borsh_construct_tmp import (
     String,
     Option,
 )
+
 from anchorpy.borsh_extension import PublicKey
 from anchorpy.idl import (
     IdlField,
@@ -55,12 +57,14 @@ FIELD_TYPE_MAP: Mapping[str, Construct] = MappingProxyType(
 )
 
 
-def _handle_enum_variants(idl_enum: IdlTypeDefTyEnum, types: List[IdlTypeDef]) -> Enum:
+def _handle_enum_variants(
+    idl_enum: IdlTypeDefTyEnum, types: List[IdlTypeDef], name: str
+) -> Enum:
     variants = []
     for variant in idl_enum.variants:
-        name = variant.name
+        variant_name = variant.name
         if variant.fields is None:
-            variants.append(name)
+            variants.append(variant_name)
         else:
             fields = []
             variant_fields = variant.fields
@@ -68,7 +72,7 @@ def _handle_enum_variants(idl_enum: IdlTypeDefTyEnum, types: List[IdlTypeDef]) -
                 if not isinstance(fld, IdlField):  # noqa: WPS421
                     raise NotImplementedError("Tuple enum variants not yet implemented")
                 fields.append(field_layout(fld, types))
-            variants.append(name / CStruct(*fields))
+            variants.append(variant_name / CStruct(*fields))  # type: ignore
     return Enum(*variants, enum_name=name)
 
 
@@ -82,7 +86,7 @@ def typedef_layout(
         field_layouts = [field_layout(field, types) for field in typedef_type.fields]
         return name / CStruct(*field_layouts)
     elif isinstance(typedef_type, IdlTypeDefTyEnum):
-        return _handle_enum_variants(typedef_type, types)
+        return name / _handle_enum_variants(typedef_type, types, name)
     unknown_type = typedef_type.kind
     raise ValueError(f"Unknown type {unknown_type}")
 

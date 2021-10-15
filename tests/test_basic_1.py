@@ -1,4 +1,4 @@
-from pytest import fixture
+from pytest import fixture, mark
 from anchorpy.workspace import create_workspace
 from anchorpy.program.context import Context
 from anchorpy.program.core import Program
@@ -6,11 +6,13 @@ from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
 
+@mark.integration
 @fixture(scope="session")
 def program() -> Program:
     return create_workspace()["basic_1"]
 
 
+@mark.integration
 @fixture(scope="session")
 def test_create_and_initialize_account(program: Program) -> Keypair:
     """Test creating and initializing account in single tx."""
@@ -31,6 +33,7 @@ def test_create_and_initialize_account(program: Program) -> Keypair:
     return my_account
 
 
+@mark.integration
 def test_update_previously_created_account(
     test_create_and_initialize_account: Keypair, program: Program, my_account: Keypair
 ) -> None:

@@ -12,6 +12,7 @@ program = workspace["errors"]
 provider = program.provider
 
 
+@pytest.mark.integration
 def test_hello_err() -> None:
     """Test error from hello func."""
     with pytest.raises(ProgramError) as excinfo:
@@ -22,6 +23,7 @@ def test_hello_err() -> None:
     assert expected_msg in str(excinfo)
 
 
+@pytest.mark.integration
 def test_hello_no_msg_err() -> None:
     """Test error from helloNoMsg func."""
     with pytest.raises(ProgramError) as excinfo:
@@ -30,6 +32,7 @@ def test_hello_no_msg_err() -> None:
     assert excinfo.value.code == 300 + 123
 
 
+@pytest.mark.integration
 def test_hello_next_err() -> None:
     """Test error from helloNext func."""
     with pytest.raises(ProgramError) as excinfo:
@@ -38,6 +41,7 @@ def test_hello_next_err() -> None:
     assert excinfo.value.code == 300 + 124
 
 
+@pytest.mark.integration
 def test_mut_err() -> None:
     """Test mmut error."""
     with pytest.raises(ProgramError) as excinfo:
@@ -46,6 +50,7 @@ def test_mut_err() -> None:
     assert excinfo.value.code == 140
 
 
+@pytest.mark.integration
 def test_has_one_err() -> None:
     """Test hasOneError."""
     account = Keypair()

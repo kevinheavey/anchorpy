@@ -1,4 +1,4 @@
-from pytest import fixture
+from pytest import fixture, mark
 from anchorpy.program.core import Program
 from anchorpy.provider import Provider
 from anchorpy.workspace import create_workspace
@@ -7,16 +7,19 @@ from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
 
+@mark.integration
 @fixture(scope="session")
 def program() -> Program:
     return create_workspace()["basic_1"]
 
 
+@mark.integration
 @fixture(scope="session")
 def provider(program: Program) -> Provider:
     return program.provider
 
 
+@mark.integration
 @fixture(scope="session")
 def test_create_counter(program: Program, provider: Provider) -> Keypair:
     """Test creating a counter."""
@@ -39,6 +42,7 @@ def test_create_counter(program: Program, provider: Provider) -> Keypair:
     return counter
 
 
+@mark.integration
 def test_update_counter(
     test_create_counter: Keypair, program: Program, provider: Provider
 ) -> None:

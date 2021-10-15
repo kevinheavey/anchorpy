@@ -1,3 +1,4 @@
+from pytest import mark
 from anchorpy.workspace import create_workspace
 from anchorpy.provider import Provider
 from anchorpy.program.context import Context
@@ -5,6 +6,7 @@ from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
 
+@mark.integration
 def test_cpi() -> None:
     """Test CPI from puppet master to puppet."""
     workspace = create_workspace()
