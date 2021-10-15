@@ -1,5 +1,6 @@
 # AnchorPy
 
-![Snake wrapped around anchor](docs/img/caduceus-anchor.jpg?v=4&s=20)
+<img src="https://raw.githubusercontent.com/kevinheavey/anchorpy/main/docs/img/caduceus-anchor.jpg" width="400" height="790">
+
 
 AnchorPy is the Python client for [Anchor](https://github.com/project-serum/anchor)
