@@ -1,3 +1,4 @@
+from __future__ import annotations
 from anchorpy.coder.coder import Coder
 from anchorpy.program.namespace.namespace import build_namespace
 from anchorpy.idl import Idl
@@ -37,3 +38,16 @@ class Program(object):
         self.transaction = transaction
         self.account = account
         self.simulate = simulate
+
+    async def __aenter__(self) -> Program:
+        """Use as a context manager."""
+        await self.provider.__aenter__()
+        return self
+
+    async def __aexit__(self, _exc_type, _exc, _tb):
+        """Exits the context manager."""
+        await self.close()
+
+    async def close(self) -> None:
+        """Use this when you are done with the client."""
+        await self.provider.close()

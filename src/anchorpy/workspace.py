@@ -21,3 +21,10 @@ def create_workspace() -> Dict[str, Program]:
         program = Program(idl, PublicKey(metadata.address), Provider.local())
         result[idl.name] = program
     return result
+
+
+async def close_workspace(workspace: Dict[str, Program]) -> None:
+    """Close the HTTP clients of all the programs in the workspace."""
+    for program in workspace.values():
+        # could do this in a faster way but there's probably no point.
+        await program.close()

@@ -1,28 +1,34 @@
+import asyncio
 from pytest import fixture, mark
-from anchorpy import Program, Provider, create_workspace, Context
+from anchorpy import Program, Provider, create_workspace, close_workspace, Context
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
 
-@mark.integration
 @fixture(scope="session")
-def program() -> Program:
-    return create_workspace()["basic_2"]
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
-@mark.integration
+@fixture(scope="session")
+async def program() -> Program:
+    workspace = create_workspace()
+    yield workspace["basic_2"]
+    await close_workspace(workspace)
+
+
 @fixture(scope="session")
 def provider(program: Program) -> Provider:
     return program.provider
 
 
-@mark.integration
 @fixture(scope="session")
-def test_create_counter(program: Program, provider: Provider) -> Keypair:
-    """Test creating a counter."""
+async def created_counter(program: Program, provider: Provider) -> Keypair:
     counter = Keypair()
-
-    program.rpc["create"](
+    await program.rpc["create"](
         provider.wallet.public_key,
         ctx=Context(
             accounts={
@@ -33,26 +39,34 @@ def test_create_counter(program: Program, provider: Provider) -> Keypair:
             signers=[counter],
         ),
     )
-    counter_account = program.account["Counter"].fetch(counter.public_key)
-    assert counter_account["authority"] == provider.wallet.public_key
-    assert counter_account["count"] == 0
     return counter
 
 
 @mark.integration
-def test_update_counter(
-    test_create_counter: Keypair, program: Program, provider: Provider
+@mark.asyncio
+async def test_create_counter(
+    created_counter: Keypair, program: Program, provider: Provider
+) -> None:
+    """Test creating a counter."""
+    counter_account = await program.account["Counter"].fetch(created_counter.public_key)
+    assert counter_account["authority"] == provider.wallet.public_key
+    assert counter_account["count"] == 0
+
+
+@mark.integration
+@mark.asyncio
+async def test_update_counter(
+    created_counter: Keypair, program: Program, provider: Provider
 ) -> None:
     """Test updating the counter."""
-    counter = test_create_counter
-    program.rpc["increment"](
+    await program.rpc["increment"](
         ctx=Context(
             accounts={
-                "counter": counter.public_key,
+                "counter": created_counter.public_key,
                 "authority": provider.wallet.public_key,
             }
         )
     )
-    counter_account = program.account["Counter"].fetch(counter.public_key)
+    counter_account = await program.account["Counter"].fetch(created_counter.public_key)
     assert counter_account["authority"] == provider.wallet.public_key
     assert counter_account["count"] == 1

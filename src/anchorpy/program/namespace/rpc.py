@@ -1,4 +1,4 @@
-from typing import Any, Dict, Protocol
+from typing import Any, Awaitable, Dict, Protocol
 from solana.rpc.core import RPCException
 
 from solana.transaction import TransactionSignature
@@ -17,7 +17,7 @@ class RpcFn(Protocol):
         self,
         *args: Any,
         ctx: Context = EMPTY_CONTEXT,
-    ) -> TransactionSignature:
+    ) -> Awaitable[TransactionSignature]:
         """
         Args:
             *args: The positional arguments for the program. The type and number
@@ -33,11 +33,11 @@ def build_rpc_item(  # ts: RpcFactory
     idl_errors: Dict[int, str],
     provider: Provider,
 ) -> RpcFn:
-    def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> TransactionSignature:
+    async def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> TransactionSignature:
         tx = tx_fn(*args, ctx=ctx)
         check_args_length(idl_ix, args)
         try:
-            return provider.send(tx, ctx.signers, ctx.options)
+            return await provider.send(tx, ctx.signers, ctx.options)
         except RPCException as e:
             err_info = e.args[0]
             translated_err = ProgramError.parse(err_info, idl_errors)

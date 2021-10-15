@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from os import getenv, environ
 import json
+import asyncio
 import time
 
 from abc import abstractmethod, ABC
@@ -11,7 +12,7 @@ from typing import List, Optional, Union, NamedTuple, cast
 
 from solana.keypair import Keypair
 from solana.rpc import types
-from solana.rpc.api import Client
+from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized, Processed, Confirmed, Commitment
 from solana.rpc.core import RPCException
 from solana.transaction import Transaction, TransactionSignature
@@ -35,7 +36,7 @@ class Provider:
     """The network and wallet context used to send transactions paid for and signed by the provider."""  # noqa: E501
 
     def __init__(
-        self, client: Client, wallet: Wallet, opts: types.TxOpts = DEFAULT_OPTIONS
+        self, client: AsyncClient, wallet: Wallet, opts: types.TxOpts = DEFAULT_OPTIONS
     ) -> None:
         """Initialize the Provider.
 
@@ -58,7 +59,7 @@ class Provider:
             url: The network cluster url.
             opts: The default transaction confirmation options.
         """
-        client = Client(url, opts.preflight_commitment)
+        client = AsyncClient(url, opts.preflight_commitment)
         wallet = LocalWallet.local()
         return cls(client, wallet, opts)
 
@@ -67,11 +68,11 @@ class Provider:
         """Create a `Provider` using the `ANCHOR_PROVIDER_URL` environment variable."""
         url = environ["ANCHOR_PROVIDER_URL"]
         options = DEFAULT_OPTIONS
-        client = Client(url, options.preflight_commitment)
+        client = AsyncClient(url, options.preflight_commitment)
         wallet = LocalWallet.local()
         return cls(client, wallet, options)
 
-    def simulate(
+    async def simulate(
         self,
         tx: Transaction,
         signers: Optional[List[Keypair]] = None,
@@ -92,16 +93,17 @@ class Provider:
             signers = []
         if opts is None:
             opts = self.opts
-        tx.recent_blockhash = self.client.get_recent_blockhash(
+        recent_blockhash_resp = await self.client.get_recent_blockhash(
             opts.preflight_commitment,
-        )["result"]["value"]["blockhash"]
+        )
+        tx.recent_blockhash = recent_blockhash_resp["result"]["value"]["blockhash"]
         all_signers = [self.wallet.payer] + signers
         tx.sign(*all_signers)
-        return self.client.simulate_transaction(
+        return await self.client.simulate_transaction(
             tx, sig_verify=True, commitment=opts.preflight_commitment
         )
 
-    def send(
+    async def send(
         self,
         tx: Transaction,
         signers: Optional[List[Keypair]] = None,
@@ -123,25 +125,26 @@ class Provider:
         if opts is None:
             opts = self.opts
         all_signers = [self.wallet.payer] + signers
+        raw_resp = await self.client.send_transaction(
+            tx, *all_signers, opts=opts._replace(skip_confirmation=True)
+        )
         resp = cast(
             TransactionSignature,
-            self.client.send_transaction(
-                tx, *all_signers, opts=opts._replace(skip_confirmation=True)
-            )["result"],
+            raw_resp["result"],
         )
         if opts.skip_preflight:
             return resp
-        self._confirm_transaction(resp, commitment=opts.preflight_commitment)
+        await self._confirm_transaction(resp, commitment=opts.preflight_commitment)
         return resp
 
-    def _confirm_transaction(
+    async def _confirm_transaction(
         self,
         tx_sig: str,
         commitment: Commitment = Finalized,
     ) -> types.RPCResponse:
-        timeout = time.time() + 30  # 30 seconds  pylint: disable=invalid-name
+        timeout = time.time() + 30
         while time.time() < timeout:
-            resp = self.client.get_signature_statuses([tx_sig])
+            resp = await self.client.get_signature_statuses([tx_sig])
             resp_value = resp["result"]["value"][0]
             if resp_value is not None:
                 confirmation_status = resp_value["confirmationStatus"]
@@ -149,7 +152,7 @@ class Provider:
                 commitment_rank = COMMITMENT_RANKS[commitment]
                 if confirmation_rank >= commitment_rank:
                     break
-            time.sleep(0.5)
+            await asyncio.sleep(0.5)
         else:
             maybe_rpc_error = resp.get("error")
             if maybe_rpc_error is not None:
@@ -157,21 +160,22 @@ class Provider:
             raise UnconfirmedTxError(f"Unable to confirm transaction {tx_sig}")
         return resp
 
-    def _send_raw_transaction(
-        self, txn: Union[bytes, str], opts: types.TxOpts = types.TxOpts()
+    async def _send_raw_transaction(
+        self, txn: Union[bytes, str], opts: types.TxOpts = DEFAULT_OPTIONS
     ) -> TransactionSignature:
+        resp = await self.client.send_raw_transaction(
+            txn, opts._replace(skip_confirmation=True)
+        )
         signature = cast(
             TransactionSignature,
-            self.client.send_raw_transaction(
-                txn, opts._replace(skip_confirmation=True)
-            )["result"],
+            resp["result"],
         )
         if opts.skip_confirmation:
             return signature
         self._confirm_transaction(signature, opts.preflight_commitment)
         return signature
 
-    def send_all(
+    async def send_all(
         self,
         reqs: List[Union[Transaction, SendTxRequest]],
         opts: Optional[types.TxOpts] = None,
@@ -198,9 +202,22 @@ class Provider:
         signed_txs = self.wallet.sign_all_transactions(txs)
         sigs = []
         for signed in signed_txs:
-            res = self._send_raw_transaction(signed.serialize(), opts=opts)
+            res = await self._send_raw_transaction(signed.serialize(), opts=opts)
             sigs.append(res)
         return sigs
+
+    async def __aenter__(self) -> Provider:
+        """Use as a context manager."""
+        await self.client.__aenter__()  # noqa: WPS609
+        return self
+
+    async def __aexit__(self, _exc_type, _exc, _tb):
+        """Exits the context manager."""
+        await self.close()
+
+    async def close(self) -> None:
+        """Use this when you are done with the client."""
+        await self.client.close()
 
 
 class Wallet(ABC):

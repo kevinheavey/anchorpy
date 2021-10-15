@@ -51,7 +51,7 @@ class AccountClient(object):
         self._coder = coder
         self._size = ACCOUNT_DISCRIMINATOR_SIZE + account_size(idl, idl_account)
 
-    def fetch(self, address: PublicKey) -> Container:
+    async def fetch(self, address: PublicKey) -> Container:
         """Return a deserialized account.
 
         Args:
@@ -61,7 +61,7 @@ class AccountClient(object):
             AccountDoesNotExistError: If the account doesn't exist.
             AccountInvalidDiscriminator: If the discriminator doesn't match the IDL.
         """
-        account_info = self._provider.client.get_account_info(
+        account_info = await self._provider.client.get_account_info(
             address,
             encoding="base64",
         )
@@ -74,19 +74,20 @@ class AccountClient(object):
             raise AccountInvalidDiscriminator(msg)
         return self._coder.accounts.parse(data)["data"]
 
-    def create_instruction(
+    async def create_instruction(
         self, signer: Keypair, size_override: int = 0
     ) -> TransactionInstruction:
         """Return an instruction for creating this account."""
         space = size_override if size_override else self._size
+        mbre_resp = await self._provider.client.get_minimum_balance_for_rent_exemption(
+            space
+        )
         return create_account(
             CreateAccountParams(
                 from_pubkey=self._provider.wallet.public_key,
                 new_account_pubkey=signer.public_key,
                 space=space,
-                lamports=self._provider.client.get_minimum_balance_for_rent_exemption(
-                    space
-                )["result"],
+                lamports=mbre_resp["result"],
                 program_id=self._program_id,
             )
         )
@@ -95,11 +96,11 @@ class AccountClient(object):
         seeds = b"anchor" + b"".join(bytes(arg) for arg in args)  # noqa: WPS336
         return PublicKey.find_program_address([seeds], self._program_id)[0]
 
-    def associated(self, *args: PublicKey) -> Any:
+    async def associated(self, *args: PublicKey) -> Any:
         addr = self.associated_address(*args)
-        return self.fetch(addr)
+        return await self.fetch(addr)
 
-    def all(
+    async def all(
         self,
         memcmp_opts: Optional[List[MemcmpOpts]] = None,
         data_size: Optional[int] = None,
@@ -125,7 +126,7 @@ class AccountClient(object):
             if memcmp_opts is None
             else memcmp_opts
         )
-        resp = self._provider.client.get_program_accounts(
+        resp = await self._provider.client.get_program_accounts(
             self._program_id,
             commitment=Processed,
             encoding="base64",

@@ -1,18 +1,42 @@
-from pytest import mark
-from anchorpy import create_workspace, Provider, Context
+from typing import Dict
+import asyncio
+from pytest import mark, fixture
+from anchorpy import create_workspace, close_workspace, Provider, Context
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
+from anchorpy.program.core import Program
+
+
+@fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@fixture(scope="session")
+async def workspace():
+    ws = create_workspace()
+    yield ws
+    await close_workspace(ws)
+
+
+@fixture(scope="session")
+async def provider() -> Provider:
+    prov = Provider.local()
+    yield prov
+    await prov.close()
 
 
 @mark.integration
-def test_cpi() -> None:
+@mark.asyncio
+async def test_cpi(workspace: Dict[str, Program], provider: Provider) -> None:
     """Test CPI from puppet master to puppet."""
-    workspace = create_workspace()
-    provider = Provider.local()
     puppet_master = workspace["puppet_master"]
     puppet = workspace["puppet"]
     new_puppet_account = Keypair()
-    puppet.rpc["initialize"](
+    await puppet.rpc["initialize"](
         ctx=Context(
             accounts={
                 "puppet": new_puppet_account.public_key,
@@ -22,7 +46,7 @@ def test_cpi() -> None:
             signers=[new_puppet_account],
         )
     )
-    puppet_master.rpc["pullStrings"](
+    await puppet_master.rpc["pullStrings"](
         111,
         ctx=Context(
             accounts={
@@ -31,5 +55,5 @@ def test_cpi() -> None:
             }
         ),
     )
-    puppet_account = puppet.account["Data"].fetch(new_puppet_account.public_key)
+    puppet_account = await puppet.account["Data"].fetch(new_puppet_account.public_key)
     assert puppet_account["data"] == 111

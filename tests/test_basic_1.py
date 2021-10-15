@@ -1,21 +1,30 @@
+import asyncio
 from pytest import fixture, mark
-from anchorpy import create_workspace, Context, Program
+from anchorpy import create_workspace, close_workspace, Context, Program
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
 
-@mark.integration
 @fixture(scope="session")
-def program() -> Program:
-    return create_workspace()["basic_1"]
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
 @mark.integration
 @fixture(scope="session")
-def test_create_and_initialize_account(program: Program) -> Keypair:
-    """Test creating and initializing account in single tx."""
+async def program() -> Program:
+    workspace = create_workspace()
+    yield workspace["basic_1"]
+    await close_workspace(workspace)
+
+
+@fixture(scope="session")
+async def initialized_account(program: Program) -> Keypair:
     my_account = Keypair()
-    program.rpc["initialize"](
+    await program.rpc["initialize"](
         1234,
         ctx=Context(
             accounts={
@@ -26,19 +35,27 @@ def test_create_and_initialize_account(program: Program) -> Keypair:
             signers=[my_account],
         ),
     )
-    account = program.account["MyAccount"].fetch(my_account.public_key)
-    assert account["data"] == 1234
     return my_account
 
 
+@mark.asyncio
 @mark.integration
-def test_update_previously_created_account(
-    test_create_and_initialize_account: Keypair, program: Program
+async def test_create_and_initialize_account(
+    program: Program, initialized_account: Keypair
+) -> None:
+    """Test creating and initializing account in single tx."""
+    account = await program.account["MyAccount"].fetch(initialized_account.public_key)
+    assert account["data"] == 1234
+
+
+@mark.asyncio
+@mark.integration
+async def test_update_previously_created_account(
+    initialized_account: Keypair, program: Program
 ) -> None:
     """Test updating a previously created account."""
-    my_account = test_create_and_initialize_account
-    program.rpc["update"](
-        4321, ctx=Context(accounts={"myAccount": my_account.public_key})
+    await program.rpc["update"](
+        4321, ctx=Context(accounts={"myAccount": initialized_account.public_key})
     )
-    account = program.account["MyAccount"].fetch(my_account.public_key)
+    account = await program.account["MyAccount"].fetch(initialized_account.public_key)
     assert account["data"] == 4321

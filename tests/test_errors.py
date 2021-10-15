@@ -1,4 +1,5 @@
-import pytest
+import asyncio
+from pytest import raises, mark, fixture
 from anchorpy import ProgramError, Program, create_workspace, Context
 from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
@@ -6,57 +7,71 @@ from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.core import RPCException
 
 
-@pytest.mark.integration
-@pytest.fixture(scope="session")
-def program() -> Program:
+@fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@fixture(scope="session")
+async def program() -> Program:
     workspace = create_workspace()
     return workspace["errors"]
 
 
-@pytest.mark.integration
-def test_hello_err(program: Program) -> None:
+@mark.integration
+@mark.asyncio
+async def test_hello_err(program: Program) -> None:
     """Test error from hello func."""
-    with pytest.raises(ProgramError) as excinfo:
-        program.rpc["hello"]()
+    with raises(ProgramError) as excinfo:
+        await program.rpc["hello"]()
     assert excinfo.value.code == 300
     expected_msg = "This is an error message clients will automatically display"
     assert excinfo.value.msg == expected_msg
     assert expected_msg in str(excinfo)
 
 
-@pytest.mark.integration
-def test_hello_no_msg_err(program: Program) -> None:
+@mark.integration
+@mark.asyncio
+async def test_hello_no_msg_err(program: Program) -> None:
     """Test error from helloNoMsg func."""
-    with pytest.raises(ProgramError) as excinfo:
-        program.rpc["helloNoMsg"]()
+    with raises(ProgramError) as excinfo:
+        await program.rpc["helloNoMsg"]()
     assert excinfo.value.msg == "HelloNoMsg"
     assert excinfo.value.code == 300 + 123
 
 
-@pytest.mark.integration
-def test_hello_next_err(program: Program) -> None:
+@mark.integration
+@mark.asyncio
+async def test_hello_next_err(program: Program) -> None:
     """Test error from helloNext func."""
-    with pytest.raises(ProgramError) as excinfo:
-        program.rpc["helloNext"]()
+    with raises(ProgramError) as excinfo:
+        await program.rpc["helloNext"]()
     assert excinfo.value.msg == "HelloNext"
     assert excinfo.value.code == 300 + 124
 
 
-@pytest.mark.integration
-def test_mut_err(program: Program) -> None:
+@mark.integration
+@mark.asyncio
+async def test_mut_err(program: Program) -> None:
     """Test mmut error."""
-    with pytest.raises(ProgramError) as excinfo:
-        program.rpc["mutError"](ctx=Context(accounts={"myAccount": SYSVAR_RENT_PUBKEY}))
+    with raises(ProgramError) as excinfo:
+        await program.rpc["mutError"](
+            ctx=Context(accounts={"myAccount": SYSVAR_RENT_PUBKEY})
+        )
     assert excinfo.value.msg == "A mut constraint was violated"
     assert excinfo.value.code == 140
 
 
-@pytest.mark.integration
-def test_has_one_err(program: Program) -> None:
+@mark.integration
+@mark.asyncio
+async def test_has_one_err(program: Program) -> None:
     """Test hasOneError."""
     account = Keypair()
-    with pytest.raises(ProgramError) as excinfo:
-        program.rpc["hasOneError"](
+    with raises(ProgramError) as excinfo:
+        await program.rpc["hasOneError"](
             ctx=Context(
                 accounts={
                     "myAccount": account.public_key,
@@ -64,7 +79,7 @@ def test_has_one_err(program: Program) -> None:
                     "rent": SYSVAR_RENT_PUBKEY,
                 },
                 instructions=[
-                    program.account["HasOneAccount"].create_instruction(account)
+                    await program.account["HasOneAccount"].create_instruction(account)
                 ],
                 signers=[account],
             )
@@ -73,8 +88,9 @@ def test_has_one_err(program: Program) -> None:
     assert excinfo.value.code == 141
 
 
-@pytest.mark.integration
-def test_signer_err(program: Program) -> None:
+@mark.integration
+@mark.asyncio
+async def test_signer_err(program: Program) -> None:
     """Test signer error."""
     tx = Transaction()
     tx.add(
@@ -88,8 +104,8 @@ def test_signer_err(program: Program) -> None:
             data=program.coder.instruction.build({"data": {}, "name": "signerError"}),
         )
     )
-    with pytest.raises(RPCException) as excinfo:
-        program.provider.send(tx)
+    with raises(RPCException) as excinfo:
+        await program.provider.send(tx)
     assert (
         excinfo.value.args[0]["message"]
         == "Transaction simulation failed: Error processing "
