@@ -1,7 +1,5 @@
 from pytest import fixture, mark
-from anchorpy.workspace import create_workspace
-from anchorpy.program.context import Context
-from anchorpy.program.core import Program
+from anchorpy import create_workspace, Context, Program
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 

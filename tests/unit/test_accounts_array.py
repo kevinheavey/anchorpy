@@ -1,4 +1,4 @@
-from anchorpy.idl import Idl
+from anchorpy import Idl
 from pathlib import Path
 import json
 from solana.keypair import Keypair

@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from anchorpy.idl import Idl
+from anchorpy import Idl
 
 
 def test_idls() -> None:

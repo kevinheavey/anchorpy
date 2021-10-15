@@ -1,5 +1,5 @@
 from pytest import mark
-from anchorpy.workspace import create_workspace
+from anchorpy import create_workspace
 
 
 @mark.integration

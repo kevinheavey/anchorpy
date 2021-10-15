@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
-from anchorpy.idl import Idl
-from anchorpy.coder.accounts import AccountsCoder
+
+from anchorpy import AccountsCoder, Idl
 
 
 def test_accounts_coder() -> None:

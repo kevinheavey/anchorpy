@@ -1,8 +1,5 @@
 import pytest
-from anchorpy.error import ProgramError
-from anchorpy.program.core import Program
-from anchorpy.workspace import create_workspace
-from anchorpy.program.context import Context
+from anchorpy import ProgramError, Program, create_workspace, Context
 from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction

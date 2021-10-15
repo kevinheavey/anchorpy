@@ -1,10 +1,9 @@
 import json
 from pathlib import Path
 
-from anchorpy.idl import Idl
+from anchorpy import Idl, InstructionCoder
 from anchorpy.program.context import check_args_length
 from anchorpy.program.common import to_instruction
-from anchorpy.coder.instruction import InstructionCoder
 
 
 def test_instruction_coder() -> None:
