@@ -1,3 +1,4 @@
+"""This module contains the Provider class and associated utilities."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -11,10 +12,9 @@ from typing import List, Optional, Union, NamedTuple, cast
 from solana.keypair import Keypair
 from solana.rpc import types
 from solana.rpc.api import Client
-from solana.rpc.commitment import Finalized, Processed, Commitment
+from solana.rpc.commitment import Finalized, Processed, Confirmed, Commitment
 from solana.rpc.core import RPCException
 from solana.transaction import Transaction, TransactionSignature
-
 from solana.publickey import PublicKey
 
 
@@ -24,10 +24,11 @@ class SendTxRequest(NamedTuple):
 
 
 DEFAULT_OPTIONS = types.TxOpts(skip_confirmation=False, preflight_commitment=Processed)
+COMMITMENT_RANKS = {Processed: 0, Confirmed: 1, Finalized: 2}
 
 
 class UnconfirmedTxError(Exception):
-    pass
+    """Raise when confirming a transaction times out."""
 
 
 class Provider:
@@ -96,10 +97,9 @@ class Provider:
         )["result"]["value"]["blockhash"]
         all_signers = [self.wallet.payer] + signers
         tx.sign(*all_signers)
-        resp = self.client.simulate_transaction(
+        return self.client.simulate_transaction(
             tx, sig_verify=True, commitment=opts.preflight_commitment
         )
-        return resp
 
     def send(
         self,
@@ -126,12 +126,13 @@ class Provider:
         resp = cast(
             TransactionSignature,
             self.client.send_transaction(
-                tx, *all_signers, opts=opts._replace(skip_preflight=True)
+                tx, *all_signers, opts=opts._replace(skip_confirmation=True)
             )["result"],
         )
         if opts.skip_preflight:
             return resp
-        self._confirm_transaction(resp)
+        print(opts)
+        self._confirm_transaction(resp, commitment=opts.preflight_commitment)
         return resp
 
     def _confirm_transaction(
@@ -144,7 +145,10 @@ class Provider:
             resp = self.client.get_signature_statuses([tx_sig])
             resp_value = resp["result"]["value"][0]
             if resp_value is not None:
-                if resp_value["confirmationStatus"] in {commitment, Finalized}:
+                confirmation_status = resp_value["confirmationStatus"]
+                confirmation_rank = COMMITMENT_RANKS[confirmation_status]
+                commitment_rank = COMMITMENT_RANKS[commitment]
+                if confirmation_rank >= commitment_rank:
                     break
             time.sleep(0.5)
         else:
@@ -204,7 +208,11 @@ class Wallet(ABC):
     """Abstract base class for wallets."""
 
     def __init__(self, payer: Keypair):
-        """Init."""
+        """Initialize the wallet
+
+        Args:
+            payer: the Keypair used to sign transactions.
+        """
         self.payer = payer
 
     @property
