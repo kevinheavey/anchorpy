@@ -1,6 +1,6 @@
-from construct import Adapter
+"""Extensions to the Borsh spec for Solana-specific types."""
 from solana import publickey
-from construct import Bytes
+from construct import Bytes, Adapter
 
 
 class _PublicKey(Adapter):
