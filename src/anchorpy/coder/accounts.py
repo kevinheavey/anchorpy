@@ -4,7 +4,7 @@ from construct import Adapter, Sequence, Bytes, Switch
 
 from anchorpy.coder.idl import typedef_layout
 from anchorpy.idl import Idl
-from anchorpy.program.common import InstructionToSerialize as AccountToSerialize
+from anchorpy.program.common import Instruction as AccountToSerialize
 
 ACCOUNT_DISCRIMINATOR_SIZE = 8  # bytes
 
@@ -41,22 +41,3 @@ class AccountsCoder(Adapter):
 def account_discriminator(name: str) -> bytes:
     """Calculate unique 8 byte discriminator prepended to all anchor accounts."""
     return sha256(f"account:{name}".encode()).digest()[:ACCOUNT_DISCRIMINATOR_SIZE]
-
-
-if __name__ == "__main__":
-    from json import loads
-    from pathlib import Path
-
-    data = loads((Path.home() / "anchorpy/idls/basic_1.json").read_text())
-    idl = Idl.from_json(data)
-    idl_accs = idl.accounts
-    raw_acc_data = b"\xf6\x1c\x06W\xfb-2*\xd2\x04\x00\x00\x00\x00\x00\x00"
-    _idl_account = idl_accs[0]
-    discriminator = account_discriminator(_idl_account.name)
-    if discriminator != raw_acc_data[:ACCOUNT_DISCRIMINATOR_SIZE]:
-        raise ValueError("Invalid account discriminator.")
-    acc_coder = AccountsCoder(idl)
-    decoded = acc_coder.parse(raw_acc_data)
-    encoded = acc_coder.build(decoded)
-    assert encoded == raw_acc_data
-    breakpoint()

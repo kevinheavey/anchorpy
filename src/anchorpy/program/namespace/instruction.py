@@ -7,7 +7,7 @@ from anchorpy.program.common import (
     to_instruction,
     validate_accounts,
     translate_address,
-    InstructionToSerialize,
+    Instruction,
 )
 from anchorpy.program.context import EMPTY_CONTEXT, Context, check_args_length, Accounts
 from anchorpy.idl import IdlInstruction, IdlAccountItem, IdlAccounts, IdlAccount
@@ -37,7 +37,7 @@ class InstructionFn(Protocol):
 
 def build_instruction_fn(  # ts: InstructionNamespaceFactory.build
     idl_ix: IdlInstruction,
-    encode_fn: Callable[[InstructionToSerialize], bytes],
+    encode_fn: Callable[[Instruction], bytes],
     program_id: PublicKey,
 ) -> InstructionFn:
     if idl_ix.name == "_inner":
@@ -92,30 +92,3 @@ def validate_instruction(ix: IdlInstruction, args: Tuple):
     """Throws error if any argument required for the `ix` is not given."""
     # TODO: this isn't implemented in the TS client yet
     pass
-
-
-if __name__ == "__main__":
-    from anchorpy.idl import Idl
-    from pathlib import Path
-    from json import load
-    from solana.keypair import Keypair
-
-    with (Path.home() / "anchorpy/idls/composite.json").open() as f:
-        idl_json = load(f)
-    idl = Idl.from_json(idl_json)
-    dummyA = Keypair.generate()
-    dummyB = Keypair.generate()
-    comp_accounts = {
-        "foo": {
-            "dummyA": dummyA.public_key,
-        },
-        "bar": {
-            "dummyB": dummyB.public_key,
-        },
-    }
-    accounts_arg = idl.instructions[1].accounts
-    acc_arr = accounts_array(comp_accounts, accounts_arg)
-    assert acc_arr == [
-        AccountMeta(pubkey=dummyA.public_key, is_signer=False, is_writable=True),
-        AccountMeta(pubkey=dummyB.public_key, is_signer=False, is_writable=True),
-    ]

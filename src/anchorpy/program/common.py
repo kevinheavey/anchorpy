@@ -22,18 +22,18 @@ def parse_idl_errors(idl: Idl) -> Dict[int, str]:
     return errors
 
 
-class InstructionToSerialize(TypedDict):
+class Instruction(TypedDict):
     data: Dict[str, Any]
     name: str
 
 
-def to_instruction(idl_ix: IdlInstruction, args: Tuple) -> InstructionToSerialize:
+def to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
     if len(idl_ix.args) != len(args):
         raise ValueError("Invalid argument length")
     ix: Dict[str, Any] = {}
     for idx, ix_arg in enumerate(idl_ix.args):
         ix[ix_arg.name] = args[idx]
-    return InstructionToSerialize(data=ix, name=idl_ix.name)
+    return Instruction(data=ix, name=idl_ix.name)
 
 
 def validate_accounts(ix_accounts: List[IdlAccountItem], accounts):

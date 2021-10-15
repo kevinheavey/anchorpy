@@ -1,5 +1,6 @@
 import pytest
 from anchorpy.error import ProgramError
+from anchorpy.program.core import Program
 from anchorpy.workspace import create_workspace
 from anchorpy.program.context import Context
 from solana.keypair import Keypair
@@ -7,13 +8,16 @@ from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.core import RPCException
 
-workspace = create_workspace()
-program = workspace["errors"]
-provider = program.provider
+
+@pytest.mark.integration
+@pytest.fixture(scope="session")
+def program() -> Program:
+    workspace = create_workspace()
+    return workspace["errors"]
 
 
 @pytest.mark.integration
-def test_hello_err() -> None:
+def test_hello_err(program: Program) -> None:
     """Test error from hello func."""
     with pytest.raises(ProgramError) as excinfo:
         program.rpc["hello"]()
@@ -24,7 +28,7 @@ def test_hello_err() -> None:
 
 
 @pytest.mark.integration
-def test_hello_no_msg_err() -> None:
+def test_hello_no_msg_err(program: Program) -> None:
     """Test error from helloNoMsg func."""
     with pytest.raises(ProgramError) as excinfo:
         program.rpc["helloNoMsg"]()
@@ -33,7 +37,7 @@ def test_hello_no_msg_err() -> None:
 
 
 @pytest.mark.integration
-def test_hello_next_err() -> None:
+def test_hello_next_err(program: Program) -> None:
     """Test error from helloNext func."""
     with pytest.raises(ProgramError) as excinfo:
         program.rpc["helloNext"]()
@@ -42,7 +46,7 @@ def test_hello_next_err() -> None:
 
 
 @pytest.mark.integration
-def test_mut_err() -> None:
+def test_mut_err(program: Program) -> None:
     """Test mmut error."""
     with pytest.raises(ProgramError) as excinfo:
         program.rpc["mutError"](ctx=Context(accounts={"myAccount": SYSVAR_RENT_PUBKEY}))
@@ -51,7 +55,7 @@ def test_mut_err() -> None:
 
 
 @pytest.mark.integration
-def test_has_one_err() -> None:
+def test_has_one_err(program: Program) -> None:
     """Test hasOneError."""
     account = Keypair()
     with pytest.raises(ProgramError) as excinfo:
@@ -72,7 +76,8 @@ def test_has_one_err() -> None:
     assert excinfo.value.code == 141
 
 
-def test_signer_err() -> None:
+@pytest.mark.integration
+def test_signer_err(program: Program) -> None:
     """Test signer error."""
     tx = Transaction()
     tx.add(

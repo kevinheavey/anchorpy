@@ -3,7 +3,7 @@ from hashlib import sha256
 from typing import Dict, Tuple, Any
 from construct import Adapter, Construct, Sequence, Bytes, Switch
 from anchorpy.idl import Idl, IdlEvent, IdlField, IdlTypeDef, IdlTypeDefTyStruct
-from anchorpy.program.common import InstructionToSerialize
+from anchorpy.program.common import Instruction
 
 
 def event_discriminator(name: str) -> bytes:
@@ -43,7 +43,7 @@ class EventCoder(Adapter):
         )
         super().__init__(subcon)  # type: ignore
 
-    def _decode(self, obj: Tuple[bytes, Any], context, path) -> InstructionToSerialize:
+    def _decode(self, obj: Tuple[bytes, Any], context, path) -> Instruction:
         disc = obj[0]  # check this, might need more decoding
         event_name = self.discriminators[disc]
         return {"data": obj[1], "name": event_name}
