@@ -5,14 +5,17 @@ from anchorpy.program.namespace.rpc import (
     build_rpc_item,
 )
 from anchorpy.program.namespace.transaction import (
+    TransactionFn,
     build_transaction_fn,
 )
 from anchorpy.coder.coder import Coder
-from anchorpy.program.namespace.account import build_account
+from anchorpy.program.namespace.account import AccountClient, build_account
 from anchorpy.program.namespace.simulate import (
+    SimulateFn,
     build_simulate_item,
 )
 from anchorpy.program.namespace.instruction import (
+    InstructionFn,
     build_instruction_fn,
 )
 from anchorpy.program.common import parse_idl_errors
@@ -23,7 +26,13 @@ from solana.publickey import PublicKey
 
 def build_namespace(  # ts: NamespaceFactory.build
     idl: Idl, coder: Coder, program_id: PublicKey, provider: Provider
-) -> Tuple[Dict[str, RpcFn], dict, dict, dict, dict]:
+) -> Tuple[
+    Dict[str, RpcFn],
+    Dict[str, InstructionFn],
+    Dict[str, TransactionFn],
+    Dict[str, AccountClient],
+    Dict[str, SimulateFn],
+]:
     idl_errors = parse_idl_errors(idl)
 
     rpc = {}

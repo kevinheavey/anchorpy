@@ -69,7 +69,7 @@ def _handle_enum_variants(idl_enum: IdlTypeDefTyEnum, types: List[IdlTypeDef]) -
                     raise NotImplementedError("Tuple enum variants not yet implemented")
                 fields.append(field_layout(fld, types))
             variants.append(name / CStruct(*fields))
-    return name / Enum(*variants)
+    return Enum(*variants, enum_name=name)
 
 
 def typedef_layout(

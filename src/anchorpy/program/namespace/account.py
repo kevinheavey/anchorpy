@@ -2,6 +2,7 @@ import base64
 from base58 import b58encode
 from typing import Any, List, Optional, Dict
 
+from construct import Container
 from solana.keypair import Keypair
 from solana.system_program import create_account, CreateAccountParams
 from solana.transaction import TransactionInstruction
@@ -50,7 +51,7 @@ class AccountClient(object):
         self._coder = coder
         self._size = ACCOUNT_DISCRIMINATOR_SIZE + account_size(idl, idl_account)
 
-    def fetch(self, address: PublicKey) -> Any:
+    def fetch(self, address: PublicKey) -> Container:
         """Return a deserialized account.
 
         Args:
@@ -63,7 +64,6 @@ class AccountClient(object):
         account_info = self._provider.client.get_account_info(
             address,
             encoding="base64",
-            commitment=Processed,
         )
         if not account_info["result"]["value"]:
             raise AccountDoesNotExistError(f"Account {address} does not exist")

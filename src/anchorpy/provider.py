@@ -131,7 +131,6 @@ class Provider:
         )
         if opts.skip_preflight:
             return resp
-        print(opts)
         self._confirm_transaction(resp, commitment=opts.preflight_commitment)
         return resp
 
