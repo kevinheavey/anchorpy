@@ -40,7 +40,7 @@ class AccountsCoder(Adapter):
 
 def account_discriminator(name: str) -> bytes:
     """Calculate unique 8 byte discriminator prepended to all anchor accounts."""
-    return sha256(f"account:{name}".encode()).digest()[:8]
+    return sha256(f"account:{name}".encode()).digest()[:ACCOUNT_DISCRIMINATOR_SIZE]
 
 
 if __name__ == "__main__":
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     raw_acc_data = b"\xf6\x1c\x06W\xfb-2*\xd2\x04\x00\x00\x00\x00\x00\x00"
     _idl_account = idl_accs[0]
     discriminator = account_discriminator(_idl_account.name)
-    if discriminator != raw_acc_data[:8]:
+    if discriminator != raw_acc_data[:ACCOUNT_DISCRIMINATOR_SIZE]:
         raise ValueError("Invalid account discriminator.")
     acc_coder = AccountsCoder(idl)
     decoded = acc_coder.parse(raw_acc_data)
