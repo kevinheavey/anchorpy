@@ -7,7 +7,7 @@ from solana.system_program import SYS_PROGRAM_ID
 @mark.integration
 @fixture(scope="session")
 def program() -> Program:
-    return create_workspace()["basic_1"]
+    return create_workspace()["basic_2"]
 
 
 @mark.integration

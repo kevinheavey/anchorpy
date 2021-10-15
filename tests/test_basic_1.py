@@ -33,7 +33,7 @@ def test_create_and_initialize_account(program: Program) -> Keypair:
 
 @mark.integration
 def test_update_previously_created_account(
-    test_create_and_initialize_account: Keypair, program: Program, my_account: Keypair
+    test_create_and_initialize_account: Keypair, program: Program
 ) -> None:
     """Test updating a previously created account."""
     my_account = test_create_and_initialize_account
