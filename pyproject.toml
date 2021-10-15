@@ -14,6 +14,7 @@ sumtypes = "^0.1a5"
 apischema = "^0.15.6"
 jsonrpcclient = "^4.0.1"
 borsh-construct-tmp = "^0.1.0"
+inflection = "^0.5.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
