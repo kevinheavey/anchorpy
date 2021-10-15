@@ -2,7 +2,7 @@ from typing import List, Mapping, cast
 from types import MappingProxyType
 
 from construct import Construct
-from borsh_construct import (
+from borsh_construct_tmp import (
     CStruct,
     Enum,
     Vec,
