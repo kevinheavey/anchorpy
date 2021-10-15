@@ -1,3 +1,5 @@
-# WIP: Anchor Python client
+# AnchorPy
 
-Do not use this yet. It won't work.
+![Snake wrapped around anchor](docs/img/caduceus-anchor.jpg?raw=true "Title")
+
+AnchorPy is the Python client for [Anchor](https://github.com/project-serum/anchor)
