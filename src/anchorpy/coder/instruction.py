@@ -26,6 +26,8 @@ class Sighash(Adapter):
 
 
 class InstructionCoder(Adapter):
+    """Encodes and decodes program instructions."""
+
     def __init__(self, idl: Idl) -> None:
         self.ix_layout = _parse_ix_layout(idl)
         sighasher = Sighash(SIGHASH_GLOBAL_NAMESPACE)

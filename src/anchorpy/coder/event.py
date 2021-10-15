@@ -21,6 +21,8 @@ def _event_layout(event: IdlEvent, idl: Idl) -> Construct:
 
 
 class EventCoder(Adapter):
+    """Encodes and decodes Anchor events."""
+
     def __init__(self, idl: Idl):
         self.idl = idl
         idl_events = idl.events
