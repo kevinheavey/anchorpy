@@ -20,7 +20,7 @@ from solana.system_program import SYS_PROGRAM_ID
 # pytest-asyncio will break.
 
 @fixture(scope="module")
-async def program(localnet) -> Program:
+async def program() -> Program:
     workspace = create_workspace()
     yield workspace["basic_1"]
     await close_workspace(workspace)
