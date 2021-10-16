@@ -3,7 +3,7 @@ import psutil
 from xprocess import ProcessStarter
 
 
-def get_localnet(path, scope="module"):
+def get_localnet(path, scope="module", timeout_seconds=300):
     @fixture(scope=scope)
     def localnet_fixture(xprocess):
         class Starter(ProcessStarter):
@@ -12,7 +12,9 @@ def get_localnet(path, scope="module"):
             terminate_on_interrupt = True
             # command to start process
             args = ["anchor", "localnet"]
+            timeout = timeout_seconds
             popen_kwargs = {"cwd": path}
+            max_read_lines = 1_000
 
         # ensure process is running and return its logfile
         logfile = xprocess.ensure("localnet", Starter)

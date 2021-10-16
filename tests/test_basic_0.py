@@ -3,7 +3,7 @@ from pytest import mark
 from anchorpy import create_workspace
 from tests.utils import get_localnet
 
-PATH = Path("/home/kheavey/anchor/examples/tutorial/basic-0")
+PATH = Path("anchor/examples/tutorial/basic-0")
 
 
 localnet = get_localnet(PATH)

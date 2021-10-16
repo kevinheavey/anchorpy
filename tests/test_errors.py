@@ -8,7 +8,7 @@ from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.core import RPCException
 from tests.utils import get_localnet
 
-PATH = Path("/home/kheavey/anchor/tests/errors/")
+PATH = Path("anchor/tests/errors/")
 
 localnet = get_localnet(PATH)
 

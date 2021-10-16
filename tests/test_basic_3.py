@@ -8,7 +8,7 @@ from solana.system_program import SYS_PROGRAM_ID
 from anchorpy.program.core import Program
 from tests.utils import get_localnet
 
-PATH = Path("/home/kheavey/anchor/examples/tutorial/basic-3")
+PATH = Path("anchor/examples/tutorial/basic-3")
 
 localnet = get_localnet(PATH)
 

@@ -6,7 +6,7 @@ from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 from tests.utils import get_localnet
 
-PATH = Path("/home/kheavey/anchor/examples/tutorial/basic-2")
+PATH = Path("anchor/examples/tutorial/basic-2")
 
 localnet = get_localnet(PATH)
 
