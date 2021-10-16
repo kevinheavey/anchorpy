@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.1] - 2021-10-16
+
+Add optional `path` and `url` parameters to `create_workspace`.
+This is so we can overhaul the tests.
 ## [0.1.0] - 2021-10-16
 
 First release 🚀
