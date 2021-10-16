@@ -1,14 +1,21 @@
 import asyncio
+from pathlib import Path
 from pytest import fixture, mark
 from anchorpy import create_workspace, close_workspace, Context, Program
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
+from tests.utils import get_localnet
 
+PATH = Path("/home/kheavey/anchor/examples/tutorial/basic-1")
 
-# Since our other fixtures have session scope, we need to define
-# this event_loop fixture and give it session scope otherwise
+localnet = get_localnet(PATH)
+
+# Since our other fixtures have module scope, we need to define
+# this event_loop fixture and give it module scope otherwise
 # pytest-asyncio will break.
-@fixture(scope="session")
+
+
+@fixture(scope="module")
 def event_loop():
     """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
@@ -16,14 +23,14 @@ def event_loop():
     loop.close()
 
 
-@fixture(scope="session")
-async def program() -> Program:
-    workspace = create_workspace()
+@fixture(scope="module")
+async def program(localnet) -> Program:
+    workspace = create_workspace(PATH)
     yield workspace["basic_1"]
     await close_workspace(workspace)
 
 
-@fixture(scope="session")
+@fixture(scope="module")
 async def initialized_account(program: Program) -> Keypair:
     my_account = Keypair()
     await program.rpc["initialize"](
