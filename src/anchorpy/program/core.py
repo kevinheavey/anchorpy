@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional
 from anchorpy.coder.coder import Coder
 from anchorpy.program.namespace.namespace import build_namespace
 from anchorpy.idl import Idl
@@ -20,17 +21,19 @@ class Program(object):
 
     """
 
-    def __init__(self, idl: Idl, program_id: PublicKey, provider: Provider):
+    def __init__(
+        self, idl: Idl, program_id: PublicKey, provider: Optional[Provider] = None
+    ):
         self.idl = idl
         self.program_id = program_id
-        self.provider = provider
+        self.provider = provider if provider is not None else Provider.local()
         self.coder = Coder(idl)
 
         rpc, instruction, transaction, account, simulate = build_namespace(
             idl,
             self.coder,
             program_id,
-            provider,
+            self.provider,
         )
 
         self.rpc = rpc

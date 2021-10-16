@@ -1,9 +1,11 @@
 import json
+from pytest import mark
 from pathlib import Path
 
 from anchorpy import AccountsCoder, Idl
 
 
+@mark.unit
 def test_accounts_coder() -> None:
     """Test accounts coder"""
     with Path("tests/idls/basic_1.json").open() as f:

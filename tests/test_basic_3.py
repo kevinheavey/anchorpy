@@ -29,7 +29,6 @@ async def provider() -> Provider:
     await prov.close()
 
 
-@mark.integration
 @mark.asyncio
 async def test_cpi(workspace: Dict[str, Program], provider: Provider) -> None:
     """Test CPI from puppet master to puppet."""

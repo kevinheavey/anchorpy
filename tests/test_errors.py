@@ -21,7 +21,6 @@ async def program() -> Program:
     return workspace["errors"]
 
 
-@mark.integration
 @mark.asyncio
 async def test_hello_err(program: Program) -> None:
     """Test error from hello func."""
@@ -33,7 +32,6 @@ async def test_hello_err(program: Program) -> None:
     assert expected_msg in str(excinfo)
 
 
-@mark.integration
 @mark.asyncio
 async def test_hello_no_msg_err(program: Program) -> None:
     """Test error from helloNoMsg func."""
@@ -43,7 +41,6 @@ async def test_hello_no_msg_err(program: Program) -> None:
     assert excinfo.value.code == 300 + 123
 
 
-@mark.integration
 @mark.asyncio
 async def test_hello_next_err(program: Program) -> None:
     """Test error from helloNext func."""
@@ -53,7 +50,6 @@ async def test_hello_next_err(program: Program) -> None:
     assert excinfo.value.code == 300 + 124
 
 
-@mark.integration
 @mark.asyncio
 async def test_mut_err(program: Program) -> None:
     """Test mmut error."""
@@ -65,7 +61,6 @@ async def test_mut_err(program: Program) -> None:
     assert excinfo.value.code == 140
 
 
-@mark.integration
 @mark.asyncio
 async def test_has_one_err(program: Program) -> None:
     """Test hasOneError."""
@@ -88,7 +83,6 @@ async def test_has_one_err(program: Program) -> None:
     assert excinfo.value.code == 141
 
 
-@mark.integration
 @mark.asyncio
 async def test_signer_err(program: Program) -> None:
     """Test signer error."""

@@ -42,7 +42,6 @@ async def created_counter(program: Program, provider: Provider) -> Keypair:
     return counter
 
 
-@mark.integration
 @mark.asyncio
 async def test_create_counter(
     created_counter: Keypair, program: Program, provider: Provider
@@ -53,7 +52,6 @@ async def test_create_counter(
     assert counter_account["count"] == 0
 
 
-@mark.integration
 @mark.asyncio
 async def test_update_counter(
     created_counter: Keypair, program: Program, provider: Provider

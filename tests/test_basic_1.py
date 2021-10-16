@@ -5,6 +5,9 @@ from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
 
+# Since our other fixtures have session scope, we need to define
+# this event_loop fixture and give it session scope otherwise
+# pytest-asyncio will break.
 @fixture(scope="session")
 def event_loop():
     """Create an instance of the default event loop for each test case."""
@@ -13,7 +16,6 @@ def event_loop():
     loop.close()
 
 
-@mark.integration
 @fixture(scope="session")
 async def program() -> Program:
     workspace = create_workspace()
@@ -39,7 +41,6 @@ async def initialized_account(program: Program) -> Keypair:
 
 
 @mark.asyncio
-@mark.integration
 async def test_create_and_initialize_account(
     program: Program, initialized_account: Keypair
 ) -> None:
@@ -49,7 +50,6 @@ async def test_create_and_initialize_account(
 
 
 @mark.asyncio
-@mark.integration
 async def test_update_previously_created_account(
     initialized_account: Keypair, program: Program
 ) -> None:

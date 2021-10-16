@@ -2,7 +2,6 @@ from pytest import mark
 from anchorpy import create_workspace
 
 
-@mark.integration
 @mark.asyncio
 async def test_init() -> None:
     """Test that the initialize function is invoked successfully."""
