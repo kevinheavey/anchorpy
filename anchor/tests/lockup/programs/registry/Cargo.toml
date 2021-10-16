@@ -1,0 +1,20 @@
+[package]
+name = "registry"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "registry"
+
+[features]
+no-entrypoint = []
+cpi = ["no-entrypoint"]
+anchor-deprecated-state = []
+default = ["anchor-deprecated-state"]
+
+[dependencies]
+anchor-lang = { path = "../../../../lang" }
+anchor-spl = { path = "../../../../spl" }
+lockup = { path = "../lockup", features = ["cpi"] }

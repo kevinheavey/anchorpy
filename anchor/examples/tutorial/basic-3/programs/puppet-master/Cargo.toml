@@ -1,0 +1,17 @@
+[package]
+name = "puppet-master"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "puppet_master"
+
+[features]
+no-entrypoint = []
+cpi = ["no-entrypoint"]
+
+[dependencies]
+anchor-lang = { path = "../../../../../lang" }
+puppet = { path = "../puppet", features = ["cpi"] }
