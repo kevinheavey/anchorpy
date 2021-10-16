@@ -1,6 +1,6 @@
 # Tutorial
 
-This tutorial takes the JS snippets from the Anchor tutorial
+This tutorial takes the JS snippets from the official Anchor tutorial
 and shows how to achieve the same thing using AnchorPy.
 ## [A Minimal Example](https://project-serum.github.io/anchor/tutorials/tutorial-0.html)
 
