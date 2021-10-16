@@ -1,11 +1,17 @@
 import asyncio
+from pathlib import Path
 from pytest import fixture, mark
 from anchorpy import Program, Provider, create_workspace, close_workspace, Context
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
+from tests.utils import get_localnet
+
+PATH = Path("anchor/examples/tutorial/basic-2")
+
+localnet = get_localnet(PATH)
 
 
-@fixture(scope="session")
+@fixture(scope="module")
 def event_loop():
     """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
@@ -13,19 +19,19 @@ def event_loop():
     loop.close()
 
 
-@fixture(scope="session")
-async def program() -> Program:
-    workspace = create_workspace()
+@fixture(scope="module")
+async def program(localnet) -> Program:
+    workspace = create_workspace(PATH)
     yield workspace["basic_2"]
     await close_workspace(workspace)
 
 
-@fixture(scope="session")
+@fixture(scope="module")
 def provider(program: Program) -> Provider:
     return program.provider
 
 
-@fixture(scope="session")
+@fixture(scope="module")
 async def created_counter(program: Program, provider: Provider) -> Keypair:
     counter = Keypair()
     await program.rpc["create"](

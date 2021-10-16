@@ -1,0 +1,19 @@
+[package]
+name = "lockup"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "lockup"
+
+[features]
+no-entrypoint = []
+cpi = ["no-entrypoint"]
+anchor-deprecated-state = []
+default = ["anchor-deprecated-state"]
+
+[dependencies]
+anchor-lang = { path = "../../../../lang" }
+anchor-spl = { path = "../../../../spl" }

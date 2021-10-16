@@ -1,13 +1,19 @@
 import asyncio
+from pathlib import Path
 from pytest import raises, mark, fixture
 from anchorpy import ProgramError, Program, create_workspace, Context
 from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.core import RPCException
+from tests.utils import get_localnet
+
+PATH = Path("anchor/tests/errors/")
+
+localnet = get_localnet(PATH)
 
 
-@fixture(scope="session")
+@fixture(scope="module")
 def event_loop():
     """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
@@ -15,9 +21,9 @@ def event_loop():
     loop.close()
 
 
-@fixture(scope="session")
-async def program() -> Program:
-    workspace = create_workspace()
+@fixture(scope="module")
+async def program(localnet) -> Program:
+    workspace = create_workspace(PATH)
     return workspace["errors"]
 
 

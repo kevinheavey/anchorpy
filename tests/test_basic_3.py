@@ -1,13 +1,19 @@
 from typing import Dict
+from pathlib import Path
 import asyncio
 from pytest import mark, fixture
 from anchorpy import create_workspace, close_workspace, Provider, Context
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 from anchorpy.program.core import Program
+from tests.utils import get_localnet
+
+PATH = Path("anchor/examples/tutorial/basic-3")
+
+localnet = get_localnet(PATH)
 
 
-@fixture(scope="session")
+@fixture(scope="module")
 def event_loop():
     """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop_policy().new_event_loop()
@@ -15,14 +21,14 @@ def event_loop():
     loop.close()
 
 
-@fixture(scope="session")
-async def workspace():
-    ws = create_workspace()
+@fixture(scope="module")
+async def workspace(localnet):
+    ws = create_workspace(PATH)
     yield ws
     await close_workspace(ws)
 
 
-@fixture(scope="session")
+@fixture(scope="module")
 async def provider() -> Provider:
     prov = Provider.local()
     yield prov
