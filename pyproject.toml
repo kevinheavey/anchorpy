@@ -1,7 +1,10 @@
 [tool.poetry]
 name = "anchorpy"
 version = "0.1.0"
-description = ""
+description = "The Python Anchor client."
+readme = "README.md"
+repository = "https://github.com/kevinheavey/anchorpy"
+documentation = "https://kevinheavey.github.io/anchorpy/"
 authors = ["kevinheavey <kevinheavey123@gmail.com>"]
 
 [tool.poetry.dependencies]
