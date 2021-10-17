@@ -1,10 +1,13 @@
+"""Mimics anchor/examples/tutorial/basic-3/tests/basic-3.js."""
 from typing import Dict
 from pathlib import Path
 import asyncio
+
 from pytest import mark, fixture
-from anchorpy import create_workspace, close_workspace, Provider, Context
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
+
+from anchorpy import create_workspace, close_workspace, Provider, Context
 from anchorpy.program.core import Program
 from tests.utils import get_localnet
 
@@ -23,6 +26,7 @@ def event_loop():
 
 @fixture(scope="module")
 async def workspace(localnet):
+    """Create a workspace dict."""
     ws = create_workspace(PATH)
     yield ws
     await close_workspace(ws)
@@ -30,6 +34,7 @@ async def workspace(localnet):
 
 @fixture(scope="module")
 async def provider() -> Provider:
+    """Create a Provider instance."""
     prov = Provider.local()
     yield prov
     await prov.close()
@@ -49,7 +54,7 @@ async def test_cpi(workspace: Dict[str, Program], provider: Provider) -> None:
                 "systemProgram": SYS_PROGRAM_ID,
             },
             signers=[new_puppet_account],
-        )
+        ),
     )
     await puppet_master.rpc["pullStrings"](
         111,
@@ -57,7 +62,7 @@ async def test_cpi(workspace: Dict[str, Program], provider: Provider) -> None:
             accounts={
                 "puppet": new_puppet_account.public_key,
                 "puppetProgram": puppet.program_id,
-            }
+            },
         ),
     )
     puppet_account = await puppet.account["Data"].fetch(new_puppet_account.public_key)

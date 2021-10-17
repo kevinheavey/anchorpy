@@ -1,9 +1,12 @@
+"""Mimics anchor/examples/tutorial/basic-2/tests/basic-2.js."""
 import asyncio
 from pathlib import Path
-from pytest import fixture, mark
-from anchorpy import Program, Provider, create_workspace, close_workspace, Context
+
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
+
+from pytest import fixture, mark
+from anchorpy import Program, Provider, create_workspace, close_workspace, Context
 from tests.utils import get_localnet
 
 PATH = Path("anchor/examples/tutorial/basic-2")
@@ -21,6 +24,7 @@ def event_loop():
 
 @fixture(scope="module")
 async def program(localnet) -> Program:
+    """Create a Program instance."""
     workspace = create_workspace(PATH)
     yield workspace["basic_2"]
     await close_workspace(workspace)
@@ -28,11 +32,13 @@ async def program(localnet) -> Program:
 
 @fixture(scope="module")
 def provider(program: Program) -> Provider:
+    """Get a Provider instance."""
     return program.provider
 
 
 @fixture(scope="module")
 async def created_counter(program: Program, provider: Provider) -> Keypair:
+    """Create the counter."""
     counter = Keypair()
     await program.rpc["create"](
         provider.wallet.public_key,
@@ -50,7 +56,9 @@ async def created_counter(program: Program, provider: Provider) -> Keypair:
 
 @mark.asyncio
 async def test_create_counter(
-    created_counter: Keypair, program: Program, provider: Provider
+    created_counter: Keypair,
+    program: Program,
+    provider: Provider,
 ) -> None:
     """Test creating a counter."""
     counter_account = await program.account["Counter"].fetch(created_counter.public_key)
@@ -60,7 +68,9 @@ async def test_create_counter(
 
 @mark.asyncio
 async def test_update_counter(
-    created_counter: Keypair, program: Program, provider: Provider
+    created_counter: Keypair,
+    program: Program,
+    provider: Provider,
 ) -> None:
     """Test updating the counter."""
     await program.rpc["increment"](
@@ -68,8 +78,8 @@ async def test_update_counter(
             accounts={
                 "counter": created_counter.public_key,
                 "authority": provider.wallet.public_key,
-            }
-        )
+            },
+        ),
     )
     counter_account = await program.account["Counter"].fetch(created_counter.public_key)
     assert counter_account["authority"] == provider.wallet.public_key

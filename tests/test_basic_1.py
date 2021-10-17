@@ -1,9 +1,12 @@
+"""Mimics anchor/examples/tutorial/basic-1/tests/basic-1.js."""
 import asyncio
 from pathlib import Path
+
 from pytest import fixture, mark
-from anchorpy import create_workspace, close_workspace, Context, Program
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
+
+from anchorpy import create_workspace, close_workspace, Context, Program
 from tests.utils import get_localnet
 
 PATH = Path("anchor/examples/tutorial/basic-1")
@@ -25,6 +28,7 @@ def event_loop():
 
 @fixture(scope="module")
 async def program(localnet) -> Program:
+    """Create a Program instance."""
     workspace = create_workspace(PATH)
     yield workspace["basic_1"]
     await close_workspace(workspace)
@@ -32,6 +36,7 @@ async def program(localnet) -> Program:
 
 @fixture(scope="module")
 async def initialized_account(program: Program) -> Keypair:
+    """Generate a keypair and initialize it."""
     my_account = Keypair()
     await program.rpc["initialize"](
         1234,
@@ -49,7 +54,8 @@ async def initialized_account(program: Program) -> Keypair:
 
 @mark.asyncio
 async def test_create_and_initialize_account(
-    program: Program, initialized_account: Keypair
+    program: Program,
+    initialized_account: Keypair,
 ) -> None:
     """Test creating and initializing account in single tx."""
     account = await program.account["MyAccount"].fetch(initialized_account.public_key)
@@ -58,11 +64,13 @@ async def test_create_and_initialize_account(
 
 @mark.asyncio
 async def test_update_previously_created_account(
-    initialized_account: Keypair, program: Program
+    initialized_account: Keypair,
+    program: Program,
 ) -> None:
     """Test updating a previously created account."""
     await program.rpc["update"](
-        4321, ctx=Context(accounts={"myAccount": initialized_account.public_key})
+        4321,
+        ctx=Context(accounts={"myAccount": initialized_account.public_key}),
     )
     account = await program.account["MyAccount"].fetch(initialized_account.public_key)
     assert account["data"] == 4321

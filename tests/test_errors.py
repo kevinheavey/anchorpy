@@ -1,3 +1,4 @@
+"""Mimics anchor/tests/errors/tests/errors.js."""
 import asyncio
 from pathlib import Path
 from pytest import raises, mark, fixture
