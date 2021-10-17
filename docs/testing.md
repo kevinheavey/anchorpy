@@ -20,6 +20,14 @@ from solana.system_program import SYS_PROGRAM_ID
 # pytest-asyncio will break.
 
 @fixture(scope="module")
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@fixture(scope="module")
 async def program() -> Program:
     workspace = create_workspace()
     yield workspace["basic_1"]
