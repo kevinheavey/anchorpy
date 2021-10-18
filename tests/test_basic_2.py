@@ -31,7 +31,7 @@ async def program(localnet) -> Program:
 
 
 @fixture(scope="module")
-def provider(program: Program) -> Provider:
+async def provider(program: Program) -> Provider:
     """Get a Provider instance."""
     return program.provider
 
