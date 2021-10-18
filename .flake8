@@ -1,5 +1,5 @@
 [flake8]
-ignore = I001,I005,Q000,WPS110,WPS111,WPS114,WPS115,WPS120,WPS202,WPS210,WPS221,WPS232,WPS306,WPS305,WPS326,WPS410,WPS428,WPS430,WPS432,W503,DAR201
+ignore = I001,I005,Q000,WPS110,WPS111,WPS114,WPS115,WPS120,WPS202,WPS210,WPS221,WPS232,WPS306,WPS305,WPS326,WPS410,WPS428,WPS430,WPS432,WPS442,W503,DAR201
 exclude = .git,__pycache__,docs/source/conf.py,old,build,dist
 max-line-length = 88
 per-file-ignores = 
@@ -7,4 +7,5 @@ per-file-ignores =
     src/anchorpy/coder/idl.py: WPS235,WPS231
     src/anchorpy/__init__.py: D104,WPS412
     tests/test_errors.py: WPS204,WPS441
-    tests/*: WPS226,WPS442,S101,DAR101,DAR301
+    tests/test_chat.py: WPS421
+    tests/*.py: WPS226,S101,DAR101,DAR301
