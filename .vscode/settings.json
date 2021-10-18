@@ -4,4 +4,23 @@
     "python.formatting.provider": "black",
     "python.linting.mypyEnabled": true,
     "python.linting.pydocstyleEnabled": true,
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        "**/.hg/store/**": true,
+        "anchor/**": true
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "anchor/**": true
+    },
+    "rust-analyzer.files.excludeDirs": [
+        "anchor"
+    ]
 }
