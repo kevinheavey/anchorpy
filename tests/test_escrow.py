@@ -86,18 +86,18 @@ async def initialize_escrow(program: Program, provider: Provider):
     )
 
 
-@mark.asyncio
-async def test_initialized_escrow_state(initialize_escrow):
-    (
-        mint_a,
-        mint_b,
-        initializer_token_account_a,
-        initializer_token_account_b,
-        taker_token_account_a,
-        taker_token_account_b,
-    ) = initialize_escrow
-    _initializer_token_account_a = await mint_a.get_account_info(
-        initializer_token_account_a
-    )
-    _taker_token_account_b = await mint_b.get_account_info(taker_token_account_b)
-    print(_initializer_token_account_a)
+# @mark.asyncio
+# async def test_initialized_escrow_state(initialize_escrow):
+#     (
+#         mint_a,
+#         mint_b,
+#         initializer_token_account_a,
+#         initializer_token_account_b,
+#         taker_token_account_a,
+#         taker_token_account_b,
+#     ) = initialize_escrow
+#     _initializer_token_account_a = await mint_a.get_account_info(
+#         initializer_token_account_a
+#     )
+#     _taker_token_account_b = await mint_b.get_account_info(taker_token_account_b)
+#     print(_initializer_token_account_a)
