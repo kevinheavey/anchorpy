@@ -27,5 +27,3 @@ __all__ = [
     "AccountClient",
     "EventParser",
 ]
-
-__version__ = "0.1.1"
