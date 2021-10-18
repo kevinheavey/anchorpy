@@ -93,9 +93,8 @@ def typedef_layout(
 
 def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
     field_name = field.name if field.name else ""
-    if field.type in FIELD_TYPE_MAP:
-        field_type_str = cast(str, field.type)
-        return field_name / FIELD_TYPE_MAP[field_type_str]
+    if isinstance(field.type, str):
+        return field_name / FIELD_TYPE_MAP[field.type]
     field_type = cast(
         NonLiteralIdlTypes,
         field.type,

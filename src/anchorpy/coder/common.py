@@ -67,10 +67,9 @@ def type_size(idl: Idl, ty: IdlType) -> int:
         "i128": 16,
         "publicKey": 32,
     }
-    try:
-        return sizes[ty]  # type: ignore
-    except KeyError:
-        return _type_size_compound_type(idl, ty)  # type: ignore
+    if isinstance(ty, str):
+        return sizes[ty]
+    return _type_size_compound_type(idl, ty)
 
 
 def _variant_field_size(idl: Idl, field: Union[IdlField, IdlType]) -> int:
