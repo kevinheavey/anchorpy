@@ -1,6 +1,9 @@
 site_name: AnchorPy
 theme:
   name: material
+  icon:
+    logo: material/anchor
+  favicon: img/anchor.svg
   palette:
     - scheme: default
       primary: lime
