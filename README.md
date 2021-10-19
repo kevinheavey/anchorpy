@@ -1,6 +1,6 @@
 # AnchorPy
 <div align="center">
-    <img src="https://raw.githubusercontent.com/kevinheavey/anchorpy/main/docs/img/logo.png" width="200" height="260">
+    <img src="https://raw.githubusercontent.com/kevinheavey/anchorpy/main/docs/img/logo.png">
 </div>
 
 ---
