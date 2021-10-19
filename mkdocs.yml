@@ -22,6 +22,7 @@ markdown_extensions:
       alternate_style: true 
 repo_url: https://github.com/kevinheavey/anchorpy
 repo_name: kevinheavey/anchorpy
+site_url: https://kevinheavey.github.io/anchorpy/
 nav:
   - index.md
   - tutorial.md
