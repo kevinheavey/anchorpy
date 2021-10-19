@@ -11,11 +11,13 @@ theme:
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
+  custom_dir: overrides
 markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
   - admonition
   - pymdownx.snippets
+  - meta
   - pymdownx.tabbed:
       alternate_style: true 
 repo_url: https://github.com/kevinheavey/anchorpy
