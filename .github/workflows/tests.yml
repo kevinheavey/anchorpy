@@ -26,5 +26,21 @@ jobs:
       - name: Add Solana to path
         run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - run: npm i -g @project-serum/anchor-cli
-      - run: cd anchor/tests/errors && anchor build
+      - name: Install Anchor CLI
+        run: npm i -g @project-serum/anchor-cli
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: 1.1.7
+
+      - name: Install Python dev deps
+        run: poetry install
+
+      - name: Run tests
+        run: pytest
