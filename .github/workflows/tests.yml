@@ -10,4 +10,4 @@ jobs:
         with:
           node-version: '17'
       - run: npm i -g @project-serum/anchor-cli
-      - run: anchor -h
+      - run: cd anchor/tests/errors && anchor test
