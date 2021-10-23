@@ -8,6 +8,7 @@ from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 
 from anchorpy import Program, create_workspace, Context
+from anchorpy.workspace import close_workspace
 from tests.utils import get_localnet
 
 PATH = Path("anchor/tests/composite/")
@@ -27,7 +28,8 @@ def event_loop():
 async def program(localnet) -> Program:
     """Create a Program instance."""
     workspace = create_workspace(PATH)
-    return workspace["composite"]
+    yield workspace["composite"]
+    await close_workspace(workspace)
 
 
 @fixture(scope="module")

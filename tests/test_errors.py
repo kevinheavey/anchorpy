@@ -2,7 +2,7 @@
 import asyncio
 from pathlib import Path
 from pytest import raises, mark, fixture
-from anchorpy import ProgramError, Program, create_workspace, Context
+from anchorpy import ProgramError, Program, create_workspace, close_workspace, Context
 from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
@@ -25,7 +25,8 @@ def event_loop():
 @fixture(scope="module")
 async def program(localnet) -> Program:
     workspace = create_workspace(PATH)
-    return workspace["errors"]
+    yield workspace["errors"]
+    await close_workspace(workspace)
 
 
 @mark.asyncio

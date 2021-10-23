@@ -1,8 +1,9 @@
+from typing import Callable
 from pytest import fixture
 from xprocess import ProcessStarter
 
 
-def get_localnet(path, scope="module", timeout_seconds=300):
+def get_localnet(path, scope="module", timeout_seconds=300) -> Callable:
     @fixture(scope=scope)
     def localnet_fixture(fixed_xprocess):
         class Starter(ProcessStarter):

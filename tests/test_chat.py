@@ -10,7 +10,7 @@ from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.system_program import SYS_PROGRAM_ID
 
-from anchorpy import Program, create_workspace, Context, Provider
+from anchorpy import Program, create_workspace, close_workspace, Context, Provider
 from tests.utils import get_localnet
 
 PATH = Path("anchor/tests/chat/")
@@ -30,7 +30,8 @@ def event_loop():
 async def program(localnet) -> Program:
     """Create a Program instance."""
     workspace = create_workspace(PATH)
-    return workspace["chat"]
+    yield workspace["chat"]
+    await close_workspace(workspace)
 
 
 @fixture(scope="module")
