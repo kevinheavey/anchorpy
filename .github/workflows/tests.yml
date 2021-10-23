@@ -20,5 +20,8 @@ jobs:
           toolchain: nightly
           override: true
 
+      - name: Install Solana
+        run: sh -c "$(curl -sSfL https://release.solana.com/v1.7.11/install)"
+
       - run: npm i -g @project-serum/anchor-cli
       - run: cd anchor/tests/errors && anchor build
