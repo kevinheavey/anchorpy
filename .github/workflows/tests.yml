@@ -29,6 +29,9 @@ jobs:
       - name: Install Anchor CLI
         run: npm i -g @project-serum/anchor-cli
 
+      - name: Generate local keypair
+        run: yes | solana-keygen new
+
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
@@ -43,4 +46,4 @@ jobs:
         run: poetry install
 
       - name: Run tests
-        run: poetry run pytest
+        run: poetry run pytest tests/test_basic_0.py
