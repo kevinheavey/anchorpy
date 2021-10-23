@@ -50,4 +50,4 @@ jobs:
       needs: setup
       steps:
         - name: Run tests
-        - run: poetry run pytest tests/test_basic_0.py
+          run: poetry run pytest tests/test_basic_0.py
