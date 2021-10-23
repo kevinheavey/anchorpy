@@ -23,5 +23,8 @@ jobs:
       - name: Install Solana
         run: sh -c "$(curl -sSfL https://release.solana.com/v1.7.11/install)"
 
+      - name: Add Solana to path
+        run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
       - run: npm i -g @project-serum/anchor-cli
       - run: cd anchor/tests/errors && anchor build
