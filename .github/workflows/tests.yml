@@ -9,5 +9,5 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '17'
-      - run: npm i -g @project-serum/anchor
+      - run: npm i -g @project-serum/anchor-cli
       - run: anchor -h
