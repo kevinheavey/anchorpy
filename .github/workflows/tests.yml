@@ -29,10 +29,10 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '17'
-          cache: 'yarn'
+          cache: 'npm'
 
       - name: Install Anchor CLI
-        run: yarn global add @project-serum/anchor-cli
+        run: npm i -g @project-serum/anchor-cli
 
       - name: Generate local keypair
         run: yes | solana-keygen new
