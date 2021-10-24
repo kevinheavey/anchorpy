@@ -29,7 +29,17 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '17'
-          cache: 'npm'
+        
+      - name: Cache Node Modules
+        uses: actions/cache@v2
+        id: cache-node-modules
+        with:
+          path: |
+            ~/.npm/
+            ./node_modules
+          key: npm-${{ runner.os }}-v0000-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Install Anchor CLI
         run: npm i @project-serum/anchor-cli
