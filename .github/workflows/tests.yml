@@ -58,7 +58,6 @@ jobs:
       - name: install Anchor
         if: steps.cache-anchor.outputs.cache-hit != 'true'
         run: |
-          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
           cargo install --git https://github.com/project-serum/anchor --tag v${{ env.anchor_version }} anchor-cli --locked
 
       - name: Generate local keypair
