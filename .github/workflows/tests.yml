@@ -42,7 +42,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install Anchor CLI
-        run: npm i @project-serum/anchor-cli
+        run: npm i -g @project-serum/anchor-cli
 
       - name: Generate local keypair
         run: yes | solana-keygen new
