@@ -16,7 +16,6 @@ from anchorpy.program.namespace.simulate import (
 )
 from anchorpy.program.namespace.instruction import (
     InstructionFn,
-    build_instruction_fn,
 )
 from anchorpy.program.common import parse_idl_errors
 from anchorpy.idl import Idl
@@ -42,7 +41,7 @@ def build_namespace(  # ts: NamespaceFactory.build
 
     for idl_ix in idl.instructions:
 
-        ix_item = build_instruction_fn(idl_ix, coder.instruction.build, program_id)
+        ix_item = InstructionFn(idl_ix, coder.instruction.build, program_id)
         tx_item = build_transaction_fn(idl_ix, ix_item)
         rpc_item = build_rpc_item(idl_ix, tx_item, idl_errors, provider)
         simulate_item = build_simulate_item(

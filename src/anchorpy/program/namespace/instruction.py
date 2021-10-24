@@ -1,4 +1,4 @@
-from typing import Callable, List, Any, Sequence, cast, Tuple, Protocol
+from typing import Callable, List, Any, Sequence, cast, Tuple
 
 from solana.transaction import TransactionInstruction, AccountMeta
 from solana.publickey import PublicKey
@@ -13,57 +13,50 @@ from anchorpy.program.context import EMPTY_CONTEXT, Context, check_args_length, 
 from anchorpy.idl import IdlInstruction, IdlAccountItem, IdlAccounts, IdlAccount
 
 
-class InstructionFn(Protocol):
-    """Function to create a `TransactionInstruction` generated from an IDL.
+class InstructionFn:
+    def __init__(
+        self,
+        idl_ix: IdlInstruction,
+        encode_fn: Callable[[Instruction], bytes],
+        program_id: PublicKey,
+    ) -> None:
+        """Callable object to create a `TransactionInstruction` generated from an IDL.
 
-    Additionally it provides an `accounts` utility method, returning a list
-    of ordered accounts for the instruction.
-    """
+        Additionally it provides an `accounts` utility method, returning a list
+        of ordered accounts for the instruction.
+        """
+        if idl_ix.name == "_inner":
+            raise ValueError("_inner name is reserved")
+        self.idl_ix = idl_ix
+        self.encode_fn = encode_fn
+        self.program_id = program_id
+
+    def accounts(self, accs: Accounts) -> List[AccountMeta]:
+        """Utility fn for ordering the accounts for this instruction."""
+        return accounts_array(accs, self.idl_ix.accounts)
 
     def __call__(
-        self,
-        *args: Any,
-        ctx: Context = EMPTY_CONTEXT,
+        self, *args: Any, ctx: Context = EMPTY_CONTEXT
     ) -> TransactionInstruction:
-        """
+        """Create the TransactionInstruction.
 
         Args:
             *args: The positional arguments for the program. The type and number
                 of these arguments depend on the program being used.
             ctx: non-argument parameters to pass to the method.
         """
-        ...
+        check_args_length(self.idl_ix, args)
+        validate_accounts(self.idl_ix.accounts, ctx.accounts)
+        validate_instruction(self.idl_ix, args)
 
-
-def build_instruction_fn(  # ts: InstructionNamespaceFactory.build
-    idl_ix: IdlInstruction,
-    encode_fn: Callable[[Instruction], bytes],
-    program_id: PublicKey,
-) -> InstructionFn:
-    if idl_ix.name == "_inner":
-        raise ValueError("_inner name is reserved")
-
-    def instruction_method(
-        *args: Any,
-        ctx: Context = EMPTY_CONTEXT,
-    ) -> TransactionInstruction:
-        def accounts(accs: Accounts) -> List[AccountMeta]:
-            return accounts_array(accs, idl_ix.accounts)
-
-        check_args_length(idl_ix, args)
-        validate_accounts(idl_ix.accounts, ctx.accounts)
-        validate_instruction(idl_ix, args)
-
-        keys = accounts(ctx.accounts)
+        keys = self.accounts(ctx.accounts)
         if ctx.remaining_accounts:
             keys.extend(ctx.remaining_accounts)
         return TransactionInstruction(
             keys=keys,
-            program_id=program_id,
-            data=encode_fn(to_instruction(idl_ix, args)),
+            program_id=self.program_id,
+            data=self.encode_fn(to_instruction(self.idl_ix, args)),
         )
-
-    return instruction_method
 
 
 def accounts_array(
