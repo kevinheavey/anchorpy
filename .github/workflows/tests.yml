@@ -12,6 +12,26 @@ jobs:
       - name: Checkout repo.
         uses: actions/checkout@v2
 
+      - name: Cache Cargo registry + index 
+        uses: actions/cache@v2
+        id: cache-anchor
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: cargo-${{ runner.os }}-v0000-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Solana Tool Suite
+        uses: actions/cache@v2
+        id: cache-solana
+        with:
+          path: |
+            ~/.cache/solana/
+            ~/.local/share/solana/
+          key: solana-${{ runner.os }}-v0000-${{ env.solana_verion }}
+
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -20,29 +40,17 @@ jobs:
           override: true
 
       - name: Install Solana
+        if: steps.cache-solana.outputs.cache-hit != 'true'
         run: sh -c "$(curl -sSfL https://release.solana.com/v1.7.11/install)"
 
       - name: Add Solana to path
         run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: Install Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '17'
-        
-      - name: Cache Node Modules
-        uses: actions/cache@v2
-        id: cache-node-modules
-        with:
-          path: |
-            ~/.npm/
-            ./node_modules
-          key: npm-${{ runner.os }}-v0000-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install Anchor CLI
-        run: npm i -g @project-serum/anchor-cli
+      - name: install Anchor
+        if: steps.cache-anchor.outputs.cache-hit != 'true'
+        run: |
+          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
+          cargo install --git https://github.com/project-serum/anchor --tag v${{ env.anchor_version }} anchor-cli --locked
 
       - name: Generate local keypair
         run: yes | solana-keygen new
