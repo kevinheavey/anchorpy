@@ -5,6 +5,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  solana_verion: 1.7.11
+  anchor_version: 0.17.0
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -41,7 +45,7 @@ jobs:
 
       - name: Install Solana
         if: steps.cache-solana.outputs.cache-hit != 'true'
-        run: sh -c "$(curl -sSfL https://release.solana.com/v1.7.11/install)"
+        run: sh -c "$(curl -sSfL https://release.solana.com/v${{ env.solana_verion }}/install)"
 
       - name: Add Solana to path
         run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
