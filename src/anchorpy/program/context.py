@@ -47,7 +47,7 @@ def check_args_length(
     if len(args) != len(idl_ix.args):
         raise ArgsError(
             f"Provided too many args to instruction={idl_ix.name}. "
-            f"Expected {idl_ix.args}"
+            f"Expected {idl_ix.args}",
         )
 
 
