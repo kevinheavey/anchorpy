@@ -45,7 +45,10 @@ def check_args_length(
 ) -> None:
     """Check that the correct number of args is passed to the RPC function."""
     if len(args) != len(idl_ix.args):
-        raise ArgsError(f"Provided too many args to method={idl_ix.name}")
+        raise ArgsError(
+            f"Provided too many args to instruction={idl_ix.name}. "
+            f"Expected {idl_ix.args}"
+        )
 
 
 EMPTY_CONTEXT = Context()
