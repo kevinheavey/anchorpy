@@ -1,7 +1,7 @@
 from typing import Dict, Any, Tuple
 
 
-from borsh_construct_tmp import CStruct
+from borsh_construct import CStruct
 from construct import Sequence, Bytes
 from construct import Construct, Adapter, Switch, Container
 from anchorpy.coder.common import sighash
