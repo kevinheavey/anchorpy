@@ -111,9 +111,9 @@ python2 = ["typed-ast (>=1.4.2)"]
 uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
-name = "borsh-construct-tmp"
+name = "borsh-construct"
 version = "0.1.0"
-description = "TEMPORARY LOCATION: DO NOT USE."
+description = "Python implementation of Borsh serialization, built on the Construct library."
 category = "main"
 optional = false
 python-versions = ">=3.8.3,<4.0.0"
@@ -1133,7 +1133,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "fd6502f3c071bebf3d73860e6e7d4463e4804da8335451c244a39090493e0879"
+content-hash = "04e8855099ed36f4ee961ea0dbee75019b0e21005bb6a88de69266a9c57a603a"
 
 [metadata.files]
 anyio = [
@@ -1168,9 +1168,9 @@ black = [
     {file = "black-21.9b0-py3-none-any.whl", hash = "sha256:380f1b5da05e5a1429225676655dddb96f5ae8c75bdf91e53d798871b902a115"},
     {file = "black-21.9b0.tar.gz", hash = "sha256:7de4cfc7eb6b710de325712d40125689101d21d25283eed7e9998722cf10eb91"},
 ]
-borsh-construct-tmp = [
-    {file = "borsh-construct-tmp-0.1.0.tar.gz", hash = "sha256:bdfecc775b090cd957bc7c4a4af2bb529dc0ba08dda186370d7e313ca29613e3"},
-    {file = "borsh_construct_tmp-0.1.0-py3-none-any.whl", hash = "sha256:b0038d3afe0f6c6c75221399bd9ff24a9b680c581df0984a37651b3b0361b326"},
+borsh-construct = [
+    {file = "borsh-construct-0.1.0.tar.gz", hash = "sha256:c916758ceba70085d8f456a1cc26991b88cb64233d347767766473b651b37263"},
+    {file = "borsh_construct-0.1.0-py3-none-any.whl", hash = "sha256:f584c791e2a03f8fc36e6c13011a27bcaf028c9c54ba89cd70f485a7d1c687ed"},
 ]
 cachetools = [
     {file = "cachetools-4.2.4-py3-none-any.whl", hash = "sha256:92971d3cb7d2a97efff7c7bb1657f21a8f5fb309a37530537c71b1774189f2d1"},

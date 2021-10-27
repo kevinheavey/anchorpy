@@ -13,8 +13,8 @@ construct-typing = "^0.5.1"
 solana = "^0.16.0"
 sumtypes = "^0.1a5"
 apischema = "^0.15.6"
-borsh-construct-tmp = "^0.1.0"
 inflection = "^0.5.1"
+borsh-construct = "^0.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
