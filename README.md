@@ -5,6 +5,8 @@
 
 ---
 
+[![Discord Chat](https://img.shields.io/discord/889577356681945098?color=blueviolet)](https://discord.com/channels/889577356681945098)  
+
 AnchorPy is the Python client for [Anchor](https://github.com/project-serum/anchor). It allows you to interact with Anchor programs using Python.
 
 Read the [Documentation](https://kevinheavey.github.io/anchorpy/).
