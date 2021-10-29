@@ -110,6 +110,15 @@ class IdlTypeDef:
     type: IdlTypeDefTy
 
 
+IdlStateMethod = IdlInstruction
+
+
+@dataclass
+class IdlState:
+    struct: IdlTypeDef
+    methods: List[IdlStateMethod]
+
+
 @dataclass
 class IdlTypeArray:
     array: Tuple[IdlType, int]
@@ -147,6 +156,7 @@ class Idl:
     version: str
     name: str
     instructions: List[IdlInstruction]
+    state: Optional[IdlState] = None
     accounts: List[IdlTypeDef] = field(default_factory=list)
     types: List[IdlTypeDef] = field(default_factory=list)
     events: List[IdlEvent] = field(default_factory=list)
