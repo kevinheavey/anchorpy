@@ -9,7 +9,7 @@ from anchorpy.idl import IdlInstruction
 
 
 class ArgsError(Exception):
-    pass
+    """Raise when the incorrect number of args is passed to the RPC function"""
 
 
 # should be Dict[str, Union[PublicKey, Accounts]]

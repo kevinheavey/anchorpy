@@ -3,12 +3,11 @@ import asyncio
 from pathlib import Path
 
 from solana.keypair import Keypair
-from solana.system_program import SYS_PROGRAM_ID
 from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
-from pytest import fixture, mark
-from anchorpy import Program, Provider, create_workspace, close_workspace, Context
+from pytest import fixture
+from anchorpy import Program, Provider, create_workspace, close_workspace
 from tests.utils import get_localnet
 
 PATH = Path("anchor/tests/escrow")
@@ -54,7 +53,6 @@ async def initialize_escrow(program: Program, provider: Provider):
         provider.wallet.public_key
     )
     taker_token_account_a = await mint_a.create_account(provider.wallet.public_key)
-    # TODO: find why this always fails with BlockhashNotFound
     await mint_a.mint_to(
         initializer_token_account_a,
         mint_authority.public_key,

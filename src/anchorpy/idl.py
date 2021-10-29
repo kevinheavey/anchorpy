@@ -3,7 +3,7 @@ from typing import List, Union, Optional, Dict, Any, Literal, Tuple, TypedDict
 
 from apischema import deserialize, alias
 from borsh_construct import CStruct, Vec, U8
-import solana.publickey
+import solana.publickey  # noqa: WPS301
 
 from anchorpy import borsh_extension
 
