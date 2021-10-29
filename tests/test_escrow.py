@@ -6,7 +6,7 @@ from solana.keypair import Keypair
 from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
-from pytest import fixture
+from pytest import fixture, mark
 from anchorpy import Program, Provider, create_workspace, close_workspace
 from tests.utils import get_localnet
 
@@ -46,11 +46,16 @@ async def initialize_escrow(program: Program, provider: Provider):
     mint_authority = Keypair()
     await provider.client.request_airdrop(payer.public_key, 10000000000)
     mint_a = await AsyncToken.create_mint(
-        provider.client, payer, mint_authority.public_key, 0, TOKEN_PROGRAM_ID, None
+        provider.client,
+        payer,
+        mint_authority.public_key,
+        0,
+        TOKEN_PROGRAM_ID,
+        None,
     )
 
     initializer_token_account_a = await mint_a.create_account(
-        provider.wallet.public_key
+        provider.wallet.public_key,
     )
     taker_token_account_a = await mint_a.create_account(provider.wallet.public_key)
     await mint_a.mint_to(
