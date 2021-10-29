@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, NamedTuple, Union, cast, Protocol
+from typing import Dict, Any, List, NamedTuple, Union, cast, Protocol, Awaitable
 
 from solana.rpc.types import RPCError
 
@@ -27,7 +27,9 @@ class SimulateFn(Protocol):
     during the execution of the method.
     """
 
-    def __call__(self, *args: Any, ctx: Context = EMPTY_CONTEXT) -> SimulateResponse:
+    def __call__(
+        self, *args: Any, ctx: Context = EMPTY_CONTEXT
+    ) -> Awaitable[SimulateResponse]:
         """Protocol definition.
 
         Args:
@@ -47,10 +49,10 @@ def build_simulate_item(
     program_id: PublicKey,
     idl: Idl,
 ) -> SimulateFn:
-    def simulate_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> SimulateResponse:
+    async def simulate_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> SimulateResponse:
         tx = tx_fn(*args, ctx=ctx)
         check_args_length(idl_ix, args)
-        resp = provider.simulate(tx, ctx.signers, ctx.options)
+        resp = await provider.simulate(tx, ctx.signers, ctx.options)
         try:
             ok_res = resp["result"]
         except KeyError:
