@@ -129,7 +129,7 @@ class ProgramError(Exception):
         try:  # noqa: WPS229
             err_data = cast(ExtendedRPCError, err_info)["data"]
             custom_err_code = err_data["err"]["InstructionError"][1]["Custom"]
-        except KeyError:
+        except (KeyError, TypeError):
             return None
         # parse user error
         msg = idl_errors.get(custom_err_code)
