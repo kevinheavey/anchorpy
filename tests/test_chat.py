@@ -92,7 +92,7 @@ async def sent_messages(
         for i in range(num_messages)
     ]
     for i, msg in enumerate(messages):
-        print(f"senging message {i}")
+        print(f"sending message {i}")
         await program.rpc["sendMessage"](
             msg,
             ctx=Context(
