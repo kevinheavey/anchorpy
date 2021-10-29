@@ -100,11 +100,11 @@ async def test_signer_err(program: Program) -> None:
             keys=[
                 AccountMeta(
                     pubkey=SYSVAR_RENT_PUBKEY, is_writable=False, is_signer=False
-                )
+                ),
             ],
             program_id=program.program_id,
             data=program.coder.instruction.encode("signerError", {}),
-        )
+        ),
     )
     with raises(RPCException) as excinfo:
         await program.provider.send(tx)
