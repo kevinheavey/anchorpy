@@ -38,7 +38,7 @@ async def program(localnet) -> Program:
 @mark.asyncio
 async def test_initialize(program: Program) -> None:
     uri = "ws://127.0.0.1:8900"
-    async with websockets.connect(uri) as websocket:
+    async with websockets.connect(uri) as websocket:  # type: ignore
         await websocket.send(
             '{"jsonrpc": "2.0", "id": 1, "method": "logsSubscribe", "params": ["all"]}'
         )
