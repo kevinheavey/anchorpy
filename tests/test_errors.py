@@ -103,7 +103,7 @@ async def test_signer_err(program: Program) -> None:
                 )
             ],
             program_id=program.program_id,
-            data=program.coder.instruction.build({"data": {}, "name": "signerError"}),
+            data=program.coder.instruction.encode("signerError", {}),
         )
     )
     with raises(RPCException) as excinfo:

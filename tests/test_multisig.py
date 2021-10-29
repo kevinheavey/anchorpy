@@ -98,9 +98,7 @@ async def created_transaction(
         {"pubkey": multisig_signer, "isWritable": False, "isSigner": True},
     ]
     new_owners = [*owners[:2], owner_d.public_key]
-    data = program.coder.instruction.build(
-        {"data": {"owners": new_owners}, "name": "setOwners"}
-    )
+    data = program.coder.instruction.encode("setOwners", {"owners": new_owners})
     transaction = Keypair()
     tx_size = 1000
     await program.rpc["createTransaction"](

@@ -54,6 +54,10 @@ class InstructionCoder(Adapter):
     def _encode(self, obj: Instruction, context: Container, path) -> Tuple[bytes, Any]:
         return (self.sighashes[obj["name"]], obj["data"])
 
+    def encode(self, ix_name: str, ix: Dict[str, Any]) -> bytes:
+        """Encodes a program instruction."""
+        return self.build({"name": ix_name, "data": ix})
+
 
 def _parse_ix_layout(idl: Idl) -> Dict[str, Construct]:
     ix_layout: Dict[str, Construct] = {}
