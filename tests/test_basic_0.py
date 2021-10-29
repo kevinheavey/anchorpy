@@ -25,10 +25,11 @@ async def test_init(localnet) -> None:
 
 @mark.asyncio
 async def test_at_constructor(localnet) -> None:
+    """Test that the Program.at classmethod works."""
     workspace = create_workspace(PATH)
     program = workspace["basic_0"]
     idl_path = "target/idl/basic_0.json"
-    subprocess.run(
+    subprocess.run(  # noqa: S607,S603
         ["anchor", "idl", "init", "-f", idl_path, str(program.program_id)],
         cwd=PATH,
     )
