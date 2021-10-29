@@ -10,7 +10,7 @@ authors = ["kevinheavey <kevinheavey123@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 construct-typing = "^0.5.1"
-solana = "^0.16.0"
+solana = "^0.18.1"
 sumtypes = "^0.1a5"
 apischema = "^0.15.6"
 inflection = "^0.5.1"
