@@ -34,4 +34,5 @@ async def test_at_constructor(localnet) -> None:
         cwd=PATH,
     )
     fetched = await program.at(program.program_id, program.provider)
+    await program.close()
     assert fetched.idl.name == "basic_0"
