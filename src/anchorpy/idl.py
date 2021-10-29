@@ -1,7 +1,11 @@
 from dataclasses import dataclass, field
-from typing import List, Union, Optional, Dict, Any, Literal, Tuple
+from typing import List, Union, Optional, Dict, Any, Literal, Tuple, TypedDict
 
 from apischema import deserialize, alias
+from borsh_construct import CStruct, Vec, U8
+import solana.publickey
+
+from anchorpy import borsh_extension
 
 
 LiteralStrings = Literal[
@@ -152,3 +156,30 @@ class Idl:
     @classmethod
     def from_json(cls, idl: Dict[str, Any]) -> "Idl":
         return deserialize(cls, idl)
+
+
+SEED = "anchor:idl"
+
+
+def idl_address(program_id: solana.publickey.PublicKey) -> solana.publickey.PublicKey:
+    """Deterministic IDL address as a function of the program id."""
+    base = solana.publickey.PublicKey.find_program_address([], program_id)[0]
+    return solana.publickey.PublicKey.create_with_seed(base, SEED, program_id)
+
+
+class IdlProgramAccount(TypedDict):
+    """The on-chain account of the IDL."""
+
+    authority: solana.publickey.PublicKey
+    data: bytes
+
+
+IDL_ACCOUNT_LAYOUT = CStruct("authority" / borsh_extension.PublicKey, "data" / Vec(U8))
+
+
+def decode_idl_account(data: bytes) -> IdlProgramAccount:
+    return IDL_ACCOUNT_LAYOUT.parse(data)
+
+
+def encode_idl_account(acc: IdlProgramAccount) -> bytes:
+    return IDL_ACCOUNT_LAYOUT.build(acc)

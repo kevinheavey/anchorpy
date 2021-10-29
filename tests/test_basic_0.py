@@ -1,5 +1,6 @@
 """Mimics anchor/examples/tutorial/basic-0/tests/basic-0.js."""
 from pathlib import Path
+import subprocess
 
 from pytest import mark
 
@@ -20,3 +21,16 @@ async def test_init(localnet) -> None:
     res = await program.rpc["initialize"]()
     assert res
     await program.close()
+
+
+@mark.asyncio
+async def test_at_constructor(localnet) -> None:
+    workspace = create_workspace(PATH)
+    program = workspace["basic_0"]
+    idl_path = "target/idl/basic_0.json"
+    subprocess.run(
+        ["anchor", "idl", "init", "-f", idl_path, str(program.program_id)],
+        cwd=PATH,
+    )
+    fetched = await program.at(program.program_id, program.provider)
+    assert fetched.idl.name == "basic_0"
