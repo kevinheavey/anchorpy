@@ -131,19 +131,11 @@ async def test_can_retrieve_events_when_simulating_transaction(
     program: Program,
 ) -> None:
     resp = await program.simulate["testSimulate"](44)
-    expected_raw = [
-        "Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS invoke [1]",
-        "Program log: NgyCA9omwbMsAAAA",
-        "Program log: fPhuIELK/k7SBAAA",
-        "Program log: jvbowsvlmkcJAAAA",
-        (
-            "Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS consumed "
-            "4684 of 200000 compute units"
-        ),
-        "Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS success",
-    ]
+    expected_raw_first_entry = (
+        "Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS invoke [1]"
+    )
     events = resp.events
-    assert resp.raw == expected_raw
+    assert resp.raw[0] == expected_raw_first_entry
     assert events[0]["name"] == "E1"
     assert events[0]["data"]["data"] == 44
     assert events[1]["name"] == "E2"
