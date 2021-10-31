@@ -1,9 +1,10 @@
 from typing import Callable
+import subprocess
 from pytest import fixture
 from xprocess import ProcessStarter
 
 
-def get_localnet(path, scope="module", timeout_seconds=300) -> Callable:
+def get_localnet(path, scope="module", timeout_seconds=60) -> Callable:
     @fixture(scope=scope)
     def localnet_fixture(fixed_xprocess):
         class Starter(ProcessStarter):
@@ -11,7 +12,7 @@ def get_localnet(path, scope="module", timeout_seconds=300) -> Callable:
             pattern = "JSON RPC URL"
             terminate_on_interrupt = True
             # command to start process
-            args = ["anchor", "localnet"]
+            args = ["anchor", "localnet", "--skip-build"]
             timeout = timeout_seconds
             popen_kwargs = {
                 "cwd": path,
@@ -20,6 +21,7 @@ def get_localnet(path, scope="module", timeout_seconds=300) -> Callable:
             max_read_lines = 1_000
             # command to start process
 
+        subprocess.run(["anchor", "build"], cwd=path, check=True)
         # ensure process is running and return its logfile
         logfile = fixed_xprocess.ensure("localnet", Starter)
 
