@@ -199,7 +199,7 @@ async def test_can_use_base58_strings_to_fetch_account(
 
 
 @mark.asyncio
-@mark.xfail
+# @mark.xfail
 async def test_fail_to_close_account_when_sending_lamports_to_itself(
     program: Program, data_i16_keypair: Keypair
 ) -> None:

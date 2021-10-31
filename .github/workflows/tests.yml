@@ -23,6 +23,7 @@ jobs:
             'test_chat.py',
             'test_composite.py',
             'test_errors.py',
+            'test_misc.py',
             'test_multisig.py',
             'unit'
           ]
