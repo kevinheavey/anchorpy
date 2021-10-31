@@ -70,10 +70,12 @@ jobs:
       - name: Add Solana to path
         run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: install Anchor
-        if: steps.cache-anchor.outputs.cache-hit != 'true'
-        run: |
-          cargo install --git https://github.com/project-serum/anchor --tag v${{ env.anchor_version }} anchor-cli --locked
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '17'
+
+      - name: install Anchor CLI
+        run: npm install -g @project-serum/anchor-cli
 
       - name: Generate local keypair
         run: yes | solana-keygen new
