@@ -138,7 +138,7 @@ async def test_can_retrieve_events_when_simulating_transaction(
         "Program log: jvbowsvlmkcJAAAA",
         (
             "Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS consumed "
-            "4694 of 200000 compute units"
+            "4693 of 200000 compute units"
         ),
         "Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS success",
     ]
@@ -211,6 +211,7 @@ async def test_fail_to_close_account_when_sending_lamports_to_itself(
             },
         ),
     )
+    print(ix)
     print(ix.data.hex())
     with raises(ProgramError) as excinfo:
         await program.rpc["testClose"](
