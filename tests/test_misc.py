@@ -7,8 +7,12 @@ from anchorpy import ProgramError, Program, create_workspace, close_workspace, C
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
+from solana.system_program import SYS_PROGRAM_ID, transfer, TransferParams
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.core import RPCException
+from spl.token.constants import TOKEN_PROGRAM_ID
+from spl.token.async_client import AsyncToken
+from anchorpy.utils.rpc import invoke
 from tests.utils import get_localnet
 
 PATH = Path("anchor/tests/misc/")
@@ -41,8 +45,8 @@ async def misc2program(workspace: Dict[str, Program]) -> Program:
     return workspace["misc2"]
 
 
-@mark.asyncio
-async def test_can_use_u128_and_i128(program: Program) -> None:
+@fixture(scope="module")
+async def initialized_keypair(program: Program) -> Keypair:
     data = Keypair()
     await program.rpc["initialize"](
         1234,
@@ -53,7 +57,14 @@ async def test_can_use_u128_and_i128(program: Program) -> None:
             instructions=[await program.account["Data"].create_instruction(data)],
         ),
     )
-    data_account = await program.account["Data"].fetch(data.public_key)
+    return data
+
+
+@mark.asyncio
+async def test_can_use_u128_and_i128(
+    program: Program, initialized_keypair: Keypair
+) -> None:
+    data_account = await program.account["Data"].fetch(initialized_keypair.public_key)
     assert data_account["udata"] == 1234
     assert data_account["idata"] == 22
 
@@ -92,12 +103,12 @@ async def test_can_embed_programs_into_genesis_from_toml(program: Program) -> No
 
 @mark.asyncio
 async def test_can_use_owner_constraint(
-    program: Program, keypair_after_testU16: Keypair
+    program: Program, initialized_keypair: Keypair
 ) -> None:
     await program.rpc["testOwner"](
         ctx=Context(
             accounts={
-                "data": keypair_after_testU16.public_key,
+                "data": initialized_keypair.public_key,
                 "misc": program.program_id,
             },
         ),
@@ -191,28 +202,453 @@ async def test_can_use_base58_strings_to_fetch_account(
 
 
 @mark.asyncio
-# @mark.xfail
 async def test_fail_to_close_account_when_sending_lamports_to_itself(
-    program: Program, data_i16_keypair: Keypair
+    program: Program,
+    initialized_keypair: Keypair,
 ) -> None:
-    ix = program.instruction["testClose"](
-        ctx=Context(
-            accounts={
-                "data": data_i16_keypair.public_key,
-                "solDest": data_i16_keypair.public_key,
-            },
-        ),
-    )
-    print(ix)
-    print(ix.data.hex())
     with raises(ProgramError) as excinfo:
         await program.rpc["testClose"](
             ctx=Context(
                 accounts={
-                    "data": data_i16_keypair.public_key,
-                    "solDest": data_i16_keypair.public_key,
+                    "data": initialized_keypair.public_key,
+                    "solDest": initialized_keypair.public_key,
                 },
             ),
         )
     assert excinfo.value.code == 151
     assert excinfo.value.msg == "A close constraint was violated"
+
+
+@mark.asyncio
+async def test_can_close_account(
+    program: Program,
+    initialized_keypair: Keypair,
+) -> None:
+    open_account = await program.provider.client.get_account_info(
+        initialized_keypair.public_key,
+    )
+    assert open_account["result"]["value"] is not None
+    before_balance_raw = await program.provider.client.get_account_info(
+        program.provider.wallet.public_key,
+    )
+    before_balance = before_balance_raw["result"]["value"]["lamports"]
+    await program.rpc["testClose"](
+        ctx=Context(
+            accounts={
+                "data": initialized_keypair.public_key,
+                "solDest": program.provider.wallet.public_key,
+            },
+        ),
+    )
+    after_balance_raw = await program.provider.client.get_account_info(
+        program.provider.wallet.public_key,
+    )
+    after_balance = after_balance_raw["result"]["value"]["lamports"]
+    assert after_balance > before_balance
+    closed_account = await program.provider.client.get_account_info(
+        initialized_keypair.public_key,
+    )
+    assert closed_account["result"]["value"] is None
+
+
+@mark.asyncio
+async def test_can_use_instruction_data_in_accounts_constraints(
+    program: Program,
+) -> None:
+    seed = b"my-seed"
+    my_pda, nonce = PublicKey.find_program_address(
+        [seed, bytes(SYSVAR_RENT_PUBKEY)], program.program_id
+    )
+    await program.rpc["testInstructionConstraint"](
+        nonce, ctx=Context(accounts={"myPda": my_pda, "myAccount": SYSVAR_RENT_PUBKEY})
+    )
+
+
+@mark.asyncio
+async def test_can_create_a_pda_with_instruction_data(
+    program: Program,
+) -> None:
+    seed = bytes([1, 2, 3, 4])
+    domain = "my-domain"
+    foo = SYSVAR_RENT_PUBKEY
+    my_pda, nonce = PublicKey.find_program_address(
+        [b"my-seed", domain.encode(), bytes(foo), seed], program.program_id
+    )
+    await program.rpc["testPdaInit"](
+        domain,
+        seed,
+        nonce,
+        ctx=Context(
+            accounts={
+                "myPda": my_pda,
+                "myPayer": program.provider.wallet.public_key,
+                "foo": foo,
+                "rent": SYSVAR_RENT_PUBKEY,
+                "systemProgram": SYS_PROGRAM_ID,
+            }
+        ),
+    )
+    my_pda_account = await program.account["DataU16"].fetch(my_pda)
+    assert my_pda_account["data"] == 6
+
+
+@mark.asyncio
+async def test_can_create_a_zero_copy_pda(program: Program) -> None:
+    my_pda, nonce = PublicKey.find_program_address([b"my-seed"], program.program_id)
+    await program.rpc["testPdaInitZeroCopy"](
+        nonce,
+        ctx=Context(
+            accounts={
+                "myPda": my_pda,
+                "myPayer": program.provider.wallet.public_key,
+                "rent": SYSVAR_RENT_PUBKEY,
+                "systemProgram": SYS_PROGRAM_ID,
+            },
+        ),
+    )
+    my_pda_account = await program.account["DataZeroCopy"].fetch(my_pda)
+    assert my_pda_account["data"] == 9
+    assert my_pda_account["bump"] == nonce
+
+
+@mark.asyncio
+async def test_can_write_to_a_zero_copy_pda(program: Program) -> None:
+    my_pda, bump = PublicKey.find_program_address([b"my-seed"], program.program_id)
+    await program.rpc["testPdaMutZeroCopy"](
+        ctx=Context(
+            accounts={
+                "myPda": my_pda,
+                "myPayer": program.provider.wallet.public_key,
+            },
+        )
+    )
+    my_pda_account = await program.account["DataZeroCopy"].fetch(my_pda)
+    assert my_pda_account["data"] == 1234
+    assert my_pda_account["bump"] == bump
+
+
+@mark.asyncio
+async def test_can_create_a_token_account_from_seeds_pda(program: Program) -> None:
+    mint, mint_bump = PublicKey.find_program_address(
+        [b"my-mint-seed"], program.program_id
+    )
+    my_pda, token_bump = PublicKey.find_program_address(
+        [b"my-token-seed"], program.program_id
+    )
+    await program.rpc["testTokenSeedsInit"](
+        token_bump,
+        mint_bump,
+        ctx=Context(
+            accounts={
+                "myPda": my_pda,
+                "mint": mint,
+                "authority": program.provider.wallet.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+                "rent": SYSVAR_RENT_PUBKEY,
+                "tokenProgram": TOKEN_PROGRAM_ID,
+            },
+        ),
+    )
+    mint_account = AsyncToken(
+        program.provider.client, mint, TOKEN_PROGRAM_ID, program.provider.wallet.payer
+    )
+    account = await mint_account.get_account_info(my_pda)
+    assert account.is_frozen is False
+    assert account.is_initialized is True
+    assert account.amount == 0
+    assert account.owner == program.provider.wallet.public_key
+    assert account.mint == mint
+
+
+@mark.asyncio
+async def test_can_execute_fallback_function(program: Program) -> None:
+    with raises(RPCException) as excinfo:
+        await invoke(program.program_id, program.provider)
+    assert "custom program error: 0x4d2" in excinfo.value.args[0]["message"]
+
+
+@mark.asyncio
+async def test_can_init_random_account(program: Program) -> None:
+    data = Keypair()
+    await program.rpc["testInit"](
+        ctx=Context(
+            accounts={
+                "data": data.public_key,
+                "payer": program.provider.wallet.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+            },
+            signers=[data],
+        ),
+    )
+    account = await program.account["DataI8"].fetch(data.public_key)
+    assert account["data"] == 3
+
+
+@mark.asyncio
+async def test_can_init_random_account_prefunded(program: Program) -> None:
+    data = Keypair()
+    await program.rpc["testInit"](
+        ctx=Context(
+            accounts={
+                "data": data.public_key,
+                "payer": program.provider.wallet.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+            },
+            signers=[data],
+            instructions=[
+                transfer(
+                    TransferParams(
+                        from_pubkey=program.provider.wallet.public_key,
+                        to_pubkey=data.public_key,
+                        lamports=4039280,
+                    ),
+                ),
+            ],
+        ),
+    )
+    account = await program.account["DataI8"].fetch(data.public_key)
+    assert account["data"] == 3
+
+
+@mark.asyncio
+async def test_can_init_random_zero_copy_account(program: Program) -> None:
+    data = Keypair()
+    await program.rpc["testInitZeroCopy"](
+        ctx=Context(
+            accounts={
+                "data": data.public_key,
+                "payer": program.provider.wallet.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+            },
+            signers=[data],
+        ),
+    )
+    account = await program.account["DataZeroCopy"].fetch(data.public_key)
+    assert account["data"] == 10
+    assert account["bump"] == 2
+
+
+# @fixture(scope="module")
+# async def initialized_mint(program: Program) -> Keypair:
+
+#     return mint
+
+
+@mark.asyncio
+async def test_can_create_random_mint_account(
+    program: Program,
+) -> None:
+    mint = Keypair()
+    await program.rpc["testInitMint"](
+        ctx=Context(
+            accounts={
+                "mint": mint.public_key,
+                "payer": program.provider.wallet.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+                "tokenProgram": TOKEN_PROGRAM_ID,
+                "rent": SYSVAR_RENT_PUBKEY,
+            },
+            signers=[mint],
+        ),
+    )
+    client = AsyncToken(
+        program.provider.client,
+        mint.public_key,
+        TOKEN_PROGRAM_ID,
+        program.provider.wallet.payer,
+    )
+    mint_account = await client.get_mint_info()
+    assert mint_account.decimals == 6
+    assert mint_account.mint_authority == program.provider.wallet.public_key
+    assert mint_account.freeze_authority == program.provider.wallet.public_key
+
+
+@fixture(scope="module")
+async def prefunded_mint(program: Program) -> Keypair:
+    mint = Keypair()
+    await program.rpc["testInitMint"](
+        ctx=Context(
+            accounts={
+                "mint": mint.public_key,
+                "payer": program.provider.wallet.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+                "tokenProgram": TOKEN_PROGRAM_ID,
+                "rent": SYSVAR_RENT_PUBKEY,
+            },
+            signers=[mint],
+            instructions=[
+                transfer(
+                    TransferParams(
+                        from_pubkey=program.provider.wallet.public_key,
+                        to_pubkey=mint.public_key,
+                        lamports=4039280,
+                    ),
+                ),
+            ],
+        ),
+    )
+    return mint
+
+
+@mark.asyncio
+async def test_can_create_random_mint_account_prefunded(
+    program: Program,
+    prefunded_mint: Keypair,
+) -> None:
+    client = AsyncToken(
+        program.provider.client,
+        prefunded_mint.public_key,
+        TOKEN_PROGRAM_ID,
+        program.provider.wallet.payer,
+    )
+    mint_account = await client.get_mint_info()
+    assert mint_account.decimals == 6
+    assert mint_account.mint_authority == program.provider.wallet.public_key
+
+
+@mark.asyncio
+async def test_can_create_random_token_account(
+    program: Program,
+    prefunded_mint: Keypair,
+) -> None:
+    token = Keypair()
+    await program.rpc["testInitToken"](
+        ctx=Context(
+            accounts={
+                "token": token.public_key,
+                "mint": prefunded_mint.public_key,
+                "payer": program.provider.wallet.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+                "tokenProgram": TOKEN_PROGRAM_ID,
+                "rent": SYSVAR_RENT_PUBKEY,
+            },
+            signers=[token],
+        ),
+    )
+    client = AsyncToken(
+        program.provider.client,
+        prefunded_mint.public_key,
+        TOKEN_PROGRAM_ID,
+        program.provider.wallet.payer,
+    )
+    account = await client.get_account_info(token.public_key)
+    assert not account.is_frozen
+    assert account.amount == 0
+    assert account.is_initialized
+    assert account.owner == program.provider.wallet.public_key
+    assert account.mint == prefunded_mint.public_key
+
+
+@mark.asyncio
+async def test_can_create_random_token_account_with_prefunding(
+    program: Program,
+    prefunded_mint: Keypair,
+) -> None:
+    token = Keypair()
+    await program.rpc["testInitToken"](
+        ctx=Context(
+            accounts={
+                "token": token.public_key,
+                "mint": prefunded_mint.public_key,
+                "payer": program.provider.wallet.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+                "tokenProgram": TOKEN_PROGRAM_ID,
+                "rent": SYSVAR_RENT_PUBKEY,
+            },
+            signers=[token],
+            instructions=[
+                transfer(
+                    TransferParams(
+                        from_pubkey=program.provider.wallet.public_key,
+                        to_pubkey=token.public_key,
+                        lamports=4039280,
+                    ),
+                )
+            ],
+        ),
+    )
+    client = AsyncToken(
+        program.provider.client,
+        prefunded_mint.public_key,
+        TOKEN_PROGRAM_ID,
+        program.provider.wallet.payer,
+    )
+    account = await client.get_account_info(token.public_key)
+    assert not account.is_frozen
+    assert account.amount == 0
+    assert account.is_initialized
+    assert account.owner == program.provider.wallet.public_key
+    assert account.mint == prefunded_mint.public_key
+
+
+@mark.asyncio
+async def test_can_create_random_token_account_with_prefunding_under_rent_exemption(
+    program: Program,
+    prefunded_mint: Keypair,
+) -> None:
+    token = Keypair()
+    await program.rpc["testInitToken"](
+        ctx=Context(
+            accounts={
+                "token": token.public_key,
+                "mint": prefunded_mint.public_key,
+                "payer": program.provider.wallet.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+                "tokenProgram": TOKEN_PROGRAM_ID,
+                "rent": SYSVAR_RENT_PUBKEY,
+            },
+            signers=[token],
+            instructions=[
+                transfer(
+                    TransferParams(
+                        from_pubkey=program.provider.wallet.public_key,
+                        to_pubkey=token.public_key,
+                        lamports=1,
+                    ),
+                )
+            ],
+        ),
+    )
+    client = AsyncToken(
+        program.provider.client,
+        prefunded_mint.public_key,
+        TOKEN_PROGRAM_ID,
+        program.provider.wallet.payer,
+    )
+    account = await client.get_account_info(token.public_key)
+    assert not account.is_frozen
+    assert account.amount == 0
+    assert account.is_initialized
+    assert account.owner == program.provider.wallet.public_key
+    assert account.mint == prefunded_mint.public_key
+
+
+@mark.asyncio
+async def test_init_multiple_accounts_via_composite_payer(program: Program) -> None:
+    data1 = Keypair()
+    data2 = Keypair()
+    await program.rpc["testCompositePayer"](
+        ctx=Context(
+            accounts={
+                "composite": {
+                    "data": data1.public_key,
+                    "payer": program.provider.wallet.public_key,
+                    "systemProgram": SYS_PROGRAM_ID,
+                },
+                "data": data2.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+            },
+            signers=[data1, data2],
+        )
+    )
+    account1 = await program.account["DataI8"].fetch(data1.public_key)
+    assert account1["data"] == 1
+
+    account2 = await program.account["Data"].fetch(data2.public_key)
+    assert account2["udata"] == 2
+    assert account2["idata"] == 3
+
+
+@mark.asyncio
+async def test_can_create_associated_token_account(program: Program) -> None:
+    associated_token = AsyncToken.get_ass
