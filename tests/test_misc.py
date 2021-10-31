@@ -59,7 +59,7 @@ async def test_can_use_u128_and_i128(program: Program) -> None:
 
 
 @fixture(scope="module")
-async def keypair_after_testU16(program: Program) -> None:
+async def keypair_after_testU16(program: Program) -> Keypair:
     data = Keypair()
     await program.rpc["testU16"](
         99,
@@ -165,3 +165,61 @@ async def test_can_use_i8_in_idl(program: Program) -> None:
     )
     data_account = await program.account["DataI8"].fetch(data.public_key)
     assert data_account["data"] == -3
+
+
+@fixture(scope="module")
+async def data_i16_keypair(program: Program) -> Keypair:
+    data = Keypair()
+    await program.rpc["testI16"](
+        -2048,
+        ctx=Context(
+            accounts={"data": data.public_key, "rent": SYSVAR_RENT_PUBKEY},
+            instructions=[await program.account["DataI16"].create_instruction(data)],
+            signers=[data],
+        ),
+    )
+    return data
+
+
+@mark.asyncio
+async def test_can_use_i16_in_idl(program: Program, data_i16_keypair: Keypair) -> None:
+    data_account = await program.account["DataI16"].fetch(data_i16_keypair.public_key)
+    assert data_account["data"] == -2048
+
+
+@mark.asyncio
+async def test_can_use_base58_strings_to_fetch_account(
+    program: Program,
+    data_i16_keypair: Keypair,
+) -> None:
+    data_account = await program.account["DataI16"].fetch(
+        str(data_i16_keypair.public_key),
+    )
+    assert data_account["data"] == -2048
+
+
+@mark.asyncio
+@mark.xfail
+async def test_fail_to_close_account_when_sending_lamports_to_itself(
+    program: Program, data_i16_keypair: Keypair
+) -> None:
+    ix = program.instruction["testClose"](
+        ctx=Context(
+            accounts={
+                "data": data_i16_keypair.public_key,
+                "solDest": data_i16_keypair.public_key,
+            },
+        ),
+    )
+    print(ix.data.hex())
+    with raises(ProgramError) as excinfo:
+        await program.rpc["testClose"](
+            ctx=Context(
+                accounts={
+                    "data": data_i16_keypair.public_key,
+                    "solDest": data_i16_keypair.public_key,
+                },
+            ),
+        )
+    assert excinfo.value.code == 151
+    assert excinfo.value.msg == "A close constraint was violated"
