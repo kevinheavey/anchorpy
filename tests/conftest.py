@@ -7,7 +7,7 @@ from pytest_xprocess import getrootdir
 
 
 class FixedXProcessInfo(XProcessInfo):
-    def terminate(self, timeout=20):
+    def terminate(self, timeout=60):
         if not self.pid:
             return 0
         try:
