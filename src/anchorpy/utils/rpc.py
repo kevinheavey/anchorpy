@@ -16,11 +16,11 @@ async def invoke(
     data: Optional[bytes] = None,
 ) -> TransactionSignature:
     """Sends a transaction to a program with the given accounts and instruction data."""
-    program_id = translate_address(program_id)
+    translated_program_id = translate_address(program_id)
     tx = Transaction()
     tx.add(
         TransactionInstruction(
-            program_id=program_id,
+            program_id=translated_program_id,
             keys=[] if accounts is None else accounts,
             data=bytes(0) if data is None else data,
         ),

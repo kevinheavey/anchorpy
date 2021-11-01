@@ -1,4 +1,6 @@
-from typing import Dict, List, Any, Union, cast, get_args, TypedDict, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Any, Union, cast, get_args, Tuple
+from construct import Container
 
 from solana.publickey import PublicKey
 from anchorpy.idl import (
@@ -22,8 +24,9 @@ def parse_idl_errors(idl: Idl) -> Dict[int, str]:
     return errors
 
 
-class Instruction(TypedDict):
-    data: Dict[str, Any]
+@dataclass
+class Instruction:
+    data: Union[Dict[str, Any], Container[Any]]
     name: str
 
 

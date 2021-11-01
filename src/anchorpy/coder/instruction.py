@@ -49,14 +49,14 @@ class InstructionCoder(Adapter):
         super().__init__(subcon)  # type: ignore
 
     def _decode(self, obj: Tuple[bytes, Any], context, path) -> Instruction:
-        return {"data": obj[1], "name": self.sighash_to_name[obj[0]]}
+        return Instruction(data=obj[1], name=self.sighash_to_name[obj[0]])
 
     def _encode(self, obj: Instruction, context: Container, path) -> Tuple[bytes, Any]:
-        return (self.sighashes[obj["name"]], obj["data"])
+        return (self.sighashes[obj.name], obj.data)
 
     def encode(self, ix_name: str, ix: Dict[str, Any]) -> bytes:
-        """Encodes a program instruction."""
-        return self.build({"name": ix_name, "data": ix})
+        """Encode a program instruction."""
+        return self.build(Instruction(name=ix_name, data=ix))
 
 
 def _parse_ix_layout(idl: Idl) -> Dict[str, Construct]:

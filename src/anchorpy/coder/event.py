@@ -48,4 +48,4 @@ class EventCoder(Adapter):
     def _decode(self, obj: Tuple[bytes, Any], context, path) -> Instruction:
         disc = obj[0]  # check this, might need more decoding
         event_name = self.discriminators[disc]
-        return {"data": obj[1], "name": event_name}
+        return Instruction(data=obj[1], name=event_name)
