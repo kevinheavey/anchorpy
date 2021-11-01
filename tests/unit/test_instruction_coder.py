@@ -3,13 +3,12 @@ from pathlib import Path
 from pytest import mark
 from anchorpy import Idl, InstructionCoder
 from anchorpy.program.context import check_args_length
-from anchorpy.program.common import to_instruction
+from anchorpy.program.common import to_instruction  # noqa: WPS347
 
 
 @mark.unit
 def test_instruction_coder() -> None:
-    """Test InstructionCoder behaves as expected"""
-
+    """Test InstructionCoder behaves as expected."""
     with Path("tests/idls/basic_1.json").open() as f:
         data = json.load(f)
     idl = Idl.from_json(data)
