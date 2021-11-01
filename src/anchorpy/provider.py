@@ -36,7 +36,10 @@ class Provider:
     """The network and wallet context used to send transactions paid for and signed by the provider."""  # noqa: E501
 
     def __init__(
-        self, client: AsyncClient, wallet: Wallet, opts: types.TxOpts = DEFAULT_OPTIONS
+        self,
+        client: AsyncClient,
+        wallet: Wallet,
+        opts: types.TxOpts = DEFAULT_OPTIONS,
     ) -> None:
         """Initialize the Provider.
 
