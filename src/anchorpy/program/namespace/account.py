@@ -1,25 +1,27 @@
 import base64
+from dataclasses import dataclass
 from base58 import b58encode
-from typing import Any, List, Optional, Dict
+from typing import Any, List, Optional, Dict, Union
 
 from construct import Container
 from solana.keypair import Keypair
 from solana.system_program import create_account, CreateAccountParams
 from solana.transaction import TransactionInstruction
-from solana.rpc.commitment import Processed
+from solana.publickey import PublicKey
+from solana.rpc.types import MemcmpOpts
 
 from anchorpy.coder.common import account_size
-
 from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE, account_discriminator
 from anchorpy.coder.coder import Coder
 from anchorpy.idl import Idl, IdlTypeDef
 from anchorpy.provider import Provider
-from solana.publickey import PublicKey
-from solana.rpc.types import MemcmpOpts
 
 
 def build_account(
-    idl: Idl, coder: Coder, program_id: PublicKey, provider: Provider
+    idl: Idl,
+    coder: Coder,
+    program_id: PublicKey,
+    provider: Provider,
 ) -> Dict[str, "AccountClient"]:
     accounts_fns = {}
     for idl_account in idl.accounts:
@@ -34,6 +36,14 @@ class AccountDoesNotExistError(Exception):
 
 class AccountInvalidDiscriminator(Exception):
     """Raise if account discriminator doesn't match the IDL."""
+
+
+@dataclass
+class ProgramAccount:
+    """Deserialized account owned by a program."""
+
+    public_key: PublicKey
+    account: Container
 
 
 class AccountClient(object):
@@ -51,7 +61,7 @@ class AccountClient(object):
         self._coder = coder
         self._size = ACCOUNT_DISCRIMINATOR_SIZE + account_size(idl, idl_account)
 
-    async def fetch(self, address: PublicKey) -> Container:
+    async def fetch(self, address: Union[str, PublicKey]) -> Container[Any]:
         """Return a deserialized account.
 
         Args:
@@ -72,10 +82,12 @@ class AccountClient(object):
         if discriminator != data[:ACCOUNT_DISCRIMINATOR_SIZE]:
             msg = f"Account {address} has an invalid discriminator"
             raise AccountInvalidDiscriminator(msg)
-        return self._coder.accounts.parse(data)["data"]
+        return self._coder.accounts.decode(data)
 
     async def create_instruction(
-        self, signer: Keypair, size_override: int = 0
+        self,
+        signer: Keypair,
+        size_override: int = 0,
     ) -> TransactionInstruction:
         """Return an instruction for creating this account."""
         space = size_override if size_override else self._size
@@ -102,12 +114,14 @@ class AccountClient(object):
 
     async def all(
         self,
+        buffer: Optional[bytes] = None,
         memcmp_opts: Optional[List[MemcmpOpts]] = None,
         data_size: Optional[int] = None,
-    ) -> List[Dict]:
+    ) -> List[ProgramAccount]:
         """Return all instances of this account type for the program.
 
         Args:
+            buffer: bytes filter to append to the discriminator.
             memcmp_opts: Options to compare a provided series of bytes with program
                 account data at a particular offset.
             data_size: Option to compare the program account data length with the
@@ -115,21 +129,18 @@ class AccountClient(object):
         """
         all_accounts = []
         discriminator = account_discriminator(self._idl_account.name)
-        full_memcmp_opts = (
-            [
-                MemcmpOpts(
-                    offset=0,
-                    bytes=b58encode(discriminator).decode("ascii"),
-                ),
-            ]
-            + []
-            if memcmp_opts is None
-            else memcmp_opts
+        to_encode = discriminator if buffer is None else discriminator + buffer
+        bytes_arg = b58encode(to_encode).decode("ascii")
+        base_memcmp_opt = MemcmpOpts(
+            offset=0,
+            bytes=bytes_arg,
         )
+        extra_memcmpm_opts = [] if memcmp_opts is None else memcmp_opts
+        full_memcmp_opts = [base_memcmp_opt] + extra_memcmpm_opts
         resp = await self._provider.client.get_program_accounts(
             self._program_id,
-            commitment=Processed,
             encoding="base64",
+            commitment=self.provider.client._commitment,  # noqa: WPS437
             data_size=data_size,
             memcmp_opts=full_memcmp_opts,
         )
@@ -137,10 +148,10 @@ class AccountClient(object):
             account_data = r["account"]["data"][0]
             account_data = base64.b64decode(account_data)
             all_accounts.append(
-                {
-                    "public_key": PublicKey(r["pubkey"]),
-                    "account": self._coder.accounts.parse(account_data),
-                }
+                ProgramAccount(
+                    public_key=PublicKey(r["pubkey"]),
+                    account=self._coder.accounts.decode(account_data),
+                ),
             )
         return all_accounts
 
