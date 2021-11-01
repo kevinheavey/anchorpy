@@ -1,6 +1,6 @@
 from hashlib import sha256
 from typing import Tuple, Any
-from construct import Adapter, Sequence, Bytes, Switch
+from construct import Adapter, Sequence, Bytes, Switch, Container
 
 from anchorpy.coder.idl import typedef_layout
 from anchorpy.idl import Idl
@@ -33,11 +33,17 @@ class AccountsCoder(Adapter):
         super().__init__(subcon)  # type: ignore
 
     def _decode(self, obj: Tuple[bytes, Any], context, path) -> AccountToSerialize:
-        return {"data": obj[1], "name": self.discriminator_to_acc_name[obj[0]]}
+        return AccountToSerialize(
+            data=obj[1],
+            name=self.discriminator_to_acc_name[obj[0]],
+        )
+
+    def decode(self, obj: bytes) -> Container[Any]:
+        return self.parse(obj).data
 
     def _encode(self, obj: AccountToSerialize, context, path) -> Tuple[bytes, Any]:
-        discriminator = self.acc_name_to_discriminator[obj["name"]]
-        return discriminator, obj["data"]
+        discriminator = self.acc_name_to_discriminator[obj.name]
+        return discriminator, obj.data
 
 
 def account_discriminator(name: str) -> bytes:
