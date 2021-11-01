@@ -1,17 +1,18 @@
 """Mimics anchor/tests/misc/tests/misc.js."""
 import asyncio
-from pathlib import Path, PosixPath
-from typing import Dict
+from pathlib import Path
+from typing import AsyncGenerator, Dict
 from pytest import raises, mark, fixture
+from solana.rpc.types import MemcmpOpts, TxOpts
 from anchorpy import ProgramError, Program, create_workspace, close_workspace, Context
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.system_program import SYS_PROGRAM_ID, transfer, TransferParams
-from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.core import RPCException
 from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.async_client import AsyncToken
+from anchorpy.provider import Provider, LocalWallet
 from anchorpy.utils.rpc import invoke
 from tests.utils import get_localnet
 
@@ -29,7 +30,7 @@ def event_loop():
 
 
 @fixture(scope="module")
-async def workspace(localnet) -> Dict[str, Program]:
+async def workspace(localnet) -> AsyncGenerator[Dict[str, Program], None]:
     wspace = create_workspace(PATH)
     yield wspace
     await close_workspace(wspace)
@@ -95,7 +96,7 @@ async def test_can_use_u16(
 
 
 @mark.asyncio
-async def test_can_embed_programs_into_genesis_from_toml(program: Program) -> None:
+async def test_can_embed_programs_into_genesis(program: Program) -> None:
     pid = PublicKey("FtMNMKp9DZHKWUyVAsj3Q5QV8ow4P3fUPP7ZrWEQJzKr")
     acc_info_raw = await program.provider.client.get_account_info(pid)
     assert acc_info_raw["result"]["value"]["executable"] is True
@@ -147,12 +148,12 @@ async def test_can_retrieve_events_when_simulating_transaction(
     )
     events = resp.events
     assert resp.raw[0] == expected_raw_first_entry
-    assert events[0]["name"] == "E1"
-    assert events[0]["data"]["data"] == 44
-    assert events[1]["name"] == "E2"
-    assert events[1]["data"]["data"] == 1234
-    assert events[2]["name"] == "E3"
-    assert events[2]["data"]["data"] == 9
+    assert events[0].name == "E1"
+    assert events[0].data["data"] == 44
+    assert events[1].name == "E2"
+    assert events[1].data["data"] == 1234
+    assert events[2].name == "E3"
+    assert events[2].data["data"] == 9
 
 
 @mark.asyncio
@@ -428,12 +429,6 @@ async def test_can_init_random_zero_copy_account(program: Program) -> None:
     assert account["bump"] == 2
 
 
-# @fixture(scope="module")
-# async def initialized_mint(program: Program) -> Keypair:
-
-#     return mint
-
-
 @mark.asyncio
 async def test_can_create_random_mint_account(
     program: Program,
@@ -653,3 +648,190 @@ async def test_init_multiple_accounts_via_composite_payer(program: Program) -> N
 async def test_can_create_associated_token_account(program: Program) -> None:
     # TODO
     pass
+
+
+@mark.asyncio
+async def test_can_validate_associated_token_constraints(program: Program) -> None:
+    # TODO
+    pass
+
+
+@mark.asyncio
+async def test_can_fetch_all_accounts_of_a_given_type(
+    program: Program, event_loop
+) -> None:
+    # Initialize the accounts.
+    data1 = Keypair.generate()
+    data2 = Keypair.generate()
+    data3 = Keypair.generate()
+    data4 = Keypair.generate()
+    # Initialize filterable data.
+    filterable1 = Keypair.generate().public_key
+    filterable2 = Keypair.generate().public_key
+    provider = Provider(
+        program.provider.client,
+        LocalWallet(Keypair.generate()),
+        TxOpts(
+            preflight_commitment=program.provider.client._commitment,  # noqa: WPS437
+        ),
+    )
+    another_program = Program(program.idl, program.program_id, provider)
+    lamports_per_sol = 1000000000
+    tx_res = await program.provider.client.request_airdrop(
+        another_program.provider.wallet.public_key,
+        lamports_per_sol,
+    )
+    signature = tx_res["result"]
+    await program.provider.client.confirm_transaction(signature)
+    # Create all the accounts.
+    tasks = [
+        program.rpc["testFetchAll"](
+            filterable1,
+            ctx=Context(
+                accounts={
+                    "data": data1.public_key,
+                    "authority": program.provider.wallet.public_key,
+                    "systemProgram": SYS_PROGRAM_ID,
+                },
+                signers=[data1],
+            ),
+        ),
+        program.rpc["testFetchAll"](
+            filterable1,
+            ctx=Context(
+                accounts={
+                    "data": data2.public_key,
+                    "authority": program.provider.wallet.public_key,
+                    "systemProgram": SYS_PROGRAM_ID,
+                },
+                signers=[data2],
+            ),
+        ),
+        program.rpc["testFetchAll"](
+            filterable2,
+            ctx=Context(
+                accounts={
+                    "data": data3.public_key,
+                    "authority": program.provider.wallet.public_key,
+                    "systemProgram": SYS_PROGRAM_ID,
+                },
+                signers=[data3],
+            ),
+        ),
+        another_program.rpc["testFetchAll"](
+            filterable1,
+            ctx=Context(
+                accounts={
+                    "data": data4.public_key,
+                    "authority": another_program.provider.wallet.public_key,
+                    "systemProgram": SYS_PROGRAM_ID,
+                },
+                signers=[data4],
+            ),
+        ),
+    ]
+    await asyncio.wait([event_loop.create_task(t) for t in tasks])
+    all_accounts = await program.account["DataWithFilter"].all()
+    all_accounts_filtered_by_bytes = await program.account["DataWithFilter"].all(
+        bytes(program.provider.wallet.public_key),
+    )
+    all_accounts_filtered_by_program_filters1 = await program.account[
+        "DataWithFilter"
+    ].all(
+        memcmp_opts=[
+            MemcmpOpts(offset=8, bytes=str(program.provider.wallet.public_key)),
+            MemcmpOpts(offset=40, bytes=str(filterable1)),
+        ],
+    )
+    all_accounts_filtered_by_program_filters2 = await program.account[
+        "DataWithFilter"
+    ].all(
+        memcmp_opts=[
+            MemcmpOpts(offset=8, bytes=str(program.provider.wallet.public_key)),
+            MemcmpOpts(offset=40, bytes=str(filterable2)),
+        ],
+    )
+    assert len(all_accounts) == 4
+    assert len(all_accounts_filtered_by_bytes) == 3
+    assert len(all_accounts_filtered_by_program_filters1) == 2
+    assert len(all_accounts_filtered_by_program_filters2) == 1
+
+
+@mark.asyncio
+async def test_can_use_pdas_with_empty_seeds(program: Program) -> None:
+    pda, bump = PublicKey.find_program_address([], program.program_id)
+    await program.rpc["testInitWithEmptySeeds"](
+        ctx=Context(
+            accounts={
+                "pda": pda,
+                "authority": program.provider.wallet.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+            },
+        ),
+    )
+    await program.rpc["testEmptySeedsConstraint"](
+        ctx=Context(
+            accounts={
+                "pda": pda,
+            },
+        ),
+    )
+    pda2, bump2 = PublicKey.find_program_address(
+        [b"non-empty"],
+        program.program_id,
+    )
+    with raises(ProgramError) as excinfo:
+        await program.rpc["testEmptySeedsConstraint"](
+            ctx=Context(
+                accounts={
+                    "pda": pda2,
+                },
+            ),
+        )
+    assert excinfo.value.code == 146
+
+
+@fixture(scope="module")
+async def if_needed_acc(program: Program) -> Keypair:
+    keypair = Keypair()
+    await program.rpc["testInitIfNeeded"](
+        1,
+        ctx=Context(
+            accounts={
+                "data": keypair.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+                "payer": program.provider.wallet.public_key,
+            },
+            signers=[keypair],
+        ),
+    )
+    return keypair
+
+
+@mark.asyncio
+async def test_can_init_if_needed_a_new_account(
+    program: Program,
+    if_needed_acc: Keypair,
+) -> None:
+    account = await program.account["DataU16"].fetch(if_needed_acc.public_key)
+    assert account["data"] == 1
+
+
+@mark.asyncio
+async def test_can_init_if_needed_a_previously_created_account(
+    program: Program,
+    if_needed_acc: Keypair,
+) -> None:
+    await program.rpc["testInitIfNeeded"](
+        3,
+        ctx=Context(
+            accounts={
+                "data": if_needed_acc.public_key,
+                "systemProgram": SYS_PROGRAM_ID,
+                "payer": program.provider.wallet.public_key,
+            },
+            signers=[if_needed_acc],
+        ),
+    )
+    account = await program.account["DataU16"].fetch(if_needed_acc.public_key)
+    assert account["data"] == 3
