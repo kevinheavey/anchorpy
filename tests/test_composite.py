@@ -1,7 +1,7 @@
 """Mimics anchor/tests/composite/tests/composite.js."""
 import asyncio
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, AsyncGenerator
 
 from pytest import mark, fixture
 from solana.keypair import Keypair
@@ -25,7 +25,7 @@ def event_loop():
 
 
 @fixture(scope="module")
-async def program(localnet) -> Program:
+async def program(localnet) -> AsyncGenerator[Program, None]:
     """Create a Program instance."""
     workspace = create_workspace(PATH)
     yield workspace["composite"]

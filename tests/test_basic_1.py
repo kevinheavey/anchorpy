@@ -1,6 +1,7 @@
 """Mimics anchor/examples/tutorial/basic-1/tests/basic-1.js."""
 import asyncio
 from pathlib import Path
+from typing import AsyncGenerator
 
 from pytest import fixture, mark
 from solana.keypair import Keypair
@@ -27,7 +28,7 @@ def event_loop():
 
 
 @fixture(scope="module")
-async def program(localnet) -> Program:
+async def program(localnet) -> AsyncGenerator[Program, None]:
     """Create a Program instance."""
     workspace = create_workspace(PATH)
     yield workspace["basic_1"]

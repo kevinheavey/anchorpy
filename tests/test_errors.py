@@ -1,6 +1,7 @@
 """Mimics anchor/tests/errors/tests/errors.js."""
 import asyncio
 from pathlib import Path
+from typing import AsyncGenerator
 from pytest import raises, mark, fixture
 from anchorpy import ProgramError, Program, create_workspace, close_workspace, Context
 from solana.keypair import Keypair
@@ -23,7 +24,7 @@ def event_loop():
 
 
 @fixture(scope="module")
-async def program(localnet) -> Program:
+async def program(localnet) -> AsyncGenerator[Program, None]:
     workspace = create_workspace(PATH)
     yield workspace["errors"]
     await close_workspace(workspace)

@@ -1,6 +1,6 @@
 import asyncio
 from pathlib import Path
-from typing import List, Tuple
+from typing import AsyncGenerator, List, Tuple
 import random
 import string
 
@@ -27,7 +27,7 @@ def event_loop():
 
 
 @fixture(scope="module")
-async def program(localnet) -> Program:
+async def program(localnet) -> AsyncGenerator[Program, None]:
     """Create a Program instance."""
     workspace = create_workspace(PATH)
     yield workspace["chat"]

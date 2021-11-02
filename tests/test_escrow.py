@@ -1,6 +1,7 @@
 """Mimics anchor/tests/escrow/tests/escrow.js."""
 import asyncio
 from pathlib import Path
+from typing import AsyncGenerator
 
 from solana.keypair import Keypair
 from spl.token.async_client import AsyncToken
@@ -24,7 +25,7 @@ def event_loop():
 
 
 @fixture(scope="module")
-async def program(localnet) -> Program:
+async def program(localnet) -> AsyncGenerator[Program, None]:
     """Create a Program instance."""
     workspace = create_workspace(PATH)
     yield workspace["escrow"]

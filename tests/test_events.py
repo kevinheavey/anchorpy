@@ -5,6 +5,7 @@ Note: this is unfinished.
 import asyncio
 import json
 from pathlib import Path
+from typing import AsyncGenerator
 import websockets
 from pytest import mark, fixture
 from anchorpy import (
@@ -29,7 +30,7 @@ def event_loop():
 
 
 @fixture(scope="module")
-async def program(localnet) -> Program:
+async def program(localnet) -> AsyncGenerator[Program, None]:
     workspace = create_workspace(PATH)
     yield workspace["events"]
     await close_workspace(workspace)
@@ -51,5 +52,5 @@ async def test_initialize(program: Program) -> None:
         parsed = []
         parser.parse_logs(logs, lambda evt: parsed.append(evt))
         event = parsed[0]
-        assert event["data"]["data"] == 5
-        assert event["data"]["label"] == "hello"
+        assert event.data["data"] == 5
+        assert event.data["label"] == "hello"

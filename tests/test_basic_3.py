@@ -1,5 +1,5 @@
 """Mimics anchor/examples/tutorial/basic-3/tests/basic-3.js."""
-from typing import Dict
+from typing import AsyncGenerator, Dict
 from pathlib import Path
 import asyncio
 
@@ -33,7 +33,7 @@ async def workspace(localnet):
 
 
 @fixture(scope="module")
-async def provider() -> Provider:
+async def provider() -> AsyncGenerator[Provider, None]:
     """Create a Provider instance."""
     prov = Provider.local()
     yield prov
