@@ -1,9 +1,10 @@
+"""This module deals with generating program instructions."""
 from typing import Callable, List, Any, Sequence, cast, Tuple
 
 from solana.transaction import TransactionInstruction, AccountMeta
 from solana.publickey import PublicKey
 
-from anchorpy.program.common import (
+from anchorpy.program.common import (  # noqa: WPS347
     to_instruction,
     validate_accounts,
     translate_address,
@@ -14,16 +15,27 @@ from anchorpy.idl import IdlInstruction, IdlAccountItem, IdlAccounts, IdlAccount
 
 
 class InstructionFn:
+    """Callable object to create a `TransactionInstruction` generated from an IDL.
+
+    Additionally it provides an `accounts` utility method, returning a list
+    of ordered accounts for the instruction.
+    """
+
     def __init__(
         self,
         idl_ix: IdlInstruction,
         encode_fn: Callable[[Instruction], bytes],
         program_id: PublicKey,
     ) -> None:
-        """Callable object to create a `TransactionInstruction` generated from an IDL.
+        """Init.
 
-        Additionally it provides an `accounts` utility method, returning a list
-        of ordered accounts for the instruction.
+        Args:
+            idl_ix: IDL instruction object
+            encode_fn: [description]
+            program_id: The program ID.
+
+        Raises:
+            ValueError: [description]
         """
         if idl_ix.name == "_inner":
             raise ValueError("_inner name is reserved")
@@ -31,12 +43,10 @@ class InstructionFn:
         self.encode_fn = encode_fn
         self.program_id = program_id
 
-    def accounts(self, accs: Accounts) -> List[AccountMeta]:
-        """Utility fn for ordering the accounts for this instruction."""
-        return accounts_array(accs, self.idl_ix.accounts)
-
     def __call__(
-        self, *args: Any, ctx: Context = EMPTY_CONTEXT
+        self,
+        *args: Any,
+        ctx: Context = EMPTY_CONTEXT,
     ) -> TransactionInstruction:
         """Create the TransactionInstruction.
 
@@ -58,11 +68,16 @@ class InstructionFn:
             data=self.encode_fn(to_instruction(self.idl_ix, args)),
         )
 
+    def accounts(self, accs: Accounts) -> List[AccountMeta]:
+        """Order the accounts for this instruction."""
+        return accounts_array(accs, self.idl_ix.accounts)
+
 
 def accounts_array(
     ctx: Accounts,
     accounts: Sequence[IdlAccountItem],
 ) -> List[AccountMeta]:
+    """Create a list of AccountMeta from a (possibly nested) dict of accounts."""
     accounts_ret: List[AccountMeta] = []
     for acc in accounts:
         if isinstance(acc, IdlAccounts):
@@ -76,7 +91,7 @@ def accounts_array(
                     pubkey=translate_address(ctx[account.name]),
                     is_writable=account.is_mut,
                     is_signer=account.is_signer,
-                )
+                ),
             )
     return accounts_ret
 
@@ -84,4 +99,3 @@ def accounts_array(
 def validate_instruction(ix: IdlInstruction, args: Tuple):
     """Throws error if any argument required for the `ix` is not given."""
     # TODO: this isn't implemented in the TS client yet
-    pass

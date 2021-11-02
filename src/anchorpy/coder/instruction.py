@@ -1,25 +1,25 @@
+"""This module deals (de)serializing program instructions."""
 from typing import Dict, Any, Tuple
-
 
 from borsh_construct import CStruct
 from construct import Sequence, Bytes
 from construct import Construct, Adapter, Switch, Container
+
 from anchorpy.coder.common import sighash
 from anchorpy.program.common import Instruction
 from anchorpy.coder.idl import field_layout
 from anchorpy.idl import Idl
 
 
-SIGHASH_GLOBAL_NAMESPACE = "global"
-
-
 class Sighash(Adapter):
-    def __init__(self, namespace: str) -> None:
+    """Sighash as a Construct Adapter."""
+
+    def __init__(self) -> None:
+        """Initialize."""
         super().__init__(Bytes(8))  # type: ignore
-        self.namespace = namespace
 
     def _encode(self, obj: str, context, path) -> bytes:
-        return sighash(self.namespace, obj)
+        return sighash("global", obj)
 
     def _decode(self, obj: bytes, context, path):
         raise ValueError("Sighash cannot be reversed")
@@ -29,8 +29,13 @@ class InstructionCoder(Adapter):
     """Encodes and decodes program instructions."""
 
     def __init__(self, idl: Idl) -> None:
+        """Init.
+
+        Args:
+            idl: The parsed IDL object.
+        """
         self.ix_layout = _parse_ix_layout(idl)
-        sighasher = Sighash(SIGHASH_GLOBAL_NAMESPACE)
+        sighasher = Sighash()
         sighash_layouts: Dict[bytes, Construct] = {}
         sighashes: Dict[str, bytes] = {}
         sighash_to_name: Dict[bytes, str] = {}
@@ -48,15 +53,15 @@ class InstructionCoder(Adapter):
         )
         super().__init__(subcon)  # type: ignore
 
+    def encode(self, ix_name: str, ix: Dict[str, Any]) -> bytes:
+        """Encode a program instruction."""
+        return self.build(Instruction(name=ix_name, data=ix))
+
     def _decode(self, obj: Tuple[bytes, Any], context, path) -> Instruction:
         return Instruction(data=obj[1], name=self.sighash_to_name[obj[0]])
 
     def _encode(self, obj: Instruction, context: Container, path) -> Tuple[bytes, Any]:
         return (self.sighashes[obj.name], obj.data)
-
-    def encode(self, ix_name: str, ix: Dict[str, Any]) -> bytes:
-        """Encode a program instruction."""
-        return self.build(Instruction(name=ix_name, data=ix))
 
 
 def _parse_ix_layout(idl: Idl) -> Dict[str, Construct]:

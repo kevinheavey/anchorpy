@@ -1,10 +1,15 @@
-from typing import Callable
+from typing import Callable, List, Optional
 import subprocess
 from pytest import fixture
 from xprocess import ProcessStarter
 
 
-def get_localnet(path, scope="module", timeout_seconds=60) -> Callable:
+def get_localnet(
+    path,
+    scope="module",
+    timeout_seconds=60,
+    build_cmd: Optional[List[str]] = None,
+) -> Callable:
     @fixture(scope=scope)
     def localnet_fixture(fixed_xprocess):
         class Starter(ProcessStarter):
@@ -21,7 +26,8 @@ def get_localnet(path, scope="module", timeout_seconds=60) -> Callable:
             max_read_lines = 1_000
             # command to start process
 
-        subprocess.run(["anchor", "build"], cwd=path, check=True)
+        actual_build_cmd = ["anchor", "build"] if build_cmd is None else build_cmd
+        subprocess.run(actual_build_cmd, cwd=path, check=True)
         # ensure process is running and return its logfile
         logfile = fixed_xprocess.ensure("localnet", Starter)
 

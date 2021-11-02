@@ -1,3 +1,4 @@
+"""This module contains the invoke function."""
 from typing import List, Optional
 from solana.transaction import (
     AccountMeta,
@@ -15,7 +16,7 @@ async def invoke(
     accounts: Optional[List[AccountMeta]] = None,
     data: Optional[bytes] = None,
 ) -> TransactionSignature:
-    """Sends a transaction to a program with the given accounts and instruction data."""
+    """Send a transaction to a program with the given accounts and instruction data."""
     translated_program_id = translate_address(program_id)
     tx = Transaction()
     tx.add(

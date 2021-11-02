@@ -1,3 +1,4 @@
+"""This module defines the Program class."""
 from __future__ import annotations
 from typing import Optional
 from base64 import b64decode
@@ -42,12 +43,25 @@ class Program(object):
     def __init__(
         self, idl: Idl, program_id: PublicKey, provider: Optional[Provider] = None
     ):
+        """Initialize the Program object.
+
+        Args:
+            idl: The parsed IDL object.
+            program_id: The program ID.
+            provider: The Provider object for the Program. Defaults to Provider.local().
+        """
         self.idl = idl
         self.program_id = program_id
         self.provider = provider if provider is not None else Provider.local()
         self.coder = Coder(idl)
 
-        rpc, instruction, transaction, account, simulate = build_namespace(
+        (  # noqa: WPS236
+            rpc,
+            instruction,
+            transaction,
+            account,
+            simulate,
+        ) = build_namespace(
             idl,
             self.coder,
             program_id,

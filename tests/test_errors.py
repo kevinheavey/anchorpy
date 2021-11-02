@@ -100,7 +100,9 @@ async def test_signer_err(program: Program) -> None:
         TransactionInstruction(
             keys=[
                 AccountMeta(
-                    pubkey=SYSVAR_RENT_PUBKEY, is_writable=False, is_signer=False
+                    pubkey=SYSVAR_RENT_PUBKEY,
+                    is_writable=False,
+                    is_signer=False,
                 ),
             ],
             program_id=program.program_id,

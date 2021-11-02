@@ -1,12 +1,23 @@
-from anchorpy.coder.idl import typedef_layout
+"""This module deals with (de)serializing Anchor events."""
 from hashlib import sha256
 from typing import Dict, Tuple, Any
+
 from construct import Adapter, Construct, Sequence, Bytes, Switch
 from anchorpy.idl import Idl, IdlEvent, IdlField, IdlTypeDef, IdlTypeDefTyStruct
+
 from anchorpy.program.common import Instruction
+from anchorpy.coder.idl import typedef_layout
 
 
 def event_discriminator(name: str) -> bytes:
+    """Get 8-byte discriminator from event name.
+
+    Args:
+        name: The event name.
+
+    Returns:
+        Discriminator
+    """
     return sha256(f"event:{name}".encode()).digest()[:8]
 
 
@@ -14,7 +25,7 @@ def _event_layout(event: IdlEvent, idl: Idl) -> Construct:
     event_type_def = IdlTypeDef(
         name=event.name,
         type=IdlTypeDefTyStruct(
-            fields=[IdlField(name=f.name, type=f.type) for f in event.fields]
+            fields=[IdlField(name=f.name, type=f.type) for f in event.fields],
         ),
     )
     return typedef_layout(event_type_def, idl.types)
@@ -24,6 +35,11 @@ class EventCoder(Adapter):
     """Encodes and decodes Anchor events."""
 
     def __init__(self, idl: Idl):
+        """Initialize the EventCoder.
+
+        Args:
+            idl: The parsed Idl object.
+        """
         self.idl = idl
         idl_events = idl.events
         layouts: Dict[str, Construct]

@@ -1,5 +1,7 @@
+"""This module deals with creating the program object's namespaces."""
 from typing import Dict, Tuple
 
+from solana.publickey import PublicKey
 from anchorpy.program.namespace.rpc import (
     RpcFn,
     build_rpc_item,
@@ -8,6 +10,7 @@ from anchorpy.program.namespace.transaction import (
     TransactionFn,
     build_transaction_fn,
 )
+
 from anchorpy.coder.coder import Coder
 from anchorpy.program.namespace.account import AccountClient, build_account
 from anchorpy.program.namespace.simulate import (
@@ -20,11 +23,13 @@ from anchorpy.program.namespace.instruction import (
 from anchorpy.program.common import parse_idl_errors
 from anchorpy.idl import Idl
 from anchorpy.provider import Provider
-from solana.publickey import PublicKey
 
 
-def build_namespace(  # ts: NamespaceFactory.build
-    idl: Idl, coder: Coder, program_id: PublicKey, provider: Provider
+def build_namespace(  # noqa: WPS320
+    idl: Idl,
+    coder: Coder,
+    program_id: PublicKey,
+    provider: Provider,
 ) -> Tuple[
     Dict[str, RpcFn],
     Dict[str, InstructionFn],
@@ -32,6 +37,17 @@ def build_namespace(  # ts: NamespaceFactory.build
     Dict[str, AccountClient],
     Dict[str, SimulateFn],
 ]:
+    """Generate all namespaces for a given program.
+
+    Args:
+        idl: The parsed IDL object.
+        coder: The program's Coder object .
+        program_id: The Program ID.
+        provider: The program's provider.
+
+    Returns:
+        The program namespaces.
+    """
     idl_errors = parse_idl_errors(idl)
 
     rpc = {}
