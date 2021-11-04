@@ -11,7 +11,7 @@ from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.system_program import SYS_PROGRAM_ID
 
 from anchorpy import Program, create_workspace, close_workspace, Context, Provider
-from tests.utils import get_localnet
+from anchorpy.pytest_plugin import get_localnet
 
 PATH = Path("anchor/tests/chat/")
 

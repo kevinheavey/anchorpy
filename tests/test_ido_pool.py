@@ -10,7 +10,7 @@ from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
 from anchorpy import Program, create_workspace, Context, Provider
-from tests.utils import get_localnet
+from anchorpy.pytest_plugin import get_localnet
 
 PATH = Path("anchor/tests/composite/")
 

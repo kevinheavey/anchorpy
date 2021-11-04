@@ -5,7 +5,7 @@ import subprocess
 from pytest import mark
 
 from anchorpy import create_workspace
-from tests.utils import get_localnet
+from anchorpy.pytest_plugin import get_localnet
 
 PATH = Path("anchor/examples/tutorial/basic-0")
 

@@ -13,7 +13,7 @@ from solana.system_program import (
     create_account,
     CreateAccountParams,
 )
-from tests.utils import get_localnet
+from anchorpy.pytest_plugin import get_localnet
 
 PATH = Path("anchor/tests/pyth/")
 

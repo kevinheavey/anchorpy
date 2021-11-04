@@ -14,7 +14,7 @@ from anchorpy import (
     close_workspace,
     EventParser,
 )
-from tests.utils import get_localnet
+from anchorpy.pytest_plugin import get_localnet
 
 PATH = Path("anchor/tests/events/")
 

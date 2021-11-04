@@ -8,7 +8,7 @@ from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.core import RPCException
-from tests.utils import get_localnet
+from anchorpy.pytest_plugin import get_localnet
 
 PATH = Path("anchor/tests/errors/")
 

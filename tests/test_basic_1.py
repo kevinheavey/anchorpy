@@ -8,7 +8,7 @@ from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
 from anchorpy import create_workspace, close_workspace, Context, Program
-from tests.utils import get_localnet
+from anchorpy.pytest_plugin import get_localnet
 
 PATH = Path("anchor/examples/tutorial/basic-1")
 
