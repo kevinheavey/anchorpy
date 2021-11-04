@@ -1,12 +1,15 @@
-from subprocess import STDOUT, Popen
+"""This module provides the `get_localnet` fixture factory."""
+from typing import Callable, List, Optional
+import subprocess
 import signal
 import os
+from pathlib import Path
 from pytest import fixture
-from xprocess import XProcessInfo, XProcess
+from xprocess import XProcessInfo, XProcess, ProcessStarter
 from pytest_xprocess import getrootdir
 
 
-class FixedXProcessInfo(XProcessInfo):
+class _FixedXProcessInfo(XProcessInfo):
     def terminate(self, timeout=60):
         if not self.pid:
             return 0
@@ -22,22 +25,24 @@ class FixedXProcessInfo(XProcessInfo):
         return 1
 
 
-class FixedXProcess(XProcess):
+class _FixedXProcess(XProcess):
     def getinfo(self, name):
         """Return Process Info for the given external process."""
-
-        return FixedXProcessInfo(self.rootdir, name)
+        return _FixedXProcessInfo(self.rootdir, name)
 
     def ensure(self, name, preparefunc, restart=False):
         """Return (PID, logfile) from a newly started or already running process.
-        @param name: name of the external process, used for caching info
-                     across test runs.
-        @param preparefunc:
-                A subclass of ProcessStarter.
-        @param restart: force restarting the process if it is running.
-        @return: (PID, logfile) logfile will be seeked to the end if the
-                 server was running, otherwise seeked to the line after
-                 where the waitpattern matched."""
+        Args:
+            name: Name of the external process, used for caching info across test runs.
+            preparefunc: A subclass of ProcessStarter.
+            restart: Force restarting the process if it is running.
+
+
+        Returns:
+            (PID, logfile) logfile will be seeked to the end if the
+            server was running, otherwise seeked to the line after
+            where the wait pattern matched.
+        """
 
         info = self.getinfo(name)
         if not restart and not info.isrunning():
@@ -59,7 +64,7 @@ class FixedXProcess(XProcess):
 
             popen_kwargs = {
                 "stdout": stdout,
-                "stderr": STDOUT,
+                "stderr": subprocess.STDOUT,
                 # this gives the user the ability to
                 # override the previous keywords if
                 # desired
@@ -71,7 +76,9 @@ class FixedXProcess(XProcess):
             # keep references of all popen
             # and info objects for cleanup
             self._info_objects.append((info, starter.terminate_on_interrupt))
-            self._popen_instances.append(Popen(args, **popen_kwargs, **kwargs))
+            self._popen_instances.append(
+                subprocess.Popen(args, **popen_kwargs, **kwargs)
+            )
 
             info.pid = pid = self._popen_instances[-1].pid
             info.pidpath.write(str(pid))
@@ -87,10 +94,8 @@ class FixedXProcess(XProcess):
         else:
             if not starter.wait(self._file_handles[-1]):
                 raise RuntimeError(
-                    "Could not start process {}, the specified "
-                    "log pattern was not found within {} lines.".format(
-                        name, starter.max_read_lines
-                    )
+                    f"Could not start process {name}, the specified "
+                    f"log pattern was not found within {starter.max_read_lines} lines."
                 )
             self.log.debug("%s process startup detected", name)
 
@@ -102,13 +107,60 @@ class FixedXProcess(XProcess):
 
 
 @fixture(scope="session")
-def fixed_xprocess(request):
-    """yield session-scoped XProcess helper to manage long-running
+def _fixed_xprocess(request):
+    """Yield session-scoped XProcess helper to manage long-running
     processes required for testing."""
 
     rootdir = getrootdir(request.config)
-    with FixedXProcess(request.config, rootdir) as xproc:
+    with _FixedXProcess(request.config, rootdir) as xproc:
         # pass in xprocess object into pytest_unconfigure
         # through config for proper cleanup during teardown
-        request.config._xprocess = xproc
+        request.config._xprocess = xproc  # noqa: WPS437
         yield xproc
+
+
+def get_localnet(
+    path: Path,
+    scope="module",
+    timeout_seconds=60,
+    build_cmd: Optional[List[str]] = None,
+) -> Callable:
+    """Create a fixture that sets up and tears down a localnet instance with workspace programs deployed.
+
+    Args:
+        path: Path to root of the Anchor project.
+        scope: Pytest fixture scope.
+        timeout_seconds: Time to wait for Anchor localnet to start.
+        build_cmd: Command to run before `anchor localnet`. Defaults to `anchor build`.
+
+    Returns:
+        A localnet fixture for use with pytest.
+    """
+
+    @fixture(scope=scope)
+    def localnet_fixture(_fixed_xprocess):
+        class Starter(ProcessStarter):
+            # startup pattern
+            pattern = "JSON RPC URL"
+            terminate_on_interrupt = True
+            # command to start process
+            args = ["anchor", "localnet", "--skip-build"]
+            timeout = timeout_seconds
+            popen_kwargs = {
+                "cwd": path,
+                "start_new_session": True,
+            }
+            max_read_lines = 1_000
+            # command to start process
+
+        actual_build_cmd = ["anchor", "build"] if build_cmd is None else build_cmd
+        subprocess.run(actual_build_cmd, cwd=path, check=True)  # noqa: S603
+        # ensure process is running and return its logfile
+        logfile = _fixed_xprocess.ensure("localnet", Starter)
+
+        yield logfile
+
+        # clean up whole process tree afterwards
+        _fixed_xprocess.getinfo("localnet").terminate()
+
+    return localnet_fixture
