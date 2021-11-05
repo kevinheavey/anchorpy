@@ -45,9 +45,10 @@ def check_args_length(
 ) -> None:
     """Check that the correct number of args is passed to the RPC function."""
     if len(args) != len(idl_ix.args):
+        expected_arg_names = [arg.name for arg in idl_ix.args]
         raise ArgsError(
-            f"Provided incorrect args to instruction={idl_ix.name}. "
-            f"Expected {idl_ix.args}",
+            f"Provided incorrect number of args to instruction={idl_ix.name}. "
+            f"Expected {expected_arg_names}",
             f"Received {args}",
         )
 
