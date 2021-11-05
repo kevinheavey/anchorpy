@@ -1,3 +1,4 @@
+"""This module provides `AccountsCoder` and `account_discriminator`."""
 from hashlib import sha256
 from typing import Tuple, Any
 from construct import Adapter, Sequence, Bytes, Switch, Container

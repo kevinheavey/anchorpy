@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pytest import fixture
 
-from tests.utils import get_localnet
+from anchorpy.pytest_plugin import get_localnet
 
 PATH = Path("anchor/tests/cfo")
 

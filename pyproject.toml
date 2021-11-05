@@ -29,6 +29,10 @@ mkdocs-material = "^7.3.3"
 pytest-xprocess = "^0.18.1"
 bump2version = "^1.0.1"
 
+[tool.poetry.plugins.pytest11]
+pytest_anchorpy = "anchorpy.pytest_plugin"
+
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

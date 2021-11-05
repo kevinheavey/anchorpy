@@ -92,6 +92,15 @@ def typedef_layout(
 
 
 def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
+    """Map IDL spec to `borsh-construct` types.
+
+    Args:
+        field: field object from the IDL.
+        types: IDL type definitions.
+
+    Returns:
+        `Construct` object from `borsh-construct`.
+    """
     field_name = field.name if field.name else ""
     if isinstance(field.type, str):
         return field_name / FIELD_TYPE_MAP[field.type]

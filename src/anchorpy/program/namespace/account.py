@@ -1,3 +1,4 @@
+"""Provides the `AccountClient` class."""
 import base64
 from dataclasses import dataclass
 from base58 import b58encode
@@ -23,6 +24,11 @@ def build_account(
     program_id: PublicKey,
     provider: Provider,
 ) -> Dict[str, "AccountClient"]:
+    """Generate the `.account` namespace.
+
+    Returns:
+        [type]: [description]
+    """
     accounts_fns = {}
     for idl_account in idl.accounts:
         account_client = AccountClient(idl, idl_account, coder, program_id, provider)

@@ -1,3 +1,4 @@
+"""Common utilities."""
 from dataclasses import dataclass
 from typing import Dict, List, Any, Union, cast, get_args, Tuple
 from construct import Container
@@ -9,14 +10,20 @@ from anchorpy.idl import (
     IdlInstruction,
     IdlAccountItem,
 )
+from anchorpy.program.context import Accounts
 
 AddressType = Union[PublicKey, str]
 
 
 def parse_idl_errors(idl: Idl) -> Dict[int, str]:
-    """Turns IDL errors into something readable.
+    """Turn IDL errors into something readable.
 
-    Uses message if available, otherwise name."""
+    Uses message if available, otherwise name.
+
+    Args:
+        idl: Parsed `Idl` instance.
+
+    """
     errors = {}
     for e in idl.errors:
         msg = e.msg if e.msg else e.name
@@ -39,7 +46,16 @@ def to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
     return Instruction(data=ix, name=idl_ix.name)
 
 
-def validate_accounts(ix_accounts: List[IdlAccountItem], accounts):
+def validate_accounts(ix_accounts: List[IdlAccountItem], accounts: Accounts):
+    """Check that accounts passed in `ctx` match the IDL.
+
+    Args:
+        ix_accounts: Accounts from the IDL.
+        accounts: Accounts from the `ctx` arg.
+
+    Raises:
+        ValueError: If `ctx` accounts don't match the IDL.
+    """
     for acc in ix_accounts:
         if isinstance(acc, get_args(IdlAccounts)):
             idl_accounts = cast(IdlAccounts, acc)
@@ -49,6 +65,14 @@ def validate_accounts(ix_accounts: List[IdlAccountItem], accounts):
 
 
 def translate_address(address: AddressType):
+    """Convert `str | PublicKey` into `PublicKey`.
+
+    Args:
+        address: Public key as string or `PublicKey`.
+
+    Returns:
+        Public key as `PublicKey`.
+    """
     if isinstance(address, str):
         return PublicKey(address)
     return address

@@ -14,7 +14,7 @@ from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.async_client import AsyncToken
 from anchorpy.provider import Provider, LocalWallet
 from anchorpy.utils.rpc import invoke
-from tests.utils import get_localnet
+from anchorpy.pytest_plugin import get_localnet
 
 PATH = Path("anchor/tests/misc/")
 

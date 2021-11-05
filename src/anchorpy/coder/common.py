@@ -1,3 +1,4 @@
+"""Common utilities for encoding and decoding."""
 from typing import Dict, Union
 from hashlib import sha256
 from inflection import underscore
@@ -89,6 +90,15 @@ def _variant_size(idl: Idl, variant: IdlEnumVariant) -> int:
 
 
 def account_size(idl: Idl, idl_account: IdlTypeDef) -> int:
+    """Calculate account size in bytes.
+
+    Args:
+        idl: The parsed `Idl` instance.
+        idl_account: An item from `idl.accounts`.
+
+    Returns:
+        Account size.
+    """
     idl_account_type = idl_account.type
     if isinstance(idl_account_type, IdlTypeDefTyEnum):
         variant_sizes = (

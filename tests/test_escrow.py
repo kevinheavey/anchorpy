@@ -9,7 +9,7 @@ from spl.token.constants import TOKEN_PROGRAM_ID
 
 from pytest import fixture, mark
 from anchorpy import Program, Provider, create_workspace, close_workspace
-from tests.utils import get_localnet
+from anchorpy.pytest_plugin import get_localnet
 
 PATH = Path("anchor/tests/escrow")
 

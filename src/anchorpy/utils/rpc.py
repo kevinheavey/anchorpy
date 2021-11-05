@@ -16,7 +16,17 @@ async def invoke(
     accounts: Optional[List[AccountMeta]] = None,
     data: Optional[bytes] = None,
 ) -> TransactionSignature:
-    """Send a transaction to a program with the given accounts and instruction data."""
+    """Send a transaction to a program with the given accounts and instruction data.
+
+    Args:
+        program_id: The program ID
+        provider: the `Provider` instance.
+        accounts: `AccountMeta` objects.
+        data: The transaction data.
+
+    Returns:
+        The transaction signature.
+    """
     translated_program_id = translate_address(program_id)
     tx = Transaction()
     tx.add(
