@@ -54,6 +54,18 @@ class EventParser:
     def handle_log(
         self, execution: ExecutionContext, log: str
     ) -> Tuple[Optional[Event], Optional[str], bool]:
+        """Main log handler.
+
+        Args:
+            execution: The execution stack.
+            log: log string from the RPC node.
+
+        Returns:
+            A three element array of the event, the next program
+            that was invoked for CPI, and a boolean indicating if
+            a program has completed execution (and thus should be popped off the
+            execution stack).
+        """
         # Executing program is this program.
         if execution.stack and execution.program() == str(self.program_id):
             return self.handle_program_log(log)
@@ -63,6 +75,12 @@ class EventParser:
     def handle_program_log(
         self, log: str
     ) -> Tuple[Optional[Event], Optional[str], bool]:
+        """Handle logs from *this* program.
+
+        Args:
+            log: log string from the RPC node.
+
+        """
         # This is a `msg!` log.
         if log.startswith("Program log:"):
             log_str = log[LOG_START_INDEX:]
@@ -75,6 +93,12 @@ class EventParser:
         return (None, *self.handle_system_log(log))
 
     def handle_system_log(self, log: str) -> Tuple[Optional[str], bool]:
+        """Handle logs when the current program being executing is *not* this.
+
+        Args:
+            log: log string from the RPC node.
+
+        """
         log_start = log.split(":")[0]
         if log_start.split("Program ")[1].split(" ")[1] == "success":
             return None, True

@@ -69,7 +69,14 @@ class InstructionFn:
         )
 
     def accounts(self, accs: Accounts) -> List[AccountMeta]:
-        """Order the accounts for this instruction."""
+        """Order the accounts for this instruction.
+
+        Args:
+            accs: Accounts from `ctx` kwarg.
+
+        Returns:
+            Ordered and flattened accounts.
+        """
         return accounts_array(accs, self.idl_ix.accounts)
 
 
@@ -77,7 +84,15 @@ def accounts_array(
     ctx: Accounts,
     accounts: Sequence[IdlAccountItem],
 ) -> List[AccountMeta]:
-    """Create a list of AccountMeta from a (possibly nested) dict of accounts."""
+    """Create a list of AccountMeta from a (possibly nested) dict of accounts.
+
+    Args:
+        ctx: `accounts` field from the `Context` object.
+        accounts: accounts from the IDL.
+
+    Returns:
+        AccountMeta objects.
+    """
     accounts_ret: List[AccountMeta] = []
     for acc in accounts:
         if isinstance(acc, IdlAccounts):

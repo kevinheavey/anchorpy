@@ -49,6 +49,11 @@ def build_simulate_item(
     program_id: PublicKey,
     idl: Idl,
 ) -> SimulateFn:
+    """Build the function to simulate transactions for a given method of a program.
+
+    Returns a list of deserialized events and raw program logs.
+    """
+
     async def simulate_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> SimulateResponse:
         tx = tx_fn(*args, ctx=ctx)
         check_args_length(idl_ix, args)

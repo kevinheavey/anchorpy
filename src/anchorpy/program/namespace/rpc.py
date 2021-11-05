@@ -33,6 +33,8 @@ def build_rpc_item(  # ts: RpcFactory
     idl_errors: Dict[int, str],
     provider: Provider,
 ) -> RpcFn:
+    """Build the function that sends transactions for the given method."""
+
     async def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> TransactionSignature:
         tx = tx_fn(*args, ctx=ctx)
         check_args_length(idl_ix, args)
