@@ -81,9 +81,9 @@ async def test_created_multisig(
 ) -> None:
     multisig, nonce, owners, threshold = created_multisig[:4]
     multisig_account = await program.account["Multisig"].fetch(multisig.public_key)
-    assert multisig_account["nonce"] == nonce
-    assert multisig_account["threshold"] == threshold
-    assert multisig_account["owners"] == owners
+    assert multisig_account.nonce == nonce
+    assert multisig_account.threshold == threshold
+    assert multisig_account.owners == owners
 
 
 @fixture(scope="module")
@@ -131,11 +131,11 @@ async def test_created_transaction(
 ) -> None:
     transaction, accounts, data, multisig, _, _ = created_transaction
     tx_account = await program.account["Transaction"].fetch(transaction.public_key)
-    assert tx_account["programId"] == program.program_id
-    assert tx_account["accounts"] == accounts
-    assert tx_account["data"] == data
-    assert tx_account["multisig"] == multisig.public_key
-    assert tx_account["didExecute"] is False
+    assert tx_account.programId == program.program_id
+    assert tx_account.accounts == accounts
+    assert tx_account.data == data
+    assert tx_account.multisig == multisig.public_key
+    assert tx_account.didExecute is False
 
 
 @fixture(scope="module")
@@ -190,6 +190,6 @@ async def test_executed_transaction(
     multisig, nonce, _, threshold = created_multisig[:4]
     new_owners = created_transaction[5]
     multisig_account = await program.account["Multisig"].fetch(multisig.public_key)
-    assert multisig_account["nonce"] == nonce
-    assert multisig_account["threshold"] == threshold
-    assert multisig_account["owners"] == new_owners
+    assert multisig_account.nonce == nonce
+    assert multisig_account.threshold == threshold
+    assert multisig_account.owners == new_owners

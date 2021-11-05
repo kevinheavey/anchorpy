@@ -80,5 +80,5 @@ async def test_composite_update(
     dummy_a, dummy_b = composite_updated_accounts
     dummy_a_account = await program.account["DummyA"].fetch(dummy_a.public_key)
     dummy_b_account = await program.account["DummyB"].fetch(dummy_b.public_key)
-    assert dummy_a_account["data"] == 1234
-    assert dummy_b_account["data"] == 4321
+    assert dummy_a_account.data == 1234
+    assert dummy_b_account.data == 4321

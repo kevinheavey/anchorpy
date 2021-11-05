@@ -66,8 +66,8 @@ async def test_can_use_u128_and_i128(
     program: Program, initialized_keypair: Keypair
 ) -> None:
     data_account = await program.account["Data"].fetch(initialized_keypair.public_key)
-    assert data_account["udata"] == 1234
-    assert data_account["idata"] == 22
+    assert data_account.udata == 1234
+    assert data_account.idata == 22
 
 
 @fixture(scope="module")
@@ -92,7 +92,7 @@ async def test_can_use_u16(
     data_account = await program.account["DataU16"].fetch(
         keypair_after_testU16.public_key,
     )
-    assert data_account["data"] == 99
+    assert data_account.data == 99
 
 
 @mark.asyncio
@@ -149,11 +149,11 @@ async def test_can_retrieve_events_when_simulating_transaction(
     events = resp.events
     assert resp.raw[0] == expected_raw_first_entry
     assert events[0].name == "E1"
-    assert events[0].data["data"] == 44
+    assert events[0].data.data == 44
     assert events[1].name == "E2"
-    assert events[1].data["data"] == 1234
+    assert events[1].data.data == 1234
     assert events[2].name == "E3"
-    assert events[2].data["data"] == 9
+    assert events[2].data.data == 9
 
 
 @mark.asyncio
@@ -168,7 +168,7 @@ async def test_can_use_i8_in_idl(program: Program) -> None:
         ),
     )
     data_account = await program.account["DataI8"].fetch(data.public_key)
-    assert data_account["data"] == -3
+    assert data_account.data == -3
 
 
 @fixture(scope="module")
@@ -188,7 +188,7 @@ async def data_i16_keypair(program: Program) -> Keypair:
 @mark.asyncio
 async def test_can_use_i16_in_idl(program: Program, data_i16_keypair: Keypair) -> None:
     data_account = await program.account["DataI16"].fetch(data_i16_keypair.public_key)
-    assert data_account["data"] == -2048
+    assert data_account.data == -2048
 
 
 @mark.asyncio
@@ -199,7 +199,7 @@ async def test_can_use_base58_strings_to_fetch_account(
     data_account = await program.account["DataI16"].fetch(
         str(data_i16_keypair.public_key),
     )
-    assert data_account["data"] == -2048
+    assert data_account.data == -2048
 
 
 @mark.asyncio
@@ -290,7 +290,7 @@ async def test_can_create_a_pda_with_instruction_data(
         ),
     )
     my_pda_account = await program.account["DataU16"].fetch(my_pda)
-    assert my_pda_account["data"] == 6
+    assert my_pda_account.data == 6
 
 
 @mark.asyncio
@@ -308,8 +308,8 @@ async def test_can_create_a_zero_copy_pda(program: Program) -> None:
         ),
     )
     my_pda_account = await program.account["DataZeroCopy"].fetch(my_pda)
-    assert my_pda_account["data"] == 9
-    assert my_pda_account["bump"] == nonce
+    assert my_pda_account.data == 9
+    assert my_pda_account.bump == nonce
 
 
 @mark.asyncio
@@ -324,8 +324,8 @@ async def test_can_write_to_a_zero_copy_pda(program: Program) -> None:
         )
     )
     my_pda_account = await program.account["DataZeroCopy"].fetch(my_pda)
-    assert my_pda_account["data"] == 1234
-    assert my_pda_account["bump"] == bump
+    assert my_pda_account.data == 1234
+    assert my_pda_account.bump == bump
 
 
 @mark.asyncio
@@ -382,7 +382,7 @@ async def test_can_init_random_account(program: Program) -> None:
         ),
     )
     account = await program.account["DataI8"].fetch(data.public_key)
-    assert account["data"] == 3
+    assert account.data == 3
 
 
 @mark.asyncio
@@ -408,7 +408,7 @@ async def test_can_init_random_account_prefunded(program: Program) -> None:
         ),
     )
     account = await program.account["DataI8"].fetch(data.public_key)
-    assert account["data"] == 3
+    assert account.data == 3
 
 
 @mark.asyncio
@@ -425,8 +425,8 @@ async def test_can_init_random_zero_copy_account(program: Program) -> None:
         ),
     )
     account = await program.account["DataZeroCopy"].fetch(data.public_key)
-    assert account["data"] == 10
-    assert account["bump"] == 2
+    assert account.data == 10
+    assert account.bump == 2
 
 
 @mark.asyncio
@@ -637,11 +637,11 @@ async def test_init_multiple_accounts_via_composite_payer(program: Program) -> N
         )
     )
     account1 = await program.account["DataI8"].fetch(data1.public_key)
-    assert account1["data"] == 1
+    assert account1.data == 1
 
     account2 = await program.account["Data"].fetch(data2.public_key)
-    assert account2["udata"] == 2
-    assert account2["idata"] == 3
+    assert account2.udata == 2
+    assert account2.idata == 3
 
 
 @mark.asyncio
@@ -814,7 +814,7 @@ async def test_can_init_if_needed_a_new_account(
     if_needed_acc: Keypair,
 ) -> None:
     account = await program.account["DataU16"].fetch(if_needed_acc.public_key)
-    assert account["data"] == 1
+    assert account.data == 1
 
 
 @mark.asyncio
@@ -834,4 +834,4 @@ async def test_can_init_if_needed_a_previously_created_account(
         ),
     )
     account = await program.account["DataU16"].fetch(if_needed_acc.public_key)
-    assert account["data"] == 3
+    assert account.data == 3

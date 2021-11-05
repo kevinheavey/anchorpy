@@ -63,8 +63,8 @@ async def test_create_counter(
 ) -> None:
     """Test creating a counter."""
     counter_account = await program.account["Counter"].fetch(created_counter.public_key)
-    assert counter_account["authority"] == provider.wallet.public_key
-    assert counter_account["count"] == 0
+    assert counter_account.authority == provider.wallet.public_key
+    assert counter_account.count == 0
 
 
 @mark.asyncio
@@ -83,5 +83,5 @@ async def test_update_counter(
         ),
     )
     counter_account = await program.account["Counter"].fetch(created_counter.public_key)
-    assert counter_account["authority"] == provider.wallet.public_key
-    assert counter_account["count"] == 1
+    assert counter_account.authority == provider.wallet.public_key
+    assert counter_account.count == 1
