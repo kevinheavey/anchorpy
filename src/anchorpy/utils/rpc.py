@@ -1,5 +1,5 @@
 """This module contains the invoke function."""
-from typing import List, Optional
+from typing import Optional
 from solana.transaction import (
     AccountMeta,
     Transaction,
@@ -13,7 +13,7 @@ from anchorpy.provider import Provider
 async def invoke(
     program_id: AddressType,
     provider: Provider,
-    accounts: Optional[List[AccountMeta]] = None,
+    accounts: Optional[list[AccountMeta]] = None,
     data: Optional[bytes] = None,
 ) -> TransactionSignature:
     """Send a transaction to a program with the given accounts and instruction data.

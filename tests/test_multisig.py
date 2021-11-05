@@ -94,8 +94,16 @@ async def created_transaction(
     owner_d = Keypair()
     multisig, _, owners, _, multisig_signer, owner_a, _ = created_multisig
     accounts = [
-        {"pubkey": multisig.public_key, "isWritable": True, "isSigner": False},
-        {"pubkey": multisig_signer, "isWritable": False, "isSigner": True},
+        program.type["TransactionAccount"](
+            pubkey=multisig.public_key,
+            isWritable=True,
+            isSigner=False,
+        ),
+        program.type["TransactionAccount"](
+            pubkey=multisig_signer,
+            isWritable=False,
+            isSigner=True,
+        ),
     ]
     new_owners = [*owners[:2], owner_d.public_key]
     data = program.coder.instruction.encode("setOwners", {"owners": new_owners})

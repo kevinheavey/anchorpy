@@ -1,5 +1,5 @@
 """This module deals with creating the program object's namespaces."""
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 from solana.publickey import PublicKey
 from anchorpy.program.namespace.rpc import (
@@ -22,6 +22,7 @@ from anchorpy.program.namespace.instruction import (
 )
 from anchorpy.program.common import parse_idl_errors
 from anchorpy.idl import Idl
+from anchorpy.program.namespace.types import build_types
 from anchorpy.provider import Provider
 
 
@@ -36,6 +37,7 @@ def build_namespace(  # noqa: WPS320
     Dict[str, TransactionFn],
     Dict[str, AccountClient],
     Dict[str, SimulateFn],
+    Dict[str, Any],
 ]:
     """Generate all namespaces for a given program.
 
@@ -77,4 +79,5 @@ def build_namespace(  # noqa: WPS320
         simulate[name] = simulate_item
 
     account = build_account(idl, coder, program_id, provider) if idl.accounts else {}
-    return rpc, instruction, transaction, account, simulate
+    types = build_types(idl)
+    return rpc, instruction, transaction, account, simulate, types

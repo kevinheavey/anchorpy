@@ -1,15 +1,15 @@
 """IDL coding."""
-from dataclasses import make_dataclass
+from dataclasses import make_dataclass, asdict
 from types import MappingProxyType
 from keyword import kwlist
-from typing import List, Mapping, Optional, Union, cast, Type, Tuple
+from typing import Mapping, Optional, cast, Type
 from solana.publickey import PublicKey
 
 from construct import Construct
 from borsh_construct import (
     CStruct,
-    Enum,
     Vec,
+    Enum,
     Bool,
     U8,
     I8,
@@ -33,7 +33,6 @@ from anchorpy.idl import (
     IdlType,
     IdlTypeArray,
     IdlTypeDef,
-    IdlTypeDefTy,
     IdlTypeDefTyEnum,
     IdlTypeDefTyStruct,
     IdlTypeDefined,
@@ -85,7 +84,7 @@ FIELD_PYTHON_TYPE_MAP: Mapping[str, Type] = MappingProxyType(
 
 def _handle_enum_variants(
     idl_enum: IdlTypeDefTyEnum,
-    types: List[IdlTypeDef],
+    types: list[IdlTypeDef],
     name: str,
 ) -> Enum:
     variants = []
@@ -107,16 +106,17 @@ def _handle_enum_variants(
                 types,
                 variant_name,
             )
-            variants.append(variant_name / DataclassStruct(cstruct, datacls=datacls))  # type: ignore
+            renamed = variant_name / DataclassStruct(cstruct, datacls=datacls)
+            variants.append(renamed)  # type: ignore
     return Enum(*variants, enum_name=name)
 
 
 def typedef_layout(
     typedef: IdlTypeDef,
-    types: List[IdlTypeDef],
-    name: str = "",
+    types: list[IdlTypeDef],
 ) -> Construct:
     typedef_type = typedef.type
+    name = typedef.name
     if isinstance(typedef_type, IdlTypeDefTyStruct):
         field_layouts = [field_layout(field, types) for field in typedef_type.fields]
         cstruct = CStruct(*field_layouts)
@@ -128,7 +128,7 @@ def typedef_layout(
     raise ValueError(f"Unknown type {unknown_type}")
 
 
-def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
+def field_layout(field: IdlField, types: list[IdlTypeDef]) -> Construct:
     """Map IDL spec to `borsh-construct` types.
 
     Args:
@@ -160,7 +160,7 @@ def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
         filtered = [t for t in types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        return typedef_layout(filtered[0], types, field_name)
+        return typedef_layout(filtered[0], types)
     elif isinstance(field_type, IdlTypeArray):
         array_ty = field_type.array[0]
         array_len = field_type.array[1]
@@ -171,8 +171,7 @@ def field_layout(field: IdlField, types: List[IdlTypeDef]) -> Construct:
 
 def idl_type_to_python_type(
     idl_type: IdlType,
-    types: List[IdlTypeDef],
-    defined_field_name: str = "",
+    types: list[IdlTypeDef],
 ) -> Type:
     if isinstance(idl_type, str):
         return FIELD_PYTHON_TYPE_MAP[idl_type]
@@ -181,13 +180,16 @@ def idl_type_to_python_type(
         idl_type,
     )
     if isinstance(compound_idl_type, IdlTypeVec):
-        return list[idl_type_to_python_type(compound_idl_type.vec, types)]
+        type_arg = idl_type_to_python_type(compound_idl_type.vec, types)
+        return list[type_arg]  # type: ignore
     elif isinstance(compound_idl_type, IdlTypeOption):
-        return Optional[idl_type_to_python_type(compound_idl_type.option, types)]
+        return Optional[  # type: ignore
+            idl_type_to_python_type(compound_idl_type.option, types)
+        ]
     elif isinstance(compound_idl_type, IdlTypeArray):
         array_ty = compound_idl_type.array[0]
         array_len = compound_idl_type.array[1]
-        return tuple[
+        return tuple[  # type: ignore
             (
                 idl_type_to_python_type(
                     array_ty,
@@ -203,16 +205,26 @@ def idl_type_to_python_type(
         filtered = [t for t in types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        return idl_typedef_type_to_python_type(
-            filtered[0].type,
+        return idl_typedef_to_python_type(
+            filtered[0],
             types,
-            defined_field_name,
         )
+
+
+def _datacls_cmp(left, right) -> bool:
+    return (
+        asdict(left) == asdict(right)
+        and left.__class__.__name__ == right.__class__.__name__
+    )
+
+
+def _make_datacls(name: str, fields: list[tuple[str, type]]) -> type:
+    return make_dataclass(name, fields, namespace={"__eq__": _datacls_cmp})
 
 
 def idl_typedef_ty_struct_to_dataclass_type(
     typedef_type: IdlTypeDefTyStruct,
-    types: List[IdlTypeDef],
+    types: list[IdlTypeDef],
     name: str,
 ) -> Type:
     dataclass_fields = []
@@ -222,12 +234,12 @@ def idl_typedef_ty_struct_to_dataclass_type(
         dataclass_fields.append(
             (field_name_to_use, idl_type_to_python_type(field.type, types)),
         )
-    return make_dataclass(name, dataclass_fields)
+    return _make_datacls(name, dataclass_fields)
 
 
 def idl_enum_fields_named_to_dataclass_type(
     fields: IdlEnumFieldsNamed,
-    types: List[IdlTypeDef],
+    types: list[IdlTypeDef],
     name: str,
 ) -> Type:
     dataclass_fields = []
@@ -237,17 +249,21 @@ def idl_enum_fields_named_to_dataclass_type(
         dataclass_fields.append(
             (field_name_to_use, idl_type_to_python_type(field.type, types)),
         )
-    return make_dataclass(name, dataclass_fields)
+    return _make_datacls(name, dataclass_fields)
 
 
-def idl_typedef_type_to_python_type(
-    typedef_type: IdlTypeDefTy,
-    types: List[IdlTypeDef],
-    name: str,
+def idl_typedef_to_python_type(
+    typedef: IdlTypeDef,
+    types: list[IdlTypeDef],
 ) -> Type:
+    typedef_type = typedef.type
     if isinstance(typedef_type, IdlTypeDefTyStruct):
-        return idl_typedef_ty_struct_to_dataclass_type(typedef_type, types, name)
+        return idl_typedef_ty_struct_to_dataclass_type(
+            typedef_type,
+            types,
+            typedef.name,
+        )
     elif isinstance(typedef_type, IdlTypeDefTyEnum):
-        return _handle_enum_variants(typedef_type, types, name).enum
+        return _handle_enum_variants(typedef_type, types, typedef.name).enum
     unknown_type = typedef_type.kind
     raise ValueError(f"Unknown type {unknown_type}")
