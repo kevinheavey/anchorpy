@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Any, Tuple, Optional, Dict
+from typing import Any, Tuple, Optional, Dict
 
 from solana.keypair import Keypair
 from solana.rpc.types import TxOpts
@@ -33,9 +33,9 @@ class Context:
     """
 
     accounts: Accounts = field(default_factory=dict)
-    remaining_accounts: List[AccountMeta] = field(default_factory=list)
-    signers: List[Keypair] = field(default_factory=list)
-    instructions: List[TransactionInstruction] = field(default_factory=list)
+    remaining_accounts: list[AccountMeta] = field(default_factory=list)
+    signers: list[Keypair] = field(default_factory=list)
+    instructions: list[TransactionInstruction] = field(default_factory=list)
     options: Optional[TxOpts] = None
 
 

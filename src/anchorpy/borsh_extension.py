@@ -2,7 +2,7 @@
 from typing import Any, Dict, Type, TypeVar
 from keyword import kwlist
 from dataclasses import asdict
-from borsh_construct.core import CStruct
+from borsh_construct import CStruct
 from solana import publickey
 from construct import Bytes, Adapter, Container
 
@@ -23,7 +23,7 @@ T = TypeVar("T")
 
 class DataclassStruct(Adapter):
     def __init__(self, cstruct: CStruct, datacls: Type[T]) -> None:
-        super().__init__(cstruct)
+        super().__init__(cstruct)  # type: ignore
         self.datacls = datacls
 
     def _decode(self, obj: Container, context, path) -> T:
@@ -32,7 +32,7 @@ class DataclassStruct(Adapter):
             if key[0] != "_":
                 key_to_use = f"{key}_" if key in kwlist else key
                 kwargs[key_to_use] = value
-        return self.datacls(**kwargs)
+        return self.datacls(**kwargs)  # type: ignore
 
     def _encode(self, obj: T, context, path) -> Dict[str, Any]:
         if isinstance(obj, dict):

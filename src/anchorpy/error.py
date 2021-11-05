@@ -1,12 +1,12 @@
 from __future__ import annotations
-from typing import Dict, Union, List, Optional, cast
+from typing import Union, Optional, cast
 from enum import IntEnum
 from solana.rpc.types import RPCError
 
 
 class ExtendedRPCError(RPCError):
     data: dict
-    logs: List[str]
+    logs: list[str]
 
 
 class LangErrorCode(IntEnum):
@@ -124,7 +124,9 @@ class ProgramError(Exception):
 
     @classmethod
     def parse(
-        cls, err_info: Union[RPCError, ExtendedRPCError], idl_errors: Dict[int, str]
+        cls,
+        err_info: Union[RPCError, ExtendedRPCError],
+        idl_errors: dict[int, str],
     ) -> Optional[ProgramError]:
         try:  # noqa: WPS229
             err_data = cast(ExtendedRPCError, err_info)["data"]

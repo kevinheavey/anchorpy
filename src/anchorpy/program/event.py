@@ -1,17 +1,13 @@
 from dataclasses import dataclass
 from base64 import b64decode
-from typing import Callable, List, NamedTuple, Optional, Tuple, cast
+from typing import Callable, Optional, cast
 import binascii
 from solana.publickey import PublicKey
 from anchorpy.coder.coder import Coder
+from anchorpy.program.common import Event
 
 
 LOG_START_INDEX = len("Program log: ")
-
-
-class Event(NamedTuple):
-    name: str
-    data: dict
 
 
 class ExecutionContext:
@@ -37,7 +33,7 @@ class EventParser:
     program_id: PublicKey
     coder: Coder
 
-    def parse_logs(self, logs: List[str], callback: Callable[[Event], None]) -> None:
+    def parse_logs(self, logs: list[str], callback: Callable[[Event], None]) -> None:
         log_scanner = LogScanner(logs)
         execution = ExecutionContext(cast(str, log_scanner.to_next()))
         log = log_scanner.to_next()
@@ -52,8 +48,10 @@ class EventParser:
             log = log_scanner.to_next()
 
     def handle_log(
-        self, execution: ExecutionContext, log: str
-    ) -> Tuple[Optional[Event], Optional[str], bool]:
+        self,
+        execution: ExecutionContext,
+        log: str,
+    ) -> tuple[Optional[Event], Optional[str], bool]:
         """Main log handler.
 
         Args:
@@ -74,7 +72,7 @@ class EventParser:
 
     def handle_program_log(
         self, log: str
-    ) -> Tuple[Optional[Event], Optional[str], bool]:
+    ) -> tuple[Optional[Event], Optional[str], bool]:
         """Handle logs from *this* program.
 
         Args:
@@ -92,7 +90,7 @@ class EventParser:
             return event, None, False
         return (None, *self.handle_system_log(log))
 
-    def handle_system_log(self, log: str) -> Tuple[Optional[str], bool]:
+    def handle_system_log(self, log: str) -> tuple[Optional[str], bool]:
         """Handle logs when the current program being executing is *not* this.
 
         Args:
@@ -111,7 +109,7 @@ class EventParser:
 
 @dataclass
 class LogScanner:
-    logs: List[str]
+    logs: list[str]
 
     def to_next(self) -> Optional[str]:
         if self.logs:

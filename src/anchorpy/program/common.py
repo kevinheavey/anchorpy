@@ -1,6 +1,6 @@
 """Common utilities."""
 from dataclasses import dataclass
-from typing import Dict, List, Any, Union, cast, get_args, Tuple
+from typing import Dict, Any, Union, cast, get_args, Tuple, NamedTuple
 from construct import Container
 
 from solana.publickey import PublicKey
@@ -31,6 +31,11 @@ def parse_idl_errors(idl: Idl) -> Dict[int, str]:
     return errors
 
 
+class Event(NamedTuple):
+    name: str
+    data: Any
+
+
 @dataclass
 class Instruction:
     data: Union[Dict[str, Any], Container[Any]]
@@ -46,7 +51,7 @@ def to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
     return Instruction(data=ix, name=idl_ix.name)
 
 
-def validate_accounts(ix_accounts: List[IdlAccountItem], accounts: Accounts):
+def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
     """Check that accounts passed in `ctx` match the IDL.
 
     Args:

@@ -1,5 +1,5 @@
 """This module provides the `get_localnet` fixture factory."""
-from typing import Callable, List, Optional
+from typing import Callable, Optional
 import subprocess
 import signal
 import os
@@ -123,7 +123,7 @@ def get_localnet(
     path: Path,
     scope="module",
     timeout_seconds=60,
-    build_cmd: Optional[List[str]] = None,
+    build_cmd: Optional[list[str]] = None,
 ) -> Callable:
     """Create a fixture that sets up and tears down a localnet instance with workspace programs deployed.
 
