@@ -61,6 +61,7 @@ class Program(object):
             transaction,
             account,
             simulate,
+            types,
         ) = build_namespace(
             idl,
             self.coder,
@@ -73,6 +74,7 @@ class Program(object):
         self.transaction = transaction
         self.account = account
         self.simulate = simulate
+        self.type = types
 
     async def __aenter__(self) -> Program:
         """Use as a context manager."""

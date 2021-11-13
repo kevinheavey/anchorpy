@@ -52,5 +52,5 @@ async def test_initialize(program: Program) -> None:
         parsed = []
         parser.parse_logs(logs, lambda evt: parsed.append(evt))
         event = parsed[0]
-        assert event.data["data"] == 5
-        assert event.data["label"] == "hello"
+        assert event.data.data == 5
+        assert event.data.label == "hello"

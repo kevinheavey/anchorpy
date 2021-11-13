@@ -5,7 +5,7 @@ from typing import Dict, Tuple, Any
 from construct import Adapter, Construct, Sequence, Bytes, Switch
 from anchorpy.idl import Idl, IdlEvent, IdlField, IdlTypeDef, IdlTypeDefTyStruct
 
-from anchorpy.program.common import Instruction
+from anchorpy.program.common import Event
 from anchorpy.coder.idl import typedef_layout
 
 
@@ -61,7 +61,7 @@ class EventCoder(Adapter):
         )
         super().__init__(subcon)  # type: ignore
 
-    def _decode(self, obj: Tuple[bytes, Any], context, path) -> Instruction:
+    def _decode(self, obj: Tuple[bytes, Any], context, path) -> Event:
         disc = obj[0]  # check this, might need more decoding
         event_name = self.discriminators[disc]
-        return Instruction(data=obj[1], name=event_name)
+        return Event(data=obj[1], name=event_name)

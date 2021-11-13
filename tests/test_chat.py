@@ -109,11 +109,11 @@ async def sent_messages(
 @mark.asyncio
 async def test_created_chatroom(created_chatroom: Keypair, program: Program) -> None:
     chat = await program.account["ChatRoom"].fetch(created_chatroom.public_key)
-    name = bytes(chat["name"]).rstrip(b"\x00").decode("utf-8")
+    name = bytes(chat.name).rstrip(b"\x00").decode("utf-8")
     assert name == "Test Chat"
-    assert len(chat["messages"]) == 33607
-    assert chat["head"] == 0
-    assert chat["tail"] == 0
+    assert len(chat.messages) == 33607
+    assert chat.head == 0
+    assert chat.tail == 0
 
 
 @mark.asyncio
@@ -123,8 +123,8 @@ async def test_created_user(
 ) -> None:
     user, authority = created_user
     account = await program.account["User"].fetch(user)
-    assert account["name"] == "My User"
-    assert account["authority"] == authority
+    assert account.name == "My User"
+    assert account.authority == authority
 
 
 @mark.asyncio
@@ -136,11 +136,11 @@ async def test_sent_messages(
 ) -> None:
     user, _ = created_user
     chat = await program.account["ChatRoom"].fetch(created_chatroom.public_key)
-    for i, msg in enumerate(chat["messages"]):
+    for i, msg in enumerate(chat.messages):
         if i < len(sent_messages):
-            data = bytes(msg["data"]).rstrip(b"\x00").decode("utf-8")
+            data = bytes(msg.data).rstrip(b"\x00").decode("utf-8")
             print(f"Message {data}")
-            assert msg["from"] == user
+            assert msg.from_ == user
             assert data == sent_messages[i]
         else:
-            assert msg["data"] == [0] * 280  # noqa: WPS435
+            assert msg.data == [0] * 280  # noqa: WPS435

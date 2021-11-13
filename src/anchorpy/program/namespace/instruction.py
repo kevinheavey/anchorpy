@@ -1,5 +1,5 @@
 """This module deals with generating program instructions."""
-from typing import Callable, List, Any, Sequence, cast, Tuple
+from typing import Callable, Any, Sequence, cast, Tuple
 
 from solana.transaction import TransactionInstruction, AccountMeta
 from solana.publickey import PublicKey
@@ -68,7 +68,7 @@ class InstructionFn:
             data=self.encode_fn(to_instruction(self.idl_ix, args)),
         )
 
-    def accounts(self, accs: Accounts) -> List[AccountMeta]:
+    def accounts(self, accs: Accounts) -> list[AccountMeta]:
         """Order the accounts for this instruction.
 
         Args:
@@ -83,7 +83,7 @@ class InstructionFn:
 def accounts_array(
     ctx: Accounts,
     accounts: Sequence[IdlAccountItem],
-) -> List[AccountMeta]:
+) -> list[AccountMeta]:
     """Create a list of AccountMeta from a (possibly nested) dict of accounts.
 
     Args:
@@ -93,7 +93,7 @@ def accounts_array(
     Returns:
         AccountMeta objects.
     """
-    accounts_ret: List[AccountMeta] = []
+    accounts_ret: list[AccountMeta] = []
     for acc in accounts:
         if isinstance(acc, IdlAccounts):
             rpc_accs = cast(Accounts, ctx[acc.name])

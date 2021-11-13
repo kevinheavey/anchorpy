@@ -66,4 +66,4 @@ async def test_cpi(workspace: Dict[str, Program], provider: Provider) -> None:
         ),
     )
     puppet_account = await puppet.account["Data"].fetch(new_puppet_account.public_key)
-    assert puppet_account["data"] == 111
+    assert puppet_account.data == 111

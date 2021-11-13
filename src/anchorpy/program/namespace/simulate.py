@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, NamedTuple, Union, cast, Protocol, Awaitable
+from typing import Dict, Any, NamedTuple, Union, cast, Protocol, Awaitable
 
 from solana.rpc.types import RPCError
 
@@ -15,8 +15,8 @@ from solana.rpc.core import RPCException
 
 
 class SimulateResponse(NamedTuple):
-    events: List[Event]
-    raw: List[str]
+    events: list[Event]
+    raw: list[str]
 
 
 class SimulateFn(Protocol):

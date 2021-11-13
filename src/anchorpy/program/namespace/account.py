@@ -2,7 +2,7 @@
 import base64
 from dataclasses import dataclass
 from base58 import b58encode
-from typing import Any, List, Optional, Dict, Union
+from typing import Any, Optional, Dict, Union
 
 from construct import Container
 from solana.keypair import Keypair
@@ -27,7 +27,7 @@ def build_account(
     """Generate the `.account` namespace.
 
     Returns:
-        [type]: [description]
+        Mapping of account name to `AccountClient` instance.
     """
     accounts_fns = {}
     for idl_account in idl.accounts:
@@ -121,9 +121,9 @@ class AccountClient(object):
     async def all(
         self,
         buffer: Optional[bytes] = None,
-        memcmp_opts: Optional[List[MemcmpOpts]] = None,
+        memcmp_opts: Optional[list[MemcmpOpts]] = None,
         data_size: Optional[int] = None,
-    ) -> List[ProgramAccount]:
+    ) -> list[ProgramAccount]:
         """Return all instances of this account type for the program.
 
         Args:

@@ -9,6 +9,7 @@ from anchorpy.program.core import Program
 from anchorpy.program.context import Context
 from anchorpy.program.namespace.account import AccountClient
 from anchorpy.program.event import EventParser
+from anchorpy.pytest_plugin import get_localnet
 
 __all__ = [
     "Provider",
@@ -26,6 +27,7 @@ __all__ = [
     "Context",
     "AccountClient",
     "EventParser",
+    "get_localnet",
 ]
 
 

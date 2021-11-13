@@ -28,6 +28,7 @@ pytest-asyncio = "^0.15.1"
 mkdocs-material = "^7.3.3"
 pytest-xprocess = "^0.18.1"
 bump2version = "^1.0.1"
+pyserum = "^0.5.0-alpha.0"
 
 [tool.poetry.plugins.pytest11]
 pytest_anchorpy = "anchorpy.pytest_plugin"

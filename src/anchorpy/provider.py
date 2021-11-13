@@ -8,7 +8,7 @@ import asyncio
 import time
 
 from abc import abstractmethod, ABC
-from typing import List, Optional, Union, NamedTuple, cast
+from typing import Optional, Union, NamedTuple, cast
 
 from solana.keypair import Keypair
 from solana.rpc import types
@@ -21,7 +21,7 @@ from solana.publickey import PublicKey
 
 class SendTxRequest(NamedTuple):
     tx: Transaction
-    signers: List[Keypair]
+    signers: list[Keypair]
 
 
 DEFAULT_OPTIONS = types.TxOpts(skip_confirmation=False, preflight_commitment=Processed)
@@ -78,7 +78,7 @@ class Provider:
     async def simulate(
         self,
         tx: Transaction,
-        signers: Optional[List[Keypair]] = None,
+        signers: Optional[list[Keypair]] = None,
         opts: types.TxOpts = None,
     ) -> types.RPCResponse:
         """Simulates the given transaction, returning emitted logs from execution.
@@ -97,7 +97,7 @@ class Provider:
         if opts is None:
             opts = self.opts
         recent_blockhash_resp = await self.client.get_recent_blockhash(
-            opts.preflight_commitment,
+            Finalized,
         )
         tx.recent_blockhash = recent_blockhash_resp["result"]["value"]["blockhash"]
         all_signers = [self.wallet.payer] + signers
@@ -109,7 +109,7 @@ class Provider:
     async def send(
         self,
         tx: Transaction,
-        signers: Optional[List[Keypair]] = None,
+        signers: Optional[list[Keypair]] = None,
         opts: types.TxOpts = None,
     ) -> TransactionSignature:
         """Send the given transaction, paid for and signed by the provider's wallet.
@@ -136,7 +136,7 @@ class Provider:
             raw_resp["result"],
         )
         if opts.skip_preflight:
-            return resp
+            return resp  # TODO this looks wrong
         await self._confirm_transaction(resp, commitment=opts.preflight_commitment)
         return resp
 
@@ -180,9 +180,9 @@ class Provider:
 
     async def send_all(
         self,
-        reqs: List[Union[Transaction, SendTxRequest]],
+        reqs: list[Union[Transaction, SendTxRequest]],
         opts: Optional[types.TxOpts] = None,
-    ) -> List[TransactionSignature]:
+    ) -> list[TransactionSignature]:
         """Similar to `send`, but for an array of transactions and signers.
 
         Args:
@@ -251,7 +251,7 @@ class Wallet(ABC):
         """
 
     @abstractmethod
-    def sign_all_transactions(self, txs: List[Transaction]):
+    def sign_all_transactions(self, txs: list[Transaction]):
         """Must implement signing multiple transactions."""
 
 
@@ -275,7 +275,7 @@ class LocalWallet(Wallet):
         tx.sign(self.payer)
         return tx
 
-    def sign_all_transactions(self, txs: List[Transaction]) -> List[Transaction]:
+    def sign_all_transactions(self, txs: list[Transaction]) -> list[Transaction]:
         """Sign a list of transactions using the wallet's keypair.
 
         Args:

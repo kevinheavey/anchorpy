@@ -142,3 +142,9 @@ async def test_change_feed_price(program: Program) -> None:
     feed_data_after = await get_feed_data(program, price_feed_address)
     assert feed_data_after.price == new_price
     assert feed_data_after.exponent == expo
+
+
+@mark.asyncio
+async def test_enum(program: Program) -> None:
+    corp_act = program.type["CorpAction"]
+    assert corp_act.NoCorpAct().index == 0

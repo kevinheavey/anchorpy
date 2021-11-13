@@ -60,7 +60,7 @@ async def test_create_and_initialize_account(
 ) -> None:
     """Test creating and initializing account in single tx."""
     account = await program.account["MyAccount"].fetch(initialized_account.public_key)
-    assert account["data"] == 1234
+    assert account.data == 1234
 
 
 @mark.asyncio
@@ -74,4 +74,4 @@ async def test_update_previously_created_account(
         ctx=Context(accounts={"myAccount": initialized_account.public_key}),
     )
     account = await program.account["MyAccount"].fetch(initialized_account.public_key)
-    assert account["data"] == 4321
+    assert account.data == 4321
