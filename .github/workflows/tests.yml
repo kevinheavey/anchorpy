@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout repo.
         uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
 
       - name: Cache Solana Tool Suite
         uses: actions/cache@v2
