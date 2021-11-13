@@ -1,25 +1,46 @@
 from dataclasses import dataclass
-from typing import NamedTuple
+from pathlib import Path
+from typing import NamedTuple, AsyncGenerator
+import asyncio
+from pytest import mark, fixture
 from construct import Int64ul
+from pyserum.instructions import InitializeMarketParams, initialize_market
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.transaction import Transaction
 from solana.rpc.async_api import AsyncClient
-from solana.system_program import transfer, TransferParams
+from solana.rpc.commitment import Finalized
+from solana.system_program import (
+    CreateAccountParams,
+    create_account,
+    transfer,
+    TransferParams,
+)
 from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.async_client import AsyncToken
 from spl.token.instructions import (
     transfer as token_transfer,
     TransferParams as TokenTransferParams,
+    initialize_account,
+    InitializeAccountParams,
 )
 from pyserum.open_orders_account import make_create_account_instruction
 from pyserum.market import AsyncMarket
+from pyserum._layouts.market import MARKET_LAYOUT
 from anchorpy.utils.token import create_mint_and_vault
-from anchorpy.provider import Provider, Wallet
+from pyserum.enums import Side, OrderType
+from anchorpy.provider import DEFAULT_OPTIONS, Provider, Wallet
+from anchorpy import create_workspace, get_localnet, close_workspace, Program
 
 DEX_PID = PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin")
 
 DECIMALS = 6
+TAKER_FEE = 0.0022
+PATH = Path("anchor/tests/swap/")
+localnet = get_localnet(
+    PATH,
+    build_cmd="deps/serum-dex/dex && cargo build-bpf && cd ../../../ && anchor build",
+)
 
 
 @dataclass
@@ -39,6 +60,11 @@ class MintRecord(NamedTuple):
     god: PublicKey
     mint: PublicKey
     amount: int
+
+
+class TransactionAndSigners(NamedTuple):
+    transaction: Transaction
+    signers: list[Keypair]
 
 
 @dataclass
@@ -118,6 +144,22 @@ def get_vault_owner_and_nonce(
     raise KeyError("Unable to find a viable program address nonce")
 
 
+async def sign_transactions(
+    transactions_and_signers: list[TransactionAndSigners],
+    wallet: Wallet,
+    client: AsyncClient,
+) -> list[Transaction]:
+    blockhash_resp = await client.get_recent_blockhash(Finalized)
+    recent_blockhash = blockhash_resp["result"]["value"]["blockhash"]
+    txs = []
+    for transaction, signers in transactions_and_signers:
+        transaction.recent_blockhash = recent_blockhash
+        all_signers = [wallet.payer] + signers
+        transaction.sign(*all_signers)
+        txs.append(transaction)
+    return txs
+
+
 async def list_market(
     client: AsyncClient,
     wallet: Wallet,
@@ -140,6 +182,150 @@ async def list_market(
         market.public_key,
         dex_program_id,
     )
+    tx1 = Transaction()
+    base_vault_space = 165
+    base_vault_mbre_resp = await client.get_minimum_balance_for_rent_exemption(
+        base_vault_space,
+    )
+    create_base_vault_instruction = create_account(
+        CreateAccountParams(
+            from_pubkey=wallet.public_key,
+            new_account_pubkey=base_vault.public_key,
+            lamports=base_vault_mbre_resp["result"],
+            space=base_vault_space,
+            program_id=TOKEN_PROGRAM_ID,
+        ),
+    )
+    create_quote_vault_instruction = create_account(
+        CreateAccountParams(
+            from_pubkey=wallet.public_key,
+            new_account_pubkey=quote_vault.public_key,
+            lamports=base_vault_mbre_resp["result"],
+            space=base_vault_space,
+            program_id=TOKEN_PROGRAM_ID,
+        ),
+    )
+    initialize_base_vault_instruction = initialize_account(
+        InitializeAccountParams(
+            program_id=TOKEN_PROGRAM_ID,
+            account=base_vault.public_key,
+            mint=base_mint,
+            owner=vault_owner,
+        ),
+    )
+    initialize_quote_vault_instruction = initialize_account(
+        InitializeAccountParams(
+            program_id=TOKEN_PROGRAM_ID,
+            account=quote_vault.public_key,
+            mint=quote_mint,
+            owner=vault_owner,
+        ),
+    )
+    tx1.add(
+        create_base_vault_instruction,
+        create_quote_vault_instruction,
+        initialize_base_vault_instruction,
+        initialize_quote_vault_instruction,
+    )
+    tx2 = Transaction()
+    market_space = MARKET_LAYOUT.sizeof()
+    market_mbre_resp = await client.get_minimum_balance_for_rent_exemption(market_space)
+    create_market_instruction = create_account(
+        CreateAccountParams(
+            from_pubkey=wallet.public_key,
+            new_account_pubkey=market.public_key,
+            lamports=market_mbre_resp["result"],
+            space=market_space,
+            program_id=DEX_PID,
+        ),
+    )
+    request_queue_space = 5120 + 12
+    request_queue_mbre_resp = await client.get_minimum_balance_for_rent_exemption(
+        request_queue_space,
+    )
+    create_request_queue_instruction = create_account(
+        CreateAccountParams(
+            from_pubkey=wallet.public_key,
+            new_account_pubkey=request_queue.public_key,
+            lamports=request_queue_mbre_resp["result"],
+            space=request_queue_space,
+            program_id=DEX_PID,
+        ),
+    )
+    event_queue_space = 262144 + 12
+    event_queue_mbre_resp = await client.get_minimum_balance_for_rent_exemption(
+        event_queue_space,
+    )
+    create_event_queue_instruction = create_account(
+        CreateAccountParams(
+            from_pubkey=wallet.public_key,
+            new_account_pubkey=event_queue.public_key,
+            lamports=event_queue_mbre_resp["result"],
+            space=event_queue_space,
+            program_id=DEX_PID,
+        ),
+    )
+    bids_space = 65536 + 12
+    bids_mbre_resp = await client.get_minimum_balance_for_rent_exemption(
+        bids_space,
+    )
+    create_bids_instruction = create_account(
+        CreateAccountParams(
+            from_pubkey=wallet.public_key,
+            new_account_pubkey=bids.public_key,
+            lamports=bids_mbre_resp["result"],
+            space=bids_space,
+            program_id=DEX_PID,
+        ),
+    )
+    create_asks_instruction = create_account(
+        CreateAccountParams(
+            from_pubkey=wallet.public_key,
+            new_account_pubkey=asks.public_key,
+            lamports=bids_mbre_resp["result"],
+            space=bids_space,
+            program_id=DEX_PID,
+        ),
+    )
+    init_market_instructions = initialize_market(
+        InitializeMarketParams(
+            market=market.public_key,
+            request_queue=request_queue.public_key,
+            event_queue=event_queue.public_key,
+            bids=bids.public_key,
+            asks=asks.public_key,
+            base_vault=base_vault.public_key,
+            quote_vault=quote_vault.public_key,
+            base_mint=base_mint,
+            quote_mint=quote_mint,
+            base_lot_size=base_lot_size,
+            quote_lot_size=quote_lot_size,
+            fee_rate_bps=fee_rate_bps,
+            vault_signer_nonce=vault_signer_nonce,
+            quote_dust_threshold=quote_dust_threshold,
+            program_id=DEX_PID,
+        ),
+    )
+    tx2.add(
+        create_market_instruction,
+        create_request_queue_instruction,
+        create_event_queue_instruction,
+        create_bids_instruction,
+        create_asks_instruction,
+        init_market_instructions,
+    )
+    transactions_and_signers = [
+        TransactionAndSigners(tx1, [base_vault, quote_vault]),
+        TransactionAndSigners(tx2, [market, request_queue, event_queue, bids, asks]),
+    ]
+    signed_transactions = await sign_transactions(
+        transactions_and_signers, wallet, client
+    )
+    for signed_transaction in signed_transactions:
+        await client.send_raw_transaction(
+            signed_transaction.serialize(), opts=DEFAULT_OPTIONS
+        )
+    return market.public_key
 
 
 async def setup_market(
@@ -147,10 +333,44 @@ async def setup_market(
     market_maker: MarketMakerSetupMarket,
     base_mint: PublicKey,
     quote_mint: PublicKey,
-    bids: list[tuple[int, int]],
-    asks: list[tuple[int, int]],
+    bids: list[tuple[float, float]],
+    asks: list[tuple[float, float]],
 ) -> AsyncMarket:
-    pass
+    market_a_public_key = await list_market(
+        client=provider.client,
+        wallet=provider.wallet,
+        base_mint=base_mint,
+        quote_mint=quote_mint,
+        base_lot_size=100000,
+        quote_lot_size=100,
+        dex_program_id=DEX_PID,
+        fee_rate_bps=0,
+    )
+    market_a_usdc = await AsyncMarket.load(
+        provider.client, market_a_public_key, DEX_PID
+    )
+    for ask_idx, ask in enumerate(asks):
+        await market_a_usdc.place_order(
+            payer=market_maker.base_token,
+            owner=market_maker.account,
+            order_type=OrderType.POST_ONLY,
+            side=Side.SELL,
+            limit_price=ask[0],
+            max_quantity=ask[1],
+            client_id=ask_idx,
+        )
+    len_asks = len(asks)
+    for bid_idx, bid in enumerate(bids):
+        await market_a_usdc.place_order(
+            payer=market_maker.base_token,
+            owner=market_maker.account,
+            order_type=OrderType.POST_ONLY,
+            side=Side.SELL,
+            limit_price=bid[0],
+            max_quantity=bid[1],
+            client_id=bid_idx + len_asks,
+        )
+    return market_a_usdc
 
 
 async def setup_two_markets(provider: Provider) -> OrderbookEnv:
@@ -165,6 +385,7 @@ async def setup_two_markets(provider: Provider) -> OrderbookEnv:
     ]
     market_maker = await fund_account(
         provider,
+        mints,
     )
     asks = [
         (6.041, 7.8),
@@ -185,3 +406,58 @@ async def setup_two_markets(provider: Provider) -> OrderbookEnv:
         (5.965, 82.8),
         (5.961, 25.4),
     ]
+    market_a_usdc = await setup_market(
+        provider=provider,
+        base_mint=mint_a,
+        quote_mint=mint_usdc,
+        market_maker=MarketMakerSetupMarket(
+            account=market_maker.account,
+            base_token=market_maker.tokens[str(mint_a)],
+            quote_token=market_maker.tokens[str(mint_usdc)],
+        ),
+        bids=bids,
+        asks=asks,
+    )
+    market_b_usdc = await setup_market(
+        provider=provider,
+        base_mint=mint_b,
+        quote_mint=mint_usdc,
+        market_maker=MarketMakerSetupMarket(
+            account=market_maker.account,
+            base_token=market_maker.tokens[str(mint_b)],
+            quote_token=market_maker.tokens[str(mint_usdc)],
+        ),
+        bids=bids,
+        asks=asks,
+    )
+    return OrderbookEnv(
+        market_a=market_a_usdc,
+        market_b=market_b_usdc,
+        market_maker=market_maker,
+        mint_a=mint_a,
+        mint_b=mint_b,
+        usdc=mint_usdc,
+        god_a=god_a,
+        god_b=god_b,
+        god_usdc=god_usdc,
+    )
+
+
+@fixture(scope="module")
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@fixture(scope="module")
+async def workspace(localnet) -> AsyncGenerator[dict[str, Program], None]:
+    wspace = create_workspace(PATH)
+    yield wspace
+    await close_workspace(wspace)
+
+
+@fixture(scope="module")
+async def program(workspace: dict[str, Program]) -> Program:
+    return workspace["swap"]
