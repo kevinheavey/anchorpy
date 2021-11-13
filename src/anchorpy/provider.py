@@ -17,7 +17,6 @@ from solana.rpc.commitment import Finalized, Processed, Confirmed, Commitment
 from solana.rpc.core import RPCException
 from solana.transaction import Transaction, TransactionSignature
 from solana.publickey import PublicKey
-from solana.rpc.commitment import Finalized
 
 
 class SendTxRequest(NamedTuple):
@@ -137,7 +136,7 @@ class Provider:
             raw_resp["result"],
         )
         if opts.skip_preflight:
-            return resp
+            return resp  # TODO this looks wrong
         await self._confirm_transaction(resp, commitment=opts.preflight_commitment)
         return resp
 
