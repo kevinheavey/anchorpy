@@ -123,7 +123,7 @@ def get_localnet(
     path: Path,
     scope="module",
     timeout_seconds=60,
-    build_cmd: Optional[list[str]] = None,
+    build_cmd: Optional[str] = None,
 ) -> Callable:
     """Create a fixture that sets up and tears down a localnet instance with workspace programs deployed.
 
@@ -153,8 +153,8 @@ def get_localnet(
             max_read_lines = 1_000
             # command to start process
 
-        actual_build_cmd = ["anchor", "build"] if build_cmd is None else build_cmd
-        subprocess.run(actual_build_cmd, cwd=path, check=True)  # noqa: S603
+        actual_build_cmd = "anchor build" if build_cmd is None else build_cmd
+        subprocess.run(actual_build_cmd, cwd=path, check=True, shell=True)  # noqa: S603
         # ensure process is running and return its logfile
         logfile = _fixed_xprocess.ensure("localnet", Starter)
 
