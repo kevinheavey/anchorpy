@@ -826,6 +826,19 @@ optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
+name = "pyserum"
+version = "0.5.0a0"
+description = "Python client library for interacting with the Project Serum DEX."
+category = "dev"
+optional = false
+python-versions = ">=3.7, <4"
+
+[package.dependencies]
+construct = ">=2.10.56,<3.0.0"
+construct-typing = ">=0.5.1,<1.0.0"
+solana = ">=0.11.3,<1.0.0"
+
+[[package]]
 name = "pytest"
 version = "5.4.3"
 description = "pytest: simple powerful testing with Python"
@@ -1149,7 +1162,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "45b070410f3d446ae28cd1641ed4c037b7705e102e31a99eea298d171ab490a8"
+content-hash = "2947332390894b3f3465b3b6203baa745d4af956ab64164d614df5e99a703c25"
 
 [metadata.files]
 anyio = [
@@ -1593,6 +1606,10 @@ pynacl = [
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
     {file = "pyparsing-2.4.7.tar.gz", hash = "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1"},
+]
+pyserum = [
+    {file = "pyserum-0.5.0a0-py2-none-any.whl", hash = "sha256:f0282afbbb4b4de04eb783502b05f0dc405392c95ab844b28828160db0779a3a"},
+    {file = "pyserum-0.5.0a0.tar.gz", hash = "sha256:0e13a479c839a596095bcd87fd348b90f9020fa5b1d65bbad17e7daf8086fa9c"},
 ]
 pytest = [
     {file = "pytest-5.4.3-py3-none-any.whl", hash = "sha256:5c0db86b698e8f170ba4582a492248919255fcd4c79b1ee64ace34301fb589a1"},
