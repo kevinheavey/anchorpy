@@ -17,6 +17,7 @@ from solana.rpc.commitment import Finalized, Processed, Confirmed, Commitment
 from solana.rpc.core import RPCException
 from solana.transaction import Transaction, TransactionSignature
 from solana.publickey import PublicKey
+from solana.rpc.commitment import Finalized
 
 
 class SendTxRequest(NamedTuple):
@@ -97,7 +98,7 @@ class Provider:
         if opts is None:
             opts = self.opts
         recent_blockhash_resp = await self.client.get_recent_blockhash(
-            opts.preflight_commitment,
+            Finalized,
         )
         tx.recent_blockhash = recent_blockhash_resp["result"]["value"]["blockhash"]
         all_signers = [self.wallet.payer] + signers
