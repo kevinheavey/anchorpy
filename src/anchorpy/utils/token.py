@@ -34,14 +34,15 @@ async def create_mint_and_vault(
         await provider.client.get_minimum_balance_for_rent_exemption(mint_space)
     )
     create_mint_mbre = create_mint_mbre_resp["result"]
+    create_mint_account_params = CreateAccountParams(
+        from_pubkey=provider.wallet.public_key,
+        new_account_pubkey=mint.public_key,
+        space=mint_space,
+        lamports=create_mint_mbre,
+        program_id=TOKEN_PROGRAM_ID,
+    )
     create_mint_account_instruction = create_account(
-        CreateAccountParams(
-            from_pubkey=provider.wallet.public_key,
-            new_account_pubkey=mint.public_key,
-            space=mint_space,
-            lamports=create_mint_mbre,
-            program_id=TOKEN_PROGRAM_ID,
-        ),
+        create_mint_account_params,
     )
     init_mint_instruction = initialize_mint(
         InitializeMintParams(
@@ -51,7 +52,7 @@ async def create_mint_and_vault(
             program_id=TOKEN_PROGRAM_ID,
         ),
     )
-    vault_space = 82
+    vault_space = 165
     create_vault_mbre_resp = (
         await provider.client.get_minimum_balance_for_rent_exemption(vault_space)
     )

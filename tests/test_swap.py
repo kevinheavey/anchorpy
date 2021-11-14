@@ -2,13 +2,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple, AsyncGenerator
 import asyncio
+from pyserum._layouts.instructions import INSTRUCTIONS_LAYOUT, InstructionType
 from pytest import mark, fixture
 from construct import Int64ul
-from pyserum.instructions import InitializeMarketParams, initialize_market
+from pyserum.instructions import InitializeMarketParams
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
-from solana.transaction import Transaction
+from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.async_api import AsyncClient
+from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.rpc.commitment import Finalized
 from solana.system_program import (
     CreateAccountParams,
@@ -19,8 +21,8 @@ from solana.system_program import (
 from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.async_client import AsyncToken
 from spl.token.instructions import (
-    transfer as token_transfer,
-    TransferParams as TokenTransferParams,
+    transfer_checked,
+    TransferCheckedParams,
     initialize_account,
     InitializeAccountParams,
 )
@@ -39,7 +41,9 @@ TAKER_FEE = 0.0022
 PATH = Path("anchor/tests/swap/")
 localnet = get_localnet(
     PATH,
-    build_cmd="deps/serum-dex/dex && cargo build-bpf && cd ../../../ && anchor build",
+    build_cmd=(
+        "cd deps/serum-dex/dex && cargo build-bpf && cd ../../../ && anchor build"
+    ),
 )
 
 
@@ -96,7 +100,7 @@ async def fund_account(provider: Provider, mints: list[MintRecord]) -> MarketMak
     )
     await provider.send(transfer_tx)
     # Transfer SPL tokens to the market maker.
-    for mint, god, amount in mints:
+    for god, mint, amount in mints:
         mint_a_client = AsyncToken(
             provider.client,
             mint,
@@ -107,17 +111,17 @@ async def fund_account(provider: Provider, mints: list[MintRecord]) -> MarketMak
             market_maker_account.public_key,
         )
         create_transfer_tx = Transaction()
-        create_transfer_tx.add(
-            token_transfer(
-                TokenTransferParams(
-                    program_id=TOKEN_PROGRAM_ID,
-                    source=god,
-                    dest=market_maker_token_a,
-                    owner=provider.wallet.public_key,
-                    amount=amount,
-                ),
-            ),
+        transfer_checked_params = TransferCheckedParams(
+            program_id=TOKEN_PROGRAM_ID,
+            source=god,
+            mint=mint,
+            dest=market_maker_token_a,
+            owner=provider.wallet.public_key,
+            amount=amount,
+            decimals=DECIMALS,
         )
+        transfer_checked_instruction = transfer_checked(transfer_checked_params)
+        create_transfer_tx.add(transfer_checked_instruction)
         await provider.send(create_transfer_tx)
         market_maker.tokens[str(mint)] = market_maker_token_a
     return market_maker
@@ -158,6 +162,38 @@ async def sign_transactions(
         transaction.sign(*all_signers)
         txs.append(transaction)
     return txs
+
+
+# differs from pyserum
+def initialize_market(params: InitializeMarketParams) -> TransactionInstruction:
+    """Generate a transaction instruction to initialize a Serum market."""
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.market, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.request_queue, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.event_queue, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.bids, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.asks, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.base_vault, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.quote_vault, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.base_mint, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=params.quote_mint, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        ],
+        program_id=params.program_id,
+        data=INSTRUCTIONS_LAYOUT.build(
+            dict(
+                instruction_type=InstructionType.INITIALIZE_MARKET,
+                args=dict(
+                    base_lot_size=params.base_lot_size,
+                    quote_lot_size=params.quote_lot_size,
+                    fee_rate_bps=params.fee_rate_bps,
+                    vault_signer_nonce=params.vault_signer_nonce,
+                    quote_dust_threshold=params.quote_dust_threshold,
+                ),
+            ),
+        ),
+    )
 
 
 async def list_market(
@@ -365,7 +401,7 @@ async def setup_market(
             payer=market_maker.base_token,
             owner=market_maker.account,
             order_type=OrderType.POST_ONLY,
-            side=Side.SELL,
+            side=Side.BUY,
             limit_price=bid[0],
             max_quantity=bid[1],
             client_id=bid_idx + len_asks,
@@ -461,3 +497,13 @@ async def workspace(localnet) -> AsyncGenerator[dict[str, Program], None]:
 @fixture(scope="module")
 async def program(workspace: dict[str, Program]) -> Program:
     return workspace["swap"]
+
+
+@fixture(scope="module")
+async def orderbook_env(program: Program) -> OrderbookEnv:
+    return await setup_two_markets(program.provider)
+
+
+@mark.asyncio
+async def test_main(orderbook_env: OrderbookEnv) -> None:
+    print(orderbook_env)
