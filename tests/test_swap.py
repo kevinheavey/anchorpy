@@ -382,6 +382,15 @@ async def setup_market(
         dex_program_id=DEX_PID,
         fee_rate_bps=0,
     )
+    market_a_public_key_info = await provider.client.get_account_info(
+        market_a_public_key
+    )
+    print(
+        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    )
+    print(
+        f"market_a_public_key: {market_a_public_key}\n market_a_public_key_info: {market_a_public_key_info}"
+    )
     market_a_usdc = await AsyncMarket.load(
         provider.client, market_a_public_key, DEX_PID
     )
