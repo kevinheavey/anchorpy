@@ -74,21 +74,21 @@ async def initialize_escrow_state(
         provider.wallet.public_key,
     )
     taker_token_account_b = await mint_b.create_account(provider.wallet.public_key)
-    mint_to_a_resp = await mint_a.mint_to(
+    await mint_a.mint_to(
         initializer_token_account_a,
         mint_authority.public_key,
         INITIALIZER_AMOUNT,
         [mint_authority],
+        opts=provider.opts,
     )
-    await provider.client.confirm_transaction(mint_to_a_resp["result"], Confirmed)
 
-    mint_to_b_resp = await mint_b.mint_to(
+    await mint_b.mint_to(
         taker_token_account_b,
         mint_authority.public_key,
         TAKER_AMOUNT,
         [mint_authority],
+        opts=provider.opts,
     )
-    await provider.client.confirm_transaction(mint_to_b_resp["result"], Confirmed)
     return (
         mint_a,
         mint_b,
@@ -253,13 +253,13 @@ async def test_init_and_cancel_escrow(
     ) = initialize_escrow_state
     escrow_account, pda = initialize_escrow
     # Put back tokens into initializer token A account.
-    mint_to_resp = await mint_a.mint_to(
+    await mint_a.mint_to(
         dest=initializer_token_account_a,
         mint_authority=mint_authority.public_key,
         multi_signers=[mint_authority],
         amount=INITIALIZER_AMOUNT,
+        opts=provider.opts,
     )
-    await provider.client.confirm_transaction(mint_to_resp["result"], Confirmed)
     new_escrow = Keypair()
     await program.rpc["initializeEscrow"](
         INITIALIZER_AMOUNT,
