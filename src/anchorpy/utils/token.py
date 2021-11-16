@@ -161,24 +161,32 @@ async def get_mint_info(
     addr: PublicKey,
 ) -> MintInfo:
     depositor_acc_info_raw = await provider.client.get_account_info(addr)
-    depositor_acc_info = depositor_acc_info_raw["result"]["value"]
-    if depositor_acc_info is None:
-        raise RuntimeError("Failed to find token account")
-    return parse_mint_account(depositor_acc_info["data"])
+    return parse_mint_account(depositor_acc_info_raw)
 
 
-def parse_mint_account(data: bytes) -> MintInfo:
-    parsed = MINT_LAYOUT.parse(data)
-    mint_authority = PublicKey(parsed["mint_authority"])
-    is_initialized = parsed["state"] != 0
-    if parsed["freeze_authority_option"] == 0:
+def parse_mint_account(info: RPCResponse) -> MintInfo:
+    owner = info["result"]["value"]["owner"]
+    if owner != str(TOKEN_PROGRAM_ID):
+        raise AttributeError(f"Invalid mint owner: {owner}")
+
+    bytes_data = decode_byte_string(info["result"]["value"]["data"][0])
+    if len(bytes_data) != MINT_LAYOUT.sizeof():
+        raise ValueError("Invalid mint size")
+
+    decoded_data = MINT_LAYOUT.parse(bytes_data)
+    decimals = decoded_data.decimals
+
+    if decoded_data.mint_authority_option == 0:
+        mint_authority = None
+    else:
+        mint_authority = PublicKey(decoded_data.mint_authority)
+
+    supply = decoded_data.supply
+    is_initialized = decoded_data.is_initialized != 0
+
+    if decoded_data.freeze_authority_option == 0:
         freeze_authority = None
     else:
-        freeze_authority = PublicKey(parsed["freeze_authority"])
-    return MintInfo(
-        mint_authority=mint_authority,
-        supply=parsed["supply"],
-        decimals=parsed["decimals"],
-        is_initialized=is_initialized,
-        freeze_authority=freeze_authority,
-    )
+        freeze_authority = PublicKey(decoded_data.freeze_authority)
+
+    return MintInfo(mint_authority, supply, decimals, is_initialized, freeze_authority)
