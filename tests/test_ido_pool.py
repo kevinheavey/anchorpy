@@ -1,6 +1,4 @@
-import asyncio
 from pathlib import Path
-from typing import Tuple
 
 from pytest import mark, fixture
 from solana.keypair import Keypair
@@ -31,14 +29,6 @@ async def create_token_account(
 ) -> PublicKey:
     token = AsyncToken(prov.client, mint, TOKEN_PROGRAM_ID, prov.wallet.payer)
     return await token.create_account(owner)
-
-
-@fixture(scope="module")
-def event_loop():
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 
 @fixture(scope="module")

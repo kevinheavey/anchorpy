@@ -1,5 +1,4 @@
 """Mimics anchor/examples/tutorial/basic-1/tests/basic-1.js."""
-import asyncio
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -13,18 +12,6 @@ from anchorpy.pytest_plugin import get_localnet
 PATH = Path("anchor/examples/tutorial/basic-1")
 
 localnet = get_localnet(PATH)
-
-# Since our other fixtures have module scope, we need to define
-# this event_loop fixture and give it module scope otherwise
-# pytest-asyncio will break.
-
-
-@fixture(scope="module")
-def event_loop():
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 
 @fixture(scope="module")
