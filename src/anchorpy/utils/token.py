@@ -1,8 +1,10 @@
 from typing import Optional
 from solana.publickey import PublicKey
 from solana.keypair import Keypair
+from solana.rpc.types import RPCResponse
 from solana.transaction import Transaction
 from solana.system_program import create_account, CreateAccountParams
+from solana.utils.helpers import decode_byte_string
 from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
 from spl.token.instructions import (
     initialize_mint,
@@ -12,6 +14,8 @@ from spl.token.instructions import (
     mint_to,
     MintToParams,
 )
+from spl.token.core import AccountInfo
+from spl.token._layouts import ACCOUNT_LAYOUT
 from anchorpy import Provider
 
 
@@ -92,3 +96,61 @@ async def create_mint_and_vault(
     )
     await provider.send(tx, [mint, vault])
     return mint.public_key, vault.public_key
+
+
+def parse_token_account(info: RPCResponse) -> AccountInfo:
+    if not info:
+        raise ValueError("Invalid account owner")
+
+    if info["result"]["value"]["owner"] != str(TOKEN_PROGRAM_ID):
+        raise AttributeError("Invalid account owner")
+
+    bytes_data = decode_byte_string(info["result"]["value"]["data"][0])
+    if len(bytes_data) != ACCOUNT_LAYOUT.sizeof():
+        raise ValueError("Invalid account size")
+
+    decoded_data = ACCOUNT_LAYOUT.parse(bytes_data)
+
+    mint = PublicKey(decoded_data.mint)
+    owner = PublicKey(decoded_data.owner)
+    amount = decoded_data.amount
+
+    if decoded_data.delegate_option == 0:
+        delegate = None
+        delegated_amount = 0
+    else:
+        delegate = PublicKey(decoded_data.delegate)
+        delegated_amount = decoded_data.delegated_amount
+
+    is_initialized = decoded_data.state != 0
+    is_frozen = decoded_data.state == 2
+
+    if decoded_data.is_native_option == 1:
+        rent_exempt_reserve = decoded_data.is_native
+        is_native = True
+    else:
+        rent_exempt_reserve = None
+        is_native = False
+
+    if decoded_data.close_authority_option == 0:
+        close_authority = None
+    else:
+        close_authority = PublicKey(decoded_data.owner)
+
+    return AccountInfo(
+        mint,
+        owner,
+        amount,
+        delegate,
+        delegated_amount,
+        is_initialized,
+        is_frozen,
+        is_native,
+        rent_exempt_reserve,
+        close_authority,
+    )
+
+
+async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
+    depositor_acc_info_raw = await provider.client.get_account_info(addr)
+    return parse_token_account(depositor_acc_info_raw)
