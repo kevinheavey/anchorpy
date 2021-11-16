@@ -1,14 +1,17 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import NamedTuple, AsyncGenerator
+from typing import Any, NamedTuple, AsyncGenerator
+from contextlib import asynccontextmanager
 import asyncio
+from pyserum._layouts.instructions import INSTRUCTIONS_LAYOUT, InstructionType
 from pytest import mark, fixture
 from construct import Int64ul
-from pyserum.instructions import InitializeMarketParams, initialize_market
+from pyserum.instructions import InitializeMarketParams
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
-from solana.transaction import Transaction
+from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.async_api import AsyncClient
+from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.rpc.commitment import Finalized
 from solana.system_program import (
     CreateAccountParams,
@@ -19,15 +22,17 @@ from solana.system_program import (
 from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.async_client import AsyncToken
 from spl.token.instructions import (
-    transfer as token_transfer,
-    TransferParams as TokenTransferParams,
+    transfer_checked,
+    TransferCheckedParams,
     initialize_account,
     InitializeAccountParams,
 )
 from pyserum.open_orders_account import make_create_account_instruction
 from pyserum.market import AsyncMarket
 from pyserum._layouts.market import MARKET_LAYOUT
-from anchorpy.utils.token import create_mint_and_vault
+from pyserum._layouts.open_orders import OPEN_ORDERS_LAYOUT
+from anchorpy.program.context import Context
+from anchorpy.utils.token import create_mint_and_vault, get_token_account
 from pyserum.enums import Side, OrderType
 from anchorpy.provider import DEFAULT_OPTIONS, Provider, Wallet
 from anchorpy import create_workspace, get_localnet, close_workspace, Program
@@ -37,9 +42,12 @@ DEX_PID = PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin")
 DECIMALS = 6
 TAKER_FEE = 0.0022
 PATH = Path("anchor/tests/swap/")
+SLEEP_SECONDS = 15
 localnet = get_localnet(
     PATH,
-    build_cmd="deps/serum-dex/dex && cargo build-bpf && cd ../../../ && anchor build",
+    build_cmd=(
+        "cd deps/serum-dex/dex && cargo build-bpf && cd ../../../ && anchor build"
+    ),
 )
 
 
@@ -96,7 +104,7 @@ async def fund_account(provider: Provider, mints: list[MintRecord]) -> MarketMak
     )
     await provider.send(transfer_tx)
     # Transfer SPL tokens to the market maker.
-    for mint, god, amount in mints:
+    for god, mint, amount in mints:
         mint_a_client = AsyncToken(
             provider.client,
             mint,
@@ -107,17 +115,17 @@ async def fund_account(provider: Provider, mints: list[MintRecord]) -> MarketMak
             market_maker_account.public_key,
         )
         create_transfer_tx = Transaction()
-        create_transfer_tx.add(
-            token_transfer(
-                TokenTransferParams(
-                    program_id=TOKEN_PROGRAM_ID,
-                    source=god,
-                    dest=market_maker_token_a,
-                    owner=provider.wallet.public_key,
-                    amount=amount,
-                ),
-            ),
+        transfer_checked_params = TransferCheckedParams(
+            program_id=TOKEN_PROGRAM_ID,
+            source=god,
+            mint=mint,
+            dest=market_maker_token_a,
+            owner=provider.wallet.public_key,
+            amount=amount,
+            decimals=DECIMALS,
         )
+        transfer_checked_instruction = transfer_checked(transfer_checked_params)
+        create_transfer_tx.add(transfer_checked_instruction)
         await provider.send(create_transfer_tx)
         market_maker.tokens[str(mint)] = market_maker_token_a
     return market_maker
@@ -139,7 +147,7 @@ def get_vault_owner_and_nonce(
                 program_id=dex_program_id,
             )
             return vault_owner, nonce
-        except:
+        except:  # noqa: E722
             nonce += 1
     raise KeyError("Unable to find a viable program address nonce")
 
@@ -158,6 +166,38 @@ async def sign_transactions(
         transaction.sign(*all_signers)
         txs.append(transaction)
     return txs
+
+
+# differs from pyserum
+def initialize_market(params: InitializeMarketParams) -> TransactionInstruction:
+    """Generate a transaction instruction to initialize a Serum market."""
+    return TransactionInstruction(
+        keys=[
+            AccountMeta(pubkey=params.market, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.request_queue, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.event_queue, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.bids, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.asks, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.base_vault, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.quote_vault, is_signer=False, is_writable=True),
+            AccountMeta(pubkey=params.base_mint, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=params.quote_mint, is_signer=False, is_writable=False),
+            AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        ],
+        program_id=params.program_id,
+        data=INSTRUCTIONS_LAYOUT.build(
+            {
+                "instruction_type": InstructionType.INITIALIZE_MARKET,
+                "args": {
+                    "base_lot_size": params.base_lot_size,
+                    "quote_lot_size": params.quote_lot_size,
+                    "fee_rate_bps": params.fee_rate_bps,
+                    "vault_signer_nonce": params.vault_signer_nonce,
+                    "quote_dust_threshold": params.quote_dust_threshold,
+                },
+            },
+        ),
+    )
 
 
 async def list_market(
@@ -346,6 +386,7 @@ async def setup_market(
         dex_program_id=DEX_PID,
         fee_rate_bps=0,
     )
+    await asyncio.sleep(SLEEP_SECONDS)
     market_a_usdc = await AsyncMarket.load(
         provider.client, market_a_public_key, DEX_PID
     )
@@ -359,17 +400,24 @@ async def setup_market(
             max_quantity=ask[1],
             client_id=ask_idx,
         )
+        await asyncio.sleep(SLEEP_SECONDS)
+        print(f"sent order {ask_idx}")
+    print("finished sending asks")
     len_asks = len(asks)
     for bid_idx, bid in enumerate(bids):
+        client_id = bid_idx + len_asks
         await market_a_usdc.place_order(
-            payer=market_maker.base_token,
+            payer=market_maker.quote_token,
             owner=market_maker.account,
             order_type=OrderType.POST_ONLY,
-            side=Side.SELL,
+            side=Side.BUY,
             limit_price=bid[0],
             max_quantity=bid[1],
-            client_id=bid_idx + len_asks,
+            client_id=client_id,
         )
+        await asyncio.sleep(SLEEP_SECONDS)
+        print(f"sent order {client_id}")
+    print("finished sending bids")
     return market_a_usdc
 
 
@@ -461,3 +509,328 @@ async def workspace(localnet) -> AsyncGenerator[dict[str, Program], None]:
 @fixture(scope="module")
 async def program(workspace: dict[str, Program]) -> Program:
     return workspace["swap"]
+
+
+@fixture(scope="module")
+async def orderbook_env(program: Program) -> OrderbookEnv:
+    return await setup_two_markets(program.provider)
+
+
+@fixture(scope="module")
+def market_a(orderbook_env: OrderbookEnv) -> AsyncMarket:
+    return orderbook_env.market_a
+
+
+@fixture(scope="module")
+def market_b(orderbook_env: OrderbookEnv) -> AsyncMarket:
+    return orderbook_env.market_b
+
+
+@fixture(scope="module")
+def market_a_vault_signer(market_a: AsyncMarket) -> PublicKey:
+    return get_vault_owner_and_nonce(market_a.state.public_key())[0]
+
+
+@fixture(scope="module")
+def market_b_vault_signer(market_b: AsyncMarket) -> PublicKey:
+    return get_vault_owner_and_nonce(market_b.state.public_key())[0]
+
+
+@fixture(scope="module")
+def open_orders_a() -> Keypair:
+    return Keypair()
+
+
+@fixture(scope="module")
+def open_orders_b() -> Keypair:
+    return Keypair()
+
+
+@fixture(scope="module")
+def swap_usdc_a_accounts(
+    market_a: AsyncMarket,
+    orderbook_env: OrderbookEnv,
+    market_a_vault_signer: PublicKey,
+    program: Program,
+    open_orders_a: Keypair,
+) -> dict[str, Any]:
+    market_subdict = {
+        "market": market_a.state.public_key(),
+        "requestQueue": market_a.state.request_queue(),
+        "eventQueue": market_a.state.event_queue(),
+        "bids": market_a.state.bids(),
+        "asks": market_a.state.asks(),
+        "coinVault": market_a.state.base_vault(),
+        "pcVault": market_a.state.quote_vault(),
+        "vaultSigner": market_a_vault_signer,
+        "openOrders": open_orders_a.public_key,
+        "orderPayerTokenAccount": orderbook_env.god_usdc,
+        "coinWallet": orderbook_env.god_a,
+    }
+    return {
+        "market": market_subdict,
+        "pcWallet": orderbook_env.god_usdc,
+        "authority": program.provider.wallet.public_key,
+        "dexProgram": DEX_PID,
+        "tokenProgram": TOKEN_PROGRAM_ID,
+        "rent": SYSVAR_RENT_PUBKEY,
+    }
+
+
+@fixture(scope="module")
+def swap_a_usdc_accounts(
+    orderbook_env: OrderbookEnv,
+    swap_usdc_a_accounts: dict[str, Any],
+) -> dict[str, Any]:
+    market_subdict = {
+        **swap_usdc_a_accounts["market"],
+        "orderPayerTokenAccount": orderbook_env.god_a,
+    }
+    return {**swap_usdc_a_accounts, "market": market_subdict}
+
+
+@asynccontextmanager
+async def balance_change(
+    provider: Provider,
+    addrs: list[PublicKey],
+    deltas: list[
+        float,
+    ],
+) -> AsyncGenerator:
+    before_balances = []
+    for addr in addrs:
+        acc = await get_token_account(provider, addr)
+        before_balances.append(acc.amount)
+    yield
+    after_balances = []
+    for addr in addrs:
+        acc = await get_token_account(provider, addr)
+        after_balances.append(acc.amount)
+    for before, after in zip(before_balances, after_balances):
+        delta = (after - before) / 10 ** 6
+        deltas.append(delta)
+
+
+@fixture(scope="module")
+async def swap_usdc_to_a_and_init_open_orders(
+    orderbook_env: OrderbookEnv,
+    program: Program,
+    swap_usdc_a_accounts: dict[str, Any],
+    open_orders_a: Keypair,
+    open_orders_b: Keypair,
+) -> tuple[float, float, float, int]:
+    expected_resultant_amount = 7.2
+    best_offer_price = 6.041
+    amount_to_spend = expected_resultant_amount * best_offer_price
+    swap_amount = int((amount_to_spend / (1 - TAKER_FEE)) * 10 ** 6)
+    side = program.type["Side"]
+    mbfre_resp = await program.provider.client.get_minimum_balance_for_rent_exemption(
+        OPEN_ORDERS_LAYOUT.sizeof()
+    )
+    balance_needed = mbfre_resp["result"]
+    instructions = [
+        make_create_account_instruction(
+            owner_address=program.provider.wallet.public_key,
+            new_account_address=open_orders_a.public_key,
+            lamports=balance_needed,
+            program_id=DEX_PID,
+        ),
+        make_create_account_instruction(
+            owner_address=program.provider.wallet.public_key,
+            new_account_address=open_orders_b.public_key,
+            lamports=balance_needed,
+            program_id=DEX_PID,
+        ),
+    ]
+    addrs = [orderbook_env.god_a, orderbook_env.god_usdc]
+    deltas: list[float] = []
+    async with balance_change(program.provider, addrs, deltas):
+        await program.rpc["swap"](
+            side.Bid(),
+            swap_amount,
+            1,
+            ctx=Context(
+                accounts=swap_usdc_a_accounts,
+                instructions=instructions,
+                signers=[open_orders_a, open_orders_b],
+            ),
+        )
+    token_a_change, usdc_change = deltas
+    return token_a_change, usdc_change, expected_resultant_amount, swap_amount
+
+
+async def test_swap_usdc_to_a(
+    swap_usdc_to_a_and_init_open_orders: tuple[float, float, float, int]
+) -> None:
+    (
+        token_a_change,
+        usdc_change,
+        expected_resultant_amount,
+        swap_amount,
+    ) = swap_usdc_to_a_and_init_open_orders
+    assert token_a_change == expected_resultant_amount
+    assert usdc_change == -swap_amount / 10 ** 6
+
+
+@mark.asyncio
+async def test_swap_a_to_usdc(
+    orderbook_env: OrderbookEnv,
+    swap_usdc_to_a_and_init_open_orders: tuple[float, float, float, int],
+    program: Program,
+    swap_a_usdc_accounts: dict[str, Any],
+) -> None:
+    best_bid_price = 6.004
+    swap_amount = 8.1
+    amount_to_fill = swap_amount * best_bid_price
+    expected_resultant_amount = int(amount_to_fill * (1 - TAKER_FEE) * 10 ** 6)
+    side = program.type["Side"]
+    addrs = [orderbook_env.god_a, orderbook_env.god_usdc]
+    deltas: list[float] = []
+    async with balance_change(program.provider, addrs, deltas):
+        await program.rpc["swap"](
+            side.Ask(),
+            int(swap_amount * 10 ** 6),
+            int(swap_amount),
+            ctx=Context(
+                accounts=swap_a_usdc_accounts,
+            ),
+        )
+    token_a_change, usdc_change = deltas
+    assert token_a_change == -swap_amount
+    assert usdc_change == expected_resultant_amount / 10 ** 6
+
+
+@mark.asyncio
+async def test_swap_a_to_b(
+    orderbook_env: OrderbookEnv,
+    swap_usdc_to_a_and_init_open_orders: tuple[float, float, float, int],
+    program: Program,
+    market_a: AsyncMarket,
+    market_b: AsyncMarket,
+    market_a_vault_signer: PublicKey,
+    market_b_vault_signer: PublicKey,
+    open_orders_a: Keypair,
+    open_orders_b: Keypair,
+) -> None:
+    swap_amount = 10
+    from_subdict = {
+        "market": market_a.state.public_key(),
+        "requestQueue": market_a.state.request_queue(),
+        "eventQueue": market_a.state.event_queue(),
+        "bids": market_a.state.bids(),
+        "asks": market_a.state.asks(),
+        "coinVault": market_a.state.base_vault(),
+        "pcVault": market_a.state.quote_vault(),
+        "vaultSigner": market_a_vault_signer,
+        # User params.
+        "openOrders": open_orders_a.public_key,
+        # Swapping from A -> USDC.
+        "orderPayerTokenAccount": orderbook_env.god_a,
+        "coinWallet": orderbook_env.god_a,
+    }
+    to_subdict = {
+        "market": market_b.state.public_key(),
+        "requestQueue": market_b.state.request_queue(),
+        "eventQueue": market_b.state.event_queue(),
+        "bids": market_b.state.bids(),
+        "asks": market_b.state.asks(),
+        "coinVault": market_b.state.base_vault(),
+        "pcVault": market_b.state.quote_vault(),
+        "vaultSigner": market_b_vault_signer,
+        # User params.
+        "openOrders": open_orders_b.public_key,
+        # Swapping from USDC -> B.
+        "orderPayerTokenAccount": orderbook_env.god_usdc,
+        "coinWallet": orderbook_env.god_b,
+    }
+    accounts = {
+        "from": from_subdict,
+        "to": to_subdict,
+        "pcWallet": orderbook_env.god_usdc,
+        "authority": program.provider.wallet.public_key,
+        "dexProgram": DEX_PID,
+        "tokenProgram": TOKEN_PROGRAM_ID,
+        "rent": SYSVAR_RENT_PUBKEY,
+    }
+    addrs = [orderbook_env.god_a, orderbook_env.god_b, orderbook_env.god_usdc]
+    deltas: list[float] = []
+    async with balance_change(program.provider, addrs, deltas):
+        await program.rpc["swapTransitive"](
+            int(swap_amount * 10 ** 6),
+            int(swap_amount - 1),
+            ctx=Context(
+                accounts=accounts,
+            ),
+        )
+    token_a_change, token_b_change, usdc_change = deltas
+    assert token_a_change == -swap_amount
+    assert token_b_change == 9.8
+    assert usdc_change == 0
+
+
+@mark.asyncio
+async def test_swap_b_to_a(
+    orderbook_env: OrderbookEnv,
+    swap_usdc_to_a_and_init_open_orders: tuple[float, float, float, int],
+    program: Program,
+    market_a: AsyncMarket,
+    market_b: AsyncMarket,
+    market_a_vault_signer: PublicKey,
+    market_b_vault_signer: PublicKey,
+    open_orders_a: Keypair,
+    open_orders_b: Keypair,
+) -> None:
+    swap_amount = 23
+    from_subdict = {
+        "market": market_b.state.public_key(),
+        "requestQueue": market_b.state.request_queue(),
+        "eventQueue": market_b.state.event_queue(),
+        "bids": market_b.state.bids(),
+        "asks": market_b.state.asks(),
+        "coinVault": market_b.state.base_vault(),
+        "pcVault": market_b.state.quote_vault(),
+        "vaultSigner": market_b_vault_signer,
+        # User params.
+        "openOrders": open_orders_b.public_key,
+        # Swapping from B -> USDC.
+        "orderPayerTokenAccount": orderbook_env.god_b,
+        "coinWallet": orderbook_env.god_b,
+    }
+    to_subdict = {
+        "market": market_a.state.public_key(),
+        "requestQueue": market_a.state.request_queue(),
+        "eventQueue": market_a.state.event_queue(),
+        "bids": market_a.state.bids(),
+        "asks": market_a.state.asks(),
+        "coinVault": market_a.state.base_vault(),
+        "pcVault": market_a.state.quote_vault(),
+        "vaultSigner": market_a_vault_signer,
+        # User params.
+        "openOrders": open_orders_a.public_key,
+        # Swapping from USDC -> B.
+        "orderPayerTokenAccount": orderbook_env.god_usdc,
+        "coinWallet": orderbook_env.god_a,
+    }
+    accounts = {
+        "from": from_subdict,
+        "to": to_subdict,
+        "pcWallet": orderbook_env.god_usdc,
+        "authority": program.provider.wallet.public_key,
+        "dexProgram": DEX_PID,
+        "tokenProgram": TOKEN_PROGRAM_ID,
+        "rent": SYSVAR_RENT_PUBKEY,
+    }
+    addrs = [orderbook_env.god_a, orderbook_env.god_b, orderbook_env.god_usdc]
+    deltas: list[float] = []
+    async with balance_change(program.provider, addrs, deltas):
+        await program.rpc["swapTransitive"](
+            int(swap_amount * 10 ** 6),
+            int(swap_amount - 1),
+            ctx=Context(
+                accounts=accounts,
+            ),
+        )
+    token_a_change, token_b_change, usdc_change = deltas
+    assert token_a_change == 22.6
+    assert token_b_change == -swap_amount
+    assert usdc_change == 0

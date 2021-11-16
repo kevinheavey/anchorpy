@@ -112,8 +112,7 @@ def _handle_enum_variants(
 
 
 def typedef_layout(
-    typedef: IdlTypeDef,
-    types: list[IdlTypeDef],
+    typedef: IdlTypeDef, types: list[IdlTypeDef], field_name: str
 ) -> Construct:
     typedef_type = typedef.type
     name = typedef.name
@@ -121,9 +120,9 @@ def typedef_layout(
         field_layouts = [field_layout(field, types) for field in typedef_type.fields]
         cstruct = CStruct(*field_layouts)
         datacls = idl_typedef_ty_struct_to_dataclass_type(typedef_type, types, name)
-        return name / DataclassStruct(cstruct, datacls=datacls)
+        return field_name / DataclassStruct(cstruct, datacls=datacls)
     elif isinstance(typedef_type, IdlTypeDefTyEnum):
-        return name / _handle_enum_variants(typedef_type, types, name)
+        return field_name / _handle_enum_variants(typedef_type, types, name)
     unknown_type = typedef_type.kind
     raise ValueError(f"Unknown type {unknown_type}")
 
@@ -160,7 +159,7 @@ def field_layout(field: IdlField, types: list[IdlTypeDef]) -> Construct:
         filtered = [t for t in types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        return typedef_layout(filtered[0], types)
+        return typedef_layout(filtered[0], types, field_name)
     elif isinstance(field_type, IdlTypeArray):
         array_ty = field_type.array[0]
         array_len = field_type.array[1]

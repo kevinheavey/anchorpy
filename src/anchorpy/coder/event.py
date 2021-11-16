@@ -28,7 +28,7 @@ def _event_layout(event: IdlEvent, idl: Idl) -> Construct:
             fields=[IdlField(name=f.name, type=f.type) for f in event.fields],
         ),
     )
-    return typedef_layout(event_type_def, idl.types)
+    return typedef_layout(event_type_def, idl.types, event.name)
 
 
 class EventCoder(Adapter):

@@ -15,7 +15,7 @@ class AccountsCoder(Adapter):
 
     def __init__(self, idl: Idl) -> None:
         self._accounts_layout = {
-            acc.name: typedef_layout(acc, idl.types) for acc in idl.accounts
+            acc.name: typedef_layout(acc, idl.types, acc.name) for acc in idl.accounts
         }
         self.acc_name_to_discriminator = {
             acc.name: account_discriminator(acc.name) for acc in idl.accounts
