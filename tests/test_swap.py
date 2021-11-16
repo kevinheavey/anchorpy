@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, NamedTuple, AsyncGenerator
 from contextlib import asynccontextmanager
-import asyncio
 from pyserum._layouts.instructions import INSTRUCTIONS_LAYOUT, InstructionType
 from pytest import mark, fixture
 from construct import Int64ul
@@ -386,7 +385,7 @@ async def setup_market(
         dex_program_id=DEX_PID,
         fee_rate_bps=0,
     )
-    await asyncio.sleep(SLEEP_SECONDS)
+    # await asyncio.sleep(SLEEP_SECONDS)
     market_a_usdc = await AsyncMarket.load(
         provider.client, market_a_public_key, DEX_PID
     )
@@ -399,8 +398,8 @@ async def setup_market(
             limit_price=ask[0],
             max_quantity=ask[1],
             client_id=ask_idx,
+            opts=provider.opts,
         )
-        await asyncio.sleep(SLEEP_SECONDS)
         print(f"sent order {ask_idx}")
     print("finished sending asks")
     len_asks = len(asks)
@@ -414,8 +413,8 @@ async def setup_market(
             limit_price=bid[0],
             max_quantity=bid[1],
             client_id=client_id,
+            opts=provider.opts,
         )
-        await asyncio.sleep(SLEEP_SECONDS)
         print(f"sent order {client_id}")
     print("finished sending bids")
     return market_a_usdc
@@ -651,6 +650,7 @@ async def swap_usdc_to_a_and_init_open_orders(
     return token_a_change, usdc_change, expected_resultant_amount, swap_amount
 
 
+@mark.asyncio
 async def test_swap_usdc_to_a(
     swap_usdc_to_a_and_init_open_orders: tuple[float, float, float, int]
 ) -> None:
