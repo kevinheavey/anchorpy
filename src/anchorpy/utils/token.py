@@ -14,8 +14,8 @@ from spl.token.instructions import (
     mint_to,
     MintToParams,
 )
-from spl.token.core import AccountInfo
-from spl.token._layouts import ACCOUNT_LAYOUT
+from spl.token.core import AccountInfo, MintInfo
+from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
 from anchorpy import Provider
 
 
@@ -154,3 +154,31 @@ def parse_token_account(info: RPCResponse) -> AccountInfo:
 async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
     depositor_acc_info_raw = await provider.client.get_account_info(addr)
     return parse_token_account(depositor_acc_info_raw)
+
+
+async def get_mint_info(
+    provider: Provider,
+    addr: PublicKey,
+) -> MintInfo:
+    depositor_acc_info_raw = await provider.client.get_account_info(addr)
+    depositor_acc_info = depositor_acc_info_raw["result"]["value"]
+    if depositor_acc_info is None:
+        raise RuntimeError("Failed to find token account")
+    return parse_mint_account(depositor_acc_info["data"])
+
+
+def parse_mint_account(data: bytes) -> MintInfo:
+    parsed = MINT_LAYOUT.parse(data)
+    mint_authority = PublicKey(parsed["mint_authority"])
+    is_initialized = parsed["state"] != 0
+    if parsed["freeze_authority_option"] == 0:
+        freeze_authority = None
+    else:
+        freeze_authority = PublicKey(parsed["freeze_authority"])
+    return MintInfo(
+        mint_authority=mint_authority,
+        supply=parsed["supply"],
+        decimals=parsed["decimals"],
+        is_initialized=is_initialized,
+        freeze_authority=freeze_authority,
+    )
