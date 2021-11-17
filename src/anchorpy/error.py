@@ -1,3 +1,4 @@
+"""This module handles AnchorPy errors."""
 from __future__ import annotations
 from typing import Union, Optional, cast
 from enum import IntEnum
@@ -5,11 +6,15 @@ from solana.rpc.types import RPCError
 
 
 class ExtendedRPCError(RPCError):
+    """RPCError with extra fields."""
+
     data: dict
     logs: list[str]
 
 
 class LangErrorCode(IntEnum):
+    """Enumerates Anchor error codes."""
+
     # Instructions.
     InstructionMissing = 100
     InstructionFallbackNotFound = 101
@@ -118,6 +123,12 @@ class ProgramError(Exception):
     """An error from a user defined program."""
 
     def __init__(self, code: int, msg: str) -> None:
+        """Init.
+
+        Args:
+            code: The error code.
+            msg: The error message.
+        """
         self.code = code
         self.msg = msg
         super().__init__(f"{code}: {msg}")
@@ -128,6 +139,15 @@ class ProgramError(Exception):
         err_info: Union[RPCError, ExtendedRPCError],
         idl_errors: dict[int, str],
     ) -> Optional[ProgramError]:
+        """Convert an RPC error into a ProgramError, if possible.
+
+        Args:
+            err_info: The plain RPC error.
+            idl_errors: Errors from the IDL file.
+
+        Returns:
+            A ProgramError or None.
+        """
         try:  # noqa: WPS229
             err_data = cast(ExtendedRPCError, err_info)["data"]
             custom_err_code = err_data["err"]["InstructionError"][1]["Custom"]

@@ -22,6 +22,12 @@ def sighash(ix_name: str) -> bytes:
     """Not technically sighash, since we don't include the arguments.
 
     (Because Rust doesn't allow function overloading.)
+
+    Args:
+        ix_name: The instruction name.
+
+    Returns:
+        The sighash bytes.
     """
     formatted_str = f"global:{ix_name}"
     return sha256(formatted_str.encode()).digest()[:8]
@@ -51,6 +57,13 @@ def type_size(idl: Idl, ty: IdlType) -> int:
 
     For variable length types, just return 1.
     Users should override this value in such cases.
+
+    Args:
+        idl: The parsed `Idl` object.
+        ty: The type object from the IDL.
+
+    Returns:
+        The size of the object in bytes.
     """
     sizes: Dict[LiteralStrings, int] = {
         "bool": 1,

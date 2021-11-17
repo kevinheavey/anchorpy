@@ -222,7 +222,14 @@ SEED = "anchor:idl"
 
 
 def idl_address(program_id: solana.publickey.PublicKey) -> solana.publickey.PublicKey:
-    """Deterministic IDL address as a function of the program id."""
+    """Deterministic IDL address as a function of the program id.
+
+    Args:
+        program_id: The program ID.
+
+    Returns:
+        The public key of the IDL.
+    """
     base = solana.publickey.PublicKey.find_program_address([], program_id)[0]
     return solana.publickey.PublicKey.create_with_seed(base, SEED, program_id)
 

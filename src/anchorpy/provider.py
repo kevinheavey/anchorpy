@@ -205,8 +205,15 @@ class Wallet(ABC):
         """
 
     @abstractmethod
-    def sign_all_transactions(self, txs: list[Transaction]):
-        """Must implement signing multiple transactions."""
+    def sign_all_transactions(self, txs: list[Transaction]) -> list[Transaction]:
+        """Must implement signing multiple transactions.
+
+        Args:
+            txs: The transactions to sign.
+
+        Returns:
+            The signed transactions.
+        """
 
 
 class LocalWallet(Wallet):

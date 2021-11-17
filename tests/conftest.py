@@ -1,3 +1,4 @@
+"""Pytest config."""
 import asyncio
 from pytest import fixture
 
@@ -10,6 +11,6 @@ from pytest import fixture
 @fixture(scope="module")
 def event_loop():
     """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
+    loop = asyncio.get_event_loop_policy().new_event_loop()  # noqa: DAR301
     yield loop
     loop.close()
