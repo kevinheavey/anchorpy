@@ -123,14 +123,6 @@ class AccountClient(object):
             )
         )
 
-    def associated_address(self, *args: PublicKey) -> PublicKey:
-        seeds = b"anchor" + b"".join(bytes(arg) for arg in args)  # noqa: WPS336
-        return PublicKey.find_program_address([seeds], self._program_id)[0]
-
-    async def associated(self, *args: PublicKey) -> Any:
-        addr = self.associated_address(*args)
-        return await self.fetch(addr)
-
     async def all(
         self,
         buffer: Optional[bytes] = None,
