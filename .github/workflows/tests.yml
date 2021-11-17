@@ -30,6 +30,7 @@ jobs:
             'test_multisig.py',
             'test_pyth.py',
             'test_swap.py',
+            'test_sysvars.py',
             'test_token_proxy.py',
             'unit'
           ]
