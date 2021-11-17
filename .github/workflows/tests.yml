@@ -32,6 +32,7 @@ jobs:
             'test_swap.py',
             'test_sysvars.py',
             'test_token_proxy.py',
+            'test_zero_copy.py',
             'unit'
           ]
     steps:
