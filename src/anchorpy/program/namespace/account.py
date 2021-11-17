@@ -53,6 +53,8 @@ class ProgramAccount:
 
 
 class AccountClient(object):
+    """Provides methods for fetching and creating accounts."""
+
     def __init__(
         self,
         idl: Idl,
@@ -61,6 +63,15 @@ class AccountClient(object):
         program_id: PublicKey,
         provider: Provider,
     ):
+        """Init.
+
+        Args:
+            idl: the parsed IDL object.
+            idl_account: the account definition from the IDL.
+            coder: The program's Coder object.
+            program_id: the program ID.
+            provider: The Provider object for the Program.
+        """
         self._idl_account = idl_account
         self._program_id = program_id
         self._provider = provider
