@@ -1,3 +1,4 @@
+"""This module contains code for generating RPC functions."""
 from typing import Any, Awaitable, Dict, Protocol
 from solana.rpc.core import RPCException
 
@@ -18,7 +19,8 @@ class RpcFn(Protocol):
         *args: Any,
         ctx: Context = EMPTY_CONTEXT,
     ) -> Awaitable[TransactionSignature]:
-        """
+        """Call the function (this is just a protocol declaration).
+
         Args:
             *args: The positional arguments for the program. The type and number
                 of these arguments depend on the program being used.
@@ -33,7 +35,17 @@ def build_rpc_item(  # ts: RpcFactory
     idl_errors: Dict[int, str],
     provider: Provider,
 ) -> RpcFn:
-    """Build the function that sends transactions for the given method."""
+    """Build the function that sends transactions for the given method.
+
+    Args:
+        idl_ix: The IDL instruction object.
+        tx_fn: The function that generates the `Transaction` to send.
+        idl_errors: Mapping of error code to error message.
+        provider: Anchor Provider instance.
+
+    Returns:
+        The RPC function.
+    """
 
     async def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> TransactionSignature:
         tx = tx_fn(*args, ctx=ctx)

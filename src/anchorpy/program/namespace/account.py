@@ -26,6 +26,12 @@ def build_account(
 ) -> Dict[str, "AccountClient"]:
     """Generate the `.account` namespace.
 
+    Args:
+        idl: The parsed Idl object.
+        coder: The program's coder object.
+        program_id: The program ID.
+        provider: The Provider instance.
+
     Returns:
         Mapping of account name to `AccountClient` instance.
     """
@@ -106,7 +112,15 @@ class AccountClient(object):
         signer: Keypair,
         size_override: int = 0,
     ) -> TransactionInstruction:
-        """Return an instruction for creating this account."""
+        """Return an instruction for creating this account.
+
+        Args:
+            signer: [description]
+            size_override: Optional override for the account size. Defaults to 0.
+
+        Returns:
+            The instruction to create the account.
+        """
         space = size_override if size_override else self._size
         mbre_resp = (
             await self._provider.connection.get_minimum_balance_for_rent_exemption(

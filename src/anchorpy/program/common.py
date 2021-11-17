@@ -32,17 +32,33 @@ def parse_idl_errors(idl: Idl) -> Dict[int, str]:
 
 
 class Event(NamedTuple):
+    """A parsed event object."""
+
     name: str
     data: Any
 
 
 @dataclass
 class Instruction:
+    """Container for a named instruction."""
+
     data: Union[Dict[str, Any], Container[Any]]
     name: str
 
 
 def to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
+    """Convert an IDL instruction and arguments to an Instruction object.
+
+    Args:
+        idl_ix: The IDL instruction object.
+        args: The instruction arguments.
+
+    Raises:
+        ValueError: If the incorrect number of arguments is provided.
+
+    Returns:
+        The parsed Instruction object.
+    """
     if len(idl_ix.args) != len(args):
         raise ValueError("Invalid argument length")
     ix: Dict[str, Any] = {}

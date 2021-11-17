@@ -26,12 +26,19 @@ class _FixedXProcessInfo(XProcessInfo):
 
 
 class _FixedXProcess(XProcess):
-    def getinfo(self, name):
-        """Return Process Info for the given external process."""
+    def getinfo(self, name: str) -> _FixedXProcessInfo:
+        """Return Process Info for the given external process.
+
+        Args:
+            name: Name of the external process.
+        """
         return _FixedXProcessInfo(self.rootdir, name)
 
-    def ensure(self, name, preparefunc, restart=False):
+    def ensure(
+        self, name: str, preparefunc: ProcessStarter, restart: bool = False
+    ) -> tuple:
         """Return (PID, logfile) from a newly started or already running process.
+
         Args:
             name: Name of the external process, used for caching info across test runs.
             preparefunc: A subclass of ProcessStarter.
@@ -77,12 +84,12 @@ class _FixedXProcess(XProcess):
             # and info objects for cleanup
             self._info_objects.append((info, starter.terminate_on_interrupt))
             self._popen_instances.append(
-                subprocess.Popen(args, **popen_kwargs, **kwargs)
+                subprocess.Popen(args, **popen_kwargs, **kwargs)  # noqa: S603
             )
 
-            info.pid = pid = self._popen_instances[-1].pid
+            info.pid = pid = self._popen_instances[-1].pid  # noqa: WPS429
             info.pidpath.write(str(pid))
-            self.log.debug("process %r started pid=%s", name, pid)
+            self.log.debug("process %r started pid=%s", name, pid)  # noqa
             stdout.close()
 
         # keep track of all file handles so we can
@@ -135,7 +142,7 @@ def get_localnet(
 
     Returns:
         A localnet fixture for use with pytest.
-    """
+    """  # noqa: E501
 
     @fixture(scope=scope)
     def localnet_fixture(_fixed_xprocess):
