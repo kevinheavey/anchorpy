@@ -32,7 +32,7 @@ async def create_token_account(
     mint: PublicKey,
     owner: PublicKey,
 ) -> PublicKey:
-    token = AsyncToken(prov.client, mint, TOKEN_PROGRAM_ID, prov.wallet.payer)
+    token = AsyncToken(prov.connection, mint, TOKEN_PROGRAM_ID, prov.wallet.payer)
     return await token.create_account(owner)
 
 
@@ -42,7 +42,7 @@ async def create_token_account_instrs(
     mint: PublicKey,
     owner: PublicKey,
 ) -> tuple[TransactionInstruction, TransactionInstruction]:
-    mbre_resp = await provider.client.get_minimum_balance_for_rent_exemption(165)
+    mbre_resp = await provider.connection.get_minimum_balance_for_rent_exemption(165)
     lamports = mbre_resp["result"]
     return (
         create_account(
@@ -77,7 +77,7 @@ async def create_mint_and_vault(
     tx = Transaction()
     mint_space = 82
     create_mint_mbre_resp = (
-        await provider.client.get_minimum_balance_for_rent_exemption(mint_space)
+        await provider.connection.get_minimum_balance_for_rent_exemption(mint_space)
     )
     create_mint_mbre = create_mint_mbre_resp["result"]
     create_mint_account_params = CreateAccountParams(
@@ -100,7 +100,7 @@ async def create_mint_and_vault(
     )
     vault_space = 165
     create_vault_mbre_resp = (
-        await provider.client.get_minimum_balance_for_rent_exemption(vault_space)
+        await provider.connection.get_minimum_balance_for_rent_exemption(vault_space)
     )
     create_vault_mbre = create_vault_mbre_resp["result"]
     create_vault_account_instruction = create_account(
@@ -194,7 +194,7 @@ def parse_token_account(info: RPCResponse) -> AccountInfo:
 
 
 async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
-    depositor_acc_info_raw = await provider.client.get_account_info(addr)
+    depositor_acc_info_raw = await provider.connection.get_account_info(addr)
     return parse_token_account(depositor_acc_info_raw)
 
 
@@ -202,7 +202,7 @@ async def get_mint_info(
     provider: Provider,
     addr: PublicKey,
 ) -> MintInfo:
-    depositor_acc_info_raw = await provider.client.get_account_info(addr)
+    depositor_acc_info_raw = await provider.connection.get_account_info(addr)
     return parse_mint_account(depositor_acc_info_raw)
 
 
