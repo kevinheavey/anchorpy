@@ -34,11 +34,11 @@ async def provider(program: Program) -> Provider:
 @fixture(scope="module")
 async def created_chatroom(program: Program) -> Keypair:
     chatroom = Keypair()
-    await program.rpc["createChatRoom"](
+    await program.rpc["create_chat_room"](
         "Test Chat",
         ctx=Context(
             accounts={
-                "chatRoom": chatroom.public_key,
+                "chat_room": chatroom.public_key,
                 "rent": SYSVAR_RENT_PUBKEY,
             },
             instructions=[
@@ -56,14 +56,14 @@ async def created_user(
 ) -> Tuple[PublicKey, PublicKey]:
     authority = program.provider.wallet.public_key
     user, bump = PublicKey.find_program_address([bytes(authority)], program.program_id)
-    await program.rpc["createUser"](
+    await program.rpc["create_user"](
         "My User",
         bump,
         ctx=Context(
             accounts={
                 "user": user,
                 "authority": authority,
-                "systemProgram": SYS_PROGRAM_ID,
+                "system_program": SYS_PROGRAM_ID,
             }
         ),
     )
@@ -84,13 +84,13 @@ async def sent_messages(
     ]
     for i, msg in enumerate(messages):
         print(f"sending message {i}")
-        await program.rpc["sendMessage"](
+        await program.rpc["send_message"](
             msg,
             ctx=Context(
                 accounts={
                     "user": user,
                     "authority": authority,
-                    "chatRoom": created_chatroom.public_key,
+                    "chat_room": created_chatroom.public_key,
                 },
             ),
         )

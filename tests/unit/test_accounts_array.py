@@ -18,10 +18,10 @@ def test_accounts_array() -> None:
     dummy_b = Keypair.generate()
     comp_accounts = {
         "foo": {
-            "dummyA": dummy_a.public_key,
+            "dummy_a": dummy_a.public_key,
         },
         "bar": {
-            "dummyB": dummy_b.public_key,
+            "dummy_b": dummy_b.public_key,
         },
     }
     accounts_arg = idl.instructions[1].accounts

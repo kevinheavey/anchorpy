@@ -98,14 +98,14 @@ async def mint_token(
     created_mint: PublicKey,
     from_pubkey: PublicKey,
 ) -> None:
-    await program.rpc["proxyMintTo"](
+    await program.rpc["proxy_mint_to"](
         1000,
         ctx=Context(
             accounts={
                 "authority": provider.wallet.public_key,
                 "mint": created_mint,
                 "to": from_pubkey,
-                "tokenProgram": TOKEN_PROGRAM_ID,
+                "token_program": TOKEN_PROGRAM_ID,
             },
         ),
     )
@@ -127,14 +127,14 @@ async def transfer_token(
     from_pubkey: PublicKey,
     mint_token: None,
 ) -> None:
-    await program.rpc["proxyTransfer"](
+    await program.rpc["proxy_transfer"](
         400,
         ctx=Context(
             accounts={
                 "authority": provider.wallet.public_key,
                 "to": to_pubkey,
                 "from": from_pubkey,
-                "tokenProgram": TOKEN_PROGRAM_ID,
+                "token_program": TOKEN_PROGRAM_ID,
             },
         ),
     )
@@ -161,14 +161,14 @@ async def burn_token(
     created_mint: PublicKey,
     transfer_token: None,
 ) -> None:
-    await program.rpc["proxyBurn"](
+    await program.rpc["proxy_burn"](
         399,
         ctx=Context(
             accounts={
                 "authority": provider.wallet.public_key,
                 "mint": created_mint,
                 "to": to_pubkey,
-                "tokenProgram": TOKEN_PROGRAM_ID,
+                "token_program": TOKEN_PROGRAM_ID,
             },
         ),
     )
@@ -195,14 +195,14 @@ async def set_new_mint_authority(
 ) -> PublicKey:
     new_mint_authority = Keypair()
     authority_type = program.type["AuthorityType"]
-    await program.rpc["proxySetAuthority"](
+    await program.rpc["proxy_set_authority"](
         authority_type.MintTokens(),
         new_mint_authority.public_key,
         ctx=Context(
             accounts={
-                "accountOrMint": created_mint,
-                "currentAuthority": provider.wallet.public_key,
-                "tokenProgram": TOKEN_PROGRAM_ID,
+                "account_or_mint": created_mint,
+                "current_authority": provider.wallet.public_key,
+                "token_program": TOKEN_PROGRAM_ID,
             },
         ),
     )

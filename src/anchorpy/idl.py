@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from typing import List, Union, Optional, Dict, Any, Literal, Tuple, TypedDict
 
 from apischema import deserialize, alias
+from apischema.metadata import conversion
+from inflection import underscore, camelize
 from borsh_construct import CStruct, Vec, U8
 import solana.publickey  # noqa: WPS301
 
@@ -28,6 +30,7 @@ NonLiteralIdlTypes = Union[
     "IdlTypeVec", "IdlTypeOption", "IdlTypeDefined", "IdlTypeArray"
 ]
 IdlType = Union[LiteralStrings, NonLiteralIdlTypes]
+snake_case_conversion = conversion(underscore, camelize)
 
 
 @dataclass
@@ -47,13 +50,13 @@ class IdlTypeDefined:
 
 @dataclass
 class IdlField:
-    name: str
+    name: str = field(metadata=snake_case_conversion)
     type: IdlType
 
 
 @dataclass
 class IdlAccount:
-    name: str
+    name: str = field(metadata=snake_case_conversion)
     is_mut: bool = field(metadata=alias("isMut"))
     is_signer: bool = field(metadata=alias("isSigner"))
 
@@ -61,7 +64,7 @@ class IdlAccount:
 @dataclass
 class IdlAccounts:
     # Nested/recursive version of IdlAccount
-    name: str
+    name: str = field(metadata=snake_case_conversion)
     accounts: List["IdlAccountItem"]
 
 
@@ -70,7 +73,7 @@ IdlAccountItem = Union[IdlAccounts, IdlAccount]
 
 @dataclass
 class IdlInstruction:
-    name: str
+    name: str = field(metadata=snake_case_conversion)
     accounts: List[IdlAccountItem]
     args: List[IdlField]
 

@@ -1,7 +1,6 @@
 """Common utilities for encoding and decoding."""
 from typing import Dict, Union
 from hashlib import sha256
-from inflection import underscore
 
 from anchorpy.idl import (
     Idl,
@@ -23,7 +22,7 @@ def sighash(namespace: str, ix_name: str) -> bytes:
     """Not technically sighash, since we don't include the arguments.
 
     (Because Rust doesn't allow function overloading.)"""
-    formatted_str = f"{namespace}:{underscore(ix_name)}"
+    formatted_str = f"{namespace}:{ix_name}"
     return sha256(formatted_str.encode()).digest()[:8]
 
 

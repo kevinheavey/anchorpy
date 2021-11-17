@@ -44,13 +44,14 @@ async def program_cpi(workspace: dict[str, Program]) -> Program:
 @fixture(scope="module")
 async def provider(program: Program) -> Provider:
     """Get a Provider instance."""
+    print(program.idl)
     return program.provider
 
 
 @fixture(scope="module")
 async def foo(program: Program) -> Keypair:
     foo_keypair = Keypair()
-    await program.rpc["createFoo"](
+    await program.rpc["create_foo"](
         ctx=Context(
             accounts={
                 "foo": foo_keypair.public_key,
@@ -69,13 +70,13 @@ async def test_create_foo(foo: Keypair, provider: Provider, program: Program) ->
     account = await program.account["Foo"].fetch(foo.public_key)
     assert account.authority == provider.wallet.public_key
     assert account.data == 0
-    assert account.secondData == 0
-    assert account.secondAuthority == list(bytes(provider.wallet.public_key))
+    assert account.second_data == 0
+    assert account.second_authority == list(bytes(provider.wallet.public_key))
 
 
 @fixture(scope="module")
 async def update_foo(program: Program, foo: Keypair) -> None:
-    await program.rpc["updateFoo"](
+    await program.rpc["update_foo"](
         1234,
         ctx=Context(
             accounts={
@@ -93,18 +94,18 @@ async def test_update_foo(
     account = await program.account["Foo"].fetch(foo.public_key)
     assert account.authority == provider.wallet.public_key
     assert account.data == 1234
-    assert account.secondData == 0
-    assert account.secondAuthority == list(bytes(program.provider.wallet.public_key))
+    assert account.second_data == 0
+    assert account.second_authority == list(bytes(program.provider.wallet.public_key))
 
 
 @fixture(scope="module")
 async def update_foo_second(program: Program, foo: Keypair, update_foo: None) -> None:
-    await program.rpc["updateFooSecond"](
+    await program.rpc["update_foo_second"](
         55,
         ctx=Context(
             accounts={
                 "foo": foo.public_key,
-                "secondAuthority": program.provider.wallet.public_key,
+                "second_authority": program.provider.wallet.public_key,
             },
         ),
     )
@@ -117,8 +118,8 @@ async def test_update_foo_second(
     account = await program.account["Foo"].fetch(foo.public_key)
     assert account.authority == provider.wallet.public_key
     assert account.data == 1234
-    assert account.secondData == 55
-    assert account.secondAuthority == list(bytes(program.provider.wallet.public_key))
+    assert account.second_data == 55
+    assert account.second_authority == list(bytes(program.provider.wallet.public_key))
 
 
 @fixture(scope="module")
@@ -128,13 +129,13 @@ async def bar(
     bar_pubkey = PublicKey.find_program_address(
         [bytes(provider.wallet.public_key), bytes(foo.public_key)], program.program_id
     )[0]
-    await program.rpc["createBar"](
+    await program.rpc["create_bar"](
         ctx=Context(
             accounts={
                 "bar": bar_pubkey,
                 "authority": provider.wallet.public_key,
                 "foo": foo.public_key,
-                "systemProgram": SYS_PROGRAM_ID,
+                "system_program": SYS_PROGRAM_ID,
             }
         )
     )
@@ -155,7 +156,7 @@ async def update_associated_zero_copy_account(
     foo: Keypair,
     bar: PublicKey,
 ) -> None:
-    await program.rpc["updateBar"](
+    await program.rpc["update_bar"](
         99,
         ctx=Context(
             accounts={
@@ -188,14 +189,14 @@ async def check_cpi(
     bar: PublicKey,
     update_associated_zero_copy_account: None,
 ) -> None:
-    await program_cpi.rpc["checkCpi"](
+    await program_cpi.rpc["check_cpi"](
         1337,
         ctx=Context(
             accounts={
                 "bar": bar,
                 "authority": provider.wallet.public_key,
                 "foo": foo.public_key,
-                "zeroCopyProgram": program.program_id,
+                "zero_copy_program": program.program_id,
             },
         ),
     )
@@ -220,10 +221,10 @@ async def event_q(
 ) -> Keypair:
     event_q_keypair = Keypair()
     size = 1000000 + 8
-    await program.rpc["createLargeAccount"](
+    await program.rpc["create_large_account"](
         ctx=Context(
             accounts={
-                "eventQ": event_q_keypair.public_key,
+                "event_q": event_q_keypair.public_key,
                 "rent": SYSVAR_RENT_PUBKEY,
             },
             instructions=[
@@ -256,12 +257,12 @@ async def test_update_event_q(
     provider: Provider,
     event_q: Keypair,
 ) -> None:
-    await program.rpc["updateLargeAccount"](
+    await program.rpc["update_large_account"](
         0,
         48,
         ctx=Context(
             accounts={
-                "eventQ": event_q.public_key,
+                "event_q": event_q.public_key,
                 "from": provider.wallet.public_key,
             },
         ),
@@ -276,12 +277,12 @@ async def test_update_event_q(
         else:
             assert event.from_ == DEFAULT_PUBKEY
             assert event.data == 0
-    await program.rpc["updateLargeAccount"](
+    await program.rpc["update_large_account"](
         11111,
         1234,
         ctx=Context(
             accounts={
-                "eventQ": event_q.public_key,
+                "event_q": event_q.public_key,
                 "from": provider.wallet.public_key,
             },
         ),
@@ -299,12 +300,12 @@ async def test_update_event_q(
         else:
             assert event.from_ == DEFAULT_PUBKEY
             assert event.data == 0
-    await program.rpc["updateLargeAccount"](
+    await program.rpc["update_large_account"](
         24999,
         99,
         ctx=Context(
             accounts={
-                "eventQ": event_q.public_key,
+                "event_q": event_q.public_key,
                 "from": provider.wallet.public_key,
             },
         ),
@@ -326,12 +327,12 @@ async def test_update_event_q(
             assert event.from_ == DEFAULT_PUBKEY
             assert event.data == 0
     with raises(RPCException):
-        await program.rpc["updateLargeAccount"](
+        await program.rpc["update_large_account"](
             25000,
             99,
             ctx=Context(
                 accounts={
-                    "eventQ": event_q.public_key,
+                    "event_q": event_q.public_key,
                     "from": provider.wallet.public_key,
                 },
             ),

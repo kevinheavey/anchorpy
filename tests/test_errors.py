@@ -36,7 +36,7 @@ async def test_hello_err(program: Program) -> None:
 async def test_hello_no_msg_err(program: Program) -> None:
     """Test error from helloNoMsg func."""
     with raises(ProgramError) as excinfo:
-        await program.rpc["helloNoMsg"]()
+        await program.rpc["hello_no_msg"]()
     assert excinfo.value.msg == "HelloNoMsg"
     assert excinfo.value.code == 300 + 123
 
@@ -45,7 +45,7 @@ async def test_hello_no_msg_err(program: Program) -> None:
 async def test_hello_next_err(program: Program) -> None:
     """Test error from helloNext func."""
     with raises(ProgramError) as excinfo:
-        await program.rpc["helloNext"]()
+        await program.rpc["hello_next"]()
     assert excinfo.value.msg == "HelloNext"
     assert excinfo.value.code == 300 + 124
 
@@ -54,8 +54,8 @@ async def test_hello_next_err(program: Program) -> None:
 async def test_mut_err(program: Program) -> None:
     """Test mmut error."""
     with raises(ProgramError) as excinfo:
-        await program.rpc["mutError"](
-            ctx=Context(accounts={"myAccount": SYSVAR_RENT_PUBKEY})
+        await program.rpc["mut_error"](
+            ctx=Context(accounts={"my_account": SYSVAR_RENT_PUBKEY})
         )
     assert excinfo.value.msg == "A mut constraint was violated"
     assert excinfo.value.code == 140
@@ -66,10 +66,10 @@ async def test_has_one_err(program: Program) -> None:
     """Test hasOneError."""
     account = Keypair()
     with raises(ProgramError) as excinfo:
-        await program.rpc["hasOneError"](
+        await program.rpc["has_one_error"](
             ctx=Context(
                 accounts={
-                    "myAccount": account.public_key,
+                    "my_account": account.public_key,
                     "owner": SYSVAR_RENT_PUBKEY,
                     "rent": SYSVAR_RENT_PUBKEY,
                 },
@@ -97,7 +97,7 @@ async def test_signer_err(program: Program) -> None:
                 ),
             ],
             program_id=program.program_id,
-            data=program.coder.instruction.encode("signerError", {}),
+            data=program.coder.instruction.encode("signer_error", {}),
         ),
     )
     with raises(RPCException) as excinfo:

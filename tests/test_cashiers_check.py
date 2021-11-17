@@ -72,18 +72,18 @@ async def create_check(program: Program, initial_state: InitialState) -> Created
     accounts = {
         "check": check.public_key,
         "vault": vault.public_key,
-        "checkSigner": check_signer,
+        "check_signer": check_signer,
         "from": initial_state.god,
         "to": initial_state.receiver,
         "owner": program.provider.wallet.public_key,
-        "tokenProgram": TOKEN_PROGRAM_ID,
+        "token_program": TOKEN_PROGRAM_ID,
         "rent": SYSVAR_RENT_PUBKEY,
     }
     instructions = [
         await program.account["Check"].create_instruction(check, 300),
         *token_account_instrs,
     ]
-    await program.rpc["createCheck"](
+    await program.rpc["create_check"](
         100,
         "Hello world",
         nonce,
@@ -120,15 +120,15 @@ async def test_cash_check(
     initial_state: InitialState,
     create_check: CreatedCheck,
 ) -> None:
-    await program.rpc["cashCheck"](
+    await program.rpc["cash_check"](
         ctx=Context(
             accounts={
                 "check": create_check.check.public_key,
                 "vault": create_check.vault.public_key,
-                "checkSigner": create_check.signer,
+                "check_signer": create_check.signer,
                 "to": initial_state.receiver,
                 "owner": provider.wallet.public_key,
-                "tokenProgram": TOKEN_PROGRAM_ID,
+                "token_program": TOKEN_PROGRAM_ID,
             },
         )
     )

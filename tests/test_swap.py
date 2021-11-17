@@ -547,23 +547,23 @@ def swap_usdc_a_accounts(
 ) -> dict[str, Any]:
     market_subdict = {
         "market": market_a.state.public_key(),
-        "requestQueue": market_a.state.request_queue(),
-        "eventQueue": market_a.state.event_queue(),
+        "request_queue": market_a.state.request_queue(),
+        "event_queue": market_a.state.event_queue(),
         "bids": market_a.state.bids(),
         "asks": market_a.state.asks(),
-        "coinVault": market_a.state.base_vault(),
-        "pcVault": market_a.state.quote_vault(),
-        "vaultSigner": market_a_vault_signer,
-        "openOrders": open_orders_a.public_key,
-        "orderPayerTokenAccount": orderbook_env.god_usdc,
-        "coinWallet": orderbook_env.god_a,
+        "coin_vault": market_a.state.base_vault(),
+        "pc_vault": market_a.state.quote_vault(),
+        "vault_signer": market_a_vault_signer,
+        "open_orders": open_orders_a.public_key,
+        "order_payer_token_account": orderbook_env.god_usdc,
+        "coin_wallet": orderbook_env.god_a,
     }
     return {
         "market": market_subdict,
-        "pcWallet": orderbook_env.god_usdc,
+        "pc_wallet": orderbook_env.god_usdc,
         "authority": program.provider.wallet.public_key,
-        "dexProgram": DEX_PID,
-        "tokenProgram": TOKEN_PROGRAM_ID,
+        "dex_program": DEX_PID,
+        "token_program": TOKEN_PROGRAM_ID,
         "rent": SYSVAR_RENT_PUBKEY,
     }
 
@@ -575,7 +575,7 @@ def swap_a_usdc_accounts(
 ) -> dict[str, Any]:
     market_subdict = {
         **swap_usdc_a_accounts["market"],
-        "orderPayerTokenAccount": orderbook_env.god_a,
+        "order_payer_token_account": orderbook_env.god_a,
     }
     return {**swap_usdc_a_accounts, "market": market_subdict}
 
@@ -709,47 +709,47 @@ async def test_swap_a_to_b(
     swap_amount = 10
     from_subdict = {
         "market": market_a.state.public_key(),
-        "requestQueue": market_a.state.request_queue(),
-        "eventQueue": market_a.state.event_queue(),
+        "request_queue": market_a.state.request_queue(),
+        "event_queue": market_a.state.event_queue(),
         "bids": market_a.state.bids(),
         "asks": market_a.state.asks(),
-        "coinVault": market_a.state.base_vault(),
-        "pcVault": market_a.state.quote_vault(),
-        "vaultSigner": market_a_vault_signer,
+        "coin_vault": market_a.state.base_vault(),
+        "pc_vault": market_a.state.quote_vault(),
+        "vault_signer": market_a_vault_signer,
         # User params.
-        "openOrders": open_orders_a.public_key,
+        "open_orders": open_orders_a.public_key,
         # Swapping from A -> USDC.
-        "orderPayerTokenAccount": orderbook_env.god_a,
-        "coinWallet": orderbook_env.god_a,
+        "order_payer_token_account": orderbook_env.god_a,
+        "coin_wallet": orderbook_env.god_a,
     }
     to_subdict = {
         "market": market_b.state.public_key(),
-        "requestQueue": market_b.state.request_queue(),
-        "eventQueue": market_b.state.event_queue(),
+        "request_queue": market_b.state.request_queue(),
+        "event_queue": market_b.state.event_queue(),
         "bids": market_b.state.bids(),
         "asks": market_b.state.asks(),
-        "coinVault": market_b.state.base_vault(),
-        "pcVault": market_b.state.quote_vault(),
-        "vaultSigner": market_b_vault_signer,
+        "coin_vault": market_b.state.base_vault(),
+        "pc_vault": market_b.state.quote_vault(),
+        "vault_signer": market_b_vault_signer,
         # User params.
-        "openOrders": open_orders_b.public_key,
+        "open_orders": open_orders_b.public_key,
         # Swapping from USDC -> B.
-        "orderPayerTokenAccount": orderbook_env.god_usdc,
-        "coinWallet": orderbook_env.god_b,
+        "order_payer_token_account": orderbook_env.god_usdc,
+        "coin_wallet": orderbook_env.god_b,
     }
     accounts = {
         "from": from_subdict,
         "to": to_subdict,
-        "pcWallet": orderbook_env.god_usdc,
+        "pc_wallet": orderbook_env.god_usdc,
         "authority": program.provider.wallet.public_key,
-        "dexProgram": DEX_PID,
-        "tokenProgram": TOKEN_PROGRAM_ID,
+        "dex_program": DEX_PID,
+        "token_program": TOKEN_PROGRAM_ID,
         "rent": SYSVAR_RENT_PUBKEY,
     }
     addrs = [orderbook_env.god_a, orderbook_env.god_b, orderbook_env.god_usdc]
     deltas: list[float] = []
     async with balance_change(program.provider, addrs, deltas):
-        await program.rpc["swapTransitive"](
+        await program.rpc["swap_transitive"](
             int(swap_amount * 10 ** 6),
             int(swap_amount - 1),
             ctx=Context(
@@ -777,47 +777,47 @@ async def test_swap_b_to_a(
     swap_amount = 23
     from_subdict = {
         "market": market_b.state.public_key(),
-        "requestQueue": market_b.state.request_queue(),
-        "eventQueue": market_b.state.event_queue(),
+        "request_queue": market_b.state.request_queue(),
+        "event_queue": market_b.state.event_queue(),
         "bids": market_b.state.bids(),
         "asks": market_b.state.asks(),
-        "coinVault": market_b.state.base_vault(),
-        "pcVault": market_b.state.quote_vault(),
-        "vaultSigner": market_b_vault_signer,
+        "coin_vault": market_b.state.base_vault(),
+        "pc_vault": market_b.state.quote_vault(),
+        "vault_signer": market_b_vault_signer,
         # User params.
-        "openOrders": open_orders_b.public_key,
+        "open_orders": open_orders_b.public_key,
         # Swapping from B -> USDC.
-        "orderPayerTokenAccount": orderbook_env.god_b,
-        "coinWallet": orderbook_env.god_b,
+        "order_payer_token_account": orderbook_env.god_b,
+        "coin_wallet": orderbook_env.god_b,
     }
     to_subdict = {
         "market": market_a.state.public_key(),
-        "requestQueue": market_a.state.request_queue(),
-        "eventQueue": market_a.state.event_queue(),
+        "request_queue": market_a.state.request_queue(),
+        "event_queue": market_a.state.event_queue(),
         "bids": market_a.state.bids(),
         "asks": market_a.state.asks(),
-        "coinVault": market_a.state.base_vault(),
-        "pcVault": market_a.state.quote_vault(),
-        "vaultSigner": market_a_vault_signer,
+        "coin_vault": market_a.state.base_vault(),
+        "pc_vault": market_a.state.quote_vault(),
+        "vault_signer": market_a_vault_signer,
         # User params.
-        "openOrders": open_orders_a.public_key,
+        "open_orders": open_orders_a.public_key,
         # Swapping from USDC -> B.
-        "orderPayerTokenAccount": orderbook_env.god_usdc,
-        "coinWallet": orderbook_env.god_a,
+        "order_payer_token_account": orderbook_env.god_usdc,
+        "coin_wallet": orderbook_env.god_a,
     }
     accounts = {
         "from": from_subdict,
         "to": to_subdict,
-        "pcWallet": orderbook_env.god_usdc,
+        "pc_wallet": orderbook_env.god_usdc,
         "authority": program.provider.wallet.public_key,
-        "dexProgram": DEX_PID,
-        "tokenProgram": TOKEN_PROGRAM_ID,
+        "dex_program": DEX_PID,
+        "token_program": TOKEN_PROGRAM_ID,
         "rent": SYSVAR_RENT_PUBKEY,
     }
     addrs = [orderbook_env.god_a, orderbook_env.god_b, orderbook_env.god_usdc]
     deltas: list[float] = []
     async with balance_change(program.provider, addrs, deltas):
-        await program.rpc["swapTransitive"](
+        await program.rpc["swap_transitive"](
             int(swap_amount * 10 ** 6),
             int(swap_amount - 1),
             ctx=Context(
