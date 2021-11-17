@@ -90,7 +90,7 @@ async def test_can_use_u16(
 @mark.asyncio
 async def test_can_embed_programs_into_genesis(program: Program) -> None:
     pid = PublicKey("FtMNMKp9DZHKWUyVAsj3Q5QV8ow4P3fUPP7ZrWEQJzKr")
-    acc_info_raw = await program.provider.client.get_account_info(pid)
+    acc_info_raw = await program.provider.connection.get_account_info(pid)
     assert acc_info_raw["result"]["value"]["executable"] is True
 
 
@@ -217,11 +217,11 @@ async def test_can_close_account(
     program: Program,
     initialized_keypair: Keypair,
 ) -> None:
-    open_account = await program.provider.client.get_account_info(
+    open_account = await program.provider.connection.get_account_info(
         initialized_keypair.public_key,
     )
     assert open_account["result"]["value"] is not None
-    before_balance_raw = await program.provider.client.get_account_info(
+    before_balance_raw = await program.provider.connection.get_account_info(
         program.provider.wallet.public_key,
     )
     before_balance = before_balance_raw["result"]["value"]["lamports"]
@@ -233,12 +233,12 @@ async def test_can_close_account(
             },
         ),
     )
-    after_balance_raw = await program.provider.client.get_account_info(
+    after_balance_raw = await program.provider.connection.get_account_info(
         program.provider.wallet.public_key,
     )
     after_balance = after_balance_raw["result"]["value"]["lamports"]
     assert after_balance > before_balance
-    closed_account = await program.provider.client.get_account_info(
+    closed_account = await program.provider.connection.get_account_info(
         initialized_keypair.public_key,
     )
     assert closed_account["result"]["value"] is None
@@ -343,7 +343,10 @@ async def test_can_create_a_token_account_from_seeds_pda(program: Program) -> No
         ),
     )
     mint_account = AsyncToken(
-        program.provider.client, mint, TOKEN_PROGRAM_ID, program.provider.wallet.payer
+        program.provider.connection,
+        mint,
+        TOKEN_PROGRAM_ID,
+        program.provider.wallet.payer,
     )
     account = await mint_account.get_account_info(my_pda)
     assert account.is_frozen is False
@@ -439,7 +442,7 @@ async def test_can_create_random_mint_account(
         ),
     )
     client = AsyncToken(
-        program.provider.client,
+        program.provider.connection,
         mint.public_key,
         TOKEN_PROGRAM_ID,
         program.provider.wallet.payer,
@@ -483,7 +486,7 @@ async def test_can_create_random_mint_account_prefunded(
     prefunded_mint: Keypair,
 ) -> None:
     client = AsyncToken(
-        program.provider.client,
+        program.provider.connection,
         prefunded_mint.public_key,
         TOKEN_PROGRAM_ID,
         program.provider.wallet.payer,
@@ -513,7 +516,7 @@ async def test_can_create_random_token_account(
         ),
     )
     client = AsyncToken(
-        program.provider.client,
+        program.provider.connection,
         prefunded_mint.public_key,
         TOKEN_PROGRAM_ID,
         program.provider.wallet.payer,
@@ -555,7 +558,7 @@ async def test_can_create_random_token_account_with_prefunding(
         ),
     )
     client = AsyncToken(
-        program.provider.client,
+        program.provider.connection,
         prefunded_mint.public_key,
         TOKEN_PROGRAM_ID,
         program.provider.wallet.payer,
@@ -597,7 +600,7 @@ async def test_can_create_random_token_account_with_prefunding_under_rent_exempt
         ),
     )
     client = AsyncToken(
-        program.provider.client,
+        program.provider.connection,
         prefunded_mint.public_key,
         TOKEN_PROGRAM_ID,
         program.provider.wallet.payer,
@@ -661,20 +664,20 @@ async def test_can_fetch_all_accounts_of_a_given_type(
     filterable1 = Keypair.generate().public_key
     filterable2 = Keypair.generate().public_key
     provider = Provider(
-        program.provider.client,
+        program.provider.connection,
         LocalWallet(Keypair.generate()),
         TxOpts(
-            preflight_commitment=program.provider.client._commitment,  # noqa: WPS437
+            preflight_commitment=program.provider.connection._commitment,  # noqa: WPS437
         ),
     )
     another_program = Program(program.idl, program.program_id, provider)
     lamports_per_sol = 1000000000
-    tx_res = await program.provider.client.request_airdrop(
+    tx_res = await program.provider.connection.request_airdrop(
         another_program.provider.wallet.public_key,
         lamports_per_sol,
     )
     signature = tx_res["result"]
-    await program.provider.client.confirm_transaction(signature)
+    await program.provider.connection.confirm_transaction(signature)
     # Create all the accounts.
     tasks = [
         program.rpc["testFetchAll"](

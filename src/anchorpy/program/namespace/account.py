@@ -77,7 +77,7 @@ class AccountClient(object):
             AccountDoesNotExistError: If the account doesn't exist.
             AccountInvalidDiscriminator: If the discriminator doesn't match the IDL.
         """
-        account_info = await self._provider.client.get_account_info(
+        account_info = await self._provider.connection.get_account_info(
             address,
             encoding="base64",
         )
@@ -97,8 +97,10 @@ class AccountClient(object):
     ) -> TransactionInstruction:
         """Return an instruction for creating this account."""
         space = size_override if size_override else self._size
-        mbre_resp = await self._provider.client.get_minimum_balance_for_rent_exemption(
-            space
+        mbre_resp = (
+            await self._provider.connection.get_minimum_balance_for_rent_exemption(
+                space
+            )
         )
         return create_account(
             CreateAccountParams(
@@ -143,10 +145,10 @@ class AccountClient(object):
         )
         extra_memcmpm_opts = [] if memcmp_opts is None else memcmp_opts
         full_memcmp_opts = [base_memcmp_opt] + extra_memcmpm_opts
-        resp = await self._provider.client.get_program_accounts(
+        resp = await self._provider.connection.get_program_accounts(
             self._program_id,
             encoding="base64",
-            commitment=self.provider.client._commitment,  # noqa: WPS437
+            commitment=self.provider.connection._commitment,  # noqa: WPS437
             data_size=data_size,
             memcmp_opts=full_memcmp_opts,
         )

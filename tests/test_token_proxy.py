@@ -39,7 +39,7 @@ async def provider(program: Program) -> Provider:
 async def create_mint_instructions(
     provider: Provider, authority: PublicKey, mint: PublicKey
 ) -> tuple[TransactionInstruction, TransactionInstruction]:
-    mbre_resp = await provider.client.get_minimum_balance_for_rent_exemption(82)
+    mbre_resp = await provider.connection.get_minimum_balance_for_rent_exemption(82)
     lamports = mbre_resp["result"]
     return (
         create_account(

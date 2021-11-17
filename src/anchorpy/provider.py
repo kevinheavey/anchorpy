@@ -34,18 +34,18 @@ class Provider:
 
     def __init__(
         self,
-        client: AsyncClient,
+        connection: AsyncClient,
         wallet: Wallet,
         opts: types.TxOpts = DEFAULT_OPTIONS,
     ) -> None:
         """Initialize the Provider.
 
         Args:
-            client: The cluster connection where the program is deployed.
+            connection: The cluster connection where the program is deployed.
             wallet: The wallet used to pay for and sign all transactions.
             opts: Transaction confirmation options to use by default.
         """
-        self.client = client
+        self.connection = connection
         self.wallet = wallet
         self.opts = opts
 
@@ -59,18 +59,18 @@ class Provider:
             url: The network cluster url.
             opts: The default transaction confirmation options.
         """
-        client = AsyncClient(url, opts.preflight_commitment)
+        connection = AsyncClient(url, opts.preflight_commitment)
         wallet = LocalWallet.local()
-        return cls(client, wallet, opts)
+        return cls(connection, wallet, opts)
 
     @classmethod
     def env(cls) -> Provider:
         """Create a `Provider` using the `ANCHOR_PROVIDER_URL` environment variable."""
         url = environ["ANCHOR_PROVIDER_URL"]
         options = DEFAULT_OPTIONS
-        client = AsyncClient(url, options.preflight_commitment)
+        connection = AsyncClient(url, options.preflight_commitment)
         wallet = LocalWallet.local()
-        return cls(client, wallet, options)
+        return cls(connection, wallet, options)
 
     async def simulate(
         self,
@@ -93,13 +93,13 @@ class Provider:
             signers = []
         if opts is None:
             opts = self.opts
-        recent_blockhash_resp = await self.client.get_recent_blockhash(
+        recent_blockhash_resp = await self.connection.get_recent_blockhash(
             Finalized,
         )
         tx.recent_blockhash = recent_blockhash_resp["result"]["value"]["blockhash"]
         all_signers = [self.wallet.payer] + signers
         tx.sign(*all_signers)
-        return await self.client.simulate_transaction(
+        return await self.connection.simulate_transaction(
             tx, sig_verify=True, commitment=opts.preflight_commitment
         )
 
@@ -125,7 +125,7 @@ class Provider:
         if opts is None:
             opts = self.opts
         all_signers = [self.wallet.payer] + signers
-        resp = await self.client.send_transaction(tx, *all_signers, opts=opts)
+        resp = await self.connection.send_transaction(tx, *all_signers, opts=opts)
         return resp["result"]
 
     async def send_all(
@@ -155,13 +155,15 @@ class Provider:
         signed_txs = self.wallet.sign_all_transactions(txs)
         sigs = []
         for signed in signed_txs:
-            resp = await self.client.send_raw_transaction(signed.serialize(), opts=opts)
+            resp = await self.connection.send_raw_transaction(
+                signed.serialize(), opts=opts
+            )
             sigs.append(resp["result"])
         return sigs
 
     async def __aenter__(self) -> Provider:
         """Use as a context manager."""
-        await self.client.__aenter__()  # noqa: WPS609
+        await self.connection.__aenter__()  # noqa: WPS609
         return self
 
     async def __aexit__(self, _exc_type, _exc, _tb):
@@ -169,8 +171,8 @@ class Provider:
         await self.close()
 
     async def close(self) -> None:
-        """Use this when you are done with the client."""
-        await self.client.close()
+        """Use this when you are done with the connection."""
+        await self.connection.close()
 
 
 class Wallet(ABC):

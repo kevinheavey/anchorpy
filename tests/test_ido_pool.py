@@ -19,7 +19,7 @@ localnet = get_localnet(PATH)
 async def create_mint(prov: Provider) -> AsyncToken:
     authority = prov.wallet.public_key
     return await AsyncToken.create_mint(
-        prov.client, prov.wallet.payer, authority, 6, TOKEN_PROGRAM_ID
+        prov.connection, prov.wallet.payer, authority, 6, TOKEN_PROGRAM_ID
     )
 
 
@@ -60,7 +60,7 @@ async def provider(program: Program) -> Provider:
 #         watermelon_ido_amount,
 #     )
 #     ido_authority_watermelon_account = await AsyncToken(
-#         provider.client,
+#         provider.connection,
 #         ido_authority_watermelon,
 #         TOKEN_PROGRAM_ID,
 #         provider.wallet.payer,

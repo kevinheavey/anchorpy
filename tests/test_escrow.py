@@ -46,21 +46,25 @@ async def initialize_escrow_state(
 ) -> InitializeEscrowStateResult:
     payer = Keypair()
     mint_authority = Keypair()
-    airdrop_resp = await provider.client.request_airdrop(payer.public_key, 10000000000)
-    await provider.client.confirm_transaction(airdrop_resp["result"], Confirmed)
-    mint_airdrop_resp = await provider.client.request_airdrop(
+    airdrop_resp = await provider.connection.request_airdrop(
+        payer.public_key, 10000000000
+    )
+    await provider.connection.confirm_transaction(airdrop_resp["result"], Confirmed)
+    mint_airdrop_resp = await provider.connection.request_airdrop(
         mint_authority.public_key, 10000000000
     )
-    await provider.client.confirm_transaction(mint_airdrop_resp["result"], Confirmed)
+    await provider.connection.confirm_transaction(
+        mint_airdrop_resp["result"], Confirmed
+    )
     mint_a = await AsyncToken.create_mint(
-        provider.client,
+        provider.connection,
         payer,
         mint_authority.public_key,
         0,
         TOKEN_PROGRAM_ID,
     )
     mint_b = await AsyncToken.create_mint(
-        provider.client,
+        provider.connection,
         payer,
         mint_authority.public_key,
         0,

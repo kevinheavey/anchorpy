@@ -105,7 +105,7 @@ async def fund_account(provider: Provider, mints: list[MintRecord]) -> MarketMak
     # Transfer SPL tokens to the market maker.
     for god, mint, amount in mints:
         mint_a_client = AsyncToken(
-            provider.client,
+            provider.connection,
             mint,
             TOKEN_PROGRAM_ID,
             provider.wallet.payer,
@@ -376,7 +376,7 @@ async def setup_market(
     asks: list[tuple[float, float]],
 ) -> AsyncMarket:
     market_a_public_key = await list_market(
-        client=provider.client,
+        client=provider.connection,
         wallet=provider.wallet,
         base_mint=base_mint,
         quote_mint=quote_mint,
@@ -387,7 +387,7 @@ async def setup_market(
     )
     # await asyncio.sleep(SLEEP_SECONDS)
     market_a_usdc = await AsyncMarket.load(
-        provider.client, market_a_public_key, DEX_PID
+        provider.connection, market_a_public_key, DEX_PID
     )
     for ask_idx, ask in enumerate(asks):
         await market_a_usdc.place_order(
@@ -615,8 +615,10 @@ async def swap_usdc_to_a_and_init_open_orders(
     amount_to_spend = expected_resultant_amount * best_offer_price
     swap_amount = int((amount_to_spend / (1 - TAKER_FEE)) * 10 ** 6)
     side = program.type["Side"]
-    mbfre_resp = await program.provider.client.get_minimum_balance_for_rent_exemption(
-        OPEN_ORDERS_LAYOUT.sizeof()
+    mbfre_resp = (
+        await program.provider.connection.get_minimum_balance_for_rent_exemption(
+            OPEN_ORDERS_LAYOUT.sizeof()
+        )
     )
     balance_needed = mbfre_resp["result"]
     instructions = [
