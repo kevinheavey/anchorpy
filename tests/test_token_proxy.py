@@ -8,8 +8,6 @@ from solana.publickey import PublicKey
 from solana.system_program import create_account, CreateAccountParams
 from solana.transaction import TransactionInstruction, Transaction
 from spl.token.instructions import (
-    initialize_account,
-    InitializeAccountParams,
     initialize_mint,
     InitializeMintParams,
 )
@@ -17,7 +15,7 @@ from spl.token.constants import TOKEN_PROGRAM_ID
 
 from anchorpy import Program, create_workspace, close_workspace, Context, Provider
 from anchorpy.pytest_plugin import get_localnet
-from anchorpy.utils.token import get_mint_info, get_token_account
+from anchorpy.utils.token import get_mint_info, get_token_account, create_token_account
 
 PATH = Path("anchor/tests/spl/token-proxy/")
 
@@ -72,48 +70,6 @@ async def create_mint(provider: Provider) -> PublicKey:
     tx.add(*instructions)
     await provider.send(tx, [mint])
     return mint.public_key
-
-
-async def create_token_account(
-    provider: Provider, mint: PublicKey, owner: PublicKey
-) -> PublicKey:
-    vault = Keypair()
-    tx = Transaction()
-    instructions = await create_token_account_instrs(
-        provider, vault.public_key, mint, owner
-    )
-    tx.add(*instructions)
-    await provider.send(tx, [vault])
-    return vault.public_key
-
-
-async def create_token_account_instrs(
-    provider: Provider,
-    new_account_pubkey: PublicKey,
-    mint: PublicKey,
-    owner: PublicKey,
-) -> tuple[TransactionInstruction, TransactionInstruction]:
-    mbre_resp = await provider.client.get_minimum_balance_for_rent_exemption(165)
-    lamports = mbre_resp["result"]
-    return (
-        create_account(
-            CreateAccountParams(
-                from_pubkey=provider.wallet.public_key,
-                new_account_pubkey=new_account_pubkey,
-                space=165,
-                lamports=lamports,
-                program_id=TOKEN_PROGRAM_ID,
-            )
-        ),
-        initialize_account(
-            InitializeAccountParams(
-                account=new_account_pubkey,
-                mint=mint,
-                owner=owner,
-                program_id=TOKEN_PROGRAM_ID,
-            )
-        ),
-    )
 
 
 @fixture(scope="module")

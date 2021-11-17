@@ -2,7 +2,7 @@ from typing import Optional
 from solana.publickey import PublicKey
 from solana.keypair import Keypair
 from solana.rpc.types import RPCResponse
-from solana.transaction import Transaction
+from solana.transaction import Transaction, TransactionInstruction
 from solana.system_program import create_account, CreateAccountParams
 from solana.utils.helpers import decode_byte_string
 from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
@@ -14,6 +14,7 @@ from spl.token.instructions import (
     mint_to,
     MintToParams,
 )
+from spl.token.async_client import AsyncToken
 from spl.token.core import AccountInfo, MintInfo
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
 from anchorpy import Provider
@@ -26,8 +27,49 @@ def associated_address(mint: PublicKey, owner: PublicKey) -> PublicKey:
     )[0]
 
 
+async def create_token_account(
+    prov: Provider,
+    mint: PublicKey,
+    owner: PublicKey,
+) -> PublicKey:
+    token = AsyncToken(prov.client, mint, TOKEN_PROGRAM_ID, prov.wallet.payer)
+    return await token.create_account(owner)
+
+
+async def create_token_account_instrs(
+    provider: Provider,
+    new_account_pubkey: PublicKey,
+    mint: PublicKey,
+    owner: PublicKey,
+) -> tuple[TransactionInstruction, TransactionInstruction]:
+    mbre_resp = await provider.client.get_minimum_balance_for_rent_exemption(165)
+    lamports = mbre_resp["result"]
+    return (
+        create_account(
+            CreateAccountParams(
+                from_pubkey=provider.wallet.public_key,
+                new_account_pubkey=new_account_pubkey,
+                space=165,
+                lamports=lamports,
+                program_id=TOKEN_PROGRAM_ID,
+            )
+        ),
+        initialize_account(
+            InitializeAccountParams(
+                account=new_account_pubkey,
+                mint=mint,
+                owner=owner,
+                program_id=TOKEN_PROGRAM_ID,
+            )
+        ),
+    )
+
+
 async def create_mint_and_vault(
-    provider: Provider, amount: int, owner: Optional[PublicKey], decimals: Optional[int]
+    provider: Provider,
+    amount: int,
+    owner: Optional[PublicKey] = None,
+    decimals: Optional[int] = None,
 ) -> tuple[PublicKey, PublicKey]:
     actual_owner = provider.wallet.public_key if owner is None else owner
     mint = Keypair()

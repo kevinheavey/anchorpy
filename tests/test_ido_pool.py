@@ -9,6 +9,7 @@ from spl.token.constants import TOKEN_PROGRAM_ID
 
 from anchorpy import Program, create_workspace, Context, Provider
 from anchorpy.pytest_plugin import get_localnet
+from anchorpy.utils.token import create_token_account
 
 PATH = Path("anchor/tests/composite/")
 
@@ -20,15 +21,6 @@ async def create_mint(prov: Provider) -> AsyncToken:
     return await AsyncToken.create_mint(
         prov.client, prov.wallet.payer, authority, 6, TOKEN_PROGRAM_ID
     )
-
-
-async def create_token_account(
-    prov: Provider,
-    mint: PublicKey,
-    owner: PublicKey,
-) -> PublicKey:
-    token = AsyncToken(prov.client, mint, TOKEN_PROGRAM_ID, prov.wallet.payer)
-    return await token.create_account(owner)
 
 
 @fixture(scope="module")
