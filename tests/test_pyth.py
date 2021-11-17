@@ -39,7 +39,7 @@ async def create_price_feed(
     conf = int((init_price / 10) * 10 ** -expo)
     space = 3312
     mbre_resp = (
-        await oracle_program.provider.client.get_minimum_balance_for_rent_exemption(
+        await oracle_program.provider.connection.get_minimum_balance_for_rent_exemption(
             space,
         )
     )
@@ -97,7 +97,7 @@ async def get_feed_data(
     oracle_program: Program,
     price_feed: PublicKey,
 ) -> PriceData:
-    info = await oracle_program.provider.client.get_account_info(
+    info = await oracle_program.provider.connection.get_account_info(
         price_feed,
         encoding="base64",
     )

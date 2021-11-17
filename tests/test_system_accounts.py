@@ -56,7 +56,7 @@
 #     initialize: Initialize, program: Program, provider: Provider
 # ) -> None:
 #     mint = await AsyncToken.create_mint(
-#         provider.client,
+#         provider.connection,
 #         initialize.authority,
 #         initialize.authority.public_key,
 #         9,
