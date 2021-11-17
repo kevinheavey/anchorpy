@@ -10,7 +10,6 @@ import solana.publickey  # noqa: WPS301
 
 from anchorpy import borsh_extension
 
-
 LiteralStrings = Literal[
     "bool",
     "u8",
@@ -208,7 +207,14 @@ class Idl:
 
     @classmethod
     def from_json(cls, idl: Dict[str, Any]) -> "Idl":
-        """Generate a parsed IDL from a JSON dict."""
+        """Generate a parsed IDL from a JSON dict.
+
+        Args:
+            idl: The raw IDL dict.
+
+        Returns:
+            The parsed Idl object.
+        """
         return deserialize(cls, idl)
 
 
