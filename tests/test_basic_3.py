@@ -1,7 +1,6 @@
 """Mimics anchor/examples/tutorial/basic-3/tests/basic-3.js."""
 from typing import AsyncGenerator, Dict
 from pathlib import Path
-import asyncio
 
 from pytest import mark, fixture
 from solana.keypair import Keypair
@@ -14,14 +13,6 @@ from anchorpy.pytest_plugin import get_localnet
 PATH = Path("anchor/examples/tutorial/basic-3")
 
 localnet = get_localnet(PATH)
-
-
-@fixture(scope="module")
-def event_loop():
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 
 @fixture(scope="module")

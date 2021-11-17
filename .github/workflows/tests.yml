@@ -20,14 +20,19 @@ jobs:
             'test_basic_1.py',
             'test_basic_2.py',
             'test_basic_3.py',
+            'test_cashiers_check.py',
             'test_chat.py',
             'test_composite.py',
             'test_errors.py',
+            'test_escrow.py',
             'test_events.py',
             'test_misc.py',
             'test_multisig.py',
             'test_pyth.py',
             'test_swap.py',
+            'test_sysvars.py',
+            'test_token_proxy.py',
+            'test_zero_copy.py',
             'unit'
           ]
     steps:

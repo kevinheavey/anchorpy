@@ -1,5 +1,4 @@
 """Mimics anchor/tests/misc/tests/misc.js."""
-import asyncio
 from dataclasses import dataclass
 from base64 import b64decode
 from pathlib import Path
@@ -18,14 +17,6 @@ from anchorpy.pytest_plugin import get_localnet
 PATH = Path("anchor/tests/pyth/")
 
 localnet = get_localnet(PATH)
-
-
-@fixture(scope="module")
-def event_loop():
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 
 @fixture(scope="module")

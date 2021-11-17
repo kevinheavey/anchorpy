@@ -2,7 +2,7 @@ from typing import Optional
 from solana.publickey import PublicKey
 from solana.keypair import Keypair
 from solana.rpc.types import RPCResponse
-from solana.transaction import Transaction
+from solana.transaction import Transaction, TransactionInstruction
 from solana.system_program import create_account, CreateAccountParams
 from solana.utils.helpers import decode_byte_string
 from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
@@ -14,8 +14,9 @@ from spl.token.instructions import (
     mint_to,
     MintToParams,
 )
-from spl.token.core import AccountInfo
-from spl.token._layouts import ACCOUNT_LAYOUT
+from spl.token.async_client import AsyncToken
+from spl.token.core import AccountInfo, MintInfo
+from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
 from anchorpy import Provider
 
 
@@ -26,8 +27,49 @@ def associated_address(mint: PublicKey, owner: PublicKey) -> PublicKey:
     )[0]
 
 
+async def create_token_account(
+    prov: Provider,
+    mint: PublicKey,
+    owner: PublicKey,
+) -> PublicKey:
+    token = AsyncToken(prov.client, mint, TOKEN_PROGRAM_ID, prov.wallet.payer)
+    return await token.create_account(owner)
+
+
+async def create_token_account_instrs(
+    provider: Provider,
+    new_account_pubkey: PublicKey,
+    mint: PublicKey,
+    owner: PublicKey,
+) -> tuple[TransactionInstruction, TransactionInstruction]:
+    mbre_resp = await provider.client.get_minimum_balance_for_rent_exemption(165)
+    lamports = mbre_resp["result"]
+    return (
+        create_account(
+            CreateAccountParams(
+                from_pubkey=provider.wallet.public_key,
+                new_account_pubkey=new_account_pubkey,
+                space=165,
+                lamports=lamports,
+                program_id=TOKEN_PROGRAM_ID,
+            )
+        ),
+        initialize_account(
+            InitializeAccountParams(
+                account=new_account_pubkey,
+                mint=mint,
+                owner=owner,
+                program_id=TOKEN_PROGRAM_ID,
+            )
+        ),
+    )
+
+
 async def create_mint_and_vault(
-    provider: Provider, amount: int, owner: Optional[PublicKey], decimals: Optional[int]
+    provider: Provider,
+    amount: int,
+    owner: Optional[PublicKey] = None,
+    decimals: Optional[int] = None,
 ) -> tuple[PublicKey, PublicKey]:
     actual_owner = provider.wallet.public_key if owner is None else owner
     mint = Keypair()
@@ -154,3 +196,39 @@ def parse_token_account(info: RPCResponse) -> AccountInfo:
 async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
     depositor_acc_info_raw = await provider.client.get_account_info(addr)
     return parse_token_account(depositor_acc_info_raw)
+
+
+async def get_mint_info(
+    provider: Provider,
+    addr: PublicKey,
+) -> MintInfo:
+    depositor_acc_info_raw = await provider.client.get_account_info(addr)
+    return parse_mint_account(depositor_acc_info_raw)
+
+
+def parse_mint_account(info: RPCResponse) -> MintInfo:
+    owner = info["result"]["value"]["owner"]
+    if owner != str(TOKEN_PROGRAM_ID):
+        raise AttributeError(f"Invalid mint owner: {owner}")
+
+    bytes_data = decode_byte_string(info["result"]["value"]["data"][0])
+    if len(bytes_data) != MINT_LAYOUT.sizeof():
+        raise ValueError("Invalid mint size")
+
+    decoded_data = MINT_LAYOUT.parse(bytes_data)
+    decimals = decoded_data.decimals
+
+    if decoded_data.mint_authority_option == 0:
+        mint_authority = None
+    else:
+        mint_authority = PublicKey(decoded_data.mint_authority)
+
+    supply = decoded_data.supply
+    is_initialized = decoded_data.is_initialized != 0
+
+    if decoded_data.freeze_authority_option == 0:
+        freeze_authority = None
+    else:
+        freeze_authority = PublicKey(decoded_data.freeze_authority)
+
+    return MintInfo(mint_authority, supply, decimals, is_initialized, freeze_authority)
