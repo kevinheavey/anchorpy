@@ -21,7 +21,8 @@ from anchorpy.idl import (
 def sighash(namespace: str, ix_name: str) -> bytes:
     """Not technically sighash, since we don't include the arguments.
 
-    (Because Rust doesn't allow function overloading.)"""
+    (Because Rust doesn't allow function overloading.)
+    """
     formatted_str = f"{namespace}:{ix_name}"
     return sha256(formatted_str.encode()).digest()[:8]
 
