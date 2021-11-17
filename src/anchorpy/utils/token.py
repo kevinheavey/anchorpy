@@ -1,3 +1,4 @@
+"""This module contains utilities for the SPL Token Program."""
 from typing import Optional
 from solana.publickey import PublicKey
 from solana.keypair import Keypair
@@ -5,7 +6,7 @@ from solana.rpc.types import RPCResponse
 from solana.transaction import Transaction, TransactionInstruction
 from solana.system_program import create_account, CreateAccountParams
 from solana.utils.helpers import decode_byte_string
-from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
+from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.instructions import (
     initialize_mint,
     InitializeMintParams,
@@ -20,18 +21,21 @@ from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
 from anchorpy import Provider
 
 
-def associated_address(mint: PublicKey, owner: PublicKey) -> PublicKey:
-    return PublicKey.find_program_address(
-        [bytes(owner), bytes(TOKEN_PROGRAM_ID), bytes(mint)],
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-    )[0]
-
-
 async def create_token_account(
     prov: Provider,
     mint: PublicKey,
     owner: PublicKey,
 ) -> PublicKey:
+    """Create a token account.
+
+    Args:
+        prov: An anchorpy Provider instance.
+        mint: The pubkey of the token's mint.
+        owner: User account that will own the new account.
+
+    Returns:
+        The pubkey of the new account.
+    """
     token = AsyncToken(prov.connection, mint, TOKEN_PROGRAM_ID, prov.wallet.payer)
     return await token.create_account(owner)
 
