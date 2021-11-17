@@ -20,6 +20,7 @@ jobs:
             'test_basic_1.py',
             'test_basic_2.py',
             'test_basic_3.py',
+            'test_cashiers_check.py',
             'test_chat.py',
             'test_composite.py',
             'test_errors.py',
