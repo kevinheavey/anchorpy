@@ -1,3 +1,4 @@
+"""Contains code for parsing the IDL file."""
 from dataclasses import dataclass, field
 from typing import List, Union, Optional, Dict, Any, Literal, Tuple, TypedDict
 
@@ -35,27 +36,40 @@ snake_case_conversion = conversion(underscore, camelize)
 
 @dataclass
 class IdlTypeVec:
+    """IDL vector type."""
+
     vec: IdlType
 
 
 @dataclass
 class IdlTypeOption:
+    """IDL option type."""
+
     option: IdlType
 
 
 @dataclass
 class IdlTypeDefined:
+    """IDL type that points to a user-defined type."""
+
     defined: str
 
 
 @dataclass
 class IdlField:
+    """IDL representation of a field.
+
+    Used in instructions and user-defined types.
+    """
+
     name: str = field(metadata=snake_case_conversion)
     type: IdlType
 
 
 @dataclass
 class IdlAccount:
+    """IDL account type."""
+
     name: str = field(metadata=snake_case_conversion)
     is_mut: bool = field(metadata=alias("isMut"))
     is_signer: bool = field(metadata=alias("isSigner"))
@@ -63,7 +77,8 @@ class IdlAccount:
 
 @dataclass
 class IdlAccounts:
-    # Nested/recursive version of IdlAccount
+    """Nested/recursive version of IdlAccount."""
+
     name: str = field(metadata=snake_case_conversion)
     accounts: List["IdlAccountItem"]
 
@@ -73,6 +88,8 @@ IdlAccountItem = Union[IdlAccounts, IdlAccount]
 
 @dataclass
 class IdlInstruction:
+    """IDL representation of a program instruction."""
+
     name: str = field(metadata=snake_case_conversion)
     accounts: List[IdlAccountItem]
     args: List[IdlField]
@@ -85,6 +102,8 @@ IdlEnumFields = Union[IdlEnumFieldsNamed, IdlEnumFieldsTuple]
 
 @dataclass
 class IdlEnumVariant:
+    """IDL representation of a variant of an enum."""
+
     name: str
     fields: Optional[IdlEnumFields] = None
 
@@ -94,12 +113,16 @@ IdlTypeDefStruct = List[IdlField]
 
 @dataclass
 class IdlTypeDefTyStruct:
+    """IDL representation of a struct."""
+
     fields: IdlTypeDefStruct
     kind: Literal["struct"] = "struct"
 
 
 @dataclass
 class IdlTypeDefTyEnum:
+    """IDL representation of an enum."""
+
     variants: List[IdlEnumVariant]
     kind: Literal["enum"] = "enum"
 
@@ -109,6 +132,8 @@ IdlTypeDefTy = Union[IdlTypeDefTyEnum, IdlTypeDefTyStruct]
 
 @dataclass
 class IdlTypeDef:
+    """IDL representation of a user-defined type."""
+
     name: str
     type: IdlTypeDefTy
 
@@ -118,17 +143,23 @@ IdlStateMethod = IdlInstruction
 
 @dataclass
 class IdlState:
+    """IDL representation of a program state method."""
+
     struct: IdlTypeDef
     methods: List[IdlStateMethod]
 
 
 @dataclass
 class IdlTypeArray:
+    """IDL array type."""
+
     array: Tuple[IdlType, int]
 
 
 @dataclass
 class IdlEventField:
+    """IDL representation of an event field."""
+
     name: str
     type: IdlType
     index: bool
@@ -136,12 +167,19 @@ class IdlEventField:
 
 @dataclass
 class IdlEvent:
+    """IDL representation of an event.
+
+    Composed of a list of event fields.
+    """
+
     name: str
     fields: List[IdlEventField]
 
 
 @dataclass
 class IdlErrorCode:
+    """IDL error code type."""
+
     code: int
     name: str
     msg: Optional[str] = None
@@ -149,6 +187,8 @@ class IdlErrorCode:
 
 @dataclass
 class Metadata:
+    """IDL metadata field."""
+
     address: str
 
 
@@ -168,6 +208,7 @@ class Idl:
 
     @classmethod
     def from_json(cls, idl: Dict[str, Any]) -> "Idl":
+        """Generate a parsed IDL from a JSON dict."""
         return deserialize(cls, idl)
 
 
@@ -191,8 +232,24 @@ IDL_ACCOUNT_LAYOUT = CStruct("authority" / borsh_extension.PublicKey, "data" / V
 
 
 def decode_idl_account(data: bytes) -> IdlProgramAccount:
+    """Decode on-chain IDL.
+
+    Args:
+        data: binary data from the account that stores the IDL.
+
+    Returns:
+        Decoded IDL.
+    """
     return IDL_ACCOUNT_LAYOUT.parse(data)
 
 
 def encode_idl_account(acc: IdlProgramAccount) -> bytes:
+    """Encode IDL for on-chain storage.
+
+    Args:
+        acc: data to encode.
+
+    Returns:
+        bytes: Encoded IDL.
+    """
     return IDL_ACCOUNT_LAYOUT.build(acc)
