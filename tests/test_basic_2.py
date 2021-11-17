@@ -38,7 +38,7 @@ async def created_counter(program: Program, provider: Provider) -> Keypair:
             accounts={
                 "counter": counter.public_key,
                 "user": provider.wallet.public_key,
-                "systemProgram": SYS_PROGRAM_ID,
+                "system_program": SYS_PROGRAM_ID,
             },
             signers=[counter],
         ),

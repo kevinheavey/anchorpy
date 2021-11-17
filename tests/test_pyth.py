@@ -73,7 +73,7 @@ async def set_feed_price(
     price_feed: PublicKey,
 ) -> None:
     data = await get_feed_data(oracle_program, price_feed)
-    await oracle_program.rpc["setPrice"](
+    await oracle_program.rpc["set_price"](
         int(new_price * 10 ** -data.exponent),
         ctx=Context(accounts={"price": price_feed}),
     )

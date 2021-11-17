@@ -144,15 +144,15 @@ async def initialize_escrow(
     ctx = Context(
         accounts={
             "initializer": provider.wallet.public_key,
-            "initializerDepositTokenAccount": initializer_token_account_a,
-            "initializerReceiveTokenAccount": initializer_token_account_b,
-            "escrowAccount": escrow_account.public_key,
-            "systemProgram": SYS_PROGRAM_ID,
-            "tokenProgram": TOKEN_PROGRAM_ID,
+            "initializer_deposit_token_account": initializer_token_account_a,
+            "initializer_receive_token_account": initializer_token_account_b,
+            "escrow_account": escrow_account.public_key,
+            "system_program": SYS_PROGRAM_ID,
+            "token_program": TOKEN_PROGRAM_ID,
         },
         signers=[escrow_account],
     )
-    await program.rpc["initializeEscrow"](INITIALIZER_AMOUNT, TAKER_AMOUNT, ctx=ctx)
+    await program.rpc["initialize_escrow"](INITIALIZER_AMOUNT, TAKER_AMOUNT, ctx=ctx)
     pda, _ = PublicKey.find_program_address([b"escrow"], program.program_id)
     return escrow_account, pda
 
@@ -183,11 +183,15 @@ async def test_initialize_escrow(
     assert _initializer_token_account_a.owner == pda
 
     # Check that the values in the escrow account match what we expect.
-    assert _escrow_account.initializerKey == provider.wallet.public_key
-    assert _escrow_account.initializerAmount == INITIALIZER_AMOUNT
-    assert _escrow_account.takerAmount == TAKER_AMOUNT
-    assert _escrow_account.initializerDepositTokenAccount == initializer_token_account_a
-    assert _escrow_account.initializerReceiveTokenAccount == initializer_token_account_b
+    assert _escrow_account.initializer_key == provider.wallet.public_key
+    assert _escrow_account.initializer_amount == INITIALIZER_AMOUNT
+    assert _escrow_account.taker_amount == TAKER_AMOUNT
+    assert (
+        _escrow_account.initializer_deposit_token_account == initializer_token_account_a
+    )
+    assert (
+        _escrow_account.initializer_receive_token_account == initializer_token_account_b
+    )
 
 
 @mark.asyncio
@@ -211,14 +215,14 @@ async def test_exchange_escrow(
         ctx=Context(
             accounts={
                 "taker": provider.wallet.public_key,
-                "takerDepositTokenAccount": taker_token_account_b,
-                "takerReceiveTokenAccount": taker_token_account_a,
-                "pdaDepositTokenAccount": initializer_token_account_a,
-                "initializerReceiveTokenAccount": initializer_token_account_b,
-                "initializerMainAccount": provider.wallet.public_key,
-                "escrowAccount": escrow_account.public_key,
-                "pdaAccount": pda,
-                "tokenProgram": TOKEN_PROGRAM_ID,
+                "taker_deposit_token_account": taker_token_account_b,
+                "taker_receive_token_account": taker_token_account_a,
+                "pda_deposit_token_account": initializer_token_account_a,
+                "initializer_receive_token_account": initializer_token_account_b,
+                "initializer_main_account": provider.wallet.public_key,
+                "escrow_account": escrow_account.public_key,
+                "pda_account": pda,
+                "token_program": TOKEN_PROGRAM_ID,
             },
         )
     )
@@ -265,17 +269,17 @@ async def test_init_and_cancel_escrow(
         opts=provider.opts,
     )
     new_escrow = Keypair()
-    await program.rpc["initializeEscrow"](
+    await program.rpc["initialize_escrow"](
         INITIALIZER_AMOUNT,
         TAKER_AMOUNT,
         ctx=Context(
             accounts={
                 "initializer": provider.wallet.public_key,
-                "initializerDepositTokenAccount": initializer_token_account_a,
-                "initializerReceiveTokenAccount": initializer_token_account_b,
-                "escrowAccount": new_escrow.public_key,
-                "systemProgram": SYS_PROGRAM_ID,
-                "tokenProgram": TOKEN_PROGRAM_ID,
+                "initializer_deposit_token_account": initializer_token_account_a,
+                "initializer_receive_token_account": initializer_token_account_b,
+                "escrow_account": new_escrow.public_key,
+                "system_program": SYS_PROGRAM_ID,
+                "token_program": TOKEN_PROGRAM_ID,
             },
             signers=[new_escrow],
         ),
@@ -289,14 +293,14 @@ async def test_init_and_cancel_escrow(
     assert _initializer_token_account_a.owner == pda
 
     # Cancel the escrow.
-    await program.rpc["cancelEscrow"](
+    await program.rpc["cancel_escrow"](
         ctx=Context(
             accounts={
                 "initializer": provider.wallet.public_key,
-                "pdaDepositTokenAccount": initializer_token_account_a,
-                "pdaAccount": pda,
-                "escrowAccount": new_escrow.public_key,
-                "tokenProgram": TOKEN_PROGRAM_ID,
+                "pda_deposit_token_account": initializer_token_account_a,
+                "pda_account": pda,
+                "escrow_account": new_escrow.public_key,
+                "token_program": TOKEN_PROGRAM_ID,
             },
         )
     )

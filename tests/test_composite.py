@@ -31,8 +31,8 @@ async def initialized_accounts(program: Program) -> Tuple[Keypair, Keypair]:
     await program.rpc["initialize"](
         ctx=Context(
             accounts={
-                "dummyA": dummy_a.public_key,
-                "dummyB": dummy_b.public_key,
+                "dummy_a": dummy_a.public_key,
+                "dummy_b": dummy_b.public_key,
                 "rent": SYSVAR_RENT_PUBKEY,
             },
             signers=[dummy_a, dummy_b],
@@ -50,15 +50,15 @@ async def composite_updated_accounts(
     program: Program,
     initialized_accounts: Tuple[Keypair, Keypair],
 ) -> Tuple[Keypair, Keypair]:
-    """Run compositeUpdate and return the keypairs used."""
+    """Run composite_update and return the keypairs used."""
     dummy_a, dummy_b = initialized_accounts
     ctx = Context(
         accounts={
-            "foo": {"dummyA": dummy_a.public_key},
-            "bar": {"dummyB": dummy_b.public_key},
+            "foo": {"dummy_a": dummy_a.public_key},
+            "bar": {"dummy_b": dummy_b.public_key},
         },
     )
-    await program.rpc["compositeUpdate"](1234, 4321, ctx=ctx)
+    await program.rpc["composite_update"](1234, 4321, ctx=ctx)
     return initialized_accounts
 
 
@@ -67,7 +67,7 @@ async def test_composite_update(
     program: Program,
     composite_updated_accounts: Tuple[Keypair, Keypair],
 ) -> None:
-    """Test that the call to compositeUpdate worked."""
+    """Test that the call to composite_update worked."""
     dummy_a, dummy_b = composite_updated_accounts
     dummy_a_account = await program.account["DummyA"].fetch(dummy_a.public_key)
     dummy_b_account = await program.account["DummyB"].fetch(dummy_b.public_key)

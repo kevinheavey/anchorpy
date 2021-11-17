@@ -42,17 +42,17 @@ async def test_cpi(workspace: Dict[str, Program], provider: Provider) -> None:
             accounts={
                 "puppet": new_puppet_account.public_key,
                 "user": provider.wallet.public_key,
-                "systemProgram": SYS_PROGRAM_ID,
+                "system_program": SYS_PROGRAM_ID,
             },
             signers=[new_puppet_account],
         ),
     )
-    await puppet_master.rpc["pullStrings"](
+    await puppet_master.rpc["pull_strings"](
         111,
         ctx=Context(
             accounts={
                 "puppet": new_puppet_account.public_key,
-                "puppetProgram": puppet.program_id,
+                "puppet_program": puppet.program_id,
             },
         ),
     )

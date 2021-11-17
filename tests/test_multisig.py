@@ -45,7 +45,7 @@ async def created_multisig(program: Program) -> CreatedMultisig:
     owner_a, owner_b, owner_c = Keypair(), Keypair(), Keypair()
     owners = [owner_a.public_key, owner_b.public_key, owner_c.public_key]
     threshold = 2
-    await program.rpc["createMultisig"](
+    await program.rpc["create_multisig"](
         owners,
         threshold,
         nonce,
@@ -87,20 +87,20 @@ async def created_transaction(
     accounts = [
         program.type["TransactionAccount"](
             pubkey=multisig.public_key,
-            isWritable=True,
-            isSigner=False,
+            is_writable=True,
+            is_signer=False,
         ),
         program.type["TransactionAccount"](
             pubkey=multisig_signer,
-            isWritable=False,
-            isSigner=True,
+            is_writable=False,
+            is_signer=True,
         ),
     ]
     new_owners = [*owners[:2], owner_d.public_key]
-    data = program.coder.instruction.encode("setOwners", {"owners": new_owners})
+    data = program.coder.instruction.encode("set_owners", {"owners": new_owners})
     transaction = Keypair()
     tx_size = 1000
-    await program.rpc["createTransaction"](
+    await program.rpc["create_transaction"](
         program.program_id,
         accounts,
         data,
@@ -130,11 +130,11 @@ async def test_created_transaction(
 ) -> None:
     transaction, accounts, data, multisig, _, _ = created_transaction
     tx_account = await program.account["Transaction"].fetch(transaction.public_key)
-    assert tx_account.programId == program.program_id
+    assert tx_account.program_id == program.program_id
     assert tx_account.accounts == accounts
     assert tx_account.data == data
     assert tx_account.multisig == multisig.public_key
-    assert tx_account.didExecute is False
+    assert tx_account.did_execute is False
 
 
 @fixture(scope="module")
@@ -155,8 +155,8 @@ async def executed_transaction(
             signers=[owner_b],
         ),
     )
-    remaining_accounts_raw = program.instruction["setOwners"].accounts(
-        {"multisig": multisig.public_key, "multisigSigner": multisig_signer}
+    remaining_accounts_raw = program.instruction["set_owners"].accounts(
+        {"multisig": multisig.public_key, "multisig_signer": multisig_signer}
     )
     with_corrected_signer = []
     for meta in remaining_accounts_raw:
@@ -171,12 +171,12 @@ async def executed_transaction(
     ctx = Context(
         accounts={
             "multisig": multisig.public_key,
-            "multisigSigner": multisig_signer,
+            "multisig_signer": multisig_signer,
             "transaction": transaction.public_key,
         },
         remaining_accounts=remaining_accounts,
     )
-    await program.rpc["executeTransaction"](ctx=ctx)
+    await program.rpc["execute_transaction"](ctx=ctx)
 
 
 @mark.asyncio

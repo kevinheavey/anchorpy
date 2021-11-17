@@ -28,7 +28,7 @@ async def test_init(localnet) -> None:
             accounts={
                 "clock": SYSVAR_CLOCK_PUBKEY,
                 "rent": SYSVAR_RENT_PUBKEY,
-                "stakeHistory": SYSVAR_STAKE_HISTORY_PUBKEY,
+                "stake_history": SYSVAR_STAKE_HISTORY_PUBKEY,
             }
         )
     )
