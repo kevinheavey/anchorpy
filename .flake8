@@ -8,4 +8,4 @@ per-file-ignores =
     src/anchorpy/__init__.py: D104,WPS412
     tests/test_errors.py: WPS204
     tests/test_chat.py: WPS421
-    tests/: WPS226,DAR101,DAR301
+    tests/: WPS226,D101,D103,DAR101,DAR301
