@@ -16,6 +16,9 @@ apischema = "^0.15.6"
 inflection = "^0.5.1"
 borsh-construct = "^0.1.0"
 websockets = "^10.0"
+toolz = "^0.11.2"
+jsonrpcclient = "^4.0.1"
+zstandard = "^0.16.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

@@ -2,7 +2,7 @@
 import base64
 from dataclasses import dataclass
 from base58 import b58encode
-from typing import Any, Optional, Dict, Union
+from typing import Any, Optional, Dict
 
 from construct import Container
 from solana.keypair import Keypair
@@ -20,6 +20,7 @@ from anchorpy.coder.coder import Coder
 from anchorpy.error import AccountDoesNotExistError, AccountInvalidDiscriminator
 from anchorpy.idl import Idl, _IdlTypeDef
 from anchorpy.provider import Provider
+from anchorpy.utils.rpc import get_multiple_accounts
 
 
 def _build_account(
@@ -80,7 +81,7 @@ class AccountClient(object):
         self._coder = coder
         self._size = ACCOUNT_DISCRIMINATOR_SIZE + _account_size(idl, idl_account)
 
-    async def fetch(self, address: Union[str, PublicKey]) -> Container[Any]:
+    async def fetch(self, address: PublicKey) -> Container[Any]:
         """Return a deserialized account.
 
         Args:
@@ -102,6 +103,34 @@ class AccountClient(object):
             msg = f"Account {address} has an invalid discriminator"
             raise AccountInvalidDiscriminator(msg)
         return self._coder.accounts.decode(data)
+
+    async def fetch_multiple(
+        self, addresses: list[PublicKey], batch_size: int = 300
+    ) -> list[Optional[Container[Any]]]:
+        """Return multiple deserialized accounts.
+
+        Accounts not found or with wrong discriminator are returned as None.
+
+        Args:
+            addresses: The addresses of the accounts to fetch.
+            batch_size: The number of `getMultipleAccounts` objects to send
+                in each HTTP request.
+        """
+        accounts = await get_multiple_accounts(
+            self._provider.connection,
+            addresses,
+            batch_size=batch_size,
+        )
+        discriminator = _account_discriminator(self._idl_account.name)
+        result: list[Optional[Container[Any]]] = []
+        for account in accounts:
+            if account is None:
+                result.append(None)
+            elif discriminator == account.account.data[:8]:
+                result.append(self._coder.accounts.decode(account.account.data))
+            else:
+                result.append(None)
+        return result
 
     async def create_instruction(
         self,
