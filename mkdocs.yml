@@ -26,7 +26,11 @@ markdown_extensions:
 repo_url: https://github.com/kevinheavey/anchorpy
 repo_name: kevinheavey/anchorpy
 site_url: https://kevinheavey.github.io/anchorpy/
+plugins:
+  - mkdocstrings
+  - search
 nav:
   - index.md
   - tutorial.md
   - testing.md
+  - reference.md

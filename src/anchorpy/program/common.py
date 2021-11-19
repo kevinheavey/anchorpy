@@ -40,7 +40,12 @@ class Event(NamedTuple):
 
 @dataclass
 class Instruction:
-    """Container for a named instruction."""
+    """Container for a named instruction.
+
+    Attributes:
+        data: The actual instruction data.
+        name: The name of the instruction.
+    """
 
     data: Union[Dict[str, Any], Container[Any]]
     name: str
@@ -85,7 +90,7 @@ def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
             raise ValueError(f"Invalid arguments: {acc.name} not provided")
 
 
-def translate_address(address: AddressType):
+def translate_address(address: AddressType) -> PublicKey:
     """Convert `str | PublicKey` into `PublicKey`.
 
     Args:

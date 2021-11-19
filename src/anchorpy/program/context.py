@@ -22,7 +22,7 @@ Accounts = Dict[str, Any]
 class Context:
     """Context provides all non-argument inputs for generating Anchor transactions.
 
-    Args:
+    Attributes:
         accounts: Accounts used in the instruction context.
         remaining_accounts: All accounts to pass into an instruction *after* the main
         `accounts`. This can be used for optional or otherwise unknown accounts.
