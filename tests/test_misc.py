@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import AsyncGenerator, Dict
 from pytest import raises, mark, fixture
 from solana.rpc.types import MemcmpOpts
-from anchorpy import ProgramError, Program, create_workspace, close_workspace, Context
+from anchorpy import Program, create_workspace, close_workspace, Context
+from anchorpy.error import ProgramError
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY

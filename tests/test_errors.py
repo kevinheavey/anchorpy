@@ -2,7 +2,8 @@
 from pathlib import Path
 from typing import AsyncGenerator
 from pytest import raises, mark, fixture
-from anchorpy import ProgramError, Program, create_workspace, close_workspace, Context
+from anchorpy import Program, create_workspace, close_workspace, Context
+from anchorpy.error import ProgramError
 from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
