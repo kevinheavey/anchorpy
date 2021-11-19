@@ -57,7 +57,7 @@ def test_pre_instructions(
         idl.instructions[0], coder.instruction.build, DEFAULT_PUBKEY
     )
     tx_item = _build_transaction_fn(idl.instructions[0], ix_item)
-    tx = tx_item(ctx=Context(pre_pre_instructions=[pre_ix]))
+    tx = tx_item(ctx=Context(pre_instructions=[pre_ix]))
     assert len(tx.instructions) == 2
     assert tx.instructions[0] == pre_ix
 
@@ -70,6 +70,6 @@ def test_post_instructions(
         idl.instructions[0], coder.instruction.build, DEFAULT_PUBKEY
     )
     tx_item = _build_transaction_fn(idl.instructions[0], ix_item)
-    tx = tx_item(ctx=Context(post_pre_instructions=[post_ix]))
+    tx = tx_item(ctx=Context(post_instructions=[post_ix]))
     assert len(tx.instructions) == 2
     assert tx.instructions[1] == post_ix
