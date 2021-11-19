@@ -89,8 +89,7 @@ def parse_price_data(data: bytes) -> PriceData:
     exponent = Int32sl.parse(data[20:24])
     raw_price = Int64ul.parse(data[208:216])
     price = raw_price * 10 ** exponent
-    res = PriceData(exponent, price)
-    return res
+    return PriceData(exponent, price)
 
 
 async def get_feed_data(

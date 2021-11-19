@@ -26,6 +26,12 @@ def build_account(
 ) -> Dict[str, "AccountClient"]:
     """Generate the `.account` namespace.
 
+    Args:
+        idl: The parsed Idl object.
+        coder: The program's coder object.
+        program_id: The program ID.
+        provider: The Provider instance.
+
     Returns:
         Mapping of account name to `AccountClient` instance.
     """
@@ -53,6 +59,8 @@ class ProgramAccount:
 
 
 class AccountClient(object):
+    """Provides methods for fetching and creating accounts."""
+
     def __init__(
         self,
         idl: Idl,
@@ -61,6 +69,15 @@ class AccountClient(object):
         program_id: PublicKey,
         provider: Provider,
     ):
+        """Init.
+
+        Args:
+            idl: the parsed IDL object.
+            idl_account: the account definition from the IDL.
+            coder: The program's Coder object.
+            program_id: the program ID.
+            provider: The Provider object for the Program.
+        """
         self._idl_account = idl_account
         self._program_id = program_id
         self._provider = provider
@@ -95,7 +112,15 @@ class AccountClient(object):
         signer: Keypair,
         size_override: int = 0,
     ) -> TransactionInstruction:
-        """Return an instruction for creating this account."""
+        """Return an instruction for creating this account.
+
+        Args:
+            signer: [description]
+            size_override: Optional override for the account size. Defaults to 0.
+
+        Returns:
+            The instruction to create the account.
+        """
         space = size_override if size_override else self._size
         mbre_resp = (
             await self._provider.connection.get_minimum_balance_for_rent_exemption(
@@ -111,14 +136,6 @@ class AccountClient(object):
                 program_id=self._program_id,
             )
         )
-
-    def associated_address(self, *args: PublicKey) -> PublicKey:
-        seeds = b"anchor" + b"".join(bytes(arg) for arg in args)  # noqa: WPS336
-        return PublicKey.find_program_address([seeds], self._program_id)[0]
-
-    async def associated(self, *args: PublicKey) -> Any:
-        addr = self.associated_address(*args)
-        return await self.fetch(addr)
 
     async def all(
         self,

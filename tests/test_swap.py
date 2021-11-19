@@ -146,7 +146,7 @@ def get_vault_owner_and_nonce(
                 program_id=dex_program_id,
             )
             return vault_owner, nonce
-        except:  # noqa: E722
+        except:  # noqa: E722,B001
             nonce += 1
     raise KeyError("Unable to find a viable program address nonce")
 
@@ -758,7 +758,7 @@ async def test_swap_a_to_b(
         )
     token_a_change, token_b_change, usdc_change = deltas
     assert token_a_change == -swap_amount
-    assert token_b_change == 9.8
+    assert token_b_change == 9.8  # noqa: WPS459
     assert usdc_change == 0
 
 
@@ -825,6 +825,6 @@ async def test_swap_b_to_a(
             ),
         )
     token_a_change, token_b_change, usdc_change = deltas
-    assert token_a_change == 22.6
+    assert token_a_change == 22.6  # noqa: WPS459
     assert token_b_change == -swap_amount
     assert usdc_change == 0

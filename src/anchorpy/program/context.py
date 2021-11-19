@@ -1,3 +1,4 @@
+"""This module contains code handling the Context object."""
 from dataclasses import dataclass, field
 from typing import Any, Tuple, Optional, Dict
 
@@ -9,7 +10,7 @@ from anchorpy.idl import IdlInstruction
 
 
 class ArgsError(Exception):
-    """Raise when the incorrect number of args is passed to the RPC function"""
+    """Raise when the incorrect number of args is passed to the RPC function."""
 
 
 # should be Dict[str, Union[PublicKey, Accounts]]
@@ -43,7 +44,15 @@ def check_args_length(
     idl_ix: IdlInstruction,
     args: Tuple,
 ) -> None:
-    """Check that the correct number of args is passed to the RPC function."""
+    """Check that the correct number of args is passed to the RPC function.
+
+    Args:
+        idl_ix: The IDL instruction object.
+        args: The instruction arguments.
+
+    Raises:
+        ArgsError: If the correct number of args is not parsed.
+    """
     if len(args) != len(idl_ix.args):
         expected_arg_names = [arg.name for arg in idl_ix.args]
         raise ArgsError(

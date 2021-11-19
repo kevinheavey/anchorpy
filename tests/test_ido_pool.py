@@ -1,15 +1,11 @@
 from pathlib import Path
 
-from pytest import mark, fixture
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
-from solana.sysvar import SYSVAR_RENT_PUBKEY
+from pytest import fixture
 from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
-from anchorpy import Program, create_workspace, Context, Provider
+from anchorpy import Program, create_workspace, Provider
 from anchorpy.pytest_plugin import get_localnet
-from anchorpy.utils.token import create_token_account
 
 PATH = Path("anchor/tests/composite/")
 

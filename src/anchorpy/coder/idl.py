@@ -114,6 +114,19 @@ def _handle_enum_variants(
 def typedef_layout(
     typedef: IdlTypeDef, types: list[IdlTypeDef], field_name: str
 ) -> Construct:
+    """Map an IDL typedef to a `Construct` object.
+
+    Args:
+        typedef: The IDL typedef object.
+        types: IDL type definitions.
+        field_name: The name of the field.
+
+    Raises:
+        ValueError: If an unknown type is passed.
+
+    Returns:
+        `Construct` object from `borsh-construct`.
+    """
     typedef_type = typedef.type
     name = typedef.name
     if isinstance(typedef_type, IdlTypeDefTyStruct):
@@ -133,6 +146,11 @@ def field_layout(field: IdlField, types: list[IdlTypeDef]) -> Construct:
     Args:
         field: field object from the IDL.
         types: IDL type definitions.
+
+    Raises:
+        ValueError: If the user-defined types are not provided.
+        ValueError: If the type is not found.
+        ValueError: If the type is not implemented yet.
 
     Returns:
         `Construct` object from `borsh-construct`.
@@ -172,6 +190,19 @@ def idl_type_to_python_type(
     idl_type: IdlType,
     types: list[IdlTypeDef],
 ) -> Type:
+    """Find the Python type corresponding to an IDL type.
+
+    Args:
+        idl_type: The IDL type.
+        types: IDL type definitions.
+
+    Raises:
+        ValueError: If the user-defined types are not provided.
+        ValueError: If the user-defined type is not found.
+
+    Returns:
+        The Python type.
+    """
     if isinstance(idl_type, str):
         return FIELD_PYTHON_TYPE_MAP[idl_type]
     compound_idl_type = cast(
@@ -226,6 +257,16 @@ def idl_typedef_ty_struct_to_dataclass_type(
     types: list[IdlTypeDef],
     name: str,
 ) -> Type:
+    """Generate a dataclass definition from an IDL struct.
+
+    Args:
+        typedef_type: The IDL type.
+        types: IDL type definitions.
+        name: The name of the dataclass.
+
+    Returns:
+        Dataclass definition.
+    """
     dataclass_fields = []
     for field in typedef_type.fields:
         field_name = field.name
@@ -241,6 +282,16 @@ def idl_enum_fields_named_to_dataclass_type(
     types: list[IdlTypeDef],
     name: str,
 ) -> Type:
+    """Generate a dataclass definition from IDL named enum fields.
+
+    Args:
+        fields: The IDL enum fields.
+        types: IDL type definitions.
+        name: The name of the dataclass.
+
+    Returns:
+        Dataclass type definition.
+    """
     dataclass_fields = []
     for field in fields:
         field_name = field.name
@@ -255,6 +306,18 @@ def idl_typedef_to_python_type(
     typedef: IdlTypeDef,
     types: list[IdlTypeDef],
 ) -> Type:
+    """Generate Python type from IDL user-defined type.
+
+    Args:
+        typedef: The user-defined type.
+        types: IDL type definitions.
+
+    Raises:
+        ValueError: If an unknown type is passed.
+
+    Returns:
+        The Python type.
+    """
     typedef_type = typedef.type
     if isinstance(typedef_type, IdlTypeDefTyStruct):
         return idl_typedef_ty_struct_to_dataclass_type(

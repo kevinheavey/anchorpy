@@ -1,3 +1,4 @@
+"""This module contains code for creating simulate functions."""
 from typing import Dict, Any, NamedTuple, Union, cast, Protocol, Awaitable
 
 from solana.rpc.types import RPCError
@@ -15,6 +16,8 @@ from solana.rpc.core import RPCException
 
 
 class SimulateResponse(NamedTuple):
+    """The result of a simulate function call."""
+
     events: list[Event]
     raw: list[str]
 
@@ -28,7 +31,9 @@ class SimulateFn(Protocol):
     """
 
     def __call__(
-        self, *args: Any, ctx: Context = EMPTY_CONTEXT
+        self,
+        *args: Any,
+        ctx: Context = EMPTY_CONTEXT,
     ) -> Awaitable[SimulateResponse]:
         """Protocol definition.
 
@@ -51,7 +56,17 @@ def build_simulate_item(
 ) -> SimulateFn:
     """Build the function to simulate transactions for a given method of a program.
 
-    Returns a list of deserialized events and raw program logs.
+    Args:
+        idl_ix: An IDL instruction object.
+        tx_fn: The function to generate the `Transaction` object.
+        idl_errors: Mapping of error code to message.
+        provider: A provider instance.
+        coder: The program's coder object.
+        program_id: The program ID.
+        idl: The parsed Idl instance.
+
+    Returns:
+        The simulate function.
     """
 
     async def simulate_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> SimulateResponse:

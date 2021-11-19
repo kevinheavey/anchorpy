@@ -78,9 +78,10 @@ async def sent_messages(
 ) -> List[str]:
     user, authority = created_user
     num_messages = 10
+    to_choose = string.ascii_uppercase + string.digits
     messages = [
-        "".join(random.choices(string.ascii_uppercase + string.digits, k=13))
-        for i in range(num_messages)
+        "".join(random.choices(to_choose, k=13))  # noqa: S311
+        for _ in range(num_messages)
     ]
     for i, msg in enumerate(messages):
         print(f"sending message {i}")

@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from os import getenv, environ
 import json
-
+from types import MappingProxyType
 from abc import abstractmethod, ABC
 from typing import Optional, Union, NamedTuple
 
@@ -17,12 +17,14 @@ from solana.publickey import PublicKey
 
 
 class SendTxRequest(NamedTuple):
+    """Use this to provide custom signers to `Provider.send_all`."""
+
     tx: Transaction
     signers: list[Keypair]
 
 
 DEFAULT_OPTIONS = types.TxOpts(skip_confirmation=False, preflight_commitment=Processed)
-COMMITMENT_RANKS = {Processed: 0, Confirmed: 1, Finalized: 2}
+COMMITMENT_RANKS = MappingProxyType({Processed: 0, Confirmed: 1, Finalized: 2})
 
 
 class UnconfirmedTxError(Exception):
@@ -78,7 +80,7 @@ class Provider:
         signers: Optional[list[Keypair]] = None,
         opts: types.TxOpts = None,
     ) -> types.RPCResponse:
-        """Simulates the given transaction, returning emitted logs from execution.
+        """Simulate the given transaction, returning emitted logs from execution.
 
         Args:
             tx: The transaction to send.
@@ -167,7 +169,7 @@ class Provider:
         return self
 
     async def __aexit__(self, _exc_type, _exc, _tb):
-        """Exits the context manager."""
+        """Exit the context manager."""
         await self.close()
 
     async def close(self) -> None:
@@ -179,7 +181,7 @@ class Wallet(ABC):
     """Abstract base class for wallets."""
 
     def __init__(self, payer: Keypair):
-        """Initialize the wallet
+        """Initialize the wallet.
 
         Args:
             payer: the Keypair used to sign transactions.
@@ -203,8 +205,15 @@ class Wallet(ABC):
         """
 
     @abstractmethod
-    def sign_all_transactions(self, txs: list[Transaction]):
-        """Must implement signing multiple transactions."""
+    def sign_all_transactions(self, txs: list[Transaction]) -> list[Transaction]:
+        """Must implement signing multiple transactions.
+
+        Args:
+            txs: The transactions to sign.
+
+        Returns:
+            The signed transactions.
+        """
 
 
 class LocalWallet(Wallet):

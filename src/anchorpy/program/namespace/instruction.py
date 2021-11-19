@@ -112,5 +112,10 @@ def accounts_array(
 
 
 def validate_instruction(ix: IdlInstruction, args: Tuple):
-    """Throws error if any argument required for the `ix` is not given."""
+    """Throws error if any argument required for the `ix` is not given.
+
+    Args:
+        ix: The IDL instruction object.
+        args: The instruction arguments.
+    """
     # TODO: this isn't implemented in the TS client yet

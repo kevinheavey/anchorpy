@@ -26,24 +26,32 @@ class _FixedXProcessInfo(XProcessInfo):
 
 
 class _FixedXProcess(XProcess):
-    def getinfo(self, name):
-        """Return Process Info for the given external process."""
+    def getinfo(self, name: str) -> _FixedXProcessInfo:
+        """Return Process Info for the given external process.
+
+        Args:
+            name: Name of the external process.
+        """
         return _FixedXProcessInfo(self.rootdir, name)
 
-    def ensure(self, name, preparefunc, restart=False):
+    def ensure(
+        self, name: str, preparefunc: ProcessStarter, restart: bool = False
+    ) -> tuple:
         """Return (PID, logfile) from a newly started or already running process.
+
         Args:
             name: Name of the external process, used for caching info across test runs.
             preparefunc: A subclass of ProcessStarter.
             restart: Force restarting the process if it is running.
 
+        Raises:
+            RuntimeError: If process fails to start within the required time.
 
         Returns:
             (PID, logfile) logfile will be seeked to the end if the
             server was running, otherwise seeked to the line after
             where the wait pattern matched.
         """
-
         info = self.getinfo(name)
         if not restart and not info.isrunning():
             restart = True
@@ -76,20 +84,23 @@ class _FixedXProcess(XProcess):
             # keep references of all popen
             # and info objects for cleanup
             self._info_objects.append((info, starter.terminate_on_interrupt))
-            self._popen_instances.append(
-                subprocess.Popen(args, **popen_kwargs, **kwargs)
+            popen_instance = subprocess.Popen(  # noqa: S603
+                args,
+                **popen_kwargs,
+                **kwargs,  # type: ignore
             )
+            self._popen_instances.append(popen_instance)
 
-            info.pid = pid = self._popen_instances[-1].pid
+            info.pid = pid = self._popen_instances[-1].pid  # noqa: WPS429
             info.pidpath.write(str(pid))
-            self.log.debug("process %r started pid=%s", name, pid)
+            self.log.debug("process %r started pid=%s", name, pid)  # noqa
             stdout.close()
 
         # keep track of all file handles so we can
         # cleanup later during teardown phase
         self._file_handles.append(info.logpath.open())
 
-        if not restart:
+        if not restart:  # noqa: WPS504
             self._file_handles[-1].seek(0, 2)
         else:
             if not starter.wait(self._file_handles[-1]):
@@ -99,7 +110,9 @@ class _FixedXProcess(XProcess):
                 )
             self.log.debug("%s process startup detected", name)
 
-        pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
+        pytest_extlogfiles = self.config.__dict__.setdefault(  # noqa: WPS609
+            "_extlogfiles", {}
+        )
         pytest_extlogfiles[name] = self._file_handles[-1]
         self.getinfo(name)
 
@@ -108,10 +121,8 @@ class _FixedXProcess(XProcess):
 
 @fixture(scope="session")
 def _fixed_xprocess(request):
-    """Yield session-scoped XProcess helper to manage long-running
-    processes required for testing."""
-
-    rootdir = getrootdir(request.config)
+    """Yield session-scoped XProcess helper to manage long-running processes required for testing."""  # noqa: E501
+    rootdir = getrootdir(request.config)  # noqa: DAR101,DAR301
     with _FixedXProcess(request.config, rootdir) as xproc:
         # pass in xprocess object into pytest_unconfigure
         # through config for proper cleanup during teardown
@@ -135,7 +146,7 @@ def get_localnet(
 
     Returns:
         A localnet fixture for use with pytest.
-    """
+    """  # noqa: E501,D202
 
     @fixture(scope=scope)
     def localnet_fixture(_fixed_xprocess):

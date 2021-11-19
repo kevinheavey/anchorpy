@@ -22,7 +22,15 @@ T = TypeVar("T")
 
 
 class DataclassStruct(Adapter):
+    """Converts dataclasses to/from `borsh_construct.CStruct`."""
+
     def __init__(self, cstruct: CStruct, datacls: Type[T]) -> None:
+        """Init.
+
+        Args:
+            cstruct: The underlying `CStruct`.
+            datacls: The dataclass type.
+        """
         super().__init__(cstruct)  # type: ignore
         self.datacls = datacls
 

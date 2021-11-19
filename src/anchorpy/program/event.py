@@ -1,3 +1,4 @@
+"""This module contains code for handling Anchor events."""
 from dataclasses import dataclass
 from base64 import b64decode
 from typing import Callable, Optional, cast
@@ -11,7 +12,17 @@ LOG_START_INDEX = len("Program log: ")
 
 
 class ExecutionContext:
+    """Stack frame execution context, allowing one to track what program is executing for a given log."""  # noqa: E501
+
     def __init__(self, log: str) -> None:
+        """Init.
+
+        Args:
+            log: The log to process.
+
+        Raises:
+            ValueError: If the log line is malformed.
+        """
         try:
             program = log.split("Program ")[1].split(" invoke [")[0]
         except IndexError as e:
@@ -19,21 +30,40 @@ class ExecutionContext:
         self.stack = [program]
 
     def program(self) -> str:
+        """Return the currently executing program.
+
+        Returns:
+            The name of the program.
+        """
         return self.stack[-1]
 
     def push(self, new_program: str) -> None:
+        """Add to the stack.
+
+        Args:
+            new_program: The program to add.
+        """
         self.stack.append(new_program)
 
     def pop(self) -> None:
+        """Pop from the stack."""
         self.stack.pop()
 
 
 @dataclass
 class EventParser:
+    """Parser to handle on_logs callbacks."""
+
     program_id: PublicKey
     coder: Coder
 
     def parse_logs(self, logs: list[str], callback: Callable[[Event], None]) -> None:
+        """Parse a list of logs using a provided callback.
+
+        Args:
+            logs: The logs to parse.
+            callback: The function to handle the parsed log.
+        """
         log_scanner = LogScanner(logs)
         execution = ExecutionContext(cast(str, log_scanner.to_next()))
         log = log_scanner.to_next()
@@ -63,7 +93,7 @@ class EventParser:
             that was invoked for CPI, and a boolean indicating if
             a program has completed execution (and thus should be popped off the
             execution stack).
-        """
+        """  # noqa: D401
         # Executing program is this program.
         if execution.stack and execution.program() == str(self.program_id):
             return self.handle_program_log(log)
@@ -98,9 +128,10 @@ class EventParser:
 
         """
         log_start = log.split(":")[0]
+        invoke_msg = f"Program {str(self.program_id)} invoke"  # noqa: WPS237
         if log_start.split("Program ")[1].split(" ")[1] == "success":
             return None, True
-        elif log_start.startswith(f"Program {str(self.program_id)} invoke"):
+        elif log_start.startswith(invoke_msg):
             return str(self.program_id), False
         elif "invoke" in log_start:
             return "cpi", False
@@ -109,9 +140,16 @@ class EventParser:
 
 @dataclass
 class LogScanner:
+    """Object that iterates over logs."""
+
     logs: list[str]
 
     def to_next(self) -> Optional[str]:
+        """Move to the next log item.
+
+        Returns:
+            The next log line, or None if there's nothing to return.
+        """
         if self.logs:
             log = self.logs[0]
             self.logs = self.logs[1:]

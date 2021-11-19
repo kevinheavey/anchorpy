@@ -19,7 +19,7 @@ class Sighash(Adapter):
         super().__init__(Bytes(8))  # type: ignore
 
     def _encode(self, obj: str, context, path) -> bytes:
-        return sighash("global", obj)
+        return sighash(obj)
 
     def _decode(self, obj: bytes, context, path):
         raise ValueError("Sighash cannot be reversed")
@@ -54,7 +54,15 @@ class InstructionCoder(Adapter):
         super().__init__(subcon)  # type: ignore
 
     def encode(self, ix_name: str, ix: Dict[str, Any]) -> bytes:
-        """Encode a program instruction."""
+        """Encode a program instruction.
+
+        Args:
+            ix_name: The name of the instruction
+            ix: The data to encode.
+
+        Returns:
+            The encoded instruction.
+        """
         return self.build(Instruction(name=ix_name, data=ix))
 
     def _decode(self, obj: Tuple[bytes, Any], context, path) -> Instruction:

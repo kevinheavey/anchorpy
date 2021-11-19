@@ -1,5 +1,6 @@
+"""This module contains code for creating the Anchor workspace."""
 from typing import Dict, Optional, cast
-from json import load
+import json
 from pathlib import Path
 from solana.publickey import PublicKey
 from anchorpy.program.core import Program
@@ -20,13 +21,12 @@ def create_workspace(
     Returns:
         Mapping of program name to Program object.
     """
-
     result = {}
     project_root = Path.cwd() if path is None else path
     idl_folder = project_root / "target/idl"
     for file in idl_folder.iterdir():
         with file.open() as f:
-            idl_dict = load(f)
+            idl_dict = json.load(f)
         idl = Idl.from_json(idl_dict)
         metadata = cast(Metadata, idl.metadata)
         program = Program(idl, PublicKey(metadata.address), Provider.local(url))
@@ -35,7 +35,11 @@ def create_workspace(
 
 
 async def close_workspace(workspace: Dict[str, Program]) -> None:
-    """Close the HTTP clients of all the programs in the workspace."""
+    """Close the HTTP clients of all the programs in the workspace.
+
+    Args:
+        workspace: The workspace to close.
+    """
     for program in workspace.values():
         # could do this in a faster way but there's probably no point.
         await program.close()

@@ -1,3 +1,4 @@
+"""Mimics anchor/tests/multisig."""
 from pathlib import Path
 from typing import AsyncGenerator, List, Tuple
 from dataclasses import replace
@@ -37,6 +38,7 @@ async def provider(program: Program) -> Provider:
 
 @fixture(scope="module")
 async def created_multisig(program: Program) -> CreatedMultisig:
+    """Run the create_multisig RPC function."""
     multisig = Keypair()
     multisig_signer, nonce = PublicKey.find_program_address(
         [bytes(multisig.public_key)], program.program_id

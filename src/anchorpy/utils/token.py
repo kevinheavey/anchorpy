@@ -1,3 +1,4 @@
+"""This module contains utilities for the SPL Token Program."""
 from typing import Optional
 from solana.publickey import PublicKey
 from solana.keypair import Keypair
@@ -5,7 +6,7 @@ from solana.rpc.types import RPCResponse
 from solana.transaction import Transaction, TransactionInstruction
 from solana.system_program import create_account, CreateAccountParams
 from solana.utils.helpers import decode_byte_string
-from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
+from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.instructions import (
     initialize_mint,
     InitializeMintParams,
@@ -20,18 +21,21 @@ from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
 from anchorpy import Provider
 
 
-def associated_address(mint: PublicKey, owner: PublicKey) -> PublicKey:
-    return PublicKey.find_program_address(
-        [bytes(owner), bytes(TOKEN_PROGRAM_ID), bytes(mint)],
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-    )[0]
-
-
 async def create_token_account(
     prov: Provider,
     mint: PublicKey,
     owner: PublicKey,
 ) -> PublicKey:
+    """Create a token account.
+
+    Args:
+        prov: An anchorpy Provider instance.
+        mint: The pubkey of the token's mint.
+        owner: User account that will own the new account.
+
+    Returns:
+        The pubkey of the new account.
+    """
     token = AsyncToken(prov.connection, mint, TOKEN_PROGRAM_ID, prov.wallet.payer)
     return await token.create_account(owner)
 
@@ -42,6 +46,17 @@ async def create_token_account_instrs(
     mint: PublicKey,
     owner: PublicKey,
 ) -> tuple[TransactionInstruction, TransactionInstruction]:
+    """Generate instructions for creating a token account.
+
+    Args:
+        provider: An anchorpy Provider instance.
+        new_account_pubkey: The pubkey of the new account.
+        mint: The pubkey of the token's mint.
+        owner: User account that will own the new account.
+
+    Returns:
+        Transaction instructions to create the new account.
+    """
     mbre_resp = await provider.connection.get_minimum_balance_for_rent_exemption(165)
     lamports = mbre_resp["result"]
     return (
@@ -71,6 +86,17 @@ async def create_mint_and_vault(
     owner: Optional[PublicKey] = None,
     decimals: Optional[int] = None,
 ) -> tuple[PublicKey, PublicKey]:
+    """Create a mint and a vault, then mint tokens to the vault.
+
+    Args:
+        provider: An anchorpy Provider instance.
+        amount: The amount of tokens to mint to the vault.
+        owner: User account that will own the new account.
+        decimals: The number of decimal places for the token to support.
+
+    Returns:
+        The mint and vault pubkeys.
+    """
     actual_owner = provider.wallet.public_key if owner is None else owner
     mint = Keypair()
     vault = Keypair()
@@ -141,6 +167,18 @@ async def create_mint_and_vault(
 
 
 def parse_token_account(info: RPCResponse) -> AccountInfo:
+    """Parse `AccountInfo` from RPC response.
+
+    Args:
+        info: the `get_account_info` RPC response.
+
+    Raises:
+        ValueError: If the fetched data is the wrong size.
+        AttributeError: If the account is not owned by the token program.
+
+    Returns:
+        The parsed `AccountInfo`.
+    """
     if not info:
         raise ValueError("Invalid account owner")
 
@@ -194,6 +232,15 @@ def parse_token_account(info: RPCResponse) -> AccountInfo:
 
 
 async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
+    """Retrieve token account information.
+
+    Args:
+        provider: The anchorpy Provider instance.
+        addr: The pubkey of the token account.
+
+     Returns:
+         The parsed `AccountInfo` of the token account.
+    """
     depositor_acc_info_raw = await provider.connection.get_account_info(addr)
     return parse_token_account(depositor_acc_info_raw)
 
@@ -202,11 +249,32 @@ async def get_mint_info(
     provider: Provider,
     addr: PublicKey,
 ) -> MintInfo:
+    """Retrieve mint information.
+
+    Args:
+        provider: The anchorpy Provider instance.
+        addr: The pubkey of the mint.
+
+    Returns:
+        The parsed `MintInfo`.
+    """
     depositor_acc_info_raw = await provider.connection.get_account_info(addr)
     return parse_mint_account(depositor_acc_info_raw)
 
 
 def parse_mint_account(info: RPCResponse) -> MintInfo:
+    """Parse raw RPC response into `MintInfo`.
+
+    Args:
+        info: The RPC response from calling `.get_account_info` for the mint pubkey.
+
+    Raises:
+        AttributeError: If the account is not owned by the Token Program.
+        ValueError: If the fetched data is the wrong size.
+
+    Returns:
+        The parsed `MintInfo`.
+    """
     owner = info["result"]["value"]["owner"]
     if owner != str(TOKEN_PROGRAM_ID):
         raise AttributeError(f"Invalid mint owner: {owner}")

@@ -14,6 +14,11 @@ class AccountsCoder(Adapter):
     """Encodes and decodes account data."""
 
     def __init__(self, idl: Idl) -> None:
+        """Init.
+
+        Args:
+            idl: The parsed IDL object.
+        """
         self._accounts_layout = {
             acc.name: typedef_layout(acc, idl.types, acc.name) for acc in idl.accounts
         }
@@ -33,14 +38,22 @@ class AccountsCoder(Adapter):
         )
         super().__init__(subcon)  # type: ignore
 
+    def decode(self, obj: bytes) -> Container[Any]:
+        """Decode account data.
+
+        Args:
+            obj: Data to decode.
+
+        Returns:
+            Decoded data.
+        """
+        return self.parse(obj).data
+
     def _decode(self, obj: Tuple[bytes, Any], context, path) -> AccountToSerialize:
         return AccountToSerialize(
             data=obj[1],
             name=self.discriminator_to_acc_name[obj[0]],
         )
-
-    def decode(self, obj: bytes) -> Container[Any]:
-        return self.parse(obj).data
 
     def _encode(self, obj: AccountToSerialize, context, path) -> Tuple[bytes, Any]:
         discriminator = self.acc_name_to_discriminator[obj.name]
@@ -48,5 +61,12 @@ class AccountsCoder(Adapter):
 
 
 def account_discriminator(name: str) -> bytes:
-    """Calculate unique 8 byte discriminator prepended to all anchor accounts."""
+    """Calculate unique 8 byte discriminator prepended to all anchor accounts.
+
+    Args:
+        name: The account name.
+
+    Returns:
+        The discriminator in bytes.
+    """
     return sha256(f"account:{name}".encode()).digest()[:ACCOUNT_DISCRIMINATOR_SIZE]
