@@ -1,6 +1,4 @@
 """Mimics anchor/tests/escrow/tests/escrow.js."""
-from pathlib import Path
-from typing import AsyncGenerator
 
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
@@ -10,15 +8,15 @@ from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
 from pytest import fixture, mark
-from anchorpy import Program, Provider, create_workspace, close_workspace
+from anchorpy import Program, Provider
 from anchorpy.program.context import Context
-from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
 
-PATH = Path("anchor/tests/escrow")
 INITIALIZER_AMOUNT = 500
 TAKER_AMOUNT = 1000
 
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/tests/escrow")
 
 InitializeEscrowStateResult = tuple[
     AsyncToken, AsyncToken, PublicKey, PublicKey, PublicKey, PublicKey, Keypair
@@ -27,11 +25,9 @@ InitializeEscrowResult = tuple[Keypair, PublicKey]
 
 
 @fixture(scope="module")
-async def program(localnet) -> AsyncGenerator[Program, None]:
+async def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
-    workspace = create_workspace(PATH)
-    yield workspace["escrow"]
-    await close_workspace(workspace)
+    return workspace["escrow"]
 
 
 @fixture(scope="module")

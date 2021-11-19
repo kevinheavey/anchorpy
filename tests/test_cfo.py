@@ -1,13 +1,10 @@
 import subprocess
-from pathlib import Path
 
 from pytest import fixture
 
-from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy.pytest_plugin import workspace_fixture
 
-PATH = Path("anchor/tests/cfo")
-
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/tests/cfo")
 
 
 @fixture(scope="module")
@@ -19,5 +16,5 @@ def build_lockup() -> None:
     )
 
 
-def boilerplate(build_lockup, localnet):
+def boilerplate(build_lockup, workspace):
     """TODO."""

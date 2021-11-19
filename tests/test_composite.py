@@ -1,30 +1,24 @@
 """Mimics anchor/tests/composite/tests/composite.js."""
-from pathlib import Path
-from typing import Tuple, AsyncGenerator
-
 from pytest import mark, fixture
 from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 
-from anchorpy import Program, create_workspace, Context
-from anchorpy.workspace import close_workspace
-from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy import Program, Context
+from anchorpy.workspace import WorkspaceType
+from anchorpy.pytest_plugin import workspace_fixture
 
-PATH = Path("anchor/tests/composite/")
 
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/tests/composite/")
 
 
 @fixture(scope="module")
-async def program(localnet) -> AsyncGenerator[Program, None]:
+def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
-    workspace = create_workspace(PATH)
-    yield workspace["composite"]
-    await close_workspace(workspace)
+    return workspace["composite"]
 
 
 @fixture(scope="module")
-async def initialized_accounts(program: Program) -> Tuple[Keypair, Keypair]:
+async def initialized_accounts(program: Program) -> tuple[Keypair, Keypair]:
     """Generate keypairs and use them when callling the initialize function."""
     dummy_a = Keypair()
     dummy_b = Keypair()
@@ -48,8 +42,8 @@ async def initialized_accounts(program: Program) -> Tuple[Keypair, Keypair]:
 @fixture(scope="module")
 async def composite_updated_accounts(
     program: Program,
-    initialized_accounts: Tuple[Keypair, Keypair],
-) -> Tuple[Keypair, Keypair]:
+    initialized_accounts: tuple[Keypair, Keypair],
+) -> tuple[Keypair, Keypair]:
     """Run composite_update and return the keypairs used."""
     dummy_a, dummy_b = initialized_accounts
     ctx = Context(
@@ -65,7 +59,7 @@ async def composite_updated_accounts(
 @mark.asyncio
 async def test_composite_update(
     program: Program,
-    composite_updated_accounts: Tuple[Keypair, Keypair],
+    composite_updated_accounts: tuple[Keypair, Keypair],
 ) -> None:
     """Test that the call to composite_update worked."""
     dummy_a, dummy_b = composite_updated_accounts

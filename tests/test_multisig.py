@@ -1,6 +1,4 @@
 """Mimics anchor/tests/multisig."""
-from pathlib import Path
-from typing import AsyncGenerator, List, Tuple
 from dataclasses import replace
 
 from pytest import mark, fixture
@@ -9,25 +7,23 @@ from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta
 
-from anchorpy import Program, create_workspace, close_workspace, Context, Provider
-from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy import Program, Context, Provider
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
 
-PATH = Path("anchor/tests/multisig/")
 
-CreatedMultisig = Tuple[Keypair, int, List[PublicKey], int, PublicKey, Keypair, Keypair]
-CreatedTransaction = Tuple[
-    Keypair, List[dict], bytes, Keypair, PublicKey, List[PublicKey]
+CreatedMultisig = tuple[Keypair, int, list[PublicKey], int, PublicKey, Keypair, Keypair]
+CreatedTransaction = tuple[
+    Keypair, list[dict], bytes, Keypair, PublicKey, list[PublicKey]
 ]
 
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/tests/multisig/")
 
 
 @fixture(scope="module")
-async def program(localnet) -> AsyncGenerator[Program, None]:
+async def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
-    workspace = create_workspace(PATH)
-    yield workspace["multisig"]
-    await close_workspace(workspace)
+    return workspace["multisig"]
 
 
 @fixture(scope="module")

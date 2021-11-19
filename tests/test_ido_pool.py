@@ -1,15 +1,12 @@
-from pathlib import Path
-
 from pytest import fixture
 from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
-from anchorpy import Program, create_workspace, Provider
-from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy import Program, Provider
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
 
-PATH = Path("anchor/tests/composite/")
-
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/tests/composite/")
 
 
 async def create_mint(prov: Provider) -> AsyncToken:
@@ -20,9 +17,8 @@ async def create_mint(prov: Provider) -> AsyncToken:
 
 
 @fixture(scope="module")
-async def program(localnet) -> Program:
+async def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
-    workspace = create_workspace(PATH)
     return workspace["composite"]
 
 

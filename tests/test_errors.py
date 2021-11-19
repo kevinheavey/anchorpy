@@ -1,25 +1,21 @@
 """Mimics anchor/tests/errors/tests/errors.js."""
-from pathlib import Path
-from typing import AsyncGenerator
 from pytest import raises, mark, fixture
-from anchorpy import Program, create_workspace, close_workspace, Context
+from anchorpy import Program, Context
 from anchorpy.error import ProgramError
 from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.core import RPCException
-from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
 
-PATH = Path("anchor/tests/errors/")
 
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/tests/errors/")
 
 
 @fixture(scope="module")
-async def program(localnet) -> AsyncGenerator[Program, None]:
-    workspace = create_workspace(PATH)
-    yield workspace["errors"]
-    await close_workspace(workspace)
+def program(workspace: WorkspaceType) -> Program:
+    return workspace["errors"]
 
 
 @mark.asyncio

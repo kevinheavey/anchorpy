@@ -1,5 +1,4 @@
 # """Mimics anchor/tests/system-accounts."""
-# from pathlib import Path
 # from typing import AsyncGenerator
 # from dataclasses import dataclass
 
@@ -8,13 +7,12 @@
 # from spl.token.constants import TOKEN_PROGRAM_ID
 # from spl.token.async_client import AsyncToken
 
-# from anchorpy import Program, create_workspace, close_workspace, Context, Provider
-# from anchorpy.pytest_plugin import localnet_fixture
+# from anchorpy import Program, Context, Provider, WorkspaceType
+# from anchorpy.pytest_plugin import workspace_fixture
 # from anchorpy.error import ProgramError
 
-# PATH = Path("anchor/tests/system-accounts")
 
-# localnet = localnet_fixture(PATH)
+# workspace = workspace_fixture("anchor/tests/system-accounts")
 
 
 # @dataclass
@@ -24,11 +22,9 @@
 
 
 # @fixture(scope="module")
-# async def program(localnet) -> AsyncGenerator[Program, None]:
+# def program(workspace_fixture: WorkspaceType) -> Program:
 #     """Create a Program instance."""
-#     workspace = create_workspace(PATH)
-#     yield workspace["token_proxy"]
-#     await close_workspace(workspace)
+#     return workspace["token_proxy"]
 
 
 # @fixture(scope="module")

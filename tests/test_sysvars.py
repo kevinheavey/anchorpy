@@ -8,20 +8,19 @@ from solana.sysvar import (
     SYSVAR_STAKE_HISTORY_PUBKEY,
 )
 
-from anchorpy import create_workspace
 from anchorpy.program.context import Context
-from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
 
 PATH = Path("anchor/tests/sysvars")
 
 
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/tests/sysvars")
 
 
 @mark.asyncio
-async def test_init(localnet) -> None:
+async def test_init(workspace: WorkspaceType) -> None:
     """Test that the initialize function is invoked successfully."""
-    workspace = create_workspace(PATH)
     program = workspace["sysvars"]
     res = await program.rpc["sysvars"](
         ctx=Context(
@@ -33,4 +32,3 @@ async def test_init(localnet) -> None:
         )
     )
     assert res
-    await program.close()

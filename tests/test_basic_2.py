@@ -1,25 +1,21 @@
 """Mimics anchor/examples/tutorial/basic-2/tests/basic-2.js."""
-from pathlib import Path
-from typing import AsyncGenerator
 
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
 from pytest import fixture, mark
-from anchorpy import Program, Provider, create_workspace, close_workspace, Context
-from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy import Program, Provider, Context
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
 
-PATH = Path("anchor/examples/tutorial/basic-2")
 
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/examples/tutorial/basic-2")
 
 
 @fixture(scope="module")
-async def program(localnet) -> AsyncGenerator[Program, None]:
+async def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
-    workspace = create_workspace(PATH)
-    yield workspace["basic_2"]
-    await close_workspace(workspace)
+    return workspace["basic_2"]
 
 
 @fixture(scope="module")

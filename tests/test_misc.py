@@ -1,10 +1,8 @@
 """Mimics anchor/tests/misc/tests/misc.js."""
 import asyncio
-from pathlib import Path
-from typing import AsyncGenerator, Dict
 from pytest import raises, mark, fixture
 from solana.rpc.types import MemcmpOpts
-from anchorpy import Program, create_workspace, close_workspace, Context
+from anchorpy import Program, Context
 from anchorpy.error import ProgramError
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
@@ -15,27 +13,20 @@ from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.async_client import AsyncToken
 from anchorpy.provider import Provider, Wallet
 from anchorpy.utils.rpc import invoke
-from anchorpy.pytest_plugin import localnet_fixture
-
-PATH = Path("anchor/tests/misc/")
-
-localnet = localnet_fixture(PATH)
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
 
 
-@fixture(scope="module")
-async def workspace(localnet) -> AsyncGenerator[Dict[str, Program], None]:
-    wspace = create_workspace(PATH)
-    yield wspace
-    await close_workspace(wspace)
+workspace = workspace_fixture("anchor/tests/misc/")
 
 
 @fixture(scope="module")
-async def program(workspace: Dict[str, Program]) -> Program:
+async def program(workspace: WorkspaceType) -> Program:
     return workspace["misc"]
 
 
 @fixture(scope="module")
-async def misc2program(workspace: Dict[str, Program]) -> Program:
+async def misc2program(workspace: WorkspaceType) -> Program:
     return workspace["misc2"]
 
 
