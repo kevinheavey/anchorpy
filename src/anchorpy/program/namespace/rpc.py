@@ -5,14 +5,14 @@ from solana.rpc.core import RPCException
 from solana.transaction import TransactionSignature
 from anchorpy.error import ProgramError
 
-from anchorpy.program.context import EMPTY_CONTEXT, Context, check_args_length
-from anchorpy.idl import IdlInstruction
+from anchorpy.program.context import EMPTY_CONTEXT, Context, _check_args_length
+from anchorpy.idl import _IdlInstruction
 from anchorpy.provider import Provider
-from anchorpy.program.namespace.transaction import TransactionFn
+from anchorpy.program.namespace.transaction import _TransactionFn
 
 
-class RpcFn(Protocol):
-    """RpcFn is a single RPC method generated from an IDL, sending a transaction paid for and signed by the configured provider."""  # noqa: E501
+class _RpcFn(Protocol):
+    """_RpcFn is a single RPC method generated from an IDL, sending a transaction paid for and signed by the configured provider."""  # noqa: E501
 
     def __call__(
         self,
@@ -29,12 +29,12 @@ class RpcFn(Protocol):
         ...
 
 
-def build_rpc_item(  # ts: RpcFactory
-    idl_ix: IdlInstruction,
-    tx_fn: TransactionFn,
+def _build_rpc_item(  # ts: RpcFactory
+    idl_ix: _IdlInstruction,
+    tx_fn: _TransactionFn,
     idl_errors: Dict[int, str],
     provider: Provider,
-) -> RpcFn:
+) -> _RpcFn:
     """Build the function that sends transactions for the given method.
 
     Args:
@@ -49,7 +49,7 @@ def build_rpc_item(  # ts: RpcFactory
 
     async def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> TransactionSignature:
         tx = tx_fn(*args, ctx=ctx)
-        check_args_length(idl_ix, args)
+        _check_args_length(idl_ix, args)
         try:
             return await provider.send(tx, ctx.signers, ctx.options)
         except RPCException as e:

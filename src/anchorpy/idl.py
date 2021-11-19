@@ -8,9 +8,9 @@ from inflection import underscore, camelize
 from borsh_construct import CStruct, Vec, U8
 import solana.publickey  # noqa: WPS301
 
-from anchorpy import borsh_extension
+from anchorpy.borsh_extension import _BorshPubkey
 
-LiteralStrings = Literal[
+_LiteralStrings = Literal[
     "bool",
     "u8",
     "i8",
@@ -26,47 +26,47 @@ LiteralStrings = Literal[
     "string",
     "publicKey",
 ]
-NonLiteralIdlTypes = Union[
-    "IdlTypeVec", "IdlTypeOption", "IdlTypeDefined", "IdlTypeArray"
+_NonLiteralIdlTypes = Union[
+    "_IdlTypeVec", "_IdlTypeOption", "_IdlTypeDefined", "_IdlTypeArray"
 ]
-IdlType = Union[LiteralStrings, NonLiteralIdlTypes]
+_IdlType = Union[_LiteralStrings, _NonLiteralIdlTypes]
 snake_case_conversion = conversion(underscore, camelize)
 
 
 @dataclass
-class IdlTypeVec:
+class _IdlTypeVec:
     """IDL vector type."""
 
-    vec: IdlType
+    vec: _IdlType
 
 
 @dataclass
-class IdlTypeOption:
+class _IdlTypeOption:
     """IDL option type."""
 
-    option: IdlType
+    option: _IdlType
 
 
 @dataclass
-class IdlTypeDefined:
+class _IdlTypeDefined:
     """IDL type that points to a user-defined type."""
 
     defined: str
 
 
 @dataclass
-class IdlField:
+class _IdlField:
     """IDL representation of a field.
 
     Used in instructions and user-defined types.
     """
 
     name: str = field(metadata=snake_case_conversion)
-    type: IdlType
+    type: _IdlType
 
 
 @dataclass
-class IdlAccount:
+class _IdlAccount:
     """IDL account type."""
 
     name: str = field(metadata=snake_case_conversion)
@@ -75,108 +75,108 @@ class IdlAccount:
 
 
 @dataclass
-class IdlAccounts:
-    """Nested/recursive version of IdlAccount."""
+class _IdlAccounts:
+    """Nested/recursive version of _IdlAccount."""
 
     name: str = field(metadata=snake_case_conversion)
-    accounts: List["IdlAccountItem"]
+    accounts: List["_IdlAccountItem"]
 
 
-IdlAccountItem = Union[IdlAccounts, IdlAccount]
+_IdlAccountItem = Union[_IdlAccounts, _IdlAccount]
 
 
 @dataclass
-class IdlInstruction:
+class _IdlInstruction:
     """IDL representation of a program instruction."""
 
     name: str = field(metadata=snake_case_conversion)
-    accounts: List[IdlAccountItem]
-    args: List[IdlField]
+    accounts: List[_IdlAccountItem]
+    args: List[_IdlField]
 
 
-IdlEnumFieldsNamed = List[IdlField]
-IdlEnumFieldsTuple = List[IdlType]
-IdlEnumFields = Union[IdlEnumFieldsNamed, IdlEnumFieldsTuple]
+_IdlEnumFieldsNamed = List[_IdlField]
+_IdlEnumFieldsTuple = List[_IdlType]
+_IdlEnumFields = Union[_IdlEnumFieldsNamed, _IdlEnumFieldsTuple]
 
 
 @dataclass
-class IdlEnumVariant:
+class _IdlEnumVariant:
     """IDL representation of a variant of an enum."""
 
     name: str
-    fields: Optional[IdlEnumFields] = None
+    fields: Optional[_IdlEnumFields] = None
 
 
-IdlTypeDefStruct = List[IdlField]
+_IdlTypeDefStruct = List[_IdlField]
 
 
 @dataclass
-class IdlTypeDefTyStruct:
+class _IdlTypeDefTyStruct:
     """IDL representation of a struct."""
 
-    fields: IdlTypeDefStruct
+    fields: _IdlTypeDefStruct
     kind: Literal["struct"] = "struct"
 
 
 @dataclass
-class IdlTypeDefTyEnum:
+class _IdlTypeDefTyEnum:
     """IDL representation of an enum."""
 
-    variants: List[IdlEnumVariant]
+    variants: List[_IdlEnumVariant]
     kind: Literal["enum"] = "enum"
 
 
-IdlTypeDefTy = Union[IdlTypeDefTyEnum, IdlTypeDefTyStruct]
+_IdlTypeDefTy = Union[_IdlTypeDefTyEnum, _IdlTypeDefTyStruct]
 
 
 @dataclass
-class IdlTypeDef:
+class _IdlTypeDef:
     """IDL representation of a user-defined type."""
 
     name: str
-    type: IdlTypeDefTy
+    type: _IdlTypeDefTy
 
 
-IdlStateMethod = IdlInstruction
+_IdlStateMethod = _IdlInstruction
 
 
 @dataclass
-class IdlState:
+class _IdlState:
     """IDL representation of a program state method."""
 
-    struct: IdlTypeDef
-    methods: List[IdlStateMethod]
+    struct: _IdlTypeDef
+    methods: List[_IdlStateMethod]
 
 
 @dataclass
-class IdlTypeArray:
+class _IdlTypeArray:
     """IDL array type."""
 
-    array: Tuple[IdlType, int]
+    array: Tuple[_IdlType, int]
 
 
 @dataclass
-class IdlEventField:
+class _IdlEventField:
     """IDL representation of an event field."""
 
     name: str
-    type: IdlType
+    type: _IdlType
     index: bool
 
 
 @dataclass
-class IdlEvent:
+class _IdlEvent:
     """IDL representation of an event.
 
     Composed of a list of event fields.
     """
 
     name: str
-    fields: List[IdlEventField]
+    fields: List[_IdlEventField]
 
 
 @dataclass
-class IdlErrorCode:
+class _IdlErrorCode:
     """IDL error code type."""
 
     code: int
@@ -185,7 +185,7 @@ class IdlErrorCode:
 
 
 @dataclass
-class Metadata:
+class _Metadata:
     """IDL metadata field."""
 
     address: str
@@ -197,13 +197,13 @@ class Idl:
 
     version: str
     name: str
-    instructions: List[IdlInstruction]
-    state: Optional[IdlState] = None
-    accounts: List[IdlTypeDef] = field(default_factory=list)
-    types: List[IdlTypeDef] = field(default_factory=list)
-    events: List[IdlEvent] = field(default_factory=list)
-    errors: List[IdlErrorCode] = field(default_factory=list)
-    metadata: Optional[Metadata] = None
+    instructions: List[_IdlInstruction]
+    state: Optional[_IdlState] = None
+    accounts: List[_IdlTypeDef] = field(default_factory=list)
+    types: List[_IdlTypeDef] = field(default_factory=list)
+    events: List[_IdlEvent] = field(default_factory=list)
+    errors: List[_IdlErrorCode] = field(default_factory=list)
+    metadata: Optional[_Metadata] = None
 
     @classmethod
     def from_json(cls, idl: Dict[str, Any]) -> "Idl":
@@ -218,10 +218,7 @@ class Idl:
         return deserialize(cls, idl)
 
 
-SEED = "anchor:idl"
-
-
-def idl_address(program_id: solana.publickey.PublicKey) -> solana.publickey.PublicKey:
+def _idl_address(program_id: solana.publickey.PublicKey) -> solana.publickey.PublicKey:
     """Deterministic IDL address as a function of the program id.
 
     Args:
@@ -231,7 +228,7 @@ def idl_address(program_id: solana.publickey.PublicKey) -> solana.publickey.Publ
         The public key of the IDL.
     """
     base = solana.publickey.PublicKey.find_program_address([], program_id)[0]
-    return solana.publickey.PublicKey.create_with_seed(base, SEED, program_id)
+    return solana.publickey.PublicKey.create_with_seed(base, "anchor:idl", program_id)
 
 
 class IdlProgramAccount(TypedDict):
@@ -241,10 +238,10 @@ class IdlProgramAccount(TypedDict):
     data: bytes
 
 
-IDL_ACCOUNT_LAYOUT = CStruct("authority" / borsh_extension.PublicKey, "data" / Vec(U8))
+IDL_ACCOUNT_LAYOUT = CStruct("authority" / _BorshPubkey, "data" / Vec(U8))
 
 
-def decode_idl_account(data: bytes) -> IdlProgramAccount:
+def _decode_idl_account(data: bytes) -> IdlProgramAccount:
     """Decode on-chain IDL.
 
     Args:
@@ -254,15 +251,3 @@ def decode_idl_account(data: bytes) -> IdlProgramAccount:
         Decoded IDL.
     """
     return IDL_ACCOUNT_LAYOUT.parse(data)
-
-
-def encode_idl_account(acc: IdlProgramAccount) -> bytes:
-    """Encode IDL for on-chain storage.
-
-    Args:
-        acc: data to encode.
-
-    Returns:
-        bytes: Encoded IDL.
-    """
-    return IDL_ACCOUNT_LAYOUT.build(acc)

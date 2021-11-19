@@ -3,13 +3,13 @@ from hashlib import sha256
 from typing import Dict, Tuple, Any
 
 from construct import Adapter, Construct, Sequence, Bytes, Switch
-from anchorpy.idl import Idl, IdlEvent, IdlField, IdlTypeDef, IdlTypeDefTyStruct
+from anchorpy.idl import Idl, _IdlEvent, _IdlField, _IdlTypeDef, _IdlTypeDefTyStruct
 
 from anchorpy.program.common import Event
-from anchorpy.coder.idl import typedef_layout
+from anchorpy.coder.idl import _typedef_layout
 
 
-def event_discriminator(name: str) -> bytes:
+def _event_discriminator(name: str) -> bytes:
     """Get 8-byte discriminator from event name.
 
     Args:
@@ -21,14 +21,14 @@ def event_discriminator(name: str) -> bytes:
     return sha256(f"event:{name}".encode()).digest()[:8]
 
 
-def _event_layout(event: IdlEvent, idl: Idl) -> Construct:
-    event_type_def = IdlTypeDef(
+def _event_layout(event: _IdlEvent, idl: Idl) -> Construct:
+    event_type_def = _IdlTypeDef(
         name=event.name,
-        type=IdlTypeDefTyStruct(
-            fields=[IdlField(name=f.name, type=f.type) for f in event.fields],
+        type=_IdlTypeDefTyStruct(
+            fields=[_IdlField(name=f.name, type=f.type) for f in event.fields],
         ),
     )
-    return typedef_layout(event_type_def, idl.types, event.name)
+    return _typedef_layout(event_type_def, idl.types, event.name)
 
 
 class EventCoder(Adapter):
@@ -49,7 +49,7 @@ class EventCoder(Adapter):
             layouts = {}
         self.layouts = layouts
         self.discriminators: Dict[bytes, str] = {
-            event_discriminator(event.name): event.name for event in idl_events
+            _event_discriminator(event.name): event.name for event in idl_events
         }
         self.discriminator_to_layout = {
             disc: self.layouts[event_name]

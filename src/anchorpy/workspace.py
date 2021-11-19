@@ -5,7 +5,7 @@ from pathlib import Path
 from solana.publickey import PublicKey
 from anchorpy.program.core import Program
 from anchorpy.provider import Provider
-from anchorpy.idl import Idl, Metadata
+from anchorpy.idl import Idl, _Metadata
 
 
 def create_workspace(
@@ -28,7 +28,7 @@ def create_workspace(
         with file.open() as f:
             idl_dict = json.load(f)
         idl = Idl.from_json(idl_dict)
-        metadata = cast(Metadata, idl.metadata)
+        metadata = cast(_Metadata, idl.metadata)
         program = Program(idl, PublicKey(metadata.address), Provider.local(url))
         result[idl.name] = program
     return result

@@ -5,7 +5,7 @@ import json
 from solana.keypair import Keypair
 from solana.transaction import AccountMeta
 
-from anchorpy.program.namespace.instruction import accounts_array
+from anchorpy.program.namespace.instruction import _accounts_array
 
 
 @mark.unit
@@ -25,7 +25,7 @@ def test_accounts_array() -> None:
         },
     }
     accounts_arg = idl.instructions[1].accounts
-    acc_arr = accounts_array(comp_accounts, accounts_arg)
+    acc_arr = _accounts_array(comp_accounts, accounts_arg)
     assert acc_arr == [
         AccountMeta(pubkey=dummy_a.public_key, is_signer=False, is_writable=True),
         AccountMeta(pubkey=dummy_b.public_key, is_signer=False, is_writable=True),

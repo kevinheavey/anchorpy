@@ -11,14 +11,18 @@ from solana.transaction import TransactionInstruction
 from solana.publickey import PublicKey
 from solana.rpc.types import MemcmpOpts
 
-from anchorpy.coder.common import account_size
-from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE, account_discriminator
+from anchorpy.coder.common import _account_size
+from anchorpy.coder.accounts import (
+    ACCOUNT_DISCRIMINATOR_SIZE,
+    _account_discriminator,
+)
 from anchorpy.coder.coder import Coder
-from anchorpy.idl import Idl, IdlTypeDef
+from anchorpy.error import AccountDoesNotExistError, AccountInvalidDiscriminator
+from anchorpy.idl import Idl, _IdlTypeDef
 from anchorpy.provider import Provider
 
 
-def build_account(
+def _build_account(
     idl: Idl,
     coder: Coder,
     program_id: PublicKey,
@@ -42,14 +46,6 @@ def build_account(
     return accounts_fns
 
 
-class AccountDoesNotExistError(Exception):
-    """Raise if account doesn't exist."""
-
-
-class AccountInvalidDiscriminator(Exception):
-    """Raise if account discriminator doesn't match the IDL."""
-
-
 @dataclass
 class ProgramAccount:
     """Deserialized account owned by a program."""
@@ -64,7 +60,7 @@ class AccountClient(object):
     def __init__(
         self,
         idl: Idl,
-        idl_account: IdlTypeDef,
+        idl_account: _IdlTypeDef,
         coder: Coder,
         program_id: PublicKey,
         provider: Provider,
@@ -82,7 +78,7 @@ class AccountClient(object):
         self._program_id = program_id
         self._provider = provider
         self._coder = coder
-        self._size = ACCOUNT_DISCRIMINATOR_SIZE + account_size(idl, idl_account)
+        self._size = ACCOUNT_DISCRIMINATOR_SIZE + _account_size(idl, idl_account)
 
     async def fetch(self, address: Union[str, PublicKey]) -> Container[Any]:
         """Return a deserialized account.
@@ -101,7 +97,7 @@ class AccountClient(object):
         if not account_info["result"]["value"]:
             raise AccountDoesNotExistError(f"Account {address} does not exist")
         data = base64.b64decode(account_info["result"]["value"]["data"][0])
-        discriminator = account_discriminator(self._idl_account.name)
+        discriminator = _account_discriminator(self._idl_account.name)
         if discriminator != data[:ACCOUNT_DISCRIMINATOR_SIZE]:
             msg = f"Account {address} has an invalid discriminator"
             raise AccountInvalidDiscriminator(msg)
@@ -153,7 +149,7 @@ class AccountClient(object):
                 provided data size.
         """
         all_accounts = []
-        discriminator = account_discriminator(self._idl_account.name)
+        discriminator = _account_discriminator(self._idl_account.name)
         to_encode = discriminator if buffer is None else discriminator + buffer
         bytes_arg = b58encode(to_encode).decode("ascii")
         base_memcmp_opt = MemcmpOpts(

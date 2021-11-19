@@ -5,12 +5,12 @@ from solana.rpc.types import RPCError
 
 
 from anchorpy.coder.coder import Coder
-from anchorpy.error import ExtendedRPCError, ProgramError
-from anchorpy.idl import IdlInstruction, Idl
+from anchorpy.error import _ExtendedRPCError, ProgramError
+from anchorpy.idl import _IdlInstruction, Idl
 from anchorpy.program.event import EventParser, Event
-from anchorpy.program.namespace.transaction import TransactionFn
+from anchorpy.program.namespace.transaction import _TransactionFn
 from anchorpy.provider import Provider
-from anchorpy.program.context import EMPTY_CONTEXT, Context, check_args_length
+from anchorpy.program.context import EMPTY_CONTEXT, Context, _check_args_length
 from solana.publickey import PublicKey
 from solana.rpc.core import RPCException
 
@@ -22,7 +22,7 @@ class SimulateResponse(NamedTuple):
     raw: list[str]
 
 
-class SimulateFn(Protocol):
+class _SimulateFn(Protocol):
     """A single method generated from an IDL.
 
     It simulates a method against a cluster configured by the provider,
@@ -45,15 +45,15 @@ class SimulateFn(Protocol):
         """
 
 
-def build_simulate_item(
-    idl_ix: IdlInstruction,
-    tx_fn: TransactionFn,
+def _build_simulate_item(
+    idl_ix: _IdlInstruction,
+    tx_fn: _TransactionFn,
     idl_errors: Dict[int, str],
     provider: Provider,
     coder: Coder,
     program_id: PublicKey,
     idl: Idl,
-) -> SimulateFn:
+) -> _SimulateFn:
     """Build the function to simulate transactions for a given method of a program.
 
     Args:
@@ -71,12 +71,12 @@ def build_simulate_item(
 
     async def simulate_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> SimulateResponse:
         tx = tx_fn(*args, ctx=ctx)
-        check_args_length(idl_ix, args)
+        _check_args_length(idl_ix, args)
         resp = await provider.simulate(tx, ctx.signers, ctx.options)
         try:
             ok_res = resp["result"]
         except KeyError:
-            err_res = cast(Union[ExtendedRPCError, RPCError], resp["error"])
+            err_res = cast(Union[_ExtendedRPCError, RPCError], resp["error"])
             translated_err = ProgramError.parse(err_res, idl_errors)
             if translated_err is not None:
                 raise translated_err

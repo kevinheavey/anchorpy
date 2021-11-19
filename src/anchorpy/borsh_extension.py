@@ -7,7 +7,7 @@ from solana import publickey
 from construct import Bytes, Adapter, Container
 
 
-class _PublicKey(Adapter):
+class _BorshPubkeyAdapter(Adapter):
     def __init__(self) -> None:
         super().__init__(Bytes(32))  # type: ignore
 
@@ -21,7 +21,7 @@ class _PublicKey(Adapter):
 T = TypeVar("T")
 
 
-class DataclassStruct(Adapter):
+class _DataclassStruct(Adapter):
     """Converts dataclasses to/from `borsh_construct.CStruct`."""
 
     def __init__(self, cstruct: CStruct, datacls: Type[T]) -> None:
@@ -48,4 +48,5 @@ class DataclassStruct(Adapter):
         return asdict(obj)
 
 
-PublicKey = _PublicKey()
+_BorshPubkey = _BorshPubkeyAdapter()  # noqa: WPS462
+"""Adapter for (de)serializing a public key."""  # noqa: WPS322

@@ -5,30 +5,13 @@ from construct import Container
 
 from solana.publickey import PublicKey
 from anchorpy.idl import (
-    Idl,
-    IdlAccounts,
-    IdlInstruction,
-    IdlAccountItem,
+    _IdlAccounts,
+    _IdlInstruction,
+    _IdlAccountItem,
 )
 from anchorpy.program.context import Accounts
 
 AddressType = Union[PublicKey, str]
-
-
-def parse_idl_errors(idl: Idl) -> Dict[int, str]:
-    """Turn IDL errors into something readable.
-
-    Uses message if available, otherwise name.
-
-    Args:
-        idl: Parsed `Idl` instance.
-
-    """
-    errors = {}
-    for e in idl.errors:
-        msg = e.msg if e.msg else e.name
-        errors[e.code] = msg
-    return errors
 
 
 class Event(NamedTuple):
@@ -40,13 +23,18 @@ class Event(NamedTuple):
 
 @dataclass
 class Instruction:
-    """Container for a named instruction."""
+    """Container for a named instruction.
+
+    Attributes:
+        data: The actual instruction data.
+        name: The name of the instruction.
+    """
 
     data: Union[Dict[str, Any], Container[Any]]
     name: str
 
 
-def to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
+def _to_instruction(idl_ix: _IdlInstruction, args: Tuple) -> Instruction:
     """Convert an IDL instruction and arguments to an Instruction object.
 
     Args:
@@ -67,7 +55,7 @@ def to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
     return Instruction(data=ix, name=idl_ix.name)
 
 
-def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
+def validate_accounts(ix_accounts: list[_IdlAccountItem], accounts: Accounts):
     """Check that accounts passed in `ctx` match the IDL.
 
     Args:
@@ -78,14 +66,14 @@ def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
         ValueError: If `ctx` accounts don't match the IDL.
     """
     for acc in ix_accounts:
-        if isinstance(acc, get_args(IdlAccounts)):
-            idl_accounts = cast(IdlAccounts, acc)
+        if isinstance(acc, get_args(_IdlAccounts)):
+            idl_accounts = cast(_IdlAccounts, acc)
             validate_accounts(idl_accounts.accounts, accounts[acc.name])
         elif acc.name not in accounts:
             raise ValueError(f"Invalid arguments: {acc.name} not provided")
 
 
-def translate_address(address: AddressType):
+def translate_address(address: AddressType) -> PublicKey:
     """Convert `str | PublicKey` into `PublicKey`.
 
     Args:

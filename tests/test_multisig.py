@@ -10,7 +10,7 @@ from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta
 
 from anchorpy import Program, create_workspace, close_workspace, Context, Provider
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.pytest_plugin import localnet_fixture
 
 PATH = Path("anchor/tests/multisig/")
 
@@ -19,7 +19,7 @@ CreatedTransaction = Tuple[
     Keypair, List[dict], bytes, Keypair, PublicKey, List[PublicKey]
 ]
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 
 @fixture(scope="module")

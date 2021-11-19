@@ -34,7 +34,7 @@ from anchorpy.program.context import Context
 from anchorpy.utils.token import create_mint_and_vault, get_token_account
 from pyserum.enums import Side, OrderType
 from anchorpy.provider import DEFAULT_OPTIONS, Provider, Wallet
-from anchorpy import create_workspace, get_localnet, close_workspace, Program
+from anchorpy import create_workspace, localnet_fixture, close_workspace, Program
 
 DEX_PID = PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin")
 
@@ -42,7 +42,7 @@ DECIMALS = 6
 TAKER_FEE = 0.0022
 PATH = Path("anchor/tests/swap/")
 SLEEP_SECONDS = 15
-localnet = get_localnet(
+localnet = localnet_fixture(
     PATH,
     build_cmd=(
         "cd deps/serum-dex/dex && cargo build-bpf && cd ../../../ && anchor build"

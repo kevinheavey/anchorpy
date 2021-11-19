@@ -12,13 +12,13 @@ from spl.token.constants import TOKEN_PROGRAM_ID
 from pytest import fixture, mark
 from anchorpy import Program, Provider, create_workspace, close_workspace
 from anchorpy.program.context import Context
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.pytest_plugin import localnet_fixture
 
 PATH = Path("anchor/tests/escrow")
 INITIALIZER_AMOUNT = 500
 TAKER_AMOUNT = 1000
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 InitializeEscrowStateResult = tuple[
     AsyncToken, AsyncToken, PublicKey, PublicKey, PublicKey, PublicKey, Keypair

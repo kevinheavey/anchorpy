@@ -1,4 +1,4 @@
-"""This module provides the `get_localnet` fixture factory."""
+"""This module provides the `localnet_fixture` fixture factory."""
 from typing import Callable, Optional
 import subprocess
 import signal
@@ -130,7 +130,7 @@ def _fixed_xprocess(request):
         yield xproc
 
 
-def get_localnet(
+def localnet_fixture(
     path: Path,
     scope="module",
     timeout_seconds=60,
@@ -149,7 +149,7 @@ def get_localnet(
     """  # noqa: E501,D202
 
     @fixture(scope=scope)
-    def localnet_fixture(_fixed_xprocess):
+    def _localnet_fixture(_fixed_xprocess):
         class Starter(ProcessStarter):
             # startup pattern
             pattern = "JSON RPC URL"
@@ -174,4 +174,4 @@ def get_localnet(
         # clean up whole process tree afterwards
         _fixed_xprocess.getinfo("localnet").terminate()
 
-    return localnet_fixture
+    return _localnet_fixture

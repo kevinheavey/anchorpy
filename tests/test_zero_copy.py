@@ -15,13 +15,13 @@ from anchorpy import (
     close_workspace,
     Context,
     Provider,
-    get_localnet,
+    localnet_fixture,
 )
 
 PATH = Path("anchor/tests/zero-copy")
 DEFAULT_PUBKEY = PublicKey("11111111111111111111111111111111")
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 
 @fixture(scope="module")

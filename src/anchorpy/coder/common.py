@@ -4,21 +4,21 @@ from hashlib import sha256
 
 from anchorpy.idl import (
     Idl,
-    IdlEnumVariant,
-    IdlField,
-    IdlType,
-    IdlTypeDef,
-    IdlTypeDefTyEnum,
-    IdlTypeOption,
-    IdlTypeArray,
-    IdlTypeDefined,
-    IdlTypeVec,
-    LiteralStrings,
-    NonLiteralIdlTypes,
+    _IdlEnumVariant,
+    _IdlField,
+    _IdlType,
+    _IdlTypeDef,
+    _IdlTypeDefTyEnum,
+    _IdlTypeOption,
+    _IdlTypeArray,
+    _IdlTypeDefined,
+    _IdlTypeVec,
+    _LiteralStrings,
+    _NonLiteralIdlTypes,
 )
 
 
-def sighash(ix_name: str) -> bytes:
+def _sighash(ix_name: str) -> bytes:
     """Not technically sighash, since we don't include the arguments.
 
     (Because Rust doesn't allow function overloading.)
@@ -33,26 +33,26 @@ def sighash(ix_name: str) -> bytes:
     return sha256(formatted_str.encode()).digest()[:8]
 
 
-def _type_size_compound_type(idl: Idl, ty: NonLiteralIdlTypes) -> int:
-    if isinstance(ty, IdlTypeVec):
+def _type_size_compound_type(idl: Idl, ty: _NonLiteralIdlTypes) -> int:
+    if isinstance(ty, _IdlTypeVec):
         return 1
-    if isinstance(ty, IdlTypeOption):
-        return 1 + type_size(idl, ty.option)
-    if isinstance(ty, IdlTypeDefined):
+    if isinstance(ty, _IdlTypeOption):
+        return 1 + _type_size(idl, ty.option)
+    if isinstance(ty, _IdlTypeDefined):
         defined = ty.defined
         filtered = [t for t in idl.types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {ty}")
         type_def = filtered[0]
-        return account_size(idl, type_def)
-    if isinstance(ty, IdlTypeArray):
+        return _account_size(idl, type_def)
+    if isinstance(ty, _IdlTypeArray):
         element_type = ty.array[0]
         array_size = ty.array[1]
-        return type_size(idl, element_type) * array_size
+        return _type_size(idl, element_type) * array_size
     raise ValueError(f"type_size not implemented for {ty}")
 
 
-def type_size(idl: Idl, ty: IdlType) -> int:
+def _type_size(idl: Idl, ty: _IdlType) -> int:
     """Return the size of the type in bytes.
 
     For variable length types, just return 1.
@@ -65,7 +65,7 @@ def type_size(idl: Idl, ty: IdlType) -> int:
     Returns:
         The size of the object in bytes.
     """
-    sizes: Dict[LiteralStrings, int] = {
+    sizes: Dict[_LiteralStrings, int] = {
         "bool": 1,
         "u8": 1,
         "i8": 1,
@@ -86,23 +86,23 @@ def type_size(idl: Idl, ty: IdlType) -> int:
     return _type_size_compound_type(idl, ty)
 
 
-def _variant_field_size(idl: Idl, field: Union[IdlField, IdlType]) -> int:
-    if isinstance(field, IdlField):
-        return type_size(idl, field.type)
-    return type_size(idl, field)
+def _variant_field_size(idl: Idl, field: Union[_IdlField, _IdlType]) -> int:
+    if isinstance(field, _IdlField):
+        return _type_size(idl, field.type)
+    return _type_size(idl, field)
 
 
-def _variant_size(idl: Idl, variant: IdlEnumVariant) -> int:
+def _variant_size(idl: Idl, variant: _IdlEnumVariant) -> int:
     if variant.fields is None:
         return 0
     field_sizes = []
-    field: Union[IdlField, IdlType]
+    field: Union[_IdlField, _IdlType]
     for field in variant.fields:
         field_sizes.append(_variant_field_size(idl, field))
     return sum(field_sizes)
 
 
-def account_size(idl: Idl, idl_account: IdlTypeDef) -> int:
+def _account_size(idl: Idl, idl_account: _IdlTypeDef) -> int:
     """Calculate account size in bytes.
 
     Args:
@@ -113,11 +113,11 @@ def account_size(idl: Idl, idl_account: IdlTypeDef) -> int:
         Account size.
     """
     idl_account_type = idl_account.type
-    if isinstance(idl_account_type, IdlTypeDefTyEnum):
+    if isinstance(idl_account_type, _IdlTypeDefTyEnum):
         variant_sizes = (
             _variant_size(idl, variant) for variant in idl_account_type.variants
         )
         return max(variant_sizes) + 1
     if idl_account_type.fields is None:
         return 0
-    return sum(type_size(idl, f.type) for f in idl_account_type.fields)
+    return sum(_type_size(idl, f.type) for f in idl_account_type.fields)

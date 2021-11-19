@@ -239,7 +239,7 @@ async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
         addr: The pubkey of the token account.
 
      Returns:
-         The parsed `AccountInfo` of the token account.
+        The parsed `AccountInfo` of the token account.
     """
     depositor_acc_info_raw = await provider.connection.get_account_info(addr)
     return parse_token_account(depositor_acc_info_raw)
