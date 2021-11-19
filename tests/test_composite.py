@@ -8,11 +8,11 @@ from solana.sysvar import SYSVAR_RENT_PUBKEY
 
 from anchorpy import Program, create_workspace, Context
 from anchorpy.workspace import close_workspace
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.pytest_plugin import localnet_fixture
 
 PATH = Path("anchor/tests/composite/")
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 
 @fixture(scope="module")

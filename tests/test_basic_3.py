@@ -8,11 +8,11 @@ from solana.system_program import SYS_PROGRAM_ID
 
 from anchorpy import create_workspace, close_workspace, Provider, Context
 from anchorpy.program.core import Program
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.pytest_plugin import localnet_fixture
 
 PATH = Path("anchor/examples/tutorial/basic-3")
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 
 @fixture(scope="module")

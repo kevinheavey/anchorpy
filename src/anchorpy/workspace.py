@@ -5,7 +5,7 @@ from pathlib import Path
 from solana.publickey import PublicKey
 from anchorpy.program.core import Program
 from anchorpy.provider import Provider
-from anchorpy.idl import Idl, _Metadata  # noqa: WPS450
+from anchorpy.idl import Idl, _Metadata
 
 
 def create_workspace(

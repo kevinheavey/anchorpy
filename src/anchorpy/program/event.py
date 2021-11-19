@@ -11,7 +11,7 @@ from anchorpy.program.common import Event
 LOG_START_INDEX = len("Program log: ")
 
 
-class ExecutionContext:
+class _ExecutionContext:
     """Stack frame execution context, allowing one to track what program is executing for a given log."""  # noqa: E501
 
     def __init__(self, log: str) -> None:
@@ -64,8 +64,8 @@ class EventParser:
             logs: The logs to parse.
             callback: The function to handle the parsed log.
         """
-        log_scanner = LogScanner(logs)
-        execution = ExecutionContext(cast(str, log_scanner.to_next()))
+        log_scanner = _LogScanner(logs)
+        execution = _ExecutionContext(cast(str, log_scanner.to_next()))
         log = log_scanner.to_next()
         while log is not None:
             event, new_program, did_pop = self.handle_log(execution, log)
@@ -79,7 +79,7 @@ class EventParser:
 
     def handle_log(
         self,
-        execution: ExecutionContext,
+        execution: _ExecutionContext,
         log: str,
     ) -> tuple[Optional[Event], Optional[str], bool]:
         """Main log handler.
@@ -139,7 +139,7 @@ class EventParser:
 
 
 @dataclass
-class LogScanner:
+class _LogScanner:
     """Object that iterates over logs."""
 
     logs: list[str]

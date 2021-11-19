@@ -1,33 +1,47 @@
 """The Python Anchor client."""
-from anchorpy.provider import Provider, LocalWallet
+from anchorpy.provider import Provider, Wallet, SendTxRequest
 from anchorpy.coder.coder import Coder, InstructionCoder, EventCoder, AccountsCoder
-from anchorpy.error import ProgramError
-from anchorpy.coder.instruction import Instruction
-from anchorpy.idl import Idl
+from anchorpy.idl import Idl, IdlProgramAccount
 from anchorpy.workspace import create_workspace, close_workspace
 from anchorpy.program.core import Program
+from anchorpy.program.common import (
+    Event,
+    Instruction,
+    translate_address,
+    validate_accounts,
+)
 from anchorpy.program.context import Context
-from anchorpy.program.namespace.account import AccountClient
+from anchorpy.program.namespace.account import AccountClient, ProgramAccount
 from anchorpy.program.event import EventParser
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.program.namespace.simulate import SimulateResponse
+from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy import error, utils
 
 __all__ = [
+    "Program",
     "Provider",
-    "LocalWallet",
+    "Context",
+    "create_workspace",
+    "close_workspace",
+    "Idl",
+    "localnet_fixture",
+    "Wallet",
+    "SendTxRequest",
     "Coder",
     "InstructionCoder",
     "EventCoder",
     "AccountsCoder",
-    "ProgramError",
     "Instruction",
-    "Idl",
-    "create_workspace",
-    "close_workspace",
-    "Program",
-    "Context",
+    "IdlProgramAccount",
+    "Event",
+    "translate_address",
+    "validate_accounts",
     "AccountClient",
+    "ProgramAccount",
     "EventParser",
-    "get_localnet",
+    "SimulateResponse",
+    "error",
+    "utils",
 ]
 
 

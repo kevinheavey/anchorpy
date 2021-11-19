@@ -9,12 +9,12 @@
 # from spl.token.async_client import AsyncToken
 
 # from anchorpy import Program, create_workspace, close_workspace, Context, Provider
-# from anchorpy.pytest_plugin import get_localnet
+# from anchorpy.pytest_plugin import localnet_fixture
 # from anchorpy.error import ProgramError
 
 # PATH = Path("anchor/tests/system-accounts")
 
-# localnet = get_localnet(PATH)
+# localnet = localnet_fixture(PATH)
 
 
 # @dataclass

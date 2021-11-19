@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 from pytest import mark
 from anchorpy import Idl, InstructionCoder
-from anchorpy.program.context import check_args_length
-from anchorpy.program.common import to_instruction  # noqa: WPS347
+from anchorpy.program.context import _check_args_length
+from anchorpy.program.common import _to_instruction  # noqa: WPS347
 
 
 @mark.unit
@@ -14,8 +14,8 @@ def test_instruction_coder() -> None:
     idl = Idl.from_json(data)
     idl_ix = idl.instructions[0]
     args = (1234,)
-    check_args_length(idl_ix, args)
-    ix = to_instruction(idl_ix, args)
+    _check_args_length(idl_ix, args)
+    ix = _to_instruction(idl_ix, args)
     coder = InstructionCoder(idl)
     encoded = coder.build(ix)
     assert encoded == b"\xaf\xafm\x1f\r\x98\x9b\xed\xd2\x04\x00\x00\x00\x00\x00\x00"

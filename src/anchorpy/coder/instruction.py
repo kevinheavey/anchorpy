@@ -5,9 +5,9 @@ from borsh_construct import CStruct
 from construct import Sequence, Bytes
 from construct import Construct, Adapter, Switch, Container
 
-from anchorpy.coder.common import _sighash  # noqa: WPS450
+from anchorpy.coder.common import _sighash
 from anchorpy.program.common import Instruction
-from anchorpy.coder.idl import _field_layout  # noqa: WPS450
+from anchorpy.coder.idl import _field_layout
 from anchorpy.idl import Idl
 
 

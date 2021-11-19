@@ -1,9 +1,9 @@
-"""This module provides `AccountsCoder` and `account_discriminator`."""
+"""This module provides `AccountsCoder` and `_account_discriminator`."""
 from hashlib import sha256
 from typing import Tuple, Any
 from construct import Adapter, Sequence, Bytes, Switch, Container
 
-from anchorpy.coder.idl import typedef_layout
+from anchorpy.coder.idl import _typedef_layout
 from anchorpy.idl import Idl
 from anchorpy.program.common import Instruction as AccountToSerialize
 
@@ -20,10 +20,10 @@ class AccountsCoder(Adapter):
             idl: The parsed IDL object.
         """
         self._accounts_layout = {
-            acc.name: typedef_layout(acc, idl.types, acc.name) for acc in idl.accounts
+            acc.name: _typedef_layout(acc, idl.types, acc.name) for acc in idl.accounts
         }
         self.acc_name_to_discriminator = {
-            acc.name: account_discriminator(acc.name) for acc in idl.accounts
+            acc.name: _account_discriminator(acc.name) for acc in idl.accounts
         }
         self.discriminator_to_acc_name = {
             disc: acc_name for acc_name, disc in self.acc_name_to_discriminator.items()
@@ -60,7 +60,7 @@ class AccountsCoder(Adapter):
         return discriminator, obj.data
 
 
-def account_discriminator(name: str) -> bytes:
+def _account_discriminator(name: str) -> bytes:
     """Calculate unique 8 byte discriminator prepended to all anchor accounts.
 
     Args:

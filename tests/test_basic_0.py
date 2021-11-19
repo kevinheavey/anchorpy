@@ -5,12 +5,12 @@ import subprocess
 from pytest import mark
 
 from anchorpy import create_workspace
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.pytest_plugin import localnet_fixture
 
 PATH = Path("anchor/examples/tutorial/basic-0")
 
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 
 @mark.asyncio

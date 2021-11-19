@@ -8,30 +8,27 @@ import json
 from anchorpy.coder.coder import Coder
 from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE
 from anchorpy.program.common import AddressType, translate_address
-from anchorpy.idl import Idl, decode_idl_account, idl_address
+from anchorpy.idl import Idl, _decode_idl_account, _idl_address
 from solana.publickey import PublicKey
 from anchorpy.provider import Provider
 from anchorpy.program.namespace.rpc import (
-    RpcFn,
-    build_rpc_item,
+    _RpcFn,
+    _build_rpc_item,
 )
 from anchorpy.program.namespace.transaction import (
-    TransactionFn,
-    build_transaction_fn,
+    _TransactionFn,
+    _build_transaction_fn,
 )
 from anchorpy.program.namespace.instruction import (
-    InstructionFn,
+    _InstructionFn,
 )
-from anchorpy.program.namespace.account import AccountClient, build_account
+from anchorpy.program.namespace.account import AccountClient, _build_account
 from anchorpy.program.namespace.simulate import (
-    SimulateFn,
-    build_simulate_item,
+    _SimulateFn,
+    _build_simulate_item,
 )
-from anchorpy.program.namespace.types import build_types
-
-
-class IdlNotFoundError(Exception):
-    """Raise when requested IDL account does not exist."""
+from anchorpy.program.namespace.types import _build_types
+from anchorpy.error import IdlNotFoundError
 
 
 def _parse_idl_errors(idl: Idl) -> dict[int, str]:
@@ -56,11 +53,11 @@ def _build_namespace(  # noqa: WPS320
     program_id: PublicKey,
     provider: Provider,
 ) -> tuple[
-    dict[str, RpcFn],
-    dict[str, InstructionFn],
-    dict[str, TransactionFn],
+    dict[str, _RpcFn],
+    dict[str, _InstructionFn],
+    dict[str, _TransactionFn],
     dict[str, AccountClient],
-    dict[str, SimulateFn],
+    dict[str, _SimulateFn],
     dict[str, Any],
 ]:
     """Generate all namespaces for a given program.
@@ -83,10 +80,10 @@ def _build_namespace(  # noqa: WPS320
 
     for idl_ix in idl.instructions:
 
-        ix_item = InstructionFn(idl_ix, coder.instruction.build, program_id)
-        tx_item = build_transaction_fn(idl_ix, ix_item)
-        rpc_item = build_rpc_item(idl_ix, tx_item, idl_errors, provider)
-        simulate_item = build_simulate_item(
+        ix_item = _InstructionFn(idl_ix, coder.instruction.build, program_id)
+        tx_item = _build_transaction_fn(idl_ix, ix_item)
+        rpc_item = _build_rpc_item(idl_ix, tx_item, idl_errors, provider)
+        simulate_item = _build_simulate_item(
             idl_ix,
             tx_item,
             idl_errors,
@@ -102,8 +99,8 @@ def _build_namespace(  # noqa: WPS320
         rpc[name] = rpc_item
         simulate[name] = simulate_item
 
-    account = build_account(idl, coder, program_id, provider) if idl.accounts else {}
-    types = build_types(idl)
+    account = _build_account(idl, coder, program_id, provider) if idl.accounts else {}
+    types = _build_types(idl)
     return rpc, instruction, transaction, account, simulate, types
 
 
@@ -198,12 +195,12 @@ class Program(object):
         """
         program_id = translate_address(address)
         actual_provider = provider if provider is not None else Provider.local()
-        idl_addr = idl_address(program_id)
+        idl_addr = _idl_address(program_id)
         account_info = await actual_provider.connection.get_account_info(idl_addr)
         account_info_val = account_info["result"]["value"]
         if account_info_val is None:
             raise IdlNotFoundError(f"IDL not found for program: {address}")
-        idl_account = decode_idl_account(
+        idl_account = _decode_idl_account(
             b64decode(account_info_val["data"][0])[ACCOUNT_DISCRIMINATOR_SIZE:]
         )
         inflated_idl = _pako_inflate(bytes(idl_account["data"])).decode()

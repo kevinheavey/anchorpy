@@ -14,12 +14,12 @@ from spl.token.instructions import (
 from spl.token.constants import TOKEN_PROGRAM_ID
 
 from anchorpy import Program, create_workspace, close_workspace, Context, Provider
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.pytest_plugin import localnet_fixture
 from anchorpy.utils.token import get_mint_info, get_token_account, create_token_account
 
 PATH = Path("anchor/tests/spl/token-proxy/")
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 
 @fixture(scope="module")

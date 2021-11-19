@@ -7,10 +7,7 @@ from solana.rpc.types import TxOpts
 from solana.transaction import AccountMeta, TransactionInstruction
 
 from anchorpy.idl import _IdlInstruction
-
-
-class ArgsError(Exception):
-    """Raise when the incorrect number of args is passed to the RPC function."""
+from anchorpy.error import ArgsError
 
 
 # should be Dict[str, Union[PublicKey, Accounts]]
@@ -40,7 +37,7 @@ class Context:
     options: Optional[TxOpts] = None
 
 
-def check_args_length(
+def _check_args_length(
     idl_ix: _IdlInstruction,
     args: Tuple,
 ) -> None:

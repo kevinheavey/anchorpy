@@ -13,11 +13,11 @@ from anchorpy import (
     close_workspace,
     EventParser,
 )
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.pytest_plugin import localnet_fixture
 
 PATH = Path("anchor/tests/events/")
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 
 @fixture(scope="module")

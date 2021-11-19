@@ -5,11 +5,11 @@ from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
 from anchorpy import Program, create_workspace, Provider
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.pytest_plugin import localnet_fixture
 
 PATH = Path("anchor/tests/composite/")
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 
 async def create_mint(prov: Provider) -> AsyncToken:

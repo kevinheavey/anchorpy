@@ -5,16 +5,21 @@ from solana.transaction import TransactionInstruction, AccountMeta
 from solana.publickey import PublicKey
 
 from anchorpy.program.common import (  # noqa: WPS347
-    to_instruction,
+    _to_instruction,
     validate_accounts,
     translate_address,
     Instruction,
 )
-from anchorpy.program.context import EMPTY_CONTEXT, Context, check_args_length, Accounts
+from anchorpy.program.context import (
+    EMPTY_CONTEXT,
+    Context,
+    _check_args_length,
+    Accounts,
+)
 from anchorpy.idl import _IdlInstruction, _IdlAccountItem, _IdlAccounts, _IdlAccount
 
 
-class InstructionFn:
+class _InstructionFn:
     """Callable object to create a `TransactionInstruction` generated from an IDL.
 
     Additionally it provides an `accounts` utility method, returning a list
@@ -55,9 +60,9 @@ class InstructionFn:
                 of these arguments depend on the program being used.
             ctx: non-argument parameters to pass to the method.
         """
-        check_args_length(self.idl_ix, args)
+        _check_args_length(self.idl_ix, args)
         validate_accounts(self.idl_ix.accounts, ctx.accounts)
-        validate_instruction(self.idl_ix, args)
+        _validate_instruction(self.idl_ix, args)
 
         keys = self.accounts(ctx.accounts)
         if ctx.remaining_accounts:
@@ -65,7 +70,7 @@ class InstructionFn:
         return TransactionInstruction(
             keys=keys,
             program_id=self.program_id,
-            data=self.encode_fn(to_instruction(self.idl_ix, args)),
+            data=self.encode_fn(_to_instruction(self.idl_ix, args)),
         )
 
     def accounts(self, accs: Accounts) -> list[AccountMeta]:
@@ -77,10 +82,10 @@ class InstructionFn:
         Returns:
             Ordered and flattened accounts.
         """
-        return accounts_array(accs, self.idl_ix.accounts)
+        return _accounts_array(accs, self.idl_ix.accounts)
 
 
-def accounts_array(
+def _accounts_array(
     ctx: Accounts,
     accounts: Sequence[_IdlAccountItem],
 ) -> list[AccountMeta]:
@@ -97,7 +102,7 @@ def accounts_array(
     for acc in accounts:
         if isinstance(acc, _IdlAccounts):
             rpc_accs = cast(Accounts, ctx[acc.name])
-            acc_arr = accounts_array(rpc_accs, acc.accounts)
+            acc_arr = _accounts_array(rpc_accs, acc.accounts)
             accounts_ret.extend(acc_arr)
         else:
             account: _IdlAccount = acc
@@ -111,7 +116,7 @@ def accounts_array(
     return accounts_ret
 
 
-def validate_instruction(ix: _IdlInstruction, args: Tuple):
+def _validate_instruction(ix: _IdlInstruction, args: Tuple):
     """Throws error if any argument required for the `ix` is not given.
 
     Args:

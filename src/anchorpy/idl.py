@@ -8,7 +8,7 @@ from inflection import underscore, camelize
 from borsh_construct import CStruct, Vec, U8
 import solana.publickey  # noqa: WPS301
 
-from anchorpy import borsh_extension
+from anchorpy.borsh_extension import _BorshPubkey
 
 _LiteralStrings = Literal[
     "bool",
@@ -218,7 +218,7 @@ class Idl:
         return deserialize(cls, idl)
 
 
-def idl_address(program_id: solana.publickey.PublicKey) -> solana.publickey.PublicKey:
+def _idl_address(program_id: solana.publickey.PublicKey) -> solana.publickey.PublicKey:
     """Deterministic IDL address as a function of the program id.
 
     Args:
@@ -238,10 +238,10 @@ class IdlProgramAccount(TypedDict):
     data: bytes
 
 
-IDL_ACCOUNT_LAYOUT = CStruct("authority" / borsh_extension.PublicKey, "data" / Vec(U8))
+IDL_ACCOUNT_LAYOUT = CStruct("authority" / _BorshPubkey, "data" / Vec(U8))
 
 
-def decode_idl_account(data: bytes) -> IdlProgramAccount:
+def _decode_idl_account(data: bytes) -> IdlProgramAccount:
     """Decode on-chain IDL.
 
     Args:
@@ -251,15 +251,3 @@ def decode_idl_account(data: bytes) -> IdlProgramAccount:
         Decoded IDL.
     """
     return IDL_ACCOUNT_LAYOUT.parse(data)
-
-
-def encode_idl_account(acc: IdlProgramAccount) -> bytes:
-    """Encode IDL for on-chain storage.
-
-    Args:
-        acc: data to encode.
-
-    Returns:
-        bytes: Encoded IDL.
-    """
-    return IDL_ACCOUNT_LAYOUT.build(acc)

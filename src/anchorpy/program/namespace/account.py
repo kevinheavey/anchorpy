@@ -11,14 +11,18 @@ from solana.transaction import TransactionInstruction
 from solana.publickey import PublicKey
 from solana.rpc.types import MemcmpOpts
 
-from anchorpy.coder.common import _account_size  # noqa: WPS450
-from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE, account_discriminator
+from anchorpy.coder.common import _account_size
+from anchorpy.coder.accounts import (
+    ACCOUNT_DISCRIMINATOR_SIZE,
+    _account_discriminator,
+)
 from anchorpy.coder.coder import Coder
-from anchorpy.idl import Idl, _IdlTypeDef  # noqa: WPS450
+from anchorpy.error import AccountDoesNotExistError, AccountInvalidDiscriminator
+from anchorpy.idl import Idl, _IdlTypeDef
 from anchorpy.provider import Provider
 
 
-def build_account(
+def _build_account(
     idl: Idl,
     coder: Coder,
     program_id: PublicKey,
@@ -40,14 +44,6 @@ def build_account(
         account_client = AccountClient(idl, idl_account, coder, program_id, provider)
         accounts_fns[idl_account.name] = account_client
     return accounts_fns
-
-
-class AccountDoesNotExistError(Exception):
-    """Raise if account doesn't exist."""
-
-
-class AccountInvalidDiscriminator(Exception):
-    """Raise if account discriminator doesn't match the IDL."""
 
 
 @dataclass
@@ -101,7 +97,7 @@ class AccountClient(object):
         if not account_info["result"]["value"]:
             raise AccountDoesNotExistError(f"Account {address} does not exist")
         data = base64.b64decode(account_info["result"]["value"]["data"][0])
-        discriminator = account_discriminator(self._idl_account.name)
+        discriminator = _account_discriminator(self._idl_account.name)
         if discriminator != data[:ACCOUNT_DISCRIMINATOR_SIZE]:
             msg = f"Account {address} has an invalid discriminator"
             raise AccountInvalidDiscriminator(msg)
@@ -153,7 +149,7 @@ class AccountClient(object):
                 provided data size.
         """
         all_accounts = []
-        discriminator = account_discriminator(self._idl_account.name)
+        discriminator = _account_discriminator(self._idl_account.name)
         to_encode = discriminator if buffer is None else discriminator + buffer
         bytes_arg = b58encode(to_encode).decode("ascii")
         base_memcmp_opt = MemcmpOpts(

@@ -4,7 +4,7 @@ from typing import Dict, Any, Union, cast, get_args, Tuple, NamedTuple
 from construct import Container
 
 from solana.publickey import PublicKey
-from anchorpy.idl import (  # noqa: WPS450
+from anchorpy.idl import (
     _IdlAccounts,
     _IdlInstruction,
     _IdlAccountItem,
@@ -34,7 +34,7 @@ class Instruction:
     name: str
 
 
-def to_instruction(idl_ix: _IdlInstruction, args: Tuple) -> Instruction:
+def _to_instruction(idl_ix: _IdlInstruction, args: Tuple) -> Instruction:
     """Convert an IDL instruction and arguments to an Instruction object.
 
     Args:

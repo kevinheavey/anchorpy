@@ -5,7 +5,6 @@ from pathlib import Path
 from os import getenv, environ
 import json
 from types import MappingProxyType
-from abc import abstractmethod, ABC
 from typing import Optional, Union, NamedTuple
 
 from solana.keypair import Keypair
@@ -25,10 +24,6 @@ class SendTxRequest(NamedTuple):
 
 DEFAULT_OPTIONS = types.TxOpts(skip_confirmation=False, preflight_commitment=Processed)
 COMMITMENT_RANKS = MappingProxyType({Processed: 0, Confirmed: 1, Finalized: 2})
-
-
-class UnconfirmedTxError(Exception):
-    """Raise when confirming a transaction times out."""
 
 
 class Provider:
@@ -62,7 +57,7 @@ class Provider:
             opts: The default transaction confirmation options.
         """
         connection = AsyncClient(url, opts.preflight_commitment)
-        wallet = LocalWallet.local()
+        wallet = Wallet.local()
         return cls(connection, wallet, opts)
 
     @classmethod
@@ -71,7 +66,7 @@ class Provider:
         url = environ["ANCHOR_PROVIDER_URL"]
         options = DEFAULT_OPTIONS
         connection = AsyncClient(url, options.preflight_commitment)
-        wallet = LocalWallet.local()
+        wallet = Wallet.local()
         return cls(connection, wallet, options)
 
     async def simulate(
@@ -177,8 +172,8 @@ class Provider:
         await self.connection.close()
 
 
-class Wallet(ABC):
-    """Abstract base class for wallets."""
+class Wallet:
+    """Python wallet object."""
 
     def __init__(self, payer: Keypair):
         """Initialize the wallet.
@@ -187,37 +182,6 @@ class Wallet(ABC):
             payer: the Keypair used to sign transactions.
         """
         self.payer = payer
-
-    @property
-    @abstractmethod
-    def public_key(self) -> PublicKey:
-        """Must return the public key of the wallet."""
-
-    @abstractmethod
-    def sign_transaction(self, tx: Transaction) -> Transaction:
-        """Sign a transaction using the wallet's keypair.
-
-        Args:
-            tx: The transaction to sign.
-
-        Returns:
-            The signed transaction.
-        """
-
-    @abstractmethod
-    def sign_all_transactions(self, txs: list[Transaction]) -> list[Transaction]:
-        """Must implement signing multiple transactions.
-
-        Args:
-            txs: The transactions to sign.
-
-        Returns:
-            The signed transactions.
-        """
-
-
-class LocalWallet(Wallet):
-    """Python wallet object."""
 
     @property
     def public_key(self) -> PublicKey:
@@ -250,7 +214,7 @@ class LocalWallet(Wallet):
         return txs
 
     @classmethod
-    def local(cls) -> LocalWallet:
+    def local(cls) -> Wallet:
         """Create a wallet instance from the filesystem.
 
         Uses the path at the ANCHOR_WALLET env var if set,

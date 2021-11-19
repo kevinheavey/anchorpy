@@ -2,7 +2,7 @@
 from typing import Dict, Union
 from hashlib import sha256
 
-from anchorpy.idl import (  # noqa: WPS450
+from anchorpy.idl import (
     Idl,
     _IdlEnumVariant,
     _IdlField,

@@ -10,12 +10,12 @@ from solana.sysvar import (
 
 from anchorpy import create_workspace
 from anchorpy.program.context import Context
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.pytest_plugin import localnet_fixture
 
 PATH = Path("anchor/tests/sysvars")
 
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 
 @mark.asyncio

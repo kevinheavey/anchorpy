@@ -27,10 +27,21 @@ repo_url: https://github.com/kevinheavey/anchorpy
 repo_name: kevinheavey/anchorpy
 site_url: https://kevinheavey.github.io/anchorpy/
 plugins:
-  - mkdocstrings
+  - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            filters:
+              - "!^_"  # exlude all members starting with _
+              - "^__init__$"  # but always include __init__ modules and methods
+          rendering:
+            show_root_heading: true
+            show_root_full_path: false
   - search
 nav:
   - index.md
   - tutorial.md
   - testing.md
   - reference.md
+extra_css:
+  - css/mkdocstrings.css

@@ -5,14 +5,30 @@ from enum import IntEnum
 from solana.rpc.types import RPCError
 
 
-class ExtendedRPCError(RPCError):
+class _ExtendedRPCError(RPCError):
     """RPCError with extra fields."""
 
     data: dict
     logs: list[str]
 
 
-class LangErrorCode(IntEnum):
+class AccountDoesNotExistError(Exception):
+    """Raise if account doesn't exist."""
+
+
+class AccountInvalidDiscriminator(Exception):
+    """Raise if account discriminator doesn't match the IDL."""
+
+
+class IdlNotFoundError(Exception):
+    """Raise when requested IDL account does not exist."""
+
+
+class ArgsError(Exception):
+    """Raise when the incorrect number of args is passed to the RPC function."""
+
+
+class _LangErrorCode(IntEnum):
     """Enumerates Anchor error codes."""
 
     # Instructions.
@@ -56,64 +72,64 @@ class LangErrorCode(IntEnum):
 
 LangErrorMessage = {
     # Instructions.
-    LangErrorCode.InstructionMissing: "8 byte instruction identifier not provided",
-    LangErrorCode.InstructionFallbackNotFound: "Fallback functions are not supported",
-    LangErrorCode.InstructionDidNotDeserialize: (
+    _LangErrorCode.InstructionMissing: "8 byte instruction identifier not provided",
+    _LangErrorCode.InstructionFallbackNotFound: "Fallback functions are not supported",
+    _LangErrorCode.InstructionDidNotDeserialize: (
         "The program could not deserialize the given instruction"
     ),
-    LangErrorCode.InstructionDidNotSerialize: (
+    _LangErrorCode.InstructionDidNotSerialize: (
         "The program could not serialize the given instruction"
     ),
     # Idl instructions.
-    LangErrorCode.IdlInstructionStub: (
+    _LangErrorCode.IdlInstructionStub: (
         "The program was compiled without idl instructions"
     ),
-    LangErrorCode.IdlInstructionInvalidProgram: (
+    _LangErrorCode.IdlInstructionInvalidProgram: (
         "The transaction was given an invalid program for the IDL instruction"
     ),
     # Constraints.
-    LangErrorCode.ConstraintMut: "A mut constraint was violated",
-    LangErrorCode.ConstraintHasOne: "A has_one constraint was violated",
-    LangErrorCode.ConstraintSigner: "A signer constraint was violated",
-    LangErrorCode.ConstraintRaw: "A raw constraint was violated",
-    LangErrorCode.ConstraintOwner: "An owner constraint was violated",
-    LangErrorCode.ConstraintRentExempt: "A rent exempt constraint was violated",
-    LangErrorCode.ConstraintSeeds: "A seeds constraint was violated",
-    LangErrorCode.ConstraintExecutable: "An executable constraint was violated",
-    LangErrorCode.ConstraintState: "A state constraint was violated",
-    LangErrorCode.ConstraintAssociated: "An associated constraint was violated",
-    LangErrorCode.ConstraintAssociatedInit: (
+    _LangErrorCode.ConstraintMut: "A mut constraint was violated",
+    _LangErrorCode.ConstraintHasOne: "A has_one constraint was violated",
+    _LangErrorCode.ConstraintSigner: "A signer constraint was violated",
+    _LangErrorCode.ConstraintRaw: "A raw constraint was violated",
+    _LangErrorCode.ConstraintOwner: "An owner constraint was violated",
+    _LangErrorCode.ConstraintRentExempt: "A rent exempt constraint was violated",
+    _LangErrorCode.ConstraintSeeds: "A seeds constraint was violated",
+    _LangErrorCode.ConstraintExecutable: "An executable constraint was violated",
+    _LangErrorCode.ConstraintState: "A state constraint was violated",
+    _LangErrorCode.ConstraintAssociated: "An associated constraint was violated",
+    _LangErrorCode.ConstraintAssociatedInit: (
         "An associated init constraint was violated"
     ),
-    LangErrorCode.ConstraintClose: "A close constraint was violated",
-    LangErrorCode.ConstraintAddress: "An address constraint was violated",
+    _LangErrorCode.ConstraintClose: "A close constraint was violated",
+    _LangErrorCode.ConstraintAddress: "An address constraint was violated",
     # Accounts.
-    LangErrorCode.AccountDiscriminatorAlreadySet: (
+    _LangErrorCode.AccountDiscriminatorAlreadySet: (
         "The account discriminator was already set on this account"
     ),
-    LangErrorCode.AccountDiscriminatorNotFound: (
+    _LangErrorCode.AccountDiscriminatorNotFound: (
         "No 8 byte discriminator was found on the account"
     ),
-    LangErrorCode.AccountDiscriminatorMismatch: (
+    _LangErrorCode.AccountDiscriminatorMismatch: (
         "8 byte discriminator did not match what was expected"
     ),
-    LangErrorCode.AccountDidNotDeserialize: "Failed to deserialize the account",
-    LangErrorCode.AccountDidNotSerialize: "Failed to serialize the account",
-    LangErrorCode.AccountNotEnoughKeys: (
+    _LangErrorCode.AccountDidNotDeserialize: "Failed to deserialize the account",
+    _LangErrorCode.AccountDidNotSerialize: "Failed to serialize the account",
+    _LangErrorCode.AccountNotEnoughKeys: (
         "Not enough account keys given to the instruction"
     ),
-    LangErrorCode.AccountNotMutable: "The given account is not mutable",
-    LangErrorCode.AccountNotProgramOwned: (
+    _LangErrorCode.AccountNotMutable: "The given account is not mutable",
+    _LangErrorCode.AccountNotProgramOwned: (
         "The given account is not owned by the executing program"
     ),
-    LangErrorCode.InvalidProgramId: "Program ID was not as expected",
-    LangErrorCode.InvalidProgramIdExecutable: "Program account is not executable",
+    _LangErrorCode.InvalidProgramId: "Program ID was not as expected",
+    _LangErrorCode.InvalidProgramIdExecutable: "Program account is not executable",
     # State.
-    LangErrorCode.StateInvalidAddress: (
+    _LangErrorCode.StateInvalidAddress: (
         "The given state account does not have the correct address"
     ),
     # Misc.
-    LangErrorCode.Deprecated: (
+    _LangErrorCode.Deprecated: (
         "The API being used is deprecated and should no longer be used"
     ),
 }
@@ -136,7 +152,7 @@ class ProgramError(Exception):
     @classmethod
     def parse(
         cls,
-        err_info: Union[RPCError, ExtendedRPCError],
+        err_info: Union[RPCError, _ExtendedRPCError],
         idl_errors: dict[int, str],
     ) -> Optional[ProgramError]:
         """Convert an RPC error into a ProgramError, if possible.
@@ -149,7 +165,7 @@ class ProgramError(Exception):
             A ProgramError or None.
         """
         try:  # noqa: WPS229
-            err_data = cast(ExtendedRPCError, err_info)["data"]
+            err_data = cast(_ExtendedRPCError, err_info)["data"]
             custom_err_code = err_data["err"]["InstructionError"][1]["Custom"]
         except (KeyError, TypeError):
             return None

@@ -12,13 +12,13 @@ from solana.system_program import SYS_PROGRAM_ID, transfer, TransferParams
 from solana.rpc.core import RPCException
 from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.async_client import AsyncToken
-from anchorpy.provider import Provider, LocalWallet
+from anchorpy.provider import Provider, Wallet
 from anchorpy.utils.rpc import invoke
-from anchorpy.pytest_plugin import get_localnet
+from anchorpy.pytest_plugin import localnet_fixture
 
 PATH = Path("anchor/tests/misc/")
 
-localnet = get_localnet(PATH)
+localnet = localnet_fixture(PATH)
 
 
 @fixture(scope="module")
@@ -666,7 +666,7 @@ async def test_can_fetch_all_accounts_of_a_given_type(
     filterable2 = Keypair.generate().public_key
     provider = Provider(
         program.provider.connection,
-        LocalWallet(Keypair.generate()),
+        Wallet(Keypair.generate()),
         program.provider.opts,
     )
     another_program = Program(program.idl, program.program_id, provider)
