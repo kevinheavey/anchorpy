@@ -24,8 +24,10 @@ class Context:
         remaining_accounts: All accounts to pass into an instruction *after* the main
         `accounts`. This can be used for optional or otherwise unknown accounts.
         signers: Accounts that must sign a given transaction.
-        instructions: Instructions to run *before* a given method. Often this is used,
-            for example to create accounts prior to executing a method.
+        pre_instructions: Instructions to run *before* a given method. Often this is
+            used, for example to create accounts prior to executing a method.
+        post_instructions: Instructions to run *after* a given method. Often this is
+            used, for example to close accounts prior to executing a method.
         options: Commitment parameters to use for a transaction.
 
     """
@@ -33,7 +35,8 @@ class Context:
     accounts: Accounts = field(default_factory=dict)
     remaining_accounts: list[AccountMeta] = field(default_factory=list)
     signers: list[Keypair] = field(default_factory=list)
-    instructions: list[TransactionInstruction] = field(default_factory=list)
+    pre_instructions: list[TransactionInstruction] = field(default_factory=list)
+    post_instructions: list[TransactionInstruction] = field(default_factory=list)
     options: Optional[TxOpts] = None
 
 

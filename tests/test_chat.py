@@ -36,7 +36,7 @@ async def created_chatroom(program: Program) -> Keypair:
                 "chat_room": chatroom.public_key,
                 "rent": SYSVAR_RENT_PUBKEY,
             },
-            instructions=[
+            pre_instructions=[
                 await program.account["ChatRoom"].create_instruction(chatroom),
             ],
             signers=[chatroom],

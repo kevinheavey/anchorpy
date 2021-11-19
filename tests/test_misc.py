@@ -39,7 +39,7 @@ async def initialized_keypair(program: Program) -> Keypair:
         ctx=Context(
             accounts={"data": data.public_key, "rent": SYSVAR_RENT_PUBKEY},
             signers=[data],
-            instructions=[await program.account["Data"].create_instruction(data)],
+            pre_instructions=[await program.account["Data"].create_instruction(data)],
         ),
     )
     return data
@@ -62,7 +62,9 @@ async def keypair_after_test_u16(program: Program) -> Keypair:
         ctx=Context(
             accounts={"my_account": data.public_key, "rent": SYSVAR_RENT_PUBKEY},
             signers=[data],
-            instructions=[await program.account["DataU16"].create_instruction(data)],
+            pre_instructions=[
+                await program.account["DataU16"].create_instruction(data)
+            ],
         ),
     )
     return data
@@ -147,7 +149,7 @@ async def test_can_use_i8_in_idl(program: Program) -> None:
         -3,
         ctx=Context(
             accounts={"data": data.public_key, "rent": SYSVAR_RENT_PUBKEY},
-            instructions=[await program.account["DataI8"].create_instruction(data)],
+            pre_instructions=[await program.account["DataI8"].create_instruction(data)],
             signers=[data],
         ),
     )
@@ -162,7 +164,9 @@ async def data_i16_keypair(program: Program) -> Keypair:
         -2048,
         ctx=Context(
             accounts={"data": data.public_key, "rent": SYSVAR_RENT_PUBKEY},
-            instructions=[await program.account["DataI16"].create_instruction(data)],
+            pre_instructions=[
+                await program.account["DataI16"].create_instruction(data)
+            ],
             signers=[data],
         ),
     )
@@ -384,7 +388,7 @@ async def test_can_init_random_account_prefunded(program: Program) -> None:
                 "system_program": SYS_PROGRAM_ID,
             },
             signers=[data],
-            instructions=[
+            pre_instructions=[
                 transfer(
                     TransferParams(
                         from_pubkey=program.provider.wallet.public_key,
@@ -459,7 +463,7 @@ async def prefunded_mint(program: Program) -> Keypair:
                 "rent": SYSVAR_RENT_PUBKEY,
             },
             signers=[mint],
-            instructions=[
+            pre_instructions=[
                 transfer(
                     TransferParams(
                         from_pubkey=program.provider.wallet.public_key,
@@ -539,7 +543,7 @@ async def test_can_create_random_token_account_with_prefunding(
                 "rent": SYSVAR_RENT_PUBKEY,
             },
             signers=[token],
-            instructions=[
+            pre_instructions=[
                 transfer(
                     TransferParams(
                         from_pubkey=program.provider.wallet.public_key,
@@ -581,7 +585,7 @@ async def test_can_create_random_token_account_with_prefunding_under_rent_exempt
                 "rent": SYSVAR_RENT_PUBKEY,
             },
             signers=[token],
-            instructions=[
+            pre_instructions=[
                 transfer(
                     TransferParams(
                         from_pubkey=program.provider.wallet.public_key,

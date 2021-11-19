@@ -49,7 +49,9 @@ async def foo(program: Program) -> Keypair:
                 "authority": program.provider.wallet.public_key,
                 "rent": SYSVAR_RENT_PUBKEY,
             },
-            instructions=[await program.account["Foo"].create_instruction(foo_keypair)],
+            pre_instructions=[
+                await program.account["Foo"].create_instruction(foo_keypair)
+            ],
             signers=[foo_keypair],
         )
     )
@@ -218,7 +220,7 @@ async def event_q(
                 "event_q": event_q_keypair.public_key,
                 "rent": SYSVAR_RENT_PUBKEY,
             },
-            instructions=[
+            pre_instructions=[
                 await program.account["EventQ"].create_instruction(
                     event_q_keypair, size
                 )
