@@ -12,7 +12,7 @@ localnet = get_localnet(PATH)
 
 @fixture(scope="module")
 def build_lockup() -> None:
-    subprocess.run(  # noqa: S603
+    subprocess.run(  # noqa: S603,S607
         ["anchor", "build"],
         check=True,
         cwd="anchor/tests/lockup",

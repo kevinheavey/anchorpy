@@ -63,7 +63,7 @@ async def test_can_use_u128_and_i128(
 
 
 @fixture(scope="module")
-async def keypair_after_testU16(program: Program) -> Keypair:
+async def keypair_after_test_u16(program: Program) -> Keypair:
     data = Keypair()
     await program.rpc["test_u16"](
         99,
@@ -79,10 +79,10 @@ async def keypair_after_testU16(program: Program) -> Keypair:
 @mark.asyncio
 async def test_can_use_u16(
     program: Program,
-    keypair_after_testU16: Keypair,
+    keypair_after_test_u16: Keypair,
 ) -> None:
     data_account = await program.account["DataU16"].fetch(
-        keypair_after_testU16.public_key,
+        keypair_after_test_u16.public_key,
     )
     assert data_account.data == 99
 
