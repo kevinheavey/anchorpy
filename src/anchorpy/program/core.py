@@ -1,6 +1,6 @@
 """This module defines the Program class."""
 from __future__ import annotations
-from typing import Optional
+from typing import Any, Optional
 from base64 import b64decode
 import zlib
 import json
@@ -8,14 +8,103 @@ import json
 from anchorpy.coder.coder import Coder
 from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE
 from anchorpy.program.common import AddressType, translate_address
-from anchorpy.program.namespace.namespace import build_namespace
 from anchorpy.idl import Idl, decode_idl_account, idl_address
 from solana.publickey import PublicKey
 from anchorpy.provider import Provider
+from anchorpy.program.namespace.rpc import (
+    RpcFn,
+    build_rpc_item,
+)
+from anchorpy.program.namespace.transaction import (
+    TransactionFn,
+    build_transaction_fn,
+)
+from anchorpy.program.namespace.instruction import (
+    InstructionFn,
+)
+from anchorpy.program.namespace.account import AccountClient, build_account
+from anchorpy.program.namespace.simulate import (
+    SimulateFn,
+    build_simulate_item,
+)
+from anchorpy.program.namespace.types import build_types
 
 
 class IdlNotFoundError(Exception):
     """Raise when requested IDL account does not exist."""
+
+
+def _parse_idl_errors(idl: Idl) -> dict[int, str]:
+    """Turn IDL errors into something readable.
+
+    Uses message if available, otherwise name.
+
+    Args:
+        idl: Parsed `Idl` instance.
+
+    """
+    errors = {}
+    for e in idl.errors:
+        msg = e.msg if e.msg else e.name
+        errors[e.code] = msg
+    return errors
+
+
+def _build_namespace(  # noqa: WPS320
+    idl: Idl,
+    coder: Coder,
+    program_id: PublicKey,
+    provider: Provider,
+) -> tuple[
+    dict[str, RpcFn],
+    dict[str, InstructionFn],
+    dict[str, TransactionFn],
+    dict[str, AccountClient],
+    dict[str, SimulateFn],
+    dict[str, Any],
+]:
+    """Generate all namespaces for a given program.
+
+    Args:
+        idl: The parsed IDL object.
+        coder: The program's Coder object .
+        program_id: The Program ID.
+        provider: The program's provider.
+
+    Returns:
+        The program namespaces.
+    """
+    idl_errors = _parse_idl_errors(idl)
+
+    rpc = {}
+    instruction = {}
+    transaction = {}
+    simulate = {}
+
+    for idl_ix in idl.instructions:
+
+        ix_item = InstructionFn(idl_ix, coder.instruction.build, program_id)
+        tx_item = build_transaction_fn(idl_ix, ix_item)
+        rpc_item = build_rpc_item(idl_ix, tx_item, idl_errors, provider)
+        simulate_item = build_simulate_item(
+            idl_ix,
+            tx_item,
+            idl_errors,
+            provider,
+            coder,
+            program_id,
+            idl,
+        )
+
+        name = idl_ix.name
+        instruction[name] = ix_item
+        transaction[name] = tx_item
+        rpc[name] = rpc_item
+        simulate[name] = simulate_item
+
+    account = build_account(idl, coder, program_id, provider) if idl.accounts else {}
+    types = build_types(idl)
+    return rpc, instruction, transaction, account, simulate, types
 
 
 def _pako_inflate(data):
@@ -62,7 +151,7 @@ class Program(object):
             account,
             simulate,
             types,
-        ) = build_namespace(
+        ) = _build_namespace(
             idl,
             self.coder,
             program_id,

@@ -6,7 +6,7 @@ from solana.transaction import TransactionSignature
 from anchorpy.error import ProgramError
 
 from anchorpy.program.context import EMPTY_CONTEXT, Context, check_args_length
-from anchorpy.idl import IdlInstruction
+from anchorpy.idl import _IdlInstruction
 from anchorpy.provider import Provider
 from anchorpy.program.namespace.transaction import TransactionFn
 
@@ -30,7 +30,7 @@ class RpcFn(Protocol):
 
 
 def build_rpc_item(  # ts: RpcFactory
-    idl_ix: IdlInstruction,
+    idl_ix: _IdlInstruction,
     tx_fn: TransactionFn,
     idl_errors: Dict[int, str],
     provider: Provider,

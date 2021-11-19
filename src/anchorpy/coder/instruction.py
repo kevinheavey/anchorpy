@@ -5,13 +5,13 @@ from borsh_construct import CStruct
 from construct import Sequence, Bytes
 from construct import Construct, Adapter, Switch, Container
 
-from anchorpy.coder.common import sighash
+from anchorpy.coder.common import _sighash  # noqa: WPS450
 from anchorpy.program.common import Instruction
-from anchorpy.coder.idl import field_layout
+from anchorpy.coder.idl import _field_layout  # noqa: WPS450
 from anchorpy.idl import Idl
 
 
-class Sighash(Adapter):
+class _Sighash(Adapter):
     """Sighash as a Construct Adapter."""
 
     def __init__(self) -> None:
@@ -19,7 +19,7 @@ class Sighash(Adapter):
         super().__init__(Bytes(8))  # type: ignore
 
     def _encode(self, obj: str, context, path) -> bytes:
-        return sighash(obj)
+        return _sighash(obj)
 
     def _decode(self, obj: bytes, context, path):
         raise ValueError("Sighash cannot be reversed")
@@ -35,7 +35,7 @@ class InstructionCoder(Adapter):
             idl: The parsed IDL object.
         """
         self.ix_layout = _parse_ix_layout(idl)
-        sighasher = Sighash()
+        sighasher = _Sighash()
         sighash_layouts: Dict[bytes, Construct] = {}
         sighashes: Dict[str, bytes] = {}
         sighash_to_name: Dict[bytes, str] = {}
@@ -75,6 +75,8 @@ class InstructionCoder(Adapter):
 def _parse_ix_layout(idl: Idl) -> Dict[str, Construct]:
     ix_layout: Dict[str, Construct] = {}
     for ix in idl.instructions:
-        field_layouts = [field_layout(arg, idl.accounts + idl.types) for arg in ix.args]
+        field_layouts = [
+            _field_layout(arg, idl.accounts + idl.types) for arg in ix.args
+        ]
         ix_layout[ix.name] = ix.name / CStruct(*field_layouts)
     return ix_layout

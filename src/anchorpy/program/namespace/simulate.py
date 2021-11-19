@@ -6,7 +6,7 @@ from solana.rpc.types import RPCError
 
 from anchorpy.coder.coder import Coder
 from anchorpy.error import ExtendedRPCError, ProgramError
-from anchorpy.idl import IdlInstruction, Idl
+from anchorpy.idl import _IdlInstruction, Idl  # noqa: WPS450
 from anchorpy.program.event import EventParser, Event
 from anchorpy.program.namespace.transaction import TransactionFn
 from anchorpy.provider import Provider
@@ -46,7 +46,7 @@ class SimulateFn(Protocol):
 
 
 def build_simulate_item(
-    idl_ix: IdlInstruction,
+    idl_ix: _IdlInstruction,
     tx_fn: TransactionFn,
     idl_errors: Dict[int, str],
     provider: Provider,

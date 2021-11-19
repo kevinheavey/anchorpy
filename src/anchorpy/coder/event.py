@@ -3,7 +3,7 @@ from hashlib import sha256
 from typing import Dict, Tuple, Any
 
 from construct import Adapter, Construct, Sequence, Bytes, Switch
-from anchorpy.idl import Idl, IdlEvent, IdlField, IdlTypeDef, IdlTypeDefTyStruct
+from anchorpy.idl import Idl, _IdlEvent, _IdlField, _IdlTypeDef, _IdlTypeDefTyStruct
 
 from anchorpy.program.common import Event
 from anchorpy.coder.idl import typedef_layout
@@ -21,11 +21,11 @@ def event_discriminator(name: str) -> bytes:
     return sha256(f"event:{name}".encode()).digest()[:8]
 
 
-def _event_layout(event: IdlEvent, idl: Idl) -> Construct:
-    event_type_def = IdlTypeDef(
+def _event_layout(event: _IdlEvent, idl: Idl) -> Construct:
+    event_type_def = _IdlTypeDef(
         name=event.name,
-        type=IdlTypeDefTyStruct(
-            fields=[IdlField(name=f.name, type=f.type) for f in event.fields],
+        type=_IdlTypeDefTyStruct(
+            fields=[_IdlField(name=f.name, type=f.type) for f in event.fields],
         ),
     )
     return typedef_layout(event_type_def, idl.types, event.name)

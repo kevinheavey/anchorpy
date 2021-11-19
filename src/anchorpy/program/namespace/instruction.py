@@ -11,7 +11,7 @@ from anchorpy.program.common import (  # noqa: WPS347
     Instruction,
 )
 from anchorpy.program.context import EMPTY_CONTEXT, Context, check_args_length, Accounts
-from anchorpy.idl import IdlInstruction, IdlAccountItem, IdlAccounts, IdlAccount
+from anchorpy.idl import _IdlInstruction, _IdlAccountItem, _IdlAccounts, _IdlAccount
 
 
 class InstructionFn:
@@ -23,7 +23,7 @@ class InstructionFn:
 
     def __init__(
         self,
-        idl_ix: IdlInstruction,
+        idl_ix: _IdlInstruction,
         encode_fn: Callable[[Instruction], bytes],
         program_id: PublicKey,
     ) -> None:
@@ -82,7 +82,7 @@ class InstructionFn:
 
 def accounts_array(
     ctx: Accounts,
-    accounts: Sequence[IdlAccountItem],
+    accounts: Sequence[_IdlAccountItem],
 ) -> list[AccountMeta]:
     """Create a list of AccountMeta from a (possibly nested) dict of accounts.
 
@@ -95,12 +95,12 @@ def accounts_array(
     """
     accounts_ret: list[AccountMeta] = []
     for acc in accounts:
-        if isinstance(acc, IdlAccounts):
+        if isinstance(acc, _IdlAccounts):
             rpc_accs = cast(Accounts, ctx[acc.name])
             acc_arr = accounts_array(rpc_accs, acc.accounts)
             accounts_ret.extend(acc_arr)
         else:
-            account: IdlAccount = acc
+            account: _IdlAccount = acc
             accounts_ret.append(
                 AccountMeta(
                     pubkey=translate_address(ctx[account.name]),
@@ -111,7 +111,7 @@ def accounts_array(
     return accounts_ret
 
 
-def validate_instruction(ix: IdlInstruction, args: Tuple):
+def validate_instruction(ix: _IdlInstruction, args: Tuple):
     """Throws error if any argument required for the `ix` is not given.
 
     Args:

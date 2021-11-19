@@ -28,17 +28,17 @@ from borsh_construct import (
 
 from anchorpy.borsh_extension import PublicKey as BorshPublicKey, DataclassStruct
 from anchorpy.idl import (
-    IdlEnumFieldsNamed,
-    IdlField,
-    IdlType,
-    IdlTypeArray,
-    IdlTypeDef,
-    IdlTypeDefTyEnum,
-    IdlTypeDefTyStruct,
-    IdlTypeDefined,
-    IdlTypeOption,
-    IdlTypeVec,
-    NonLiteralIdlTypes,
+    _IdlEnumFieldsNamed,
+    _IdlField,
+    _IdlType,
+    _IdlTypeArray,
+    _IdlTypeDef,
+    _IdlTypeDefTyEnum,
+    _IdlTypeDefTyStruct,
+    _IdlTypeDefined,
+    _IdlTypeOption,
+    _IdlTypeVec,
+    _NonLiteralIdlTypes,
 )
 
 
@@ -83,8 +83,8 @@ FIELD_PYTHON_TYPE_MAP: Mapping[str, Type] = MappingProxyType(
 
 
 def _handle_enum_variants(
-    idl_enum: IdlTypeDefTyEnum,
-    types: list[IdlTypeDef],
+    idl_enum: _IdlTypeDefTyEnum,
+    types: list[_IdlTypeDef],
     name: str,
 ) -> Enum:
     variants = []
@@ -96,10 +96,10 @@ def _handle_enum_variants(
             fields = []
             variant_fields = variant.fields
             for fld in variant_fields:
-                if not isinstance(fld, IdlField):  # noqa: WPS421
+                if not isinstance(fld, _IdlField):  # noqa: WPS421
                     raise NotImplementedError("Tuple enum variants not yet implemented")
-                fields.append(field_layout(fld, types))
-            named_fields = cast(IdlEnumFieldsNamed, variant_fields)
+                fields.append(_field_layout(fld, types))
+            named_fields = cast(_IdlEnumFieldsNamed, variant_fields)
             cstruct = CStruct(*fields)
             datacls = idl_enum_fields_named_to_dataclass_type(
                 named_fields,
@@ -112,7 +112,7 @@ def _handle_enum_variants(
 
 
 def typedef_layout(
-    typedef: IdlTypeDef, types: list[IdlTypeDef], field_name: str
+    typedef: _IdlTypeDef, types: list[_IdlTypeDef], field_name: str
 ) -> Construct:
     """Map an IDL typedef to a `Construct` object.
 
@@ -129,18 +129,18 @@ def typedef_layout(
     """
     typedef_type = typedef.type
     name = typedef.name
-    if isinstance(typedef_type, IdlTypeDefTyStruct):
-        field_layouts = [field_layout(field, types) for field in typedef_type.fields]
+    if isinstance(typedef_type, _IdlTypeDefTyStruct):
+        field_layouts = [_field_layout(field, types) for field in typedef_type.fields]
         cstruct = CStruct(*field_layouts)
         datacls = idl_typedef_ty_struct_to_dataclass_type(typedef_type, types, name)
         return field_name / DataclassStruct(cstruct, datacls=datacls)
-    elif isinstance(typedef_type, IdlTypeDefTyEnum):
+    elif isinstance(typedef_type, _IdlTypeDefTyEnum):
         return field_name / _handle_enum_variants(typedef_type, types, name)
     unknown_type = typedef_type.kind
     raise ValueError(f"Unknown type {unknown_type}")
 
 
-def field_layout(field: IdlField, types: list[IdlTypeDef]) -> Construct:
+def _field_layout(field: _IdlField, types: list[_IdlTypeDef]) -> Construct:
     """Map IDL spec to `borsh-construct` types.
 
     Args:
@@ -159,18 +159,18 @@ def field_layout(field: IdlField, types: list[IdlTypeDef]) -> Construct:
     if isinstance(field.type, str):
         return field_name / FIELD_TYPE_MAP[field.type]
     field_type = cast(
-        NonLiteralIdlTypes,
+        _NonLiteralIdlTypes,
         field.type,
     )
-    if isinstance(field_type, IdlTypeVec):
+    if isinstance(field_type, _IdlTypeVec):
         return field_name / Vec(
-            field_layout(IdlField(name="", type=field_type.vec), types),
+            _field_layout(_IdlField(name="", type=field_type.vec), types),
         )
-    elif isinstance(field_type, IdlTypeOption):
+    elif isinstance(field_type, _IdlTypeOption):
         return field_name / Option(
-            field_layout(IdlField(name="", type=field_type.option), types)
+            _field_layout(_IdlField(name="", type=field_type.option), types)
         )
-    elif isinstance(field_type, IdlTypeDefined):
+    elif isinstance(field_type, _IdlTypeDefined):
         defined = field_type.defined
         if not types:
             raise ValueError("User defined types not provided")
@@ -178,17 +178,17 @@ def field_layout(field: IdlField, types: list[IdlTypeDef]) -> Construct:
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
         return typedef_layout(filtered[0], types, field_name)
-    elif isinstance(field_type, IdlTypeArray):
+    elif isinstance(field_type, _IdlTypeArray):
         array_ty = field_type.array[0]
         array_len = field_type.array[1]
-        inner_layout = field_layout(IdlField(name="", type=array_ty), types)
+        inner_layout = _field_layout(_IdlField(name="", type=array_ty), types)
         return field_name / inner_layout[array_len]
     raise ValueError(f"Field {field} not implemented yet")
 
 
 def idl_type_to_python_type(
-    idl_type: IdlType,
-    types: list[IdlTypeDef],
+    idl_type: _IdlType,
+    types: list[_IdlTypeDef],
 ) -> Type:
     """Find the Python type corresponding to an IDL type.
 
@@ -206,17 +206,17 @@ def idl_type_to_python_type(
     if isinstance(idl_type, str):
         return FIELD_PYTHON_TYPE_MAP[idl_type]
     compound_idl_type = cast(
-        NonLiteralIdlTypes,
+        _NonLiteralIdlTypes,
         idl_type,
     )
-    if isinstance(compound_idl_type, IdlTypeVec):
+    if isinstance(compound_idl_type, _IdlTypeVec):
         type_arg = idl_type_to_python_type(compound_idl_type.vec, types)
         return list[type_arg]  # type: ignore
-    elif isinstance(compound_idl_type, IdlTypeOption):
+    elif isinstance(compound_idl_type, _IdlTypeOption):
         return Optional[  # type: ignore
             idl_type_to_python_type(compound_idl_type.option, types)
         ]
-    elif isinstance(compound_idl_type, IdlTypeArray):
+    elif isinstance(compound_idl_type, _IdlTypeArray):
         array_ty = compound_idl_type.array[0]
         array_len = compound_idl_type.array[1]
         return tuple[  # type: ignore
@@ -228,7 +228,7 @@ def idl_type_to_python_type(
             )
             * array_len
         ]
-    elif isinstance(compound_idl_type, IdlTypeDefined):
+    elif isinstance(compound_idl_type, _IdlTypeDefined):
         defined = compound_idl_type.defined
         if not types:
             raise ValueError("User defined types not provided")
@@ -253,8 +253,8 @@ def _make_datacls(name: str, fields: list[tuple[str, type]]) -> type:
 
 
 def idl_typedef_ty_struct_to_dataclass_type(
-    typedef_type: IdlTypeDefTyStruct,
-    types: list[IdlTypeDef],
+    typedef_type: _IdlTypeDefTyStruct,
+    types: list[_IdlTypeDef],
     name: str,
 ) -> Type:
     """Generate a dataclass definition from an IDL struct.
@@ -278,8 +278,8 @@ def idl_typedef_ty_struct_to_dataclass_type(
 
 
 def idl_enum_fields_named_to_dataclass_type(
-    fields: IdlEnumFieldsNamed,
-    types: list[IdlTypeDef],
+    fields: _IdlEnumFieldsNamed,
+    types: list[_IdlTypeDef],
     name: str,
 ) -> Type:
     """Generate a dataclass definition from IDL named enum fields.
@@ -303,8 +303,8 @@ def idl_enum_fields_named_to_dataclass_type(
 
 
 def idl_typedef_to_python_type(
-    typedef: IdlTypeDef,
-    types: list[IdlTypeDef],
+    typedef: _IdlTypeDef,
+    types: list[_IdlTypeDef],
 ) -> Type:
     """Generate Python type from IDL user-defined type.
 
@@ -319,13 +319,13 @@ def idl_typedef_to_python_type(
         The Python type.
     """
     typedef_type = typedef.type
-    if isinstance(typedef_type, IdlTypeDefTyStruct):
+    if isinstance(typedef_type, _IdlTypeDefTyStruct):
         return idl_typedef_ty_struct_to_dataclass_type(
             typedef_type,
             types,
             typedef.name,
         )
-    elif isinstance(typedef_type, IdlTypeDefTyEnum):
+    elif isinstance(typedef_type, _IdlTypeDefTyEnum):
         return _handle_enum_variants(typedef_type, types, typedef.name).enum
     unknown_type = typedef_type.kind
     raise ValueError(f"Unknown type {unknown_type}")

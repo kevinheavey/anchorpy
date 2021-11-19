@@ -6,7 +6,7 @@ from solana.keypair import Keypair
 from solana.rpc.types import TxOpts
 from solana.transaction import AccountMeta, TransactionInstruction
 
-from anchorpy.idl import IdlInstruction
+from anchorpy.idl import _IdlInstruction
 
 
 class ArgsError(Exception):
@@ -41,7 +41,7 @@ class Context:
 
 
 def check_args_length(
-    idl_ix: IdlInstruction,
+    idl_ix: _IdlInstruction,
     args: Tuple,
 ) -> None:
     """Check that the correct number of args is passed to the RPC function.
