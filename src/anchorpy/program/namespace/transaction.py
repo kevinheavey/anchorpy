@@ -40,9 +40,11 @@ def _build_transaction_fn(
     def tx_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> Transaction:
         _check_args_length(idl_ix, args)
         tx = Transaction()
-        if ctx.instructions:
-            tx.add(*ctx.instructions)
+        if ctx.pre_instructions:
+            tx.add(*ctx.pre_instructions)
         tx.add(ix_fn(*args, ctx=ctx))
+        if ctx.post_instructions:
+            tx.add(*ctx.post_instructions)
         return tx
 
     return tx_fn

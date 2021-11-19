@@ -52,7 +52,7 @@ async def created_multisig(program: Program) -> CreatedMultisig:
                 "multisig": multisig.public_key,
                 "rent": SYSVAR_RENT_PUBKEY,
             },
-            instructions=[
+            pre_instructions=[
                 await program.account["Multisig"].create_instruction(
                     multisig, multisig_size
                 ),
@@ -109,7 +109,7 @@ async def created_transaction(
                 "proposer": owner_a.public_key,
                 "rent": SYSVAR_RENT_PUBKEY,
             },
-            instructions=[
+            pre_instructions=[
                 await program.account["Transaction"].create_instruction(
                     transaction,
                     tx_size,

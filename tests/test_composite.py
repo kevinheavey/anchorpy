@@ -30,7 +30,7 @@ async def initialized_accounts(program: Program) -> tuple[Keypair, Keypair]:
                 "rent": SYSVAR_RENT_PUBKEY,
             },
             signers=[dummy_a, dummy_b],
-            instructions=[
+            pre_instructions=[
                 await program.account["DummyA"].create_instruction(dummy_a),
                 await program.account["DummyB"].create_instruction(dummy_b),
             ],

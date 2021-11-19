@@ -639,7 +639,7 @@ async def swap_usdc_to_a_and_init_open_orders(
             1,
             ctx=Context(
                 accounts=swap_usdc_a_accounts,
-                instructions=instructions,
+                pre_instructions=instructions,
                 signers=[open_orders_a, open_orders_b],
             ),
         )

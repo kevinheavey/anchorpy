@@ -70,7 +70,7 @@ async def test_has_one_err(program: Program) -> None:
                     "owner": SYSVAR_RENT_PUBKEY,
                     "rent": SYSVAR_RENT_PUBKEY,
                 },
-                instructions=[
+                pre_instructions=[
                     await program.account["HasOneAccount"].create_instruction(account)
                 ],
                 signers=[account],

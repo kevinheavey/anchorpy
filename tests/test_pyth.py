@@ -42,7 +42,7 @@ async def create_price_feed(
         ctx=Context(
             accounts={"price": collateral_token_feed.public_key},
             signers=[collateral_token_feed],
-            instructions=[
+            pre_instructions=[
                 create_account(
                     CreateAccountParams(
                         from_pubkey=oracle_program.provider.wallet.public_key,

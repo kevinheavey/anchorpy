@@ -84,7 +84,7 @@ async def create_check(program: Program, initial_state: InitialState) -> Created
         "Hello world",
         nonce,
         ctx=Context(
-            accounts=accounts, signers=[check, vault], instructions=instructions
+            accounts=accounts, signers=[check, vault], pre_instructions=instructions
         ),
     )
     return CreatedCheck(check, vault, check_signer, nonce)
