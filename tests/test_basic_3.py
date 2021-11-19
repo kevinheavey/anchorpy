@@ -1,26 +1,16 @@
 """Mimics anchor/examples/tutorial/basic-3/tests/basic-3.js."""
-from typing import AsyncGenerator, Dict
-from pathlib import Path
+from typing import AsyncGenerator
 
 from pytest import mark, fixture
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
-from anchorpy import create_workspace, close_workspace, Provider, Context
-from anchorpy.program.core import Program
-from anchorpy.pytest_plugin import localnet_fixture
-
-PATH = Path("anchor/examples/tutorial/basic-3")
-
-localnet = localnet_fixture(PATH)
+from anchorpy import Provider, Context
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
 
 
-@fixture(scope="module")
-async def workspace(localnet):
-    """Create a workspace dict."""
-    ws = create_workspace(PATH)
-    yield ws
-    await close_workspace(ws)
+workspace = workspace_fixture("anchor/examples/tutorial/basic-3")
 
 
 @fixture(scope="module")
@@ -32,7 +22,7 @@ async def provider() -> AsyncGenerator[Provider, None]:
 
 
 @mark.asyncio
-async def test_cpi(workspace: Dict[str, Program], provider: Provider) -> None:
+async def test_cpi(workspace: WorkspaceType, provider: Provider) -> None:
     """Test CPI from puppet master to puppet."""
     puppet_master = workspace["puppet_master"]
     puppet = workspace["puppet"]

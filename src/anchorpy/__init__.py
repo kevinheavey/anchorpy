@@ -2,7 +2,7 @@
 from anchorpy.provider import Provider, Wallet, SendTxRequest
 from anchorpy.coder.coder import Coder, InstructionCoder, EventCoder, AccountsCoder
 from anchorpy.idl import Idl, IdlProgramAccount
-from anchorpy.workspace import create_workspace, close_workspace
+from anchorpy.workspace import create_workspace, close_workspace, WorkspaceType
 from anchorpy.program.core import Program
 from anchorpy.program.common import (
     Event,
@@ -24,6 +24,8 @@ __all__ = [
     "create_workspace",
     "close_workspace",
     "Idl",
+    "workspace_fixture",
+    "WorkspaceType",
     "localnet_fixture",
     "Wallet",
     "SendTxRequest",

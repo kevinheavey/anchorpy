@@ -1,5 +1,3 @@
-from pathlib import Path
-from typing import AsyncGenerator, List, Tuple
 import random
 import string
 
@@ -9,20 +7,17 @@ from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.system_program import SYS_PROGRAM_ID
 
-from anchorpy import Program, create_workspace, close_workspace, Context, Provider
-from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy import Program, Context, Provider
+from anchorpy.pytest_plugin import workspace_fixture
 
-PATH = Path("anchor/tests/chat/")
 
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/tests/chat/")
 
 
 @fixture(scope="module")
-async def program(localnet) -> AsyncGenerator[Program, None]:
+def program(workspace) -> Program:
     """Create a Program instance."""
-    workspace = create_workspace(PATH)
-    yield workspace["chat"]
-    await close_workspace(workspace)
+    return workspace["chat"]
 
 
 @fixture(scope="module")
@@ -53,7 +48,7 @@ async def created_chatroom(program: Program) -> Keypair:
 @fixture(scope="module")
 async def created_user(
     created_chatroom: Keypair, program: Program
-) -> Tuple[PublicKey, PublicKey]:
+) -> tuple[PublicKey, PublicKey]:
     authority = program.provider.wallet.public_key
     user, bump = PublicKey.find_program_address([bytes(authority)], program.program_id)
     await program.rpc["create_user"](
@@ -72,10 +67,10 @@ async def created_user(
 
 @fixture(scope="module")
 async def sent_messages(
-    created_user: Tuple[PublicKey, PublicKey],
+    created_user: tuple[PublicKey, PublicKey],
     created_chatroom: Keypair,
     program: Program,
-) -> List[str]:
+) -> list[str]:
     user, authority = created_user
     num_messages = 10
     to_choose = string.ascii_uppercase + string.digits
@@ -110,7 +105,7 @@ async def test_created_chatroom(created_chatroom: Keypair, program: Program) -> 
 
 @mark.asyncio
 async def test_created_user(
-    created_user: Tuple[PublicKey, PublicKey],
+    created_user: tuple[PublicKey, PublicKey],
     program: Program,
 ) -> None:
     user, authority = created_user
@@ -123,8 +118,8 @@ async def test_created_user(
 async def test_sent_messages(
     program: Program,
     created_chatroom: Keypair,
-    sent_messages: List[str],
-    created_user: Tuple[PublicKey, PublicKey],
+    sent_messages: list[str],
+    created_user: tuple[PublicKey, PublicKey],
 ) -> None:
     user, _ = created_user
     chat = await program.account["ChatRoom"].fetch(created_chatroom.public_key)

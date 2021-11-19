@@ -7,6 +7,8 @@
 :::anchorpy.create_workspace
 :::anchorpy.close_workspace
 :::anchorpy.Idl
+:::anchorpy.workspace_fixture
+:::anchorpy.WorkspaceType
 :::anchorpy.localnet_fixture
 :::anchorpy.Wallet
 :::anchorpy.SendTxRequest

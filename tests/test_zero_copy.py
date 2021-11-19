@@ -1,6 +1,5 @@
 """Mimics anchor/tests/zero-copy"""
 from pathlib import Path
-from typing import AsyncGenerator
 
 from pytest import mark, fixture, raises
 from solana.keypair import Keypair
@@ -11,28 +10,20 @@ from solana.rpc.core import RPCException
 
 from anchorpy import (
     Program,
-    create_workspace,
-    close_workspace,
     Context,
     Provider,
-    localnet_fixture,
 )
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
 
 PATH = Path("anchor/tests/zero-copy")
 DEFAULT_PUBKEY = PublicKey("11111111111111111111111111111111")
 
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/tests/zero-copy")
 
 
 @fixture(scope="module")
-async def workspace(localnet) -> AsyncGenerator[dict[str, Program], None]:
-    wspace = create_workspace(PATH)
-    yield wspace
-    await close_workspace(wspace)
-
-
-@fixture(scope="module")
-async def program(workspace: dict[str, Program]) -> Program:
+async def program(workspace: WorkspaceType) -> Program:
     return workspace["zero_copy"]
 
 

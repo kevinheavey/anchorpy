@@ -1,7 +1,4 @@
 """Mimics anchor/tests/spl/token-proxy."""
-from pathlib import Path
-from typing import AsyncGenerator
-
 from pytest import mark, fixture
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
@@ -13,21 +10,19 @@ from spl.token.instructions import (
 )
 from spl.token.constants import TOKEN_PROGRAM_ID
 
-from anchorpy import Program, create_workspace, close_workspace, Context, Provider
-from anchorpy.pytest_plugin import localnet_fixture
+from anchorpy import Program, Context, Provider
+from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.utils.token import get_mint_info, get_token_account, create_token_account
+from anchorpy.workspace import WorkspaceType
 
-PATH = Path("anchor/tests/spl/token-proxy/")
 
-localnet = localnet_fixture(PATH)
+workspace = workspace_fixture("anchor/tests/spl/token-proxy/")
 
 
 @fixture(scope="module")
-async def program(localnet) -> AsyncGenerator[Program, None]:
+def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
-    workspace = create_workspace(PATH)
-    yield workspace["token_proxy"]
-    await close_workspace(workspace)
+    return workspace["token_proxy"]
 
 
 @fixture(scope="module")

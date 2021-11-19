@@ -1,5 +1,5 @@
 """This module provides the `localnet_fixture` fixture factory."""
-from typing import Callable, Optional
+from typing import AsyncGenerator, Callable, Optional, Union
 import subprocess
 import signal
 import os
@@ -7,6 +7,8 @@ from pathlib import Path
 from pytest import fixture
 from xprocess import XProcessInfo, XProcess, ProcessStarter
 from pytest_xprocess import getrootdir
+from anchorpy import create_workspace, close_workspace
+from anchorpy.program.core import Program
 
 
 class _FixedXProcessInfo(XProcessInfo):
@@ -175,3 +177,57 @@ def localnet_fixture(
         _fixed_xprocess.getinfo("localnet").terminate()
 
     return _localnet_fixture
+
+
+# Should figure out how to reuse localnet_fixture
+# instead of copy-pasting (Pytest didn't like it).
+def workspace_fixture(
+    path: Union[Path, str],
+    scope="module",
+    timeout_seconds=60,
+    build_cmd: Optional[str] = None,
+) -> Callable:
+    """Create a fixture that sets up and tears down a localnet instance and returns a workspace dict.
+
+    Equivalent to combining `localnet_fixture`, `create_workspace` and `close_workspace`.
+
+    Args:
+        path: Path to root of the Anchor project.
+        scope: Pytest fixture scope.
+        timeout_seconds: Time to wait for Anchor localnet to start.
+        build_cmd: Command to run before `anchor localnet`. Defaults to `anchor build`.
+
+    Returns:
+        A workspace fixture for use with pytest.
+    """  # noqa: E501,D202
+
+    @fixture(scope=scope)
+    async def _workspace_fixture(
+        _fixed_xprocess,
+    ) -> AsyncGenerator[dict[str, Program], None]:
+        class Starter(ProcessStarter):
+            # startup pattern
+            pattern = "JSON RPC URL"
+            terminate_on_interrupt = True
+            # command to start process
+            args = ["anchor", "localnet", "--skip-build"]
+            timeout = timeout_seconds
+            popen_kwargs = {
+                "cwd": path,
+                "start_new_session": True,
+            }
+            max_read_lines = 1_000
+            # command to start process
+
+        actual_build_cmd = "anchor build" if build_cmd is None else build_cmd
+        subprocess.run(actual_build_cmd, cwd=path, check=True, shell=True)  # noqa: S603
+        # ensure process is running
+        _ = _fixed_xprocess.ensure("localnet", Starter)
+        ws = create_workspace(path)
+        yield ws
+        await close_workspace(ws)
+
+        # clean up whole process tree afterwards
+        _fixed_xprocess.getinfo("localnet").terminate()
+
+    return _workspace_fixture

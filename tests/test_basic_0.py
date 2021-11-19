@@ -9,7 +9,8 @@ from anchorpy.pytest_plugin import localnet_fixture
 
 PATH = Path("anchor/examples/tutorial/basic-0")
 
-
+# We use localnet_fixture here to make sure it works, but use
+# workspace_fixture elsewhere.
 localnet = localnet_fixture(PATH)
 
 

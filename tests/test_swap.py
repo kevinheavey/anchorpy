@@ -31,10 +31,12 @@ from pyserum.market import AsyncMarket
 from pyserum._layouts.market import MARKET_LAYOUT
 from pyserum._layouts.open_orders import OPEN_ORDERS_LAYOUT
 from anchorpy.program.context import Context
+from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.utils.token import create_mint_and_vault, get_token_account
 from pyserum.enums import Side, OrderType
 from anchorpy.provider import DEFAULT_OPTIONS, Provider, Wallet
-from anchorpy import create_workspace, localnet_fixture, close_workspace, Program
+from anchorpy import Program
+from anchorpy.workspace import WorkspaceType
 
 DEX_PID = PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin")
 
@@ -42,8 +44,8 @@ DECIMALS = 6
 TAKER_FEE = 0.0022
 PATH = Path("anchor/tests/swap/")
 SLEEP_SECONDS = 15
-localnet = localnet_fixture(
-    PATH,
+workspace = workspace_fixture(
+    "anchor/tests/swap/",
     build_cmd=(
         "cd deps/serum-dex/dex && cargo build-bpf && cd ../../../ && anchor build"
     ),
@@ -491,14 +493,7 @@ async def setup_two_markets(provider: Provider) -> OrderbookEnv:
 
 
 @fixture(scope="module")
-async def workspace(localnet) -> AsyncGenerator[dict[str, Program], None]:
-    wspace = create_workspace(PATH)
-    yield wspace
-    await close_workspace(wspace)
-
-
-@fixture(scope="module")
-async def program(workspace: dict[str, Program]) -> Program:
+async def program(workspace: WorkspaceType) -> Program:
     return workspace["swap"]
 
 
