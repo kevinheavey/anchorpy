@@ -1,5 +1,7 @@
 """Mimics anchor/tests/misc/tests/misc.js."""
 import asyncio
+import subprocess
+from pathlib import Path
 from pytest import raises, mark, fixture
 from solana.rpc.types import MemcmpOpts
 from anchorpy import Program, Context
@@ -16,8 +18,8 @@ from anchorpy.utils.rpc import invoke
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 
-
-workspace = workspace_fixture("anchor/tests/misc/")
+PATH = Path("anchor/tests/misc/")
+workspace = workspace_fixture(PATH)
 
 
 @fixture(scope="module")
@@ -52,6 +54,19 @@ async def test_can_use_u128_and_i128(
     data_account = await program.account["Data"].fetch(initialized_keypair.public_key)
     assert data_account.udata == 1234
     assert data_account.idata == 22
+
+
+@mark.asyncio
+async def test_fetch_multiple(program: Program, initialized_keypair: Keypair) -> None:
+    batch_size = 2
+    n_accounts = batch_size * 100 + 1
+    data_account = await program.account["Data"].fetch(initialized_keypair.public_key)
+    pubkeys = [initialized_keypair.public_key] * n_accounts  # noqa: WPS435
+    data_accounts = await program.account["Data"].fetch_multiple(
+        pubkeys, batch_size=batch_size
+    )
+    assert len(data_accounts) == n_accounts
+    assert all(acc == data_account for acc in data_accounts)
 
 
 @fixture(scope="module")
@@ -176,17 +191,6 @@ async def data_i16_keypair(program: Program) -> Keypair:
 @mark.asyncio
 async def test_can_use_i16_in_idl(program: Program, data_i16_keypair: Keypair) -> None:
     data_account = await program.account["DataI16"].fetch(data_i16_keypair.public_key)
-    assert data_account.data == -2048
-
-
-@mark.asyncio
-async def test_can_use_base58_strings_to_fetch_account(
-    program: Program,
-    data_i16_keypair: Keypair,
-) -> None:
-    data_account = await program.account["DataI16"].fetch(
-        str(data_i16_keypair.public_key),
-    )
     assert data_account.data == -2048
 
 
@@ -825,3 +829,16 @@ async def test_can_init_if_needed_a_previously_created_account(
     )
     account = await program.account["DataU16"].fetch(if_needed_acc.public_key)
     assert account.data == 3
+
+
+@mark.asyncio
+async def test_at_constructor(program: Program) -> None:
+    """Test that the Program.at classmethod works."""
+    idl_path = "target/idl/misc.json"
+    subprocess.run(  # noqa: S607,S603
+        ["anchor", "idl", "init", "-f", idl_path, str(program.program_id)],
+        cwd=PATH,
+    )
+    fetched = await program.at(program.program_id, program.provider)
+    await fetched.close()
+    assert fetched.idl.name == "misc"
