@@ -117,6 +117,7 @@ async def _get_multiple_accounts_core(
     resp = await connection._provider.session.post(
         connection._provider.endpoint_uri,
         json=rpc_requests,
+        headers={"content-encoding": "gzip"},
     )
     parsed = jsonrpcclient.parse(resp.json())
     result: list[Optional[_MultipleAccountsItem]] = []
