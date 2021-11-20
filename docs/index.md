@@ -5,7 +5,7 @@
 
 ---
 
-AnchorPy is the Python client for [Anchor](https://github.com/project-serum/anchor). It allows you to interact with Anchor programs using Python.
+AnchorPy is the Python client for [Anchor](https://github.com/project-serum/anchor). It allows you to interact with Anchor programs using Python instead of Typescript/Javascript.
 
 ## Installation
 

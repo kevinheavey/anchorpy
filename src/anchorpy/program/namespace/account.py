@@ -2,7 +2,7 @@
 import base64
 from dataclasses import dataclass
 from base58 import b58encode
-from typing import Any, Optional, Dict
+from typing import Any, Optional, Dict, List
 
 from construct import Container
 from solana.keypair import Keypair
@@ -105,7 +105,7 @@ class AccountClient(object):
         return self._coder.accounts.decode(data)
 
     async def fetch_multiple(
-        self, addresses: list[PublicKey], batch_size: int = 300
+        self, addresses: List[PublicKey], batch_size: int = 300
     ) -> list[Optional[Container[Any]]]:
         """Return multiple deserialized accounts.
 

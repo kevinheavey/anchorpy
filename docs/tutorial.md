@@ -2,14 +2,15 @@
 
 This tutorial takes the JS snippets from the official Anchor tutorial
 and shows how to achieve the same thing using AnchorPy.
+
+!!! note
+    The Python snippets are a bit longer because they contain all the code
+    you need to run them.
 ## [A Minimal Example](https://project-serum.github.io/anchor/tutorials/tutorial-0.html)
-
+This section covers the `basic-0` tutorial:
 ### [Generating a Client](https://project-serum.github.io/anchor/tutorials/tutorial-0.html#generating-a-client)
+Here is how we generate a client from an IDL and use it to interact with a smart contract.
 
-Differences between Python and JS here:
-
-- We call `program.rpc["initialize"]()` instead of `program.rpc.initialize()`
-- We call `program.close()` to close the HTTP connection.
 
 === "Python"
     ````python
@@ -53,17 +54,15 @@ Differences between Python and JS here:
 
     ````
 
+Note the differences between Python and JS here:
+
+- We call `program.rpc["initialize"]()` instead of `program.rpc.initialize()`
+- We call `program.close()` to close the HTTP connection.
+
 ### [Workspaces](https://project-serum.github.io/anchor/tutorials/tutorial-0.html#workspaces)
 
-Differences between Python and JS:
+Here is how workspaces look in AnchorPy:
 
-- Workspace instantiation is explicit: we have to call the `create_workspace` function.
-- We have a `close_workspace` function that calls `close_program` on all the programs
-in the workspace.
-- The workspace is called `basic_0` instead of `Basic0`. This is because AnchorPy doesn't
-convert names to camelcase.
-    - Note however that AnchorPy also doesn't convert names to snakecase. If you're not
-    sure how to spell a name, check the IDL - AnchorPy spelling will always match the IDL.
 
 === "Python"
     ````python
@@ -92,3 +91,72 @@ convert names to camelcase.
     await program.rpc.initialize();
 
     ````
+
+Note the differences between Python and JS:
+
+- Workspace instantiation is explicit: we have to call the `create_workspace` function.
+    - Note however that AnchorPy provides the `workspace_fixture` factory for convenience.
+      See the [testing](testing.md) section for more.
+- We have a `close_workspace` function that calls `close_program` on all the programs
+in the workspace.
+- The workspace is called `basic_0` instead of `Basic0`. This is because AnchorPy uses snake case 🐍
+!!! Note
+    AnchorPy uses the same case convention as Rust, so names should look just like they do in `lib.rs`.
+    If you're unsure of a name, check `program.idl`: it shows how AnchorPy sees the IDL after parsing
+    it and converting some cases.
+
+## [Arguments and Accounts](https://project-serum.github.io/anchor/tutorials/tutorial-1.html)
+### [Creating and Initializing Accounts](https://project-serum.github.io/anchor/tutorials/tutorial-1.html#creating-and-initializing-accounts)
+
+Here is how we call an RPC function with arguments.
+As in the main Anchor tutorial, we will use `anchor/tutorial/examples/basic-1`:
+
+=== "Python"
+    ````python
+    import asyncio
+    from solana.keypair import Keypair
+    from solana.system_program import SYS_PROGRAM_ID
+    from anchorpy import create_workspace, close_workspace, Context
+
+    async def main():
+        # Read the deployed program from the workspace.
+        workspace = create_workspace()
+        # The program to execute.
+        program = workspace["basic_1"]
+        # The Account to create.
+        my_account = Keypair()
+        # Execute the RPC.
+        accounts = {
+            "my_account": my_account.public_key,
+            "user": program.provider.wallet.public_key,
+            "system_program": SYS_PROGRAM_ID
+        }
+        await program.rpc["initialize"](1234, ctx=Context(accounts=accounts, signers=[my_account]))
+        # Close all HTTP clients in the workspace, otherwise we get warnings.
+        await close_workspace(workspace)
+    
+    asyncio.run(main())
+
+    ````
+
+=== "JS"
+    ````javascript
+    // The program to execute.
+    const program = anchor.workspace.Basic1;
+
+    // The Account to create.
+    const myAccount = anchor.web3.Keypair.generate();
+
+    // Create the new account and initialize it with the program.
+    await program.rpc.initialize(new anchor.BN(1234), {
+    accounts: {
+        myAccount: myAccount.publicKey,
+        user: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId,
+    },
+    signers: [myAccount],
+    });
+
+    ````
+
+Note how AnchorPy uses an explicit `Context` object in contrast to TS/JS.

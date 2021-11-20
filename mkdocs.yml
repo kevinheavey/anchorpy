@@ -22,7 +22,7 @@ markdown_extensions:
   - pymdownx.snippets
   - meta
   - pymdownx.tabbed:
-      alternate_style: true 
+      alternate_style: true
 repo_url: https://github.com/kevinheavey/anchorpy
 repo_name: kevinheavey/anchorpy
 site_url: https://kevinheavey.github.io/anchorpy/
@@ -42,6 +42,8 @@ nav:
   - index.md
   - tutorial.md
   - testing.md
-  - reference.md
+  - comparison_with_anchor_ts.md
+  - examples.md
+  - api_reference.md
 extra_css:
   - css/mkdocstrings.css

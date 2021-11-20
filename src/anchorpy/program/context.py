@@ -1,10 +1,11 @@
 """This module contains code handling the Context object."""
 from dataclasses import dataclass, field
-from typing import Any, Tuple, Optional, Dict
+from typing import Any, Tuple, Optional, Dict, List
 
 from solana.keypair import Keypair
 from solana.rpc.types import TxOpts
-from solana.transaction import AccountMeta, TransactionInstruction
+from solana.transaction import AccountMeta
+from solana.transaction import TransactionInstruction
 
 from anchorpy.idl import _IdlInstruction
 from anchorpy.error import ArgsError
@@ -20,7 +21,7 @@ class Context:
     """Context provides all non-argument inputs for generating Anchor transactions.
 
     Attributes:
-        accounts: Accounts used in the instruction context.
+        accounts: The accounts used in the instruction context.
         remaining_accounts: All accounts to pass into an instruction *after* the main
         `accounts`. This can be used for optional or otherwise unknown accounts.
         signers: Accounts that must sign a given transaction.
@@ -32,11 +33,15 @@ class Context:
 
     """
 
+    # For some reason mkdocstrings doesn't understand the full type hint
+    # here if we use list[TransactionInstruction] instead of typing.List.
+    # Weirdly there are other places where it understands list[whatever].
+
     accounts: Accounts = field(default_factory=dict)
-    remaining_accounts: list[AccountMeta] = field(default_factory=list)
-    signers: list[Keypair] = field(default_factory=list)
-    pre_instructions: list[TransactionInstruction] = field(default_factory=list)
-    post_instructions: list[TransactionInstruction] = field(default_factory=list)
+    remaining_accounts: List[AccountMeta] = field(default_factory=list)
+    signers: List[Keypair] = field(default_factory=list)
+    pre_instructions: List[TransactionInstruction] = field(default_factory=list)
+    post_instructions: List[TransactionInstruction] = field(default_factory=list)
     options: Optional[TxOpts] = None
 
 
