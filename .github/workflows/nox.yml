@@ -1,0 +1,29 @@
+name: Nox
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    #----------------------------------------------
+    #  -----  install & configure poetry  -----
+    #----------------------------------------------
+    - name: Load cached Poetry installation
+      uses: actions/cache@v2
+      with:
+        path: ~/.local  # the path depends on the OS
+        key: poetry-0  # increment to reset cache
+    - name: Install and configure Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: 1.1.10
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        installer-parallel: true
+    - name: Install nox-poetry
+      run: pip install nox-poetry
+    - run: nox

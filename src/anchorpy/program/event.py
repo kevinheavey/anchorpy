@@ -1,7 +1,7 @@
 """This module contains code for handling Anchor events."""
 from dataclasses import dataclass
 from base64 import b64decode
-from typing import Callable, Optional, cast
+from typing import Callable, List, Optional, cast
 import binascii
 from solana.publickey import PublicKey
 from anchorpy.coder.coder import Coder
@@ -57,7 +57,7 @@ class EventParser:
     program_id: PublicKey
     coder: Coder
 
-    def parse_logs(self, logs: list[str], callback: Callable[[Event], None]) -> None:
+    def parse_logs(self, logs: List[str], callback: Callable[[Event], None]) -> None:
         """Parse a list of logs using a provided callback.
 
         Args:

@@ -76,7 +76,7 @@ class _MultipleAccountsItem:
 
 
 async def get_multiple_accounts(
-    connection: AsyncClient, pubkeys: list[PublicKey], batch_size=300
+    connection: AsyncClient, pubkeys: list[PublicKey], batch_size: int = 3
 ) -> list[Optional[_MultipleAccountsItem]]:
     """Fetch multiple account infos through batched `getMultipleAccount` RPC requests.
 

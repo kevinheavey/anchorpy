@@ -179,7 +179,7 @@ class Program(object):
     async def fetch_idl(
         cls,
         address: AddressType,
-        provider,
+        provider: Provider,
     ) -> Idl:
         """Fetch an idl from the blockchain.
 
@@ -224,6 +224,7 @@ class Program(object):
         Returns:
             The Program instantiated using the fetched IDL.
         """
+        provider_to_use = Provider.local() if provider is None else provider
         program_id = translate_address(address)
-        idl = await cls.fetch_idl(program_id, provider)
+        idl = await cls.fetch_idl(program_id, provider_to_use)
         return cls(idl, program_id, provider)

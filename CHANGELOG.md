@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.0] - 2021-11-20
+
+### Changed
+
+- BREAKING: Some program namespace entries are now snake-case (https://github.com/kevinheavey/anchorpy/pull/13).
+This affects `program.rpc`, `program.instruction`, fields inside `program.type` entries, and 
+the `accounts` argument to `Context`.
+- BREAKING: `instructions` is replaced with `pre_instructions` and `post_instructions`. (https://github.com/kevinheavey/anchorpy/pull/18)
+- BREAKING: User-defined types must now be constructed using the new `program.type` namespace. https://github.com/kevinheavey/anchorpy/pull/7 This also affects the return type of `.fetch` - the returned object is now a dataclass and requires `.` access instead of `[]`.
+- BREAKING: `provider.client` is renamed to `provider.connection`.
+- Refactor `.send` to use more `solana-py` functionality. https://github.com/kevinheavey/anchorpy/pull/11
+
+### Added
+
+- Added a Pytest plugin for a better testing experience https://github.com/kevinheavey/anchorpy/pull/5 https://github.com/kevinheavey/anchorpy/pull/17
+- Added support for fetching multiple accounts at once https://github.com/kevinheavey/anchorpy/pull/19
+
+
 ## [0.3.0] - 2021-11-02
 
 ### Added

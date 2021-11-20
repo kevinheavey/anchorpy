@@ -134,8 +134,8 @@ def _fixed_xprocess(request):
 
 def localnet_fixture(
     path: Path,
-    scope="module",
-    timeout_seconds=60,
+    scope: str = "module",
+    timeout_seconds: int = 60,
     build_cmd: Optional[str] = None,
 ) -> Callable:
     """Create a fixture that sets up and tears down a localnet instance with workspace programs deployed.
@@ -183,8 +183,8 @@ def localnet_fixture(
 # instead of copy-pasting (Pytest didn't like it).
 def workspace_fixture(
     path: Union[Path, str],
-    scope="module",
-    timeout_seconds=60,
+    scope: str = "module",
+    timeout_seconds: int = 60,
     build_cmd: Optional[str] = None,
 ) -> Callable:
     """Create a fixture that sets up and tears down a localnet instance and returns a workspace dict.

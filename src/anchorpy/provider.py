@@ -5,7 +5,7 @@ from pathlib import Path
 from os import getenv, environ
 import json
 from types import MappingProxyType
-from typing import Optional, Union, NamedTuple
+from typing import List, Optional, Union, NamedTuple
 
 from solana.keypair import Keypair
 from solana.rpc import types
@@ -16,10 +16,15 @@ from solana.publickey import PublicKey
 
 
 class SendTxRequest(NamedTuple):
-    """Use this to provide custom signers to `Provider.send_all`."""
+    """Use this to provide custom signers to `Provider.send_all`.
+
+    Attributes:
+        tx: The Transaction to send.
+        signers: Custom signers for the transaction.
+    """
 
     tx: Transaction
-    signers: list[Keypair]
+    signers: List[Keypair]
 
 
 DEFAULT_OPTIONS = types.TxOpts(skip_confirmation=False, preflight_commitment=Processed)
