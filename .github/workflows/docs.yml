@@ -49,11 +49,8 @@ jobs:
       #----------------------------------------------
       # install your root project
       #----------------------------------------------
-      - name: build library
-        run: poetry build
+      - name: install library
+        run: poetry install --no-interaction
 
       - name: Deploy docs
-        uses: mhausenblas/mkdocs-deploy-gh-pages@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+        run: mkdocs gh-deploy --force
