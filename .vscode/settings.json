@@ -22,5 +22,10 @@
     },
     "rust-analyzer.files.excludeDirs": [
         "anchor"
-    ]
+    ],
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
