@@ -98,7 +98,8 @@ You can just run these tests with `pytest` (or have your IDE run them).
 
 
 Anchor lets you run whatever tests you want using the `[scripts]` section of `Anchor.toml`.
-This means we can call Pytest inside .
+This means we can call Pytest inside the `anchor test` workflow. This is more limited
+than the Pytest plugin but is more like the standard Anchor way of doing things.
 
 Here's how the `basic-1` tests look using `anchor test` and Pytest (but not the ):
 
