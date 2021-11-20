@@ -1,5 +1,12 @@
 # Changelog
 
+
+## [0.4.1] - 2021-11-20
+
+### Fixed
+
+- Missing `pytest-xprocess` dep (it was marked as a dev dependency only)
+
 ## [0.4.0] - 2021-11-20
 
 ### Changed
