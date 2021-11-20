@@ -7,6 +7,7 @@ import json
 from types import MappingProxyType
 from typing import List, Optional, Union, NamedTuple
 
+from more_itertools import unique_everseen
 from solana.keypair import Keypair
 from solana.rpc import types
 from solana.rpc.async_api import AsyncClient
@@ -99,7 +100,7 @@ class Provider:
             Finalized,
         )
         tx.recent_blockhash = recent_blockhash_resp["result"]["value"]["blockhash"]
-        all_signers = [self.wallet.payer] + signers
+        all_signers = list(unique_everseen([self.wallet.payer] + signers))
         tx.sign(*all_signers)
         return await self.connection.simulate_transaction(
             tx, sig_verify=True, commitment=opts.preflight_commitment
@@ -126,7 +127,7 @@ class Provider:
             signers = []
         if opts is None:
             opts = self.opts
-        all_signers = [self.wallet.payer] + signers
+        all_signers = list(unique_everseen([self.wallet.payer] + signers))
         resp = await self.connection.send_transaction(tx, *all_signers, opts=opts)
         return resp["result"]
 

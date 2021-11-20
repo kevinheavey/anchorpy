@@ -20,6 +20,7 @@ toolz = "^0.11.2"
 jsonrpcclient = "^4.0.1"
 zstandard = "^0.16.0"
 pytest-xprocess = "^0.18.1"
+more-itertools = "^8.11.0"
 
 
 [tool.poetry.dev-dependencies]
