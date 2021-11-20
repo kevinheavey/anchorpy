@@ -27,6 +27,8 @@ Specifically, the following names are snake-case in AnchorPy:
 - Instructions: `program.rpc["my_func"]` (and `program.instruction["my_func"]`) instead of 
 `program.rpc["myFunc"]`.
 - Accounts in the `ctx` arg: `{"my_account": my_account}` instead of `{"myAccount": my_account}`
+- Fields in user-defined types: `program.type["TransactionAccount"](is_writable=True)` instead of
+`program.type["TransactionAccount"](isWritable=True)`
 
 ## `program.type` namespace for user-defined types
 
