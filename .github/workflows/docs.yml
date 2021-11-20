@@ -49,8 +49,8 @@ jobs:
       #----------------------------------------------
       # install your root project
       #----------------------------------------------
-      - name: Install library
-        run: poetry install --no-interaction
+      - name: build library
+        run: poetry build
 
       - name: Deploy docs
         uses: mhausenblas/mkdocs-deploy-gh-pages@master

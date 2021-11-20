@@ -1,1 +1,2 @@
 mkdocstrings==0.16.2
+file:dist/anchorpy-0.3.0-py3-none-any.whl
