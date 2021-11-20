@@ -1,6 +1,11 @@
 # Changelog
 
+## [0.4.2] - 2021-11-20
 
+### Fixed
+
+- Upgrade solana-py dep so `.send` returns the tx signature and not the signature status.
+- Dedupe transaction signers
 ## [0.4.1] - 2021-11-20
 
 ### Fixed

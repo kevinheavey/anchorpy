@@ -1052,7 +1052,7 @@ python-versions = "*"
 
 [[package]]
 name = "solana"
-version = "0.18.2"
+version = "0.18.3"
 description = "Solana Python API"
 category = "main"
 optional = false
@@ -1241,7 +1241,7 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "32b2f0fed6c29ef5158a8519cc7b13188f0bc79ea8b10ea6aed989f521c825e6"
+content-hash = "dabe54bc621672177fe5315df34774758cc8854ba46ca7e0106eaf53f825773d"
 
 [metadata.files]
 anyio = [
@@ -1844,8 +1844,8 @@ snowballstemmer = [
     {file = "snowballstemmer-2.2.0.tar.gz", hash = "sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1"},
 ]
 solana = [
-    {file = "solana-0.18.2-py3-none-any.whl", hash = "sha256:c0550915db89261ed78335ee5728341e7094444a6442529d9c9407e364185456"},
-    {file = "solana-0.18.2.tar.gz", hash = "sha256:0431bd10cbe92d82a0c102e9f736483afc06ffbb6af18b81b06aec0c5e029813"},
+    {file = "solana-0.18.3-py3-none-any.whl", hash = "sha256:a7778f477e4c2d880f6ce181830fcc2bc78a93e69abb645d49c77ba2a8105afe"},
+    {file = "solana-0.18.3.tar.gz", hash = "sha256:59a664e7008f9a385447e6e870b241df4954dc2b889cc278de96047d6b09d181"},
 ]
 stevedore = [
     {file = "stevedore-3.5.0-py3-none-any.whl", hash = "sha256:a547de73308fd7e90075bb4d301405bebf705292fa90a90fc3bcf9133f58616c"},

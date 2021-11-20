@@ -4,6 +4,7 @@ from typing import Any, NamedTuple, AsyncGenerator
 from contextlib import asynccontextmanager
 from pyserum._layouts.instructions import INSTRUCTIONS_LAYOUT, InstructionType
 from pytest import mark, fixture
+from more_itertools import unique_everseen
 from construct import Int64ul
 from pyserum.instructions import InitializeMarketParams
 from solana.keypair import Keypair
@@ -163,7 +164,7 @@ async def sign_transactions(
     txs = []
     for transaction, signers in transactions_and_signers:
         transaction.recent_blockhash = recent_blockhash
-        all_signers = [wallet.payer] + signers
+        all_signers = list(unique_everseen([wallet.payer] + signers))
         transaction.sign(*all_signers)
         txs.append(transaction)
     return txs
