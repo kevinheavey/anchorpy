@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "anchorpy"
-version = "0.4.0"
+version = "0.4.1"
 description = "The Python Anchor client."
 readme = "README.md"
 repository = "https://github.com/kevinheavey/anchorpy"
@@ -19,6 +19,8 @@ websockets = "^10.0"
 toolz = "^0.11.2"
 jsonrpcclient = "^4.0.1"
 zstandard = "^0.16.0"
+pytest-xprocess = "^0.18.1"
+
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -29,7 +31,6 @@ pydocstyle = "^6.1.1"
 isort = "^5.9.3"
 pytest-asyncio = "^0.15.1"
 mkdocs-material = "^7.3.3"
-pytest-xprocess = "^0.18.1"
 bump2version = "^1.0.1"
 pyserum = "^0.5.0-alpha.0"
 mkdocstrings = "^0.16.2"
