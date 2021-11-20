@@ -16,24 +16,23 @@ jobs:
       matrix:
         node:
           [
-            'test_basic_0.py',
-            'test_basic_1.py',
-            'test_basic_2.py',
-            'test_basic_3.py',
-            'test_cashiers_check.py',
-            'test_chat.py',
-            'test_composite.py',
-            'test_errors.py',
-            'test_escrow.py',
-            'test_events.py',
-            'test_misc.py',
-            'test_multisig.py',
-            'test_pyth.py',
-            'test_swap.py',
-            'test_sysvars.py',
-            'test_token_proxy.py',
-            'test_zero_copy.py',
-            'unit'
+            'basic_0',
+            'basic_1',
+            'basic_2',
+            'basic_3',
+            'cashiers_check',
+            'chat',
+            'composite',
+            'errors',
+            'escrow',
+            'events',
+            'misc',
+            'multisig',
+            'pyth',
+            'swap',
+            'sysvars',
+            'token_proxy',
+            'zero_copy',
           ]
     steps:
       - name: Checkout repo.
@@ -118,7 +117,7 @@ jobs:
       #              run test suite
       #----------------------------------------------
       - name: Run tests
-        run: poetry run pytest tests/${{ matrix.node }}
+        run: poetry run pytest tests/test_${{ matrix.node }}.py
 
   all_good:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
