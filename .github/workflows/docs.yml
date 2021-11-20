@@ -11,6 +11,9 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v2
 
+      - name: build library
+        run: poetry build
+
       - name: Deploy docs
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
         env:
