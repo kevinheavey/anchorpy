@@ -17,7 +17,7 @@ With this approach you're just running regular Pytest tests.
 This lets you do some things that you can't do with `anchor test`,
 like integrating closely with your IDE or opening a debugger when a test fails (`pytest --pdb`).
 
-Here's how it looks with `basic-0`:
+Here's how it looks with the `basic-1` tests:
 
 ```python
 from pytest import fixture, mark
