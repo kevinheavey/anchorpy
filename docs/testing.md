@@ -24,10 +24,7 @@ from pytest import fixture, mark
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
-from anchorpy import Context, Program
-from anchorpy.pytest_plugin import workspace_fixture
-from anchorpy.workspace import WorkspaceType
-
+from anchorpy import Context, Program, workspace_fixture, WorkspaceType
 
 workspace = workspace_fixture("anchor/examples/tutorial/basic-1")
 
