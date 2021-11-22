@@ -176,12 +176,12 @@ class Program(object):
         await self.provider.close()
 
     @classmethod
-    async def fetch_idl(
+    async def fetch_raw_idl(
         cls,
         address: AddressType,
         provider: Provider,
-    ) -> Idl:
-        """Fetch an idl from the blockchain.
+    ) -> dict[str, Any]:
+        """Fetch an idl from the blockchain as a raw JSON dictionary.
 
         Args:
             address: The program ID.
@@ -191,7 +191,7 @@ class Program(object):
             IdlNotFoundError: If the requested IDL account does not exist.
 
         Returns:
-            Idl: The fetched IDL.
+            Idl: The raw IDL.
         """
         program_id = translate_address(address)
         actual_provider = provider if provider is not None else Provider.local()
@@ -204,7 +204,25 @@ class Program(object):
             b64decode(account_info_val["data"][0])[ACCOUNT_DISCRIMINATOR_SIZE:]
         )
         inflated_idl = _pako_inflate(bytes(idl_account["data"])).decode()
-        return Idl.from_json(json.loads(inflated_idl))
+        return json.loads(inflated_idl)
+
+    @classmethod
+    async def fetch_idl(
+        cls,
+        address: AddressType,
+        provider: Provider,
+    ) -> Idl:
+        """Fetch and parse an idl from the blockchain.
+
+        Args:
+            address: The program ID.
+            provider: The network and wallet context.
+
+        Returns:
+            Idl: The fetched IDL.
+        """
+        raw = await cls.fetch_raw_idl(address, provider)
+        return Idl.from_json(raw)
 
     @classmethod
     async def at(
