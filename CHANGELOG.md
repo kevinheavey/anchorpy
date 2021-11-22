@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.3] - 2021-11-22
+
+### Added
+
+- `Program.fetch_raw_idl` method to fetch an IDL json without parsing it into an `Idl` instance.
+
 ## [0.4.2] - 2021-11-20
 
 ### Fixed
