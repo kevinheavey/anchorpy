@@ -9,6 +9,9 @@ env:
 jobs:
   nox:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ '3.9', '3.10']
     steps:
     - uses: actions/checkout@v2
 
@@ -25,7 +28,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
-        python-version: 3.9
+        python-version: ${{ matrix.python-version }}
     #----------------------------------------------
     #  -----  install & configure poetry  -----
     #----------------------------------------------
