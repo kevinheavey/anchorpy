@@ -1,5 +1,5 @@
 """IDL coding."""
-from dataclasses import make_dataclass, asdict
+from dataclasses import make_dataclass, asdict, fields as dc_fields
 from types import MappingProxyType
 from keyword import kwlist
 from typing import Mapping, Optional, cast, Type
@@ -88,6 +88,7 @@ def _handle_enum_variants(
     name: str,
 ) -> Enum:
     variants = []
+    dclasses = {}
     for variant in idl_enum.variants:
         variant_name = variant.name
         if variant.fields is None:
@@ -106,9 +107,24 @@ def _handle_enum_variants(
                 types,
                 variant_name,
             )
-            renamed = variant_name / _DataclassStruct(cstruct, datacls=datacls)
+            dclasses[variant_name] = datacls
+            renamed = variant_name / cstruct
             variants.append(renamed)  # type: ignore
-    return Enum(*variants, enum_name=name)
+    enum_without_types = Enum(*variants, enum_name=name)
+    if dclasses:
+        for cname in enum_without_types.enum._sumtype_constructor_names:
+            try:
+                dclass = dclasses[cname]
+            except KeyError:
+                continue
+            dclass_fields = dc_fields(dclass)
+            constructr = getattr(enum_without_types.enum, cname)
+            for constructor_field in constructr._sumtype_attribs:
+                attrib = constructor_field[1]  # type: ignore
+                fld_name = constructor_field[0]  # type: ignore
+                dclass_field = [f for f in dclass_fields if f.name == fld_name][0]
+                attrib.type = dclass_field.type  # type: ignore
+    return enum_without_types
 
 
 def _typedef_layout(
