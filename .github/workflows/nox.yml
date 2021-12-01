@@ -11,7 +11,6 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Install Solana
-      if: steps.cache-solana.outputs.cache-hit != 'true'
       run: sh -c "$(curl -sSfL https://release.solana.com/v${{ env.solana_verion }}/install)"
 
     - name: Add Solana to path
