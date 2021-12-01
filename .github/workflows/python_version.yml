@@ -1,11 +1,11 @@
-name: Nox
+name: Python version
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 jobs:
-  nox:
+  version_check:
     runs-on: ubuntu-latest
     steps:
 
