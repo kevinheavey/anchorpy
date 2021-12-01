@@ -26,6 +26,6 @@ def test_jet_enum() -> None:
         data = json.load(f)
     idl = Idl.from_json(data)
     program = Program(idl, PublicKey(1))
-    cache_invalid_err = program.type["CacheInvalidError"]
-    assert cache_invalid_err.Expired(msg="hi").msg == "hi"
-    assert cache_invalid_err.Expired._sumtype_attribs[0][1].type == str
+    expired_err = program.type["CacheInvalidError"].Expired
+    assert expired_err(msg="hi").msg == "hi"
+    assert expired_err._sumtype_attribs[0][1].type == str
