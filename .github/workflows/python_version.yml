@@ -1,0 +1,21 @@
+name: Nox
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  nox:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.9.9
+
+    - name: See Python version
+      run: python -V
+
+    - name: Try error
+      run: python -c "list[int]"
