@@ -10,6 +10,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install Solana
+      if: steps.cache-solana.outputs.cache-hit != 'true'
+      run: sh -c "$(curl -sSfL https://release.solana.com/v${{ env.solana_verion }}/install)"
+
+    - name: Add Solana to path
+      run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+    - name: Generate local keypair
+      run: yes | solana-keygen new
+
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
