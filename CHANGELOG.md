@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.4] - 2021-12-02
+
+### Fixed
+
+- Update `sumtypes` dep so it works on Python 3.10
+- Fix handling of enums with C-like struct variants.
 ## [0.4.3] - 2021-11-22
 
 ### Added
