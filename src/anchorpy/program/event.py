@@ -1,7 +1,7 @@
 """This module contains code for handling Anchor events."""
 from dataclasses import dataclass
 from base64 import b64decode
-from typing import Callable, List, Optional, cast
+from typing import Optional, cast
 import binascii
 from solana.publickey import PublicKey
 from anchorpy.coder.coder import Coder
@@ -57,25 +57,26 @@ class EventParser:
     program_id: PublicKey
     coder: Coder
 
-    def parse_logs(self, logs: List[str], callback: Callable[[Event], None]) -> None:
-        """Parse a list of logs using a provided callback.
+    def parse_logs(self, logs: list[str]) -> list[Event]:
+        """Parse a list of logs.
 
         Args:
             logs: The logs to parse.
-            callback: The function to handle the parsed log.
         """
         log_scanner = _LogScanner(logs)
         execution = _ExecutionContext(cast(str, log_scanner.to_next()))
         log = log_scanner.to_next()
+        events = []
         while log is not None:
             event, new_program, did_pop = self.handle_log(execution, log)
             if event is not None:
-                callback(event)
+                events.append(event)
             if new_program is not None:
                 execution.push(new_program)
             if did_pop:
                 execution.pop()
             log = log_scanner.to_next()
+        return events
 
     def handle_log(
         self,

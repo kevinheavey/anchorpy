@@ -82,10 +82,9 @@ def _build_simulate_item(
                 raise translated_err
             raise RPCException(err_res)
         logs = ok_res["value"]["logs"]
-        events = []
         if idl.events is not None:
             parser = EventParser(program_id, coder)
-            parser.parse_logs(logs, lambda evt: events.append(evt))
+            events = parser.parse_logs(logs)
         return SimulateResponse(events, logs)
 
     return simulate_fn
