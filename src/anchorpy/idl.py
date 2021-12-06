@@ -29,7 +29,7 @@ _LiteralStrings = Literal[
 _NonLiteralIdlTypes = Union[
     "_IdlTypeVec", "_IdlTypeOption", "_IdlTypeDefined", "_IdlTypeArray"
 ]
-_IdlType = Union[_LiteralStrings, _NonLiteralIdlTypes]
+_IdlType = Union[_NonLiteralIdlTypes, _LiteralStrings]
 snake_case_conversion = conversion(underscore, camelize)
 
 
