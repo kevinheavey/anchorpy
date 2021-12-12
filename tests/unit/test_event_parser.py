@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-from anchorpy import EventParser, Idl, Program
+from anchorpy import EventParser, Idl, Program, Event
 from solana.publickey import PublicKey
 
 
@@ -46,5 +46,17 @@ def test_event_parser() -> None:
         "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
     ]
     parser = EventParser(program.program_id, program.coder)
-    parser.parse_logs(logs, lambda _: None)
-    assert 1
+    evts = []
+    parser.parse_logs(logs, lambda evt: evts.append(evt))
+    events_coder = program.coder.events
+    event_cls = events_coder.layouts["DepositCollateralEvent"].datacls  # type: ignore
+    expected_data = event_cls(
+        depositor=PublicKey("5GbBHT4CCQsmbP2oLscHtRZsNdsj3Y1mrbMSiLSE4Jpt"),
+        reserve=PublicKey("6MFPbC1VvuHTH99X1jdSpxw9kdNA7ZdsmzQgJy4cTsNd"),
+        amount=program.type["Amount"](
+            units=program.type["AmountUnits"].Tokens(), value=2000000000
+        ),
+    )
+    expected_event = Event(name="DepositCollateralEvent", data=expected_data)
+    assert len(evts) == 1
+    assert str(evts[0]) == str(expected_event)
