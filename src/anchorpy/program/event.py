@@ -128,12 +128,13 @@ class EventParser:
 
         """
         log_start = log.split(":")[0]
+        splitted = log_start.split(" ")
         invoke_msg = f"Program {str(self.program_id)} invoke"  # noqa: WPS237
-        if log_start.split("Program ")[1].split(" ")[1] == "success":
+        if len(splitted) == 3 and splitted[0] == "Program" and splitted[2] == "success":
             return None, True
-        elif log_start.startswith(invoke_msg):
+        if log_start.startswith(invoke_msg):
             return str(self.program_id), False
-        elif "invoke" in log_start:
+        if "invoke" in log_start:
             return "cpi", False
         return None, False
 

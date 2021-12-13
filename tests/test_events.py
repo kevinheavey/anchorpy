@@ -2,9 +2,11 @@
 
 Note: this is unfinished.
 """
-import json
-import websockets
+from typing import cast
 from pytest import mark, fixture
+from solana.rpc.websocket_api import connect, SolanaWsClientProtocol
+from solana.rpc.request_builder import LogsSubscribeFilter
+from solana.rpc.responses import LogsNotification
 from anchorpy import (
     Program,
     EventParser,
@@ -23,16 +25,13 @@ def program(workspace: WorkspaceType) -> Program:
 
 @mark.asyncio
 async def test_initialize(program: Program) -> None:
-    uri = "ws://127.0.0.1:8900"
-    async with websockets.connect(uri) as websocket:  # type: ignore
-        await websocket.send(
-            '{"jsonrpc": "2.0", "id": 1, "method": "logsSubscribe", "params": ["all"]}',
-        )
-        received = await websocket.recv()
+    async with cast(SolanaWsClientProtocol, connect()) as websocket:  # type: ignore
+        await websocket.logs_subscribe(LogsSubscribeFilter.ALL)
+        await websocket.recv()
         await program.rpc["initialize"]()
         received = await websocket.recv()
-        as_json = json.loads(received)
-        logs = as_json["params"]["result"]["value"]["logs"]
+        notification = cast(LogsNotification, received)
+        logs = cast(list[str], notification.result.value.logs)
         parser = EventParser(program.program_id, program.coder)
         parsed = []
         parser.parse_logs(logs, lambda evt: parsed.append(evt))

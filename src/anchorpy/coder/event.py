@@ -1,6 +1,6 @@
 """This module deals with (de)serializing Anchor events."""
 from hashlib import sha256
-from typing import Dict, Tuple, Any
+from typing import Dict, Tuple, Any, Optional
 
 from construct import Adapter, Construct, Sequence, Bytes, Switch
 from anchorpy.idl import Idl, _IdlEvent, _IdlField, _IdlTypeDef, _IdlTypeDefTyStruct
@@ -61,7 +61,10 @@ class EventCoder(Adapter):
         )
         super().__init__(subcon)  # type: ignore
 
-    def _decode(self, obj: Tuple[bytes, Any], context, path) -> Event:
-        disc = obj[0]  # check this, might need more decoding
-        event_name = self.discriminators[disc]
+    def _decode(self, obj: Tuple[bytes, Any], context, path) -> Optional[Event]:
+        disc = obj[0]
+        try:
+            event_name = self.discriminators[disc]
+        except KeyError:
+            return None
         return Event(data=obj[1], name=event_name)

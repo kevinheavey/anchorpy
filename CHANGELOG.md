@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.4.6] - 2021-12-13
+### Fixed
+- Fixed event parser ([#38](https://github.com/kevinheavey/anchorpy/pull/38))
 ## [0.4.5] - 2021-12-06
 
 - Support `solana-py` 0.19.0.
