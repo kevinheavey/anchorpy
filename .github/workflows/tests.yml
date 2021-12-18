@@ -31,6 +31,7 @@ jobs:
             'pyth',
             'swap',
             'sysvars',
+            'system_accounts',
             'token_proxy',
             'zero_copy',
           ]
