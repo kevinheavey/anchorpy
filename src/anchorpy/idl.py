@@ -165,6 +165,15 @@ class _IdlEventField:
 
 
 @dataclass
+class _IdlConstant:
+    """IDL representation of a constant value."""
+
+    name: str
+    type: _IdlType
+    value: str
+
+
+@dataclass
 class _IdlEvent:
     """IDL representation of an event.
 
@@ -203,6 +212,7 @@ class Idl:
     types: List[_IdlTypeDef] = field(default_factory=list)
     events: List[_IdlEvent] = field(default_factory=list)
     errors: List[_IdlErrorCode] = field(default_factory=list)
+    constants: List[_IdlConstant] = field(default_factory=list)
     metadata: Optional[_Metadata] = None
 
     @classmethod

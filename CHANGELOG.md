@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2021-12-18
+
+### Changed
+- AnchorPy now targets Anchor 0.19.0 ([#39](https://github.com/kevinheavey/anchorpy/pull/39))
 ## [0.4.6] - 2021-12-13
 ### Fixed
 - Fixed event parser ([#38](https://github.com/kevinheavey/anchorpy/pull/38))

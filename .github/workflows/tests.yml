@@ -7,7 +7,7 @@ on:
 
 env:
   solana_verion: 1.8.5
-  anchor_version: 0.18.0
+  anchor_version: 0.19.0
 
 jobs:
   tests:
@@ -31,6 +31,7 @@ jobs:
             'pyth',
             'swap',
             'sysvars',
+            'system_accounts',
             'token_proxy',
             'zero_copy',
           ]
