@@ -208,7 +208,7 @@ async def test_fail_to_close_account_when_sending_lamports_to_itself(
                 },
             ),
         )
-    assert excinfo.value.code == 151
+    assert excinfo.value.code == 2011
     assert excinfo.value.msg == "A close constraint was violated"
 
 
@@ -770,7 +770,7 @@ async def test_can_use_pdas_with_empty_seeds(program: Program) -> None:
             },
         ),
     )
-    pda2, bump2 = PublicKey.find_program_address(
+    pda2, _ = PublicKey.find_program_address(
         [b"non-empty"],
         program.program_id,
     )
@@ -782,7 +782,7 @@ async def test_can_use_pdas_with_empty_seeds(program: Program) -> None:
                 },
             ),
         )
-    assert excinfo.value.code == 146
+    assert excinfo.value.code == 2006
 
 
 @fixture(scope="module")
