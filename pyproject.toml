@@ -21,6 +21,12 @@ jsonrpcclient = "^4.0.1"
 zstandard = "^0.16.0"
 pytest-xprocess = "^0.18.1"
 more-itertools = "^8.11.0"
+typer = { version = "^0.4.0", optional = true }
+ipython = { version = "^7.30.1", optional = true }
+
+
+[tool.poetry.extras]
+shell = ["typer", "ipython"]
 
 
 [tool.poetry.dev-dependencies]
