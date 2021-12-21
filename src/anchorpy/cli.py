@@ -57,7 +57,10 @@ def callback():
 
 @app.command()
 def shell():
-    """Start an IPython shell with an AnchorPy workspace object initialized."""
+    """Start IPython shell with AnchorPy workspace object initialized.
+
+    Note that you should run `anchor localnet` before `anchorpy shell`.
+    """
     path = _search_upwards_for_project_root()
     workspace = create_workspace(path)  # noqa: F841
     embed(
@@ -68,14 +71,15 @@ def shell():
 
 
 @app.command()
-def init(program_name: str):
+def init(
+    program_name: str = typer.Argument(..., help="The name of the Anchor program.")
+):
     """Create a basic Python test file for an Anchor program.
 
     This does not replace `anchor init`, but rather should be
     run after it.
 
-    Args:
-        program_name: The name of the Anchor program.
+    The test file will live at `tests/test_$PROGRAM_NAME.py`.
     """
     file_contents = INIT_TESTS.format(program_name)
     project_root = _search_upwards_for_project_root()
