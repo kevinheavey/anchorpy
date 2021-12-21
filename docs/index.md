@@ -10,8 +10,10 @@ AnchorPy is the Python client for [Anchor](https://github.com/project-serum/anch
 ## Installation
 
 ```shell
-pip install anchorpy
+pip install anchorpy[cli]
 ```
+
+Or, if you're not using the CLI features of AnchorPy you can just run `pip install anchorpy`.
 
 
 !!! note

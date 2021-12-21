@@ -22,6 +22,8 @@ jobs:
             'basic_3',
             'cashiers_check',
             'chat',
+            'cli',
+            'cli_init',
             'composite',
             'errors',
             'escrow',
@@ -103,7 +105,7 @@ jobs:
       #----------------------------------------------
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root
+        run: poetry install -E cli --no-interaction --no-root
       #----------------------------------------------
       # install your root project
       #----------------------------------------------
