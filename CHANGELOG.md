@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.0] - 2021-12-21
+
+### Added
+
+Added AnchorPy CLI ([#42](https://github.com/kevinheavey/anchorpy/pull/42)).
+
+### Changed
+
+Bumped `apischema` dependency to latest version ([#42](https://github.com/kevinheavey/anchorpy/pull/42)).
 ## [0.5.0] - 2021-12-18
 
 ### Changed
