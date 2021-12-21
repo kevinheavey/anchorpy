@@ -29,6 +29,7 @@ jobs:
             'misc',
             'multisig',
             'pyth',
+            'shell',
             'swap',
             'sysvars',
             'system_accounts',
