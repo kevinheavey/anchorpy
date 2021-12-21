@@ -44,6 +44,13 @@ nav:
   - testing.md
   - comparison_with_anchor_ts.md
   - examples.md
+  - cli.md
   - api_reference.md
 extra_css:
   - css/mkdocstrings.css
+  - css/termynal.css
+  - css/custom.css
+extra_javascript:
+  - 'https://unpkg.com/mermaid@8.4.6/dist/mermaid.min.js'
+  - 'js/termynal.js'
+  - 'js/custom.js'
