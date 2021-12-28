@@ -28,11 +28,12 @@ Here is how we generate a client from an IDL and use it to interact with a smart
         # Address of the deployed program.
         program_id = PublicKey("<YOUR-PROGRAM-ID>")
         # Generate the program client from IDL.
-        program = Program(idl, program_id)
-        # Execute the RPC.
-        await program.rpc["initialize"]()
-        # Close the underlying http client, otherwise we get warnings.
-        await program.close()
+        async with Program(idl, program_id) as program:
+            # Execute the RPC.
+            await program.rpc["initialize"]()
+        # If we don't use the context manager, we need to
+        # close the underlying http client, otherwise we get warnings.
+        # await program.close()
 
     asyncio.run(main())
 
