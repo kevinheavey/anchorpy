@@ -994,7 +994,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "pyheck"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python bindings for heck, the Rust case conversion library"
 category = "main"
 optional = false
@@ -1448,7 +1448,7 @@ cli = ["typer", "ipython"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "931672596e8aeb3ac8fa325863eac5d1c9b265efd9c2c041ab098b8a73f5a619"
+content-hash = "10b569b7a4e991dc2ad2c26e7b0cf47ad25c295747eed00b20decc45705c9e4f"
 
 [metadata.files]
 anyio = [
@@ -1937,18 +1937,18 @@ pygments = [
     {file = "Pygments-2.11.2.tar.gz", hash = "sha256:4e426f72023d88d03b2fa258de560726ce890ff3b630f88c21cbb8b2503b8c6a"},
 ]
 pyheck = [
-    {file = "pyheck-0.1.1-cp39-abi3-macosx_10_7_x86_64.whl", hash = "sha256:7f4c4ea63f1b5975539ef0884f0eeeca0d13ba3a33d9a2e2a8b5e1090e18e51f"},
-    {file = "pyheck-0.1.1-cp39-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:322db948925bb8ef161fd36cc0e6f568a7d017508e89e196f6e70a31d2322e2f"},
-    {file = "pyheck-0.1.1-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c434aa71cf22cd6cbcc969c5dca2f0c702b0dba6fb559ce140f9970043c711dc"},
-    {file = "pyheck-0.1.1-cp39-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:50d7aae813fa95f51965311589ddb9bca5840d042a70506ef9239ebcd9fd8346"},
-    {file = "pyheck-0.1.1-cp39-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:db83ebbec86237a2f9be3f6e2d37cb09acef8b0c22e1cc6d19ecc477d22516e0"},
-    {file = "pyheck-0.1.1-cp39-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:29c9c1dd6359bb5c927304a2c377355c03fcf5c29fc2df20e582e42e18da037f"},
-    {file = "pyheck-0.1.1-cp39-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:042fd678372aef3ebe266c2180bd13f245aa492cc9a274a8e27b1ae73756f49d"},
-    {file = "pyheck-0.1.1-cp39-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:03167ccb5f989964b6d12285d845180e19f68a77f56a9578a4eeba01f8a7fe99"},
-    {file = "pyheck-0.1.1-cp39-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:530d3079b22ae07e75cfa867f1e44183cf1bd52475cc9f1ac49021adbc2f24fa"},
-    {file = "pyheck-0.1.1-cp39-abi3-win32.whl", hash = "sha256:618714f310be5a6b8679f486df1d93e59881158625104d8d579c4a37543b24c9"},
-    {file = "pyheck-0.1.1-cp39-abi3-win_amd64.whl", hash = "sha256:f474f7f0fb6281de075a3ac1064fefd41d422e0b229c3a4e51e489aaf69af9ce"},
-    {file = "pyheck-0.1.1.tar.gz", hash = "sha256:189b38e0f777129f5e46eef8176401d8c2f2983929e22942ca92d3b65f654346"},
+    {file = "pyheck-0.1.2-cp39-abi3-macosx_10_7_x86_64.whl", hash = "sha256:3167af3dcd323a86975fe150c84fe536f98882acb01f1b1b7ad1eea43b8f48e6"},
+    {file = "pyheck-0.1.2-cp39-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:440f3a745700810889fc313ace64c17259589acf953f786f960a829b4585e721"},
+    {file = "pyheck-0.1.2-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7c48983fc161ab7f526be5f49ed5a60de41a8a844ac48bb627fc0770efea202a"},
+    {file = "pyheck-0.1.2-cp39-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:dd6c1e93084e98e1d4c8caec2ec941e95f43a51afbb87d43f0e6f01872249055"},
+    {file = "pyheck-0.1.2-cp39-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:c5d2f2e8c48fc6712ad4b4ddd60fcacd49cac13f9e0499cdd16516875d845fb3"},
+    {file = "pyheck-0.1.2-cp39-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:c17e685291be369d5dae5c328c3be68cb1029184674c7159c6f4bc1f7c4f3a27"},
+    {file = "pyheck-0.1.2-cp39-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:50e5b565e9c60deb14d35f9a182d40217410b2a976316285e2def33a2bf1a69d"},
+    {file = "pyheck-0.1.2-cp39-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:97370104af9b67b8a2035b6eac4fc1c4ceae6105eded76192f39e6ffbe5ef9c6"},
+    {file = "pyheck-0.1.2-cp39-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:7f7fd58e640c5c9b8a1611332501cebf2ba90a46b9ddedbbdc67859133427a37"},
+    {file = "pyheck-0.1.2-cp39-abi3-win32.whl", hash = "sha256:f9b3de286fadae418aa4527abfa1f4b538f7e31a6301adce2db4f004d6291dbb"},
+    {file = "pyheck-0.1.2-cp39-abi3-win_amd64.whl", hash = "sha256:baca6a6391fdef8930cbf92bea4534184e5c0d0b889d83aa29c135603e823e03"},
+    {file = "pyheck-0.1.2.tar.gz", hash = "sha256:0fc865f0cb4a2fc680a579631d05d4558ab912ca887519142bf628c1194f6977"},
 ]
 pymdown-extensions = [
     {file = "pymdown-extensions-9.1.tar.gz", hash = "sha256:74247f2c80f1d9e3c7242abe1c16317da36c6f26c7ad4b8a7f457f0ec20f0365"},
