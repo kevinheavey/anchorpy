@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.3] - 2022-01-21
+
+### Fixed
+
+Some more deps needed upating.
 ## [0.6.2] - 2022-01-21
 
 ### Fixed
