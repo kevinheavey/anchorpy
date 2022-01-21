@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0] - 2022-01-21
+
+### Changed
+
+- Use `pyheck` instead of `inflection` for case conversion
+- Update `solana` and `apischema` dependencies.
+
+
 ## [0.6.0] - 2021-12-21
 
 ### Added
