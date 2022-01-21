@@ -4,7 +4,7 @@ from typing import List, Union, Optional, Dict, Any, Literal, Tuple, TypedDict
 
 from apischema import deserialize, alias
 from apischema.metadata import conversion
-from inflection import underscore, camelize
+from pyheck import snake, upper_camel
 from borsh_construct import CStruct, Vec, U8
 import solana.publickey  # noqa: WPS301
 
@@ -30,7 +30,19 @@ _NonLiteralIdlTypes = Union[
     "_IdlTypeVec", "_IdlTypeOption", "_IdlTypeDefined", "_IdlTypeArray"
 ]
 _IdlType = Union[_NonLiteralIdlTypes, _LiteralStrings]
-snake_case_conversion = conversion(underscore, camelize)
+
+
+# We have to define these wrappers because snake and upper_camel
+# don't have annotations
+def _underscore(s: str) -> str:
+    return snake(s)
+
+
+def _camelize(s: str) -> str:
+    return upper_camel(s)
+
+
+snake_case_conversion = conversion(_underscore, _camelize)
 
 
 @dataclass
