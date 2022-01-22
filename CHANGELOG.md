@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.4] - 2022-01-22
+
+### Changed
+
+Update ipython dependency to pick up ACE vulnerability patch. [More here.](https://www.reddit.com/r/Python/comments/s9l5oy/arbitrary_code_execution_vulnerability_discovered/)
 ## [0.6.3] - 2022-01-21
 
 ### Fixed
