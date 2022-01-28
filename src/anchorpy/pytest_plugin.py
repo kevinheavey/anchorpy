@@ -1,14 +1,17 @@
 """This module provides the `localnet_fixture` fixture factory."""
-from typing import AsyncGenerator, Callable, Optional, Union
+from typing import AsyncGenerator, Callable, Literal, Optional, Union
 import subprocess
 import signal
 import os
 from pathlib import Path
 from pytest import fixture
+from pytest_asyncio import fixture as async_fixture
 from xprocess import XProcessInfo, XProcess, ProcessStarter
 from pytest_xprocess import getrootdir
 from anchorpy import create_workspace, close_workspace
 from anchorpy.program.core import Program
+
+_Scope = Literal["session", "package", "module", "class", "function"]
 
 
 class _FixedXProcessInfo(XProcessInfo):
@@ -121,7 +124,7 @@ class _FixedXProcess(XProcess):
         return info.pid, info.logpath
 
 
-@fixture(scope="session")
+@async_fixture(scope="session")
 def _fixed_xprocess(request):
     """Yield session-scoped XProcess helper to manage long-running processes required for testing."""  # noqa: E501
     rootdir = getrootdir(request.config)  # noqa: DAR101,DAR301
@@ -134,7 +137,7 @@ def _fixed_xprocess(request):
 
 def localnet_fixture(
     path: Path,
-    scope: str = "module",
+    scope: _Scope = "module",
     timeout_seconds: int = 60,
     build_cmd: Optional[str] = None,
 ) -> Callable:
@@ -183,7 +186,7 @@ def localnet_fixture(
 # instead of copy-pasting (Pytest didn't like it).
 def workspace_fixture(
     path: Union[Path, str],
-    scope: str = "module",
+    scope: _Scope = "module",
     timeout_seconds: int = 60,
     build_cmd: Optional[str] = None,
 ) -> Callable:
@@ -201,7 +204,7 @@ def workspace_fixture(
         A workspace fixture for use with pytest.
     """  # noqa: E501,D202
 
-    @fixture(scope=scope)
+    @async_fixture(scope=scope)
     async def _workspace_fixture(
         _fixed_xprocess,
     ) -> AsyncGenerator[dict[str, Program], None]:

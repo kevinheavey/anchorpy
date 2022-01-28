@@ -2,6 +2,7 @@ import random
 import string
 
 from pytest import mark, fixture
+from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
@@ -26,7 +27,7 @@ async def provider(program: Program) -> Provider:
     return program.provider
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def created_chatroom(program: Program) -> Keypair:
     chatroom = Keypair()
     await program.rpc["create_chat_room"](
@@ -45,7 +46,7 @@ async def created_chatroom(program: Program) -> Keypair:
     return chatroom
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def created_user(
     created_chatroom: Keypair, program: Program
 ) -> tuple[PublicKey, PublicKey]:
@@ -65,7 +66,7 @@ async def created_user(
     return user, authority
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def sent_messages(
     created_user: tuple[PublicKey, PublicKey],
     created_chatroom: Keypair,

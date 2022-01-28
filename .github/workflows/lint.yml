@@ -1,11 +1,13 @@
-name: Docs
+name: Lint
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  docs:
-    name: Deploy docs
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
@@ -47,5 +49,5 @@ jobs:
       - name: install library
         run: poetry install --no-interaction
 
-      - name: Deploy docs
-        run: poetry run mkdocs gh-deploy --force
+      - name: Run linters
+        run: make lint

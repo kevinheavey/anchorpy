@@ -17,13 +17,13 @@ async def create_mint(prov: Provider) -> AsyncToken:
 
 
 @fixture(scope="module")
-async def program(workspace: WorkspaceType) -> Program:
+def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
     return workspace["composite"]
 
 
 @fixture(scope="module")
-async def provider(program: Program) -> Provider:
+def provider(program: Program) -> Provider:
     """Get a Provider instance."""
     return program.provider
 

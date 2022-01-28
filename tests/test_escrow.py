@@ -8,6 +8,7 @@ from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
 from pytest import fixture, mark
+from pytest_asyncio import fixture as async_fixture
 from anchorpy import Program, Provider
 from anchorpy.program.context import Context
 from anchorpy.pytest_plugin import workspace_fixture
@@ -25,18 +26,18 @@ InitializeEscrowResult = tuple[Keypair, PublicKey]
 
 
 @fixture(scope="module")
-async def program(workspace: WorkspaceType) -> Program:
+def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
     return workspace["escrow"]
 
 
 @fixture(scope="module")
-async def provider(program: Program) -> Provider:
+def provider(program: Program) -> Provider:
     """Get a Provider instance."""
     return program.provider
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def initialize_escrow_state(
     program: Program, provider: Provider
 ) -> InitializeEscrowStateResult:
@@ -121,7 +122,7 @@ async def test_initialized_escrow_state(
     assert _taker_token_account_b.amount == TAKER_AMOUNT
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def initialize_escrow(
     program: Program,
     provider: Provider,

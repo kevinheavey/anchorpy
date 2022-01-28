@@ -1,7 +1,8 @@
 """Mimics anchor/tests/spl/token-proxy."""
 from dataclasses import dataclass
 
-from pytest import mark, fixture
+from pytest import fixture, mark
+from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
@@ -43,19 +44,19 @@ def program(workspace: WorkspaceType) -> Program:
 
 
 @fixture(scope="module")
-async def provider(program: Program) -> Provider:
+def provider(program: Program) -> Provider:
     """Get a Provider instance."""
     return program.provider
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def initial_state(provider: Provider) -> InitialState:
     mint, god = await create_mint_and_vault(provider, 1000000)
     receiver = await create_token_account(provider, mint, provider.wallet.public_key)
     return InitialState(mint, god, receiver)
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def create_check(program: Program, initial_state: InitialState) -> CreatedCheck:
     check = Keypair()
     vault = Keypair()

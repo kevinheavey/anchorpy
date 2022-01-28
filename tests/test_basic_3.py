@@ -1,7 +1,8 @@
 """Mimics anchor/examples/tutorial/basic-3/tests/basic-3.js."""
 from typing import AsyncGenerator
 
-from pytest import mark, fixture
+from pytest import mark
+from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
@@ -13,7 +14,7 @@ from anchorpy.workspace import WorkspaceType
 workspace = workspace_fixture("anchor/examples/tutorial/basic-3")
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def provider() -> AsyncGenerator[Provider, None]:
     """Create a Provider instance."""
     prov = Provider.local()

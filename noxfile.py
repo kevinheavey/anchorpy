@@ -1,3 +1,4 @@
+# noqa: D100
 from nox_poetry import session  # type: ignore
 
 

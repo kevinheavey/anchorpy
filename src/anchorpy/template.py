@@ -1,3 +1,4 @@
+# noqa: D100
 INIT_TESTS = '''"""AnchorPy integration tests."""
 import asyncio
 from pytest import fixture, mark

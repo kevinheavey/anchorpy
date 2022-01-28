@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.5] - 2022-01-28
+
+### Changed
+
+Update pytest and pytest-asyncio dependencies.
 ## [0.6.4] - 2022-01-22
 
 ### Changed
