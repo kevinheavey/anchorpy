@@ -1,3 +1,4 @@
+# noqa: D100
 import os
 from pathlib import Path
 from contextlib import contextmanager
@@ -11,17 +12,17 @@ app = typer.Typer()
 
 @contextmanager
 def _set_directory(path: Path):
-    """Sets the cwd within the context
+    """Set the cwd within the context.
 
     Args:
         path (Path): The path to the cwd
 
     Yields:
         None
-    """
+    """  # noqa: D202
 
     origin = Path().absolute()
-    try:
+    try:  # noqa: WPS229
         os.chdir(path)
         yield
     finally:
@@ -29,15 +30,11 @@ def _set_directory(path: Path):
 
 
 def _search_upwards_for_project_root() -> Path:
-    """Search in the current directory and all directories above it
-    for an Anchor.toml file.
-
-    Args:
-        filename: The filename to look for.
+    """Search in the current directory and all directories above it for an Anchor.toml file.
 
     Returns:
         The location of the first Anchor.toml file found
-    """
+    """  # noqa: D205,DAR401
     search_dir = Path.cwd()
     root = Path(search_dir.root)
 
@@ -72,7 +69,9 @@ def shell():
 
 @app.command()
 def init(
-    program_name: str = typer.Argument(..., help="The name of the Anchor program.")
+    program_name: str = typer.Argument(  # noqa: WPS404,B008
+        ..., help="The name of the Anchor program."
+    )  # noqa: DAR101,DAR401
 ):
     """Create a basic Python test file for an Anchor program.
 
