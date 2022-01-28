@@ -4,6 +4,7 @@ from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
 from pytest import fixture, mark
+from pytest_asyncio import fixture as async_fixture
 from anchorpy import Program, Provider, Context
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
@@ -13,18 +14,18 @@ workspace = workspace_fixture("anchor/examples/tutorial/basic-2")
 
 
 @fixture(scope="module")
-async def program(workspace: WorkspaceType) -> Program:
+def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
     return workspace["basic_2"]
 
 
 @fixture(scope="module")
-async def provider(program: Program) -> Provider:
+def provider(program: Program) -> Provider:
     """Get a Provider instance."""
     return program.provider
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def created_counter(program: Program, provider: Provider) -> Keypair:
     """Create the counter."""
     counter = Keypair()

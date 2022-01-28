@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 
 from pytest import mark, fixture, raises
+from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.async_client import AsyncToken
@@ -32,12 +33,12 @@ def program(workspace: WorkspaceType) -> Program:
 
 
 @fixture(scope="module")
-async def provider(program: Program) -> Provider:
+def provider(program: Program) -> Provider:
     """Get a Provider instance."""
     return program.provider
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def initialize(program: Program, provider: Provider) -> Initialize:
     authority = provider.wallet.payer
     wallet = Keypair()

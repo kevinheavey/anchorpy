@@ -18,7 +18,7 @@ workspace = workspace_fixture("anchor/tests/pyth/")
 
 
 @fixture(scope="module")
-async def program(workspace: WorkspaceType) -> Program:
+def program(workspace: WorkspaceType) -> Program:
     return workspace["pyth"]
 
 

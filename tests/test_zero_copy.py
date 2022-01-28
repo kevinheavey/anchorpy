@@ -2,6 +2,7 @@
 from pathlib import Path
 
 from pytest import mark, fixture, raises
+from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
@@ -23,23 +24,23 @@ workspace = workspace_fixture("anchor/tests/zero-copy")
 
 
 @fixture(scope="module")
-async def program(workspace: WorkspaceType) -> Program:
+def program(workspace: WorkspaceType) -> Program:
     return workspace["zero_copy"]
 
 
 @fixture(scope="module")
-async def program_cpi(workspace: dict[str, Program]) -> Program:
+def program_cpi(workspace: dict[str, Program]) -> Program:
     return workspace["zero_cpi"]
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def provider(program: Program) -> Provider:
     """Get a Provider instance."""
     print(program.idl)
     return program.provider
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def foo(program: Program) -> Keypair:
     foo_keypair = Keypair()
     await program.rpc["create_foo"](
@@ -67,7 +68,7 @@ async def test_create_foo(foo: Keypair, provider: Provider, program: Program) ->
     assert account.second_authority == list(bytes(provider.wallet.public_key))
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def update_foo(program: Program, foo: Keypair) -> None:
     await program.rpc["update_foo"](
         1234,
@@ -91,7 +92,7 @@ async def test_update_foo(
     assert account.second_authority == list(bytes(program.provider.wallet.public_key))
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def update_foo_second(program: Program, foo: Keypair, update_foo: None) -> None:
     await program.rpc["update_foo_second"](
         55,
@@ -115,7 +116,7 @@ async def test_update_foo_second(
     assert account.second_authority == list(bytes(program.provider.wallet.public_key))
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def bar(
     program: Program, provider: Provider, foo: Keypair, update_foo_second: None
 ) -> PublicKey:
@@ -142,7 +143,7 @@ async def test_create_bar(provider: Provider, program: Program, bar: PublicKey) 
     assert account.data == 0
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def update_associated_zero_copy_account(
     program: Program,
     provider: Provider,
@@ -173,7 +174,7 @@ async def test_update_associated_zero_copy_account(
     assert account.data == 99
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def check_cpi(
     program_cpi: Program,
     program: Program,
@@ -207,7 +208,7 @@ async def test_check_cpi(
     assert account.data == 1337
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def event_q(
     program: Program,
     check_cpi: None,

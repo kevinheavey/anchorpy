@@ -4,6 +4,7 @@ from typing import Any, NamedTuple, AsyncGenerator
 from contextlib import asynccontextmanager
 from pyserum._layouts.instructions import INSTRUCTIONS_LAYOUT, InstructionType
 from pytest import mark, fixture
+from pytest_asyncio import fixture as async_fixture
 from more_itertools import unique_everseen
 from construct import Int64ul
 from pyserum.instructions import InitializeMarketParams
@@ -494,11 +495,11 @@ async def setup_two_markets(provider: Provider) -> OrderbookEnv:
 
 
 @fixture(scope="module")
-async def program(workspace: WorkspaceType) -> Program:
+def program(workspace: WorkspaceType) -> Program:
     return workspace["swap"]
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def orderbook_env(program: Program) -> OrderbookEnv:
     return await setup_two_markets(program.provider)
 
@@ -598,7 +599,7 @@ async def balance_change(
         deltas.append(delta)
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def swap_usdc_to_a_and_init_open_orders(
     orderbook_env: OrderbookEnv,
     program: Program,

@@ -3,6 +3,7 @@ import asyncio
 import subprocess
 from pathlib import Path
 from pytest import raises, mark, fixture
+from pytest_asyncio import fixture as async_fixture
 from solana.rpc.types import MemcmpOpts
 from anchorpy import Program, Context
 from anchorpy.error import ProgramError
@@ -24,16 +25,16 @@ workspace = workspace_fixture(PATH)
 
 
 @fixture(scope="module")
-async def program(workspace: WorkspaceType) -> Program:
+def program(workspace: WorkspaceType) -> Program:
     return workspace["misc"]
 
 
 @fixture(scope="module")
-async def misc2program(workspace: WorkspaceType) -> Program:
+def misc2program(workspace: WorkspaceType) -> Program:
     return workspace["misc2"]
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def initialized_keypair(program: Program) -> Keypair:
     data = Keypair()
     await program.rpc["initialize"](
@@ -70,7 +71,7 @@ async def test_fetch_multiple(program: Program, initialized_keypair: Keypair) ->
     assert all(acc == data_account for acc in data_accounts)
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def keypair_after_test_u16(program: Program) -> Keypair:
     data = Keypair()
     await program.rpc["test_u16"](
@@ -173,7 +174,7 @@ async def test_can_use_i8_in_idl(program: Program) -> None:
     assert data_account.data == -3
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def data_i16_keypair(program: Program) -> Keypair:
     data = Keypair()
     await program.rpc["test_i16"](
@@ -455,7 +456,7 @@ async def test_can_create_random_mint_account(
     assert mint_account.freeze_authority == program.provider.wallet.public_key
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def prefunded_mint(program: Program) -> Keypair:
     mint = Keypair()
     await program.rpc["test_init_mint"](
@@ -786,7 +787,7 @@ async def test_can_use_pdas_with_empty_seeds(program: Program) -> None:
     assert excinfo.value.code == 2006
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def if_needed_acc(program: Program) -> Keypair:
     keypair = Keypair()
     await program.rpc["test_init_if_needed"](

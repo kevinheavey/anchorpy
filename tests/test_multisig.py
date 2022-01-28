@@ -2,6 +2,7 @@
 from dataclasses import replace
 
 from pytest import mark, fixture
+from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
@@ -21,18 +22,18 @@ workspace = workspace_fixture("anchor/tests/multisig/")
 
 
 @fixture(scope="module")
-async def program(workspace: WorkspaceType) -> Program:
+def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
     return workspace["multisig"]
 
 
 @fixture(scope="module")
-async def provider(program: Program) -> Provider:
+def provider(program: Program) -> Provider:
     """Get a Provider instance."""
     return program.provider
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def created_multisig(program: Program) -> CreatedMultisig:
     """Run the create_multisig RPC function."""
     multisig = Keypair()
@@ -75,7 +76,7 @@ async def test_created_multisig(
     assert multisig_account.owners == owners
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def created_transaction(
     program: Program,
     created_multisig: CreatedMultisig,
@@ -135,7 +136,7 @@ async def test_created_transaction(
     assert tx_account.did_execute is False
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def executed_transaction(
     program: Program,
     created_transaction: CreatedTransaction,

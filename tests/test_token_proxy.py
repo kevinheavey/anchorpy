@@ -1,5 +1,6 @@
 """Mimics anchor/tests/spl/token-proxy."""
 from pytest import mark, fixture
+from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.system_program import create_account, CreateAccountParams
@@ -26,7 +27,7 @@ def program(workspace: WorkspaceType) -> Program:
 
 
 @fixture(scope="module")
-async def provider(program: Program) -> Provider:
+def provider(program: Program) -> Provider:
     """Get a Provider instance."""
     return program.provider
 
@@ -67,26 +68,26 @@ async def create_mint(provider: Provider) -> PublicKey:
     return mint.public_key
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def created_mint(provider: Provider) -> PublicKey:
     return await create_mint(provider)
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def from_pubkey(provider: Provider, created_mint: PublicKey) -> PublicKey:
     return await create_token_account(
         provider, created_mint, provider.wallet.public_key
     )
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def to_pubkey(provider: Provider, created_mint: PublicKey) -> PublicKey:
     return await create_token_account(
         provider, created_mint, provider.wallet.public_key
     )
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def mint_token(
     program: Program,
     provider: Provider,
@@ -114,7 +115,7 @@ async def test_mint_token(
     assert from_account.amount == 1000
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def transfer_token(
     program: Program,
     provider: Provider,
@@ -148,7 +149,7 @@ async def test_transfer_token(
     assert to_account.amount == 400
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def burn_token(
     program: Program,
     provider: Provider,
@@ -180,7 +181,7 @@ async def test_burn_token(
     assert to_account.amount == 1
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def set_new_mint_authority(
     program: Program,
     provider: Provider,

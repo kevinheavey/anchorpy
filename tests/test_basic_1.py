@@ -1,6 +1,7 @@
 """Mimics anchor/examples/tutorial/basic-1"""
 
 from pytest import fixture, mark
+from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.system_program import SYS_PROGRAM_ID
 
@@ -18,7 +19,7 @@ def program(workspace: WorkspaceType) -> Program:
     return workspace["basic_1"]
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def initialized_account(program: Program) -> Keypair:
     """Generate a keypair and initialize it."""
     my_account = Keypair()

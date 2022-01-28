@@ -1,5 +1,6 @@
 """Mimics anchor/tests/composite/tests/composite.js."""
 from pytest import mark, fixture
+from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 
@@ -17,7 +18,7 @@ def program(workspace: WorkspaceType) -> Program:
     return workspace["composite"]
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def initialized_accounts(program: Program) -> tuple[Keypair, Keypair]:
     """Generate keypairs and use them when callling the initialize function."""
     dummy_a = Keypair()
@@ -39,7 +40,7 @@ async def initialized_accounts(program: Program) -> tuple[Keypair, Keypair]:
     return dummy_a, dummy_b
 
 
-@fixture(scope="module")
+@async_fixture(scope="module")
 async def composite_updated_accounts(
     program: Program,
     initialized_accounts: tuple[Keypair, Keypair],
