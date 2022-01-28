@@ -26,13 +26,13 @@ InitializeEscrowResult = tuple[Keypair, PublicKey]
 
 
 @fixture(scope="module")
-async def program(workspace: WorkspaceType) -> Program:
+def program(workspace: WorkspaceType) -> Program:
     """Create a Program instance."""
     return workspace["escrow"]
 
 
 @fixture(scope="module")
-async def provider(program: Program) -> Provider:
+def provider(program: Program) -> Provider:
     """Get a Provider instance."""
     return program.provider
 
