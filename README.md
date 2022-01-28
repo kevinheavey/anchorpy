@@ -13,13 +13,13 @@ Read the [Documentation](https://kevinheavey.github.io/anchorpy/).
 
 
 
-## Installation
+## Installation (requires Python >=3.9)
 
 ```sh
-pip install anchorpy
+pip install anchorpy[cli]
 
 ```
-
+Or, if you're not using the CLI features of AnchorPy you can just run `pip install anchorpy`.
 
 ### Development Setup
 
