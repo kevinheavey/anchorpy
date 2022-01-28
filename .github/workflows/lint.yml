@@ -5,7 +5,7 @@ on:
 
 jobs:
   lint:
-    name: Deploy docs
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
