@@ -4,7 +4,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  docs:
     name: Deploy docs
     runs-on: ubuntu-latest
     steps:
