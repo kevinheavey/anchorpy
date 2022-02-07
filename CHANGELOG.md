@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.0] - 2022-02-07
+
+### Changed
+
+- Add experimental support for tuple enum variants
+
+### Fixed
+
+- Don't crash when loading a Program that uses unsupported types
 ## [0.6.5] - 2022-01-28
 
 ### Changed
