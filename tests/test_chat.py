@@ -54,7 +54,6 @@ async def created_user(
     user, bump = PublicKey.find_program_address([bytes(authority)], program.program_id)
     await program.rpc["create_user"](
         "My User",
-        bump,
         ctx=Context(
             accounts={
                 "user": user,
