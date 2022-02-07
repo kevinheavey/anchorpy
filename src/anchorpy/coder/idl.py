@@ -8,6 +8,7 @@ from solana.publickey import PublicKey
 from construct import Construct
 from borsh_construct import (
     CStruct,
+    TupleStruct,
     Vec,
     Enum,
     Bool,
@@ -29,6 +30,7 @@ from borsh_construct import (
 from anchorpy.borsh_extension import _BorshPubkey, _DataclassStruct
 from anchorpy.idl import (
     _IdlEnumFieldsNamed,
+    _IdlEnumFieldsTuple,
     _IdlField,
     _IdlType,
     _IdlTypeArray,
@@ -89,26 +91,35 @@ def _handle_enum_variants(
 ) -> Enum:
     variants = []
     dclasses = {}
+    tuples = {}
     for variant in idl_enum.variants:
         variant_name = variant.name
         if variant.fields is None:
             variants.append(variant_name)
         else:
-            fields = []
             variant_fields = variant.fields
-            for fld in variant_fields:
-                if not isinstance(fld, _IdlField):  # noqa: WPS421
-                    raise NotImplementedError("Tuple enum variants not yet implemented")
-                fields.append(_field_layout(fld, types))
-            named_fields = cast(_IdlEnumFieldsNamed, variant_fields)
-            cstruct = CStruct(*fields)
-            datacls = _idl_enum_fields_named_to_dataclass_type(
-                named_fields,
-                types,
-                variant_name,
-            )
-            dclasses[variant_name] = datacls
-            renamed = variant_name / cstruct
+            if isinstance(variant_fields[0], _IdlField):
+                fields = []
+                named_fields = cast(_IdlEnumFieldsNamed, variant_fields)
+                for fld in named_fields:
+                    fields.append(_field_layout(fld, types))
+                cstruct = CStruct(*fields)
+                datacls = _idl_enum_fields_named_to_dataclass_type(
+                    named_fields,
+                    types,
+                    variant_name,
+                )
+                dclasses[variant_name] = datacls
+                renamed = variant_name / cstruct
+            else:
+                fields = []
+                unnamed_fields = cast(_IdlEnumFieldsTuple, variant_fields)
+                for type_ in unnamed_fields:
+                    fields.append(_type_layout(type_, types))
+                tuple_struct = TupleStruct(*fields)
+                tuple_ = _idl_enum_fields_tuple_to_tuple_type(unnamed_fields, types)
+                tuples[variant_name] = tuple_
+                renamed = variant_name / tuple_struct
             variants.append(renamed)  # type: ignore
     enum_without_types = Enum(*variants, enum_name=name)
     if dclasses:
@@ -124,7 +135,31 @@ def _handle_enum_variants(
                 fld_name = constructor_field[0]  # type: ignore
                 dclass_field = [f for f in dclass_fields if f.name == fld_name][0]
                 attrib.type = dclass_field.type  # type: ignore
+    if tuples:
+        for cname_ in enum_without_types.enum._sumtype_constructor_names:
+            try:
+                tup = tuples[cname_]
+            except KeyError:
+                continue
+            constructr = getattr(enum_without_types.enum, cname)
+            constructr._sumtype_attribs[0][1].type = tup  # type: ignore
     return enum_without_types
+
+
+def _typedef_layout_without_field_name(
+    typedef: _IdlTypeDef, types: list[_IdlTypeDef],
+) -> Construct:
+    typedef_type = typedef.type
+    name = typedef.name
+    if isinstance(typedef_type, _IdlTypeDefTyStruct):
+        field_layouts = [_field_layout(field, types) for field in typedef_type.fields]
+        cstruct = CStruct(*field_layouts)
+        datacls = _idl_typedef_ty_struct_to_dataclass_type(typedef_type, types, name)
+        return _DataclassStruct(cstruct, datacls=datacls)
+    elif isinstance(typedef_type, _IdlTypeDefTyEnum):
+        return _handle_enum_variants(typedef_type, types, name)
+    unknown_type = typedef_type.kind
+    raise ValueError(f"Unknown type {unknown_type}")
 
 
 def _typedef_layout(
@@ -142,18 +177,35 @@ def _typedef_layout(
 
     Returns:
         `Construct` object from `borsh-construct`.
-    """
-    typedef_type = typedef.type
-    name = typedef.name
-    if isinstance(typedef_type, _IdlTypeDefTyStruct):
-        field_layouts = [_field_layout(field, types) for field in typedef_type.fields]
-        cstruct = CStruct(*field_layouts)
-        datacls = _idl_typedef_ty_struct_to_dataclass_type(typedef_type, types, name)
-        return field_name / _DataclassStruct(cstruct, datacls=datacls)
-    elif isinstance(typedef_type, _IdlTypeDefTyEnum):
-        return field_name / _handle_enum_variants(typedef_type, types, name)
-    unknown_type = typedef_type.kind
-    raise ValueError(f"Unknown type {unknown_type}")
+    """  # noqa: DAR402
+    return field_name / _typedef_layout_without_field_name(typedef, types)
+
+
+def _type_layout(type_: _IdlType, types: list[_IdlTypeDef]) -> Construct:
+    if isinstance(type_, str):
+        return FIELD_TYPE_MAP[type_]
+    field_type = cast(
+        _NonLiteralIdlTypes,
+        type_,
+    )
+    if isinstance(field_type, _IdlTypeVec):
+        return Vec(_type_layout(field_type.vec, types))
+    elif isinstance(field_type, _IdlTypeOption):
+        return Option(_type_layout(field_type.option, types))
+    elif isinstance(field_type, _IdlTypeDefined):
+        defined = field_type.defined
+        if not types:
+            raise ValueError("User defined types not provided")
+        filtered = [t for t in types if t.name == defined]
+        if len(filtered) != 1:
+            raise ValueError(f"Type not found {defined}")
+        return _typedef_layout_without_field_name(filtered[0], types)
+    elif isinstance(field_type, _IdlTypeArray):
+        array_ty = field_type.array[0]
+        array_len = field_type.array[1]
+        inner_layout = _type_layout(array_ty, types)
+        return inner_layout[array_len]
+    raise ValueError(f"Type {field_type} not implemented yet")
 
 
 def _field_layout(field: _IdlField, types: list[_IdlTypeDef]) -> Construct:
@@ -170,36 +222,9 @@ def _field_layout(field: _IdlField, types: list[_IdlTypeDef]) -> Construct:
 
     Returns:
         `Construct` object from `borsh-construct`.
-    """
+    """  # noqa: DAR402
     field_name = field.name if field.name else ""
-    if isinstance(field.type, str):
-        return field_name / FIELD_TYPE_MAP[field.type]
-    field_type = cast(
-        _NonLiteralIdlTypes,
-        field.type,
-    )
-    if isinstance(field_type, _IdlTypeVec):
-        return field_name / Vec(
-            _field_layout(_IdlField(name="", type=field_type.vec), types),
-        )
-    elif isinstance(field_type, _IdlTypeOption):
-        return field_name / Option(
-            _field_layout(_IdlField(name="", type=field_type.option), types)
-        )
-    elif isinstance(field_type, _IdlTypeDefined):
-        defined = field_type.defined
-        if not types:
-            raise ValueError("User defined types not provided")
-        filtered = [t for t in types if t.name == defined]
-        if len(filtered) != 1:
-            raise ValueError(f"Type not found {defined}")
-        return _typedef_layout(filtered[0], types, field_name)
-    elif isinstance(field_type, _IdlTypeArray):
-        array_ty = field_type.array[0]
-        array_len = field_type.array[1]
-        inner_layout = _field_layout(_IdlField(name="", type=array_ty), types)
-        return field_name / inner_layout[array_len]
-    raise ValueError(f"Field {field} not implemented yet")
+    return field_name / _type_layout(field.type, types)
 
 
 def _idl_type_to_python_type(
@@ -316,6 +341,26 @@ def _idl_enum_fields_named_to_dataclass_type(
             (field_name_to_use, _idl_type_to_python_type(field.type, types)),
         )
     return _make_datacls(name, dataclass_fields)
+
+
+def _idl_enum_fields_tuple_to_tuple_type(
+    fields: _IdlEnumFieldsTuple,
+    types: list[_IdlTypeDef],
+) -> Type:
+    """Generate a tuple definition from IDL named enum fields.
+
+    Args:
+        fields: The IDL enum fields.
+        types: IDL type definitions.
+
+    Returns:
+        Dataclass type definition.
+    """
+    tuple_types = []
+    for field in fields:
+        tuple_types.append(_idl_type_to_python_type(field, types))
+    type_str = ",".join(t.__name__ for t in tuple_types)
+    return eval(f"tuple[{type_str}]")  # noqa: WPS421,S307
 
 
 def _idl_typedef_to_python_type(
