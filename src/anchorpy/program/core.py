@@ -175,9 +175,8 @@ class Program(object):
         """Use this when you are done with the client."""
         await self.provider.close()
 
-    @classmethod
-    async def fetch_raw_idl(
-        cls,
+    @staticmethod
+    async def fetch_raw_idl(  # noqa: WPS602
         address: AddressType,
         provider: Provider,
     ) -> dict[str, Any]:
