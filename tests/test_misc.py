@@ -292,7 +292,6 @@ async def test_can_create_a_pda_with_instruction_data(
 async def test_can_create_a_zero_copy_pda(program: Program) -> None:
     my_pda, nonce = PublicKey.find_program_address([b"my-seed"], program.program_id)
     await program.rpc["test_pda_init_zero_copy"](
-        nonce,
         ctx=Context(
             accounts={
                 "my_pda": my_pda,
