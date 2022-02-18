@@ -331,8 +331,6 @@ async def test_can_create_a_token_account_from_seeds_pda(program: Program) -> No
         [b"my-token-seed"], program.program_id
     )
     await program.rpc["test_token_seeds_init"](
-        token_bump,
-        mint_bump,
         ctx=Context(
             accounts={
                 "my_pda": my_pda,
