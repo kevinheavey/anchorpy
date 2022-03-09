@@ -1,11 +1,18 @@
 # Changelog
 
-## [0.8.0] - Unreleased
+## [0.8.0] - 2022-03-09
+
+### Added
+
+- `Provider.readonly` constructor for using AnchorPy only to fetch data
+  [(#58)](https://github.com/kevinheavey/anchorpy/pull/58)
+- `commitment` parameter in `.fetch` and `.fetch_multiple` methods
+  [(#58)](https://github.com/kevinheavey/anchorpy/pull/58)
 
 ### Fixed
 
 - Cache some generated Python types to avoid issues with checking equality
-  [#57](https://github.com/kevinheavey/anchorpy/pull/57)
+  [(#57)](https://github.com/kevinheavey/anchorpy/pull/57)
 
 ## [0.7.0] - 2022-02-07
 
