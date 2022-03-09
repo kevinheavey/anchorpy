@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0] - Unreleased
+
+### Fixed
+
+- Cache some generated Python types to avoid issues with checking equality
+  [#57](https://github.com/kevinheavey/anchorpy/pull/57)
+
 ## [0.7.0] - 2022-02-07
 
 ### Changed
