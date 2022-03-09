@@ -71,7 +71,7 @@ jobs:
           node-version: "17"
 
       - name: install Anchor CLI
-        run: npm install -g @project-serum/anchor-cli
+        run: npm install -g @project-serum/anchor-cli@${{ env.anchor_version }}
 
       - name: Generate local keypair
         run: yes | solana-keygen new
