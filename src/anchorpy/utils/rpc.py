@@ -7,6 +7,7 @@ from solana.rpc.core import RPCException
 from toolz import partition_all, concat
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
+from solana.rpc.commitment import Commitment
 from solana.transaction import (
     AccountMeta,
     Transaction,
@@ -76,7 +77,10 @@ class _MultipleAccountsItem:
 
 
 async def get_multiple_accounts(
-    connection: AsyncClient, pubkeys: list[PublicKey], batch_size: int = 3
+    connection: AsyncClient,
+    pubkeys: list[PublicKey],
+    batch_size: int = 3,
+    commitment: Optional[Commitment] = None,
 ) -> list[Optional[_MultipleAccountsItem]]:
     """Fetch multiple account infos through batched `getMultipleAccount` RPC requests.
 
@@ -85,6 +89,7 @@ async def get_multiple_accounts(
         pubkeys: Pubkeys to fetch.
         batch_size: The number of `getMultipleAccount` objects to include in each
             HTTP request.
+        commitment: Bank state to query.
 
     Returns:
         Account infos and pubkeys.
@@ -92,7 +97,7 @@ async def get_multiple_accounts(
     pubkeys_per_network_request = _GET_MULTIPLE_ACCOUNTS_LIMIT * batch_size
     chunks = partition_all(pubkeys_per_network_request, pubkeys)
     awaitables = [
-        _get_multiple_accounts_core(connection, pubkeys_chunk)
+        _get_multiple_accounts_core(connection, pubkeys_chunk, commitment)
         for pubkeys_chunk in chunks
     ]
     results = await gather(*awaitables, return_exceptions=False)
@@ -100,17 +105,18 @@ async def get_multiple_accounts(
 
 
 async def _get_multiple_accounts_core(
-    connection: AsyncClient, pubkeys: list[PublicKey]
+    connection: AsyncClient, pubkeys: list[PublicKey], commitment: Optional[Commitment]
 ) -> list[Optional[_MultipleAccountsItem]]:
     pubkey_batches = partition_all(_GET_MULTIPLE_ACCOUNTS_LIMIT, pubkeys)
     rpc_requests: list[dict[str, Any]] = []
+    commitment_to_use = connection._commitment if commitment is None else commitment
     for pubkey_batch in pubkey_batches:
         pubkeys_to_send = [str(pubkey) for pubkey in pubkey_batch]
         rpc_request = jsonrpcclient.request(
             "getMultipleAccounts",
             params=[
                 pubkeys_to_send,
-                {"encoding": "base64+zstd", "commitment": connection._commitment},
+                {"encoding": "base64+zstd", "commitment": commitment_to_use},
             ],
         )
         rpc_requests.append(rpc_request)

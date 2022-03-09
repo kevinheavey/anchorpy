@@ -10,6 +10,7 @@ from solana.system_program import create_account, CreateAccountParams
 from solana.transaction import TransactionInstruction
 from solana.publickey import PublicKey
 from solana.rpc.types import MemcmpOpts
+from solana.rpc.commitment import Commitment
 
 from anchorpy.coder.common import _account_size
 from anchorpy.coder.accounts import (
@@ -81,11 +82,15 @@ class AccountClient(object):
         self._coder = coder
         self._size = ACCOUNT_DISCRIMINATOR_SIZE + _account_size(idl, idl_account)
 
-    async def fetch(self, address: PublicKey) -> Container[Any]:
+    async def fetch(
+        self, address: PublicKey, commitment: Optional[Commitment] = None
+    ) -> Container[Any]:
         """Return a deserialized account.
 
         Args:
             address: The address of the account to fetch.
+            commitment: Bank state to query.
+
 
         Raises:
             AccountDoesNotExistError: If the account doesn't exist.
@@ -94,6 +99,7 @@ class AccountClient(object):
         account_info = await self._provider.connection.get_account_info(
             address,
             encoding="base64",
+            commitment=commitment,
         )
         if not account_info["result"]["value"]:
             raise AccountDoesNotExistError(f"Account {address} does not exist")
@@ -105,7 +111,10 @@ class AccountClient(object):
         return self._coder.accounts.decode(data)
 
     async def fetch_multiple(
-        self, addresses: List[PublicKey], batch_size: int = 300
+        self,
+        addresses: List[PublicKey],
+        batch_size: int = 300,
+        commitment: Optional[Commitment] = None,
     ) -> list[Optional[Container[Any]]]:
         """Return multiple deserialized accounts.
 
@@ -115,11 +124,13 @@ class AccountClient(object):
             addresses: The addresses of the accounts to fetch.
             batch_size: The number of `getMultipleAccounts` objects to send
                 in each HTTP request.
+            commitment: Bank state to query.
         """
         accounts = await get_multiple_accounts(
             self._provider.connection,
             addresses,
             batch_size=batch_size,
+            commitment=commitment,
         )
         discriminator = _account_discriminator(self._idl_account.name)
         result: list[Optional[Container[Any]]] = []
