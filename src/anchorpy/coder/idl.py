@@ -309,9 +309,12 @@ def _datacls_cmp(left, right) -> bool:
 def _make_datacls(name: str, fields: list[tuple[str, type]]) -> type:
     return make_dataclass(name, fields, namespace={"__eq__": _datacls_cmp})
 
+
 _idl_typedef_ty_struct_to_dataclass_type_cache: dict[tuple[str, str], Type] = {}
 
-def _idl_typedef_ty_struct_to_dataclass_type(typedef_type: _IdlTypeDefTyStruct,
+
+def _idl_typedef_ty_struct_to_dataclass_type(
+    typedef_type: _IdlTypeDefTyStruct,
     types: list[_IdlTypeDef],
     name: str,
 ) -> Type:
@@ -319,9 +322,12 @@ def _idl_typedef_ty_struct_to_dataclass_type(typedef_type: _IdlTypeDefTyStruct,
     try:
         return _idl_typedef_ty_struct_to_dataclass_type_cache[dict_key]
     except KeyError:
-        result = _idl_typedef_ty_struct_to_dataclass_type_no_cache(typedef_type, types, name)
+        result = _idl_typedef_ty_struct_to_dataclass_type_no_cache(
+            typedef_type, types, name
+        )
         _idl_typedef_ty_struct_to_dataclass_type_cache[dict_key] = result
         return result
+
 
 def _idl_typedef_ty_struct_to_dataclass_type_no_cache(
     typedef_type: _IdlTypeDefTyStruct,
@@ -347,7 +353,9 @@ def _idl_typedef_ty_struct_to_dataclass_type_no_cache(
         )
     return _make_datacls(name, dataclass_fields)
 
+
 _idl_enum_fields_named_to_dataclass_type_cache: dict[tuple[str, str], Type] = {}
+
 
 def _idl_enum_fields_named_to_dataclass_type(
     fields: _IdlEnumFieldsNamed,
@@ -361,6 +369,7 @@ def _idl_enum_fields_named_to_dataclass_type(
         result = _idl_enum_fields_named_to_dataclass_type_no_cache(fields, types, name)
         _idl_enum_fields_named_to_dataclass_type_cache[dict_key] = result
         return result
+
 
 def _idl_enum_fields_named_to_dataclass_type_no_cache(
     fields: _IdlEnumFieldsNamed,
