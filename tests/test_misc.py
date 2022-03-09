@@ -59,6 +59,19 @@ async def test_can_use_u128_and_i128(
 
 
 @mark.asyncio
+async def test_readonly_provider(
+    program: Program, initialized_keypair: Keypair
+) -> None:
+    async with Provider.readonly() as provider:
+        readonly_program = Program(program.idl, program.program_id, provider=provider)
+        data_account = await readonly_program.account["Data"].fetch(
+            initialized_keypair.public_key
+        )
+    assert data_account.udata == 1234
+    assert data_account.idata == 22
+
+
+@mark.asyncio
 async def test_fetch_multiple(program: Program, initialized_keypair: Keypair) -> None:
     batch_size = 2
     n_accounts = batch_size * 100 + 1
