@@ -83,8 +83,24 @@ FIELD_PYTHON_TYPE_MAP: Mapping[str, Type] = MappingProxyType(
     },
 )
 
+_enums_cache: dict[tuple[str, str], Enum] = {}
+
 
 def _handle_enum_variants(
+    idl_enum: _IdlTypeDefTyEnum,
+    types: list[_IdlTypeDef],
+    name: str,
+) -> Enum:
+    dict_key = (name, str(idl_enum))
+    try:
+        return _enums_cache[dict_key]
+    except KeyError:
+        result = _handle_enum_variants_no_cache(idl_enum, types, name)
+        _enums_cache[dict_key] = result
+        return result
+
+
+def _handle_enum_variants_no_cache(
     idl_enum: _IdlTypeDefTyEnum,
     types: list[_IdlTypeDef],
     name: str,
@@ -147,7 +163,8 @@ def _handle_enum_variants(
 
 
 def _typedef_layout_without_field_name(
-    typedef: _IdlTypeDef, types: list[_IdlTypeDef],
+    typedef: _IdlTypeDef,
+    types: list[_IdlTypeDef],
 ) -> Construct:
     typedef_type = typedef.type
     name = typedef.name
@@ -293,7 +310,26 @@ def _make_datacls(name: str, fields: list[tuple[str, type]]) -> type:
     return make_dataclass(name, fields, namespace={"__eq__": _datacls_cmp})
 
 
+_idl_typedef_ty_struct_to_dataclass_type_cache: dict[tuple[str, str], Type] = {}
+
+
 def _idl_typedef_ty_struct_to_dataclass_type(
+    typedef_type: _IdlTypeDefTyStruct,
+    types: list[_IdlTypeDef],
+    name: str,
+) -> Type:
+    dict_key = (name, str(typedef_type))
+    try:
+        return _idl_typedef_ty_struct_to_dataclass_type_cache[dict_key]
+    except KeyError:
+        result = _idl_typedef_ty_struct_to_dataclass_type_no_cache(
+            typedef_type, types, name
+        )
+        _idl_typedef_ty_struct_to_dataclass_type_cache[dict_key] = result
+        return result
+
+
+def _idl_typedef_ty_struct_to_dataclass_type_no_cache(
     typedef_type: _IdlTypeDefTyStruct,
     types: list[_IdlTypeDef],
     name: str,
@@ -318,7 +354,24 @@ def _idl_typedef_ty_struct_to_dataclass_type(
     return _make_datacls(name, dataclass_fields)
 
 
+_idl_enum_fields_named_to_dataclass_type_cache: dict[tuple[str, str], Type] = {}
+
+
 def _idl_enum_fields_named_to_dataclass_type(
+    fields: _IdlEnumFieldsNamed,
+    types: list[_IdlTypeDef],
+    name: str,
+) -> Type:
+    dict_key = (name, str(fields))
+    try:
+        return _idl_enum_fields_named_to_dataclass_type_cache[dict_key]
+    except KeyError:
+        result = _idl_enum_fields_named_to_dataclass_type_no_cache(fields, types, name)
+        _idl_enum_fields_named_to_dataclass_type_cache[dict_key] = result
+        return result
+
+
+def _idl_enum_fields_named_to_dataclass_type_no_cache(
     fields: _IdlEnumFieldsNamed,
     types: list[_IdlTypeDef],
     name: str,
