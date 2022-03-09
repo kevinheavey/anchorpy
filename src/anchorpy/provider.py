@@ -67,6 +67,20 @@ class Provider:
         return cls(connection, wallet, opts)
 
     @classmethod
+    def readonly(
+        cls, url: Optional[str] = None, opts: types.TxOpts = DEFAULT_OPTIONS
+    ) -> Provider:
+        """Create a `Provider` that can only fetch data, not send transactions.
+
+        Args:
+            url: The network cluster url.
+            opts: The default transaction confirmation options.
+        """
+        connection = AsyncClient(url, opts.preflight_commitment)
+        wallet = Wallet.dummy()
+        return cls(connection, wallet, opts)
+
+    @classmethod
     def env(cls) -> Provider:
         """Create a `Provider` using the `ANCHOR_PROVIDER_URL` environment variable."""
         url = environ["ANCHOR_PROVIDER_URL"]
@@ -230,3 +244,9 @@ class Wallet:
         with path.open() as f:
             keypair = json.load(f)
         return cls(Keypair.from_secret_key(bytes(keypair)))
+
+    @classmethod
+    def dummy(cls) -> Wallet:
+        """Create a dummy wallet instance that won't be used to sign transactions."""
+        keypair = Keypair.from_secret_key(bytes([0] * 64))  # noqa: WPS435
+        return cls(keypair)
