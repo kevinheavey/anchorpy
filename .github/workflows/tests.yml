@@ -16,32 +16,32 @@ jobs:
       matrix:
         node:
           [
-            'basic_0',
-            'basic_1',
-            'basic_2',
-            'basic_3',
-            'cashiers_check',
-            'chat',
-            'cli',
-            'cli_init',
-            'composite',
-            'errors',
-            'escrow',
-            'events',
-            'misc',
-            'multisig',
-            'pyth',
-            'swap',
-            'sysvars',
-            'system_accounts',
-            'token_proxy',
-            'zero_copy',
+            "basic_0",
+            "basic_1",
+            "basic_2",
+            "basic_3",
+            "cashiers_check",
+            "chat",
+            "cli",
+            "cli_init",
+            "composite",
+            "errors",
+            "escrow",
+            "events",
+            "misc",
+            "multisig",
+            "pyth",
+            "swap",
+            "sysvars",
+            "system_accounts",
+            "token_proxy",
+            "zero_copy",
           ]
     steps:
       - name: Checkout repo.
         uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
 
       - name: Cache Solana Tool Suite
         uses: actions/cache@v2
@@ -68,7 +68,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: '17'
+          node-version: "17"
 
       - name: install Anchor CLI
         run: npm install -g @project-serum/anchor-cli
@@ -104,7 +104,6 @@ jobs:
       # install dependencies if cache does not exist
       #----------------------------------------------
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install -E cli --no-interaction --no-root
       #----------------------------------------------
       # install your root project
@@ -122,5 +121,5 @@ jobs:
     runs-on: ubuntu-latest
     needs: tests
     steps:
-    - name: note that all tests succeeded
-      run: echo "🎉"
+      - name: note that all tests succeeded
+        run: echo "🎉"
