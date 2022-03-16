@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.1] - 2022-03-16
+
+### Changed
+
+Upgraded zstandard dependency [(#60)](https://github.com/kevinheavey/anchorpy/pull/60)
+
 ## [0.8.0] - 2022-03-09
 
 ### Added
