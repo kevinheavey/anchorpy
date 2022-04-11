@@ -300,6 +300,7 @@ def _idl_type_to_python_type(
             filtered[0],
             types,
         )
+    raise ValueError(f"Unrecognised type: {idl_type}")
 
 
 def _datacls_cmp(left, right) -> bool:
