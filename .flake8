@@ -8,4 +8,5 @@ per-file-ignores =
     src/anchorpy/__init__.py: D104,WPS412
     src/anchorpy/pytest_plugin.py: WPS323
     src/anchorpy/template.py: P103
+    src/anchorpy/cli.py: WPS404,B008
     tests/*: D,WPS226,WPS421,E800,S603,S607,WPS420,WPS411,WPS440,WPS204,WPS229,E501

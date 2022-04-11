@@ -1,10 +1,13 @@
 # noqa: D100
 import os
+from typing import Optional
+import json
 from pathlib import Path
 from contextlib import contextmanager
 import typer
 from IPython import embed
 from anchorpy import create_workspace
+from anchorpy.idl import Idl
 from anchorpy.template import INIT_TESTS
 
 app = typer.Typer()
@@ -69,7 +72,7 @@ def shell():
 
 @app.command()
 def init(
-    program_name: str = typer.Argument(  # noqa: WPS404,B008
+    program_name: str = typer.Argument(
         ..., help="The name of the Anchor program."
     )  # noqa: DAR101,DAR401
 ):
@@ -86,6 +89,35 @@ def init(
     if file_path.exists():
         raise FileExistsError(file_path)
     file_path.write_text(file_contents)
+
+
+@app.command()
+def client_gen(
+    idl: Path = typer.Argument(..., help="Anchor IDL file path"),
+    out: Path = typer.Argument(..., help="Output directory."),
+    program_id: Optional[str] = typer.Option(
+        None, help="Optional program ID to be included in the code"
+    ),
+):
+    """Generate Python client code from the specified anchor IDL."""
+    with idl.open("r") as f:
+        idl_dict = json.load(f)
+    idl_obj = Idl.from_json(idl_dict)
+    project = Project()
+
+    def out_path(file_path: str) -> Path:
+        return out / file_path
+
+    typer.echo("generating program_id.py...")
+    gen_program_d(project, idl_obj, program_id, out_path)
+    typer.echo("generating errors.py...")
+    gen_errors(project, idl_obj, out_path)
+    typer.echo("generating instructions...")
+    gen_instructions(project, idl_obj, out_path)
+    typer.echo("generating types...")
+    gen_types(project, idl_obj, out_path)
+    typer.echo("generating accounts...")
+    gen_accounts(project, idl_obj, out_path)
 
 
 if __name__ == "__main__":
