@@ -27,7 +27,11 @@ _LiteralStrings = Literal[
     "publicKey",
 ]
 _NonLiteralIdlTypes = Union[
-    "_IdlTypeVec", "_IdlTypeOption", "_IdlTypeDefined", "_IdlTypeArray"
+    "_IdlTypeVec",
+    "_IdlTypeOption",
+    "_IdlTypeCOption",
+    "_IdlTypeDefined",
+    "_IdlTypeArray",
 ]
 _IdlType = Union[_NonLiteralIdlTypes, _LiteralStrings]
 
@@ -57,6 +61,13 @@ class _IdlTypeOption:
     """IDL option type."""
 
     option: _IdlType
+
+
+@dataclass
+class _IdlTypeCOption:
+    """IDL coption type."""
+
+    coption: _IdlType
 
 
 @dataclass

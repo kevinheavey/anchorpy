@@ -39,6 +39,7 @@ from anchorpy.idl import (
     _IdlTypeDefTyStruct,
     _IdlTypeDefined,
     _IdlTypeOption,
+    _IdlTypeCOption,
     _IdlTypeVec,
     _NonLiteralIdlTypes,
 )
@@ -209,6 +210,8 @@ def _type_layout(type_: _IdlType, types: list[_IdlTypeDef]) -> Construct:
         return Vec(_type_layout(field_type.vec, types))
     elif isinstance(field_type, _IdlTypeOption):
         return Option(_type_layout(field_type.option, types))
+    elif isinstance(field_type, _IdlTypeCOption):
+        raise NotImplementedError("COption not yet supported.")
     elif isinstance(field_type, _IdlTypeDefined):
         defined = field_type.defined
         if not types:
@@ -297,6 +300,7 @@ def _idl_type_to_python_type(
             filtered[0],
             types,
         )
+    raise ValueError(f"Unrecognised type: {idl_type}")
 
 
 def _datacls_cmp(left, right) -> bool:
