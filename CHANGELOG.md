@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.0] - Unreleased
+
+### Added
+
+- Partial support for coption
+
 ## [0.8.1] - 2022-03-16
 
 ### Changed

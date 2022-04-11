@@ -10,6 +10,7 @@ from anchorpy.idl import (
     _IdlTypeDef,
     _IdlTypeDefTyEnum,
     _IdlTypeOption,
+    _IdlTypeCOption,
     _IdlTypeArray,
     _IdlTypeDefined,
     _IdlTypeVec,
@@ -38,6 +39,8 @@ def _type_size_compound_type(idl: Idl, ty: _NonLiteralIdlTypes) -> int:
         return 1
     if isinstance(ty, _IdlTypeOption):
         return 1 + _type_size(idl, ty.option)
+    if isinstance(ty, _IdlTypeCOption):
+        return 4 + _type_size(idl, ty.coption)
     if isinstance(ty, _IdlTypeDefined):
         defined = ty.defined
         filtered = [t for t in idl.types if t.name == defined]
