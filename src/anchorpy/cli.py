@@ -103,21 +103,32 @@ def client_gen(
     with idl.open("r") as f:
         idl_dict = json.load(f)
     idl_obj = Idl.from_json(idl_dict)
-    project = Project()
-
-    def out_path(file_path: str) -> Path:
-        return out / file_path
+    if program_id is None:
+        idl_metadata = idl_obj.metadata
+        if idl_metadata is None:
+            address_from_idl = None
+        else:
+            address_from_idl = idl_metadata.address
+        if address_from_idl is None:
+            typer.echo(
+                "No program ID found in IDL. Use the --program-id option to set it manually."
+            )
+            raise typer.Exit(code=1)
+        else:
+            program_id_to_use = address_from_idl
+    else:
+        program_id_to_use = program_id
 
     typer.echo("generating program_id.py...")
-    gen_program_d(project, idl_obj, program_id, out_path)
+    gen_program_id(idl_obj, program_id_to_use, out)
     typer.echo("generating errors.py...")
-    gen_errors(project, idl_obj, out_path)
+    gen_errors(idl_obj, out)
     typer.echo("generating instructions...")
-    gen_instructions(project, idl_obj, out_path)
+    gen_instructions(idl_obj, out)
     typer.echo("generating types...")
-    gen_types(project, idl_obj, out_path)
+    gen_types(idl_obj, out)
     typer.echo("generating accounts...")
-    gen_accounts(project, idl_obj, out_path)
+    gen_accounts(idl_obj, out)
 
 
 if __name__ == "__main__":
