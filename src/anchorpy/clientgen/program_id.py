@@ -1,6 +1,15 @@
 from typing import Optional
-from anchorpy.clientgen.utils import OutPath
+from pathlib import Path
+from genpy import Assign, FromImport, Suite
 from anchorpy.idl import Idl
 
-def gen_program_id(idl: Idl, cli_program_id: Optional[str], out_path: OutPath) -> None:
-    pass
+
+def gen_program_id_code(idl: Idl, program_id: str, out_path: Path) -> str:
+    import_line = FromImport("solana.publickey", ["PublicKey"])
+    assignment_line = Assign("PROGRAM_ID", f'PublicKey({"program_id"})')
+    return str(Suite([import_line, assignment_line]))
+
+
+def gen_program_id(idl: Idl, program_id: str, out_path: Path) -> None:
+    code = gen_program_id_code(idl, program_id, out_path)
+    print(code)
