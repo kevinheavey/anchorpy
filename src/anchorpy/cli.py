@@ -10,6 +10,7 @@ from anchorpy import create_workspace
 from anchorpy.idl import Idl
 from anchorpy.template import INIT_TESTS
 from anchorpy.clientgen.program_id import gen_program_id
+from anchorpy.clientgen.errors import gen_errors
 
 app = typer.Typer()
 
