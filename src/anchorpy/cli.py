@@ -112,7 +112,8 @@ def client_gen(
             address_from_idl = idl_metadata.address
         if address_from_idl is None:
             typer.echo(
-                "No program ID found in IDL. Use the --program-id option to set it manually."
+                "No program ID found in IDL. Use the --program-id "
+                "option to set it manually."
             )
             raise typer.Exit(code=1)
         else:
