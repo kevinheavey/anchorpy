@@ -11,6 +11,16 @@ class TypedParam(Generable):
         yield f"{self.name}: {self.type}"
 
 
+class Break(Generable):
+    """
+    Inherits from :class:`Generable`.
+    .. automethod:: __init__
+    """
+
+    def generate(self):
+        yield "break"
+
+
 class Function(FunctionOriginal):
     def __init__(
         self, name: str, args: List[TypedParam], body: Generable, return_type: str
