@@ -1,5 +1,5 @@
 from typing import List, Iterator
-from genpy import Function as FunctionOriginal, Generable
+from genpy import Function as FunctionOriginal, Generable, Suite
 
 
 class TypedParam(Generable):
@@ -24,3 +24,28 @@ class Function(FunctionOriginal):
             self.name, ", ".join(arg_strings), self.return_type
         )
         yield from self.body.generate()
+
+
+class Try(Generable):
+    """A ```try-catch`` block. Inherits from :class:`Generable`.
+    .. automethod:: __init__
+    """
+
+    def __init__(self, try_body, to_catch, except_body):
+        if not isinstance(try_body, Suite):
+            try_body = Suite(try_body)
+        if not isinstance(except_body, Suite):
+            except_body = Suite(except_body)
+        self.try_body = try_body
+        self.to_catch = to_catch
+        self.except_body = except_body
+
+    def generate(self):
+        yield "try:"
+
+        for line in self.try_body.generate():
+            yield line
+
+        yield f"except {self.to_catch}:"
+        for line in self.except_body.generate():
+            yield line
