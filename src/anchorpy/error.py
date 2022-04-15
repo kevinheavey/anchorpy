@@ -171,7 +171,7 @@ LangErrorMessage = {
 class ProgramError(Exception):
     """An error from a user defined program."""
 
-    def __init__(self, code: int, msg: str) -> None:
+    def __init__(self, code: int, msg: Optional[str]) -> None:
         """Init.
 
         Args:
@@ -205,10 +205,10 @@ class ProgramError(Exception):
         # parse user error
         msg = idl_errors.get(custom_err_code)
         if msg is not None:
-            return ProgramError(custom_err_code, msg)
+            return cls(custom_err_code, msg)
         # parse framework internal error
         msg = LangErrorMessage.get(custom_err_code)
         if msg is not None:
-            return ProgramError(custom_err_code, msg)
+            return cls(custom_err_code, msg)
         # Unable to parse the error. Just return the untranslated error.
         return None

@@ -28,6 +28,5 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.pythonPath": ".venv/bin/python",
     "editor.formatOnSave": true
 }

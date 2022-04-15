@@ -1,7 +1,18 @@
 from pathlib import Path
-from genpy import FromImport, Suite, Return, Assign, If, For, Import
-from anchorpy.idl import Idl
-from .utils import Function, TypedParam, Try, Break
+from genpy import (
+    FromImport,
+    Suite,
+    Return,
+    Assign,
+    If,
+    For,
+    Import,
+    Class,
+    Function as UntypedFunction,
+    Statement,
+)
+from anchorpy.idl import Idl, _IdlErrorCode
+from .utils import Function, TypedParam, Try, Break, Union
 
 
 def gen_from_code_fn(has_custom_errors: bool) -> Function:
@@ -11,7 +22,7 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
         else "anchor.from_code(code)"
     )
     from_code_return_type = (
-        "Union[custom.CustomError, anchor.AnchorError, None]"
+        Union(["custom.CustomError", "anchor.AnchorError", "None"])
         if has_custom_errors
         else "Optional[anchor.AnchorError]"
     )
@@ -54,6 +65,55 @@ def gen_from_tx_error_fn() -> Function:
     )
 
 
+def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
+    typing_import = FromImport("typing", ["Union", "Optional"])
+    error_import = FromImport("anchorpy.error", ["ProgramError"])
+    error_names = [err.name for err in errors]
+    error_union = Union(error_names)
+    type_alias = Assign("CustomError", error_union)
+    classes: list[Class] = []
+    for error in errors:
+        maybe_msg = error.msg
+        msg = None if maybe_msg is None else f'"{maybe_msg}"'
+        init_body = Statement(f"super().__init__({error.code}, {msg})")
+        attrs = [
+            UntypedFunction("__init__", ["self"], init_body),
+            Assign("code", error.code),
+            Assign("name", f'"{error.name}"'),
+            Assign("msg", msg),
+        ]
+        klass = Class(name=error.name, bases=["ProgramError"], attributes=attrs)
+        classes.append(klass)
+    error_map = Assign("ERROR_MAP", {error.code: error.name for error in errors})
+    from_code_body = Suite(
+        [
+            Assign("maybe_err", "ERROR_MAP.get(code)"),
+            If("maybe_err is None", Return("None")),
+            Return("maybe_err()"),
+        ]
+    )
+    from_code_fn = Function(
+        "from_code",
+        [TypedParam("code", "int")],
+        from_code_body,
+        "Optional[CustomError]",
+    )
+    return str(
+        Suite(
+            [typing_import, error_import, type_alias, *classes, error_map, from_code_fn]
+        )
+    )
+
+
+def gen_custom_errors(idl: Idl, out: Path) -> None:
+    errors = idl.errors
+    if errors is None or not errors:
+        return
+    code = gen_custom_errors_code(errors)
+    print("custom errors code!!!")
+    print(code)
+
+
 def gen_index_code(idl: Idl) -> str:
     has_custom_errors = bool(idl.errors)
     typing_import = FromImport("typing", ["Union", "Optional", "Any"])
@@ -73,8 +133,10 @@ def gen_index_code(idl: Idl) -> str:
 
 def gen_index(idl: Idl, out_path: Path) -> None:
     code = gen_index_code(idl)
+    print("index code!!!!")
     print(code)
 
 
 def gen_errors(idl: Idl, out_path: Path) -> None:
     gen_index(idl, out_path)
+    gen_custom_errors(idl, out_path)

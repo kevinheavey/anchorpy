@@ -20,7 +20,13 @@ class Break(Generable):
     def generate(self):
         yield "break"
 
+class Union(Generable):
+    def __init__(self, members: list[str]) -> None:
+        self.members = members
 
+    def generate(self) -> Iterator[str]:
+        joined = ",".join(self.members)
+        yield f"Union[{joined}]"
 class Function(FunctionOriginal):
     def __init__(
         self, name: str, args: List[TypedParam], body: Generable, return_type: str
