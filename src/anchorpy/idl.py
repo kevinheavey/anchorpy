@@ -115,6 +115,7 @@ class _IdlInstruction:
     name: str = field(metadata=snake_case_conversion)
     accounts: List[_IdlAccountItem]
     args: List[_IdlField]
+    returns: Optional[_IdlType] = None
 
 
 _IdlEnumFieldsNamed = List[_IdlField]
@@ -158,6 +159,12 @@ class _IdlTypeDef:
 
     name: str
     type: _IdlTypeDefTy
+
+
+@dataclass
+class _IdlAccountDef:
+    name: str
+    type: _IdlTypeDefTyStruct
 
 
 _IdlStateMethod = _IdlInstruction
@@ -231,7 +238,7 @@ class Idl:
     name: str
     instructions: List[_IdlInstruction]
     state: Optional[_IdlState] = None
-    accounts: List[_IdlTypeDef] = field(default_factory=list)
+    accounts: List[_IdlAccountDef] = field(default_factory=list)
     types: List[_IdlTypeDef] = field(default_factory=list)
     events: List[_IdlEvent] = field(default_factory=list)
     errors: List[_IdlErrorCode] = field(default_factory=list)
