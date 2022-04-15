@@ -4,7 +4,7 @@
 
 ### Added
 
-- Update IDL types
+- Update IDL types [(#64)](https://github.com/kevinheavey/anchorpy/pull/64) and [(#66)](https://github.com/kevinheavey/anchorpy/pull/66)
 
 ## [0.8.1] - 2022-03-16
 
