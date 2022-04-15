@@ -88,6 +88,15 @@ class _IdlField:
     type: _IdlType
 
 
+_IdlSeed = Any
+
+
+@dataclass
+class _IdlPda:
+    seeds: List[_IdlSeed]
+    program_id: Optional[_IdlSeed] = None
+
+
 @dataclass
 class _IdlAccount:
     """IDL account type."""
@@ -95,6 +104,7 @@ class _IdlAccount:
     name: str = field(metadata=snake_case_conversion)
     is_mut: bool = field(metadata=alias("isMut"))
     is_signer: bool = field(metadata=alias("isSigner"))
+    pda: Optional[_IdlPda] = None
 
 
 @dataclass
@@ -115,6 +125,7 @@ class _IdlInstruction:
     name: str = field(metadata=snake_case_conversion)
     accounts: List[_IdlAccountItem]
     args: List[_IdlField]
+    returns: Optional[_IdlType] = None
 
 
 _IdlEnumFieldsNamed = List[_IdlField]
@@ -158,6 +169,11 @@ class _IdlTypeDef:
 
     name: str
     type: _IdlTypeDefTy
+
+
+@dataclass
+class _IdlAccountDef(_IdlTypeDef):
+    type: _IdlTypeDefTyStruct
 
 
 _IdlStateMethod = _IdlInstruction
@@ -231,7 +247,7 @@ class Idl:
     name: str
     instructions: List[_IdlInstruction]
     state: Optional[_IdlState] = None
-    accounts: List[_IdlTypeDef] = field(default_factory=list)
+    accounts: List[_IdlAccountDef] = field(default_factory=list)
     types: List[_IdlTypeDef] = field(default_factory=list)
     events: List[_IdlEvent] = field(default_factory=list)
     errors: List[_IdlErrorCode] = field(default_factory=list)

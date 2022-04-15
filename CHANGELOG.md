@@ -1,10 +1,10 @@
 # Changelog
 
-## [0.9.0] - Unreleased
+## [0.8.2] - 2022-04-15
 
 ### Added
 
-- Partial support for coption
+- Update IDL types [(#64)](https://github.com/kevinheavey/anchorpy/pull/64) and [(#66)](https://github.com/kevinheavey/anchorpy/pull/66)
 
 ## [0.8.1] - 2022-03-16
 

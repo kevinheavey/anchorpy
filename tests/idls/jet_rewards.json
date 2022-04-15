@@ -1,0 +1,1177 @@
+{
+  "version": "1.0.0",
+  "name": "jet_rewards",
+  "constants": [
+    {
+      "name": "AWARD",
+      "type": {
+        "defined": "&[u8]"
+      },
+      "value": "b\"award\""
+    },
+    {
+      "name": "DISTRIBUTION",
+      "type": {
+        "defined": "&[u8]"
+      },
+      "value": "b\"distribution\""
+    },
+    {
+      "name": "VAULT",
+      "type": {
+        "defined": "&[u8]"
+      },
+      "value": "b\"vault\""
+    }
+  ],
+  "instructions": [
+    {
+      "name": "airdropCreate",
+      "accounts": [
+        {
+          "name": "airdrop",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "AirdropCreateParams"
+          }
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "airdropAddRecipients",
+      "accounts": [
+        {
+          "name": "airdrop",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "AirdropAddRecipientsParams"
+          }
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "airdropFinalize",
+      "accounts": [
+        {
+          "name": "airdrop",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "airdropClose",
+      "accounts": [
+        {
+          "name": "airdrop",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenReceiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "airdropClaim",
+      "accounts": [
+        {
+          "name": "airdrop",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recipient",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePoolVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "voterWeightRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "maxVoterWeightRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakingProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "distributionCreate",
+      "accounts": [
+        {
+          "name": "distribution",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payerRent",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "payerTokenAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "payerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "DistributionCreateParams"
+          }
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "distributionRelease",
+      "accounts": [
+        {
+          "name": "distribution",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "targetAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "distributionClose",
+      "accounts": [
+        {
+          "name": "distribution",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "awardCreate",
+      "accounts": [
+        {
+          "name": "award",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenSource",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenSourceAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "payerRent",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "AwardCreateParams"
+          }
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "awardRelease",
+      "accounts": [
+        {
+          "name": "award",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "voterWeightRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "maxVoterWeightRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakePoolVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakingProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "awardClose",
+      "accounts": [
+        {
+          "name": "award",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "awardRevoke",
+      "accounts": [
+        {
+          "name": "award",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenReceiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Airdrop",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "publicKey"
+          },
+          {
+            "name": "rewardVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "expireAt",
+            "type": "i64"
+          },
+          {
+            "name": "stakePool",
+            "type": "publicKey"
+          },
+          {
+            "name": "flags",
+            "type": "u64"
+          },
+          {
+            "name": "shortDesc",
+            "type": {
+              "array": ["u8", 32]
+            }
+          },
+          {
+            "name": "longDesc",
+            "type": {
+              "array": ["u8", 255]
+            }
+          },
+          {
+            "name": "vaultBump",
+            "type": {
+              "array": ["u8", 1]
+            }
+          },
+          {
+            "name": "targetInfo",
+            "type": {
+              "array": ["u8", 400024]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Award",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "seed",
+            "type": {
+              "array": ["u8", 30]
+            }
+          },
+          {
+            "name": "seedLen",
+            "type": "u8"
+          },
+          {
+            "name": "bumpSeed",
+            "type": {
+              "array": ["u8", 1]
+            }
+          },
+          {
+            "name": "stakeAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "vault",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenDistribution",
+            "type": {
+              "defined": "TokenDistribution"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Distribution",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": "publicKey"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "vault",
+            "type": "publicKey"
+          },
+          {
+            "name": "seed",
+            "type": {
+              "array": ["u8", 30]
+            }
+          },
+          {
+            "name": "seedLen",
+            "type": "u8"
+          },
+          {
+            "name": "bumpSeed",
+            "type": {
+              "array": ["u8", 1]
+            }
+          },
+          {
+            "name": "targetAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenDistribution",
+            "type": {
+              "defined": "TokenDistribution"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "AirdropAddRecipientsParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "startIndex",
+            "type": "u64"
+          },
+          {
+            "name": "recipients",
+            "type": {
+              "vec": {
+                "defined": "AirdropRecipientParam"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AirdropRecipientParam",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "recipient",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AirdropCreateParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "expireAt",
+            "type": "i64"
+          },
+          {
+            "name": "stakePool",
+            "type": "publicKey"
+          },
+          {
+            "name": "shortDesc",
+            "type": "string"
+          },
+          {
+            "name": "longDesc",
+            "type": "string"
+          },
+          {
+            "name": "flags",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AwardCreateParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "seed",
+            "type": "string"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "stakeAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "beginAt",
+            "type": "u64"
+          },
+          {
+            "name": "endAt",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DistributionCreateParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "seed",
+            "type": "string"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "targetAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "beginAt",
+            "type": "u64"
+          },
+          {
+            "name": "endAt",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenDistribution",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "targetAmount",
+            "type": "u64"
+          },
+          {
+            "name": "distributed",
+            "type": "u64"
+          },
+          {
+            "name": "beginAt",
+            "type": "u64"
+          },
+          {
+            "name": "endAt",
+            "type": "u64"
+          },
+          {
+            "name": "kind",
+            "type": {
+              "defined": "DistributionKind"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DistributionKind",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Linear"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "AirdropCreated",
+      "fields": [
+        {
+          "name": "airdrop",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "params",
+          "type": {
+            "defined": "AirdropCreateParams"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AirdropRecipientsAdded",
+      "fields": [
+        {
+          "name": "airdrop",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "rewardAdditional",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "rewardTotal",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "recipientsAdditional",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "recipientsTotal",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "recipients",
+          "type": {
+            "vec": {
+              "defined": "AirdropRecipientParam"
+            }
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AirdropFinalized",
+      "fields": [
+        {
+          "name": "airdrop",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "rewardTotal",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "recipientsTotal",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "vaultBalance",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AirdropClaimed",
+      "fields": [
+        {
+          "name": "airdrop",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "recipient",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "claimedAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "remainingAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "vaultBalance",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AirdropClosed",
+      "fields": [
+        {
+          "name": "airdrop",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "vaultAmount",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AwardCreated",
+      "fields": [
+        {
+          "name": "award",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "params",
+          "type": {
+            "defined": "AwardCreateParams"
+          },
+          "index": false
+        },
+        {
+          "name": "distributionKind",
+          "type": {
+            "defined": "DistributionKind"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AwardReleased",
+      "fields": [
+        {
+          "name": "award",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amountReleased",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalReleased",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "vaultBalance",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AwardRevoked",
+      "fields": [
+        {
+          "name": "award",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "unreleasedAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalReleased",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "vaultAmount",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AwardClosed",
+      "fields": [
+        {
+          "name": "award",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "DistributionCreated",
+      "fields": [
+        {
+          "name": "distribution",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "authority",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "tokenMint",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "params",
+          "type": {
+            "defined": "DistributionCreateParams"
+          },
+          "index": false
+        },
+        {
+          "name": "distributionKind",
+          "type": {
+            "defined": "DistributionKind"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "DistributionReleased",
+      "fields": [
+        {
+          "name": "distribution",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amountReleased",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "totalDistributed",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "vaultBalance",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "DistributionClosed",
+      "fields": [
+        {
+          "name": "distribution",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 13000,
+      "name": "RecipientNotFound"
+    },
+    {
+      "code": 13001,
+      "name": "AddOutOfOrder"
+    },
+    {
+      "code": 13002,
+      "name": "AirdropFinal"
+    },
+    {
+      "code": 13003,
+      "name": "AirdropInsufficientRewardBalance"
+    },
+    {
+      "code": 13004,
+      "name": "AirdropExpired"
+    },
+    {
+      "code": 13005,
+      "name": "AirdropNotFinal"
+    },
+    {
+      "code": 13006,
+      "name": "RecipientsNotSorted"
+    },
+    {
+      "code": 13007,
+      "name": "DistributionNotEnded"
+    },
+    {
+      "code": 13008,
+      "name": "AwardNotFullyVested"
+    }
+  ]
+}
