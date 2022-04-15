@@ -75,7 +75,9 @@ class InstructionCoder(Adapter):
 def _parse_ix_layout(idl: Idl) -> Dict[str, Construct]:
     ix_layout: Dict[str, Construct] = {}
     for ix in idl.instructions:
-        combined_types = cast(SequenceType[_IdlTypeDef], idl.accounts + idl.types)  # type: ignore
+        combined_types = cast(
+            SequenceType[_IdlTypeDef], idl.accounts + idl.types  # type: ignore
+        )
         field_layouts = [_field_layout(arg, combined_types) for arg in ix.args]
         ix_layout[ix.name] = ix.name / CStruct(*field_layouts)
     return ix_layout
