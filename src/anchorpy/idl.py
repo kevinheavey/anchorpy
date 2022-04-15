@@ -88,6 +88,15 @@ class _IdlField:
     type: _IdlType
 
 
+_IdlSeed = Any
+
+
+@dataclass
+class _IdlPda:
+    seeds: List[_IdlSeed]
+    program_id: Optional[_IdlSeed] = None
+
+
 @dataclass
 class _IdlAccount:
     """IDL account type."""
@@ -96,14 +105,6 @@ class _IdlAccount:
     is_mut: bool = field(metadata=alias("isMut"))
     is_signer: bool = field(metadata=alias("isSigner"))
     pda: Optional[_IdlPda] = None
-
-_IdlSeed = Any
-
-@dataclass
-class _IdlPda:
-    seeds: List[_IdlSeed]
-    program_id: Optional[_IdlSeed] = None
-
 
 
 @dataclass
