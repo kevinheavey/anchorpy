@@ -12,6 +12,7 @@ from genpy import (
     Statement,
 )
 from anchorpy.idl import Idl, _IdlErrorCode
+from anchorpy.error import _LangErrorCode, LangErrorMessage
 from .utils import Function, TypedParam, Try, Break, Union
 
 
@@ -68,26 +69,30 @@ def gen_from_tx_error_fn() -> Function:
 def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
     typing_import = FromImport("typing", ["Union", "Optional"])
     error_import = FromImport("anchorpy.error", ["ProgramError"])
-    error_names = [err.name for err in errors]
-    error_union = Union(error_names)
-    type_alias = Assign("CustomError", error_union)
+    error_names: list[str] = []
     classes: list[Class] = []
+    error_map: dict[int, str] = {}
     for error in errors:
+        code = error.code
+        name = error.name
         maybe_msg = error.msg
         msg = None if maybe_msg is None else f'"{maybe_msg}"'
-        init_body = Statement(f"super().__init__({error.code}, {msg})")
+        init_body = Statement(f"super().__init__({code}, {msg})")
         attrs = [
             UntypedFunction("__init__", ["self"], init_body),
-            Assign("code", error.code),
-            Assign("name", f'"{error.name}"'),
+            Assign("code", code),
+            Assign("name", f'"{name}"'),
             Assign("msg", msg),
         ]
-        klass = Class(name=error.name, bases=["ProgramError"], attributes=attrs)
+        klass = Class(name=name, bases=["ProgramError"], attributes=attrs)
         classes.append(klass)
-    error_map = Assign("ERROR_MAP", {error.code: error.name for error in errors})
+        error_names.append(name)
+        error_map[code] = name
+    type_alias = Assign("CustomError", Union(error_names))
+    error_map = Assign("ANCHOR_ERROR_MAP", str(error_map).replace("'", ""))
     from_code_body = Suite(
         [
-            Assign("maybe_err", "ERROR_MAP.get(code)"),
+            Assign("maybe_err", "CUSTOM_ERROR_MAP.get(code)"),
             If("maybe_err is None", Return("None")),
             Return("maybe_err()"),
         ]
@@ -100,7 +105,7 @@ def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
     )
     return str(
         Suite(
-            [typing_import, error_import, type_alias, *classes, error_map, from_code_fn]
+            [typing_import, error_import, *classes, type_alias, error_map, from_code_fn]
         )
     )
 
@@ -110,8 +115,54 @@ def gen_custom_errors(idl: Idl, out: Path) -> None:
     if errors is None or not errors:
         return
     code = gen_custom_errors_code(errors)
-    print("custom errors code!!!")
-    print(code)
+
+
+def gen_anchor_errors_code() -> str:
+    typing_import = FromImport("typing", ["Union"])
+    error_import = FromImport("anchorpy.error", ["ProgramError"])
+    error_names: list[str] = []
+    classes: list[Class] = []
+    error_map: dict[int, str] = {}
+    for variant in _LangErrorCode:
+        name = variant.name
+        code = variant.value
+        maybe_msg = LangErrorMessage.get(variant)
+        msg = None if maybe_msg is None else f'"{maybe_msg}"'
+        init_body = Statement(f"super().__init__({code}, {msg})")
+        attrs = [
+            UntypedFunction("__init__", ["self"], init_body),
+            Assign("code", code),
+            Assign("name", f'"{name}"'),
+            Assign("msg", msg),
+        ]
+        klass = Class(name=name, bases=["ProgramError"], attributes=attrs)
+        classes.append(klass)
+        error_names.append(name)
+        error_map[code] = name
+    type_alias = Assign("AnchorError", Union(error_names))
+    error_map = Assign("ANCHOR_ERROR_MAP", str(error_map).replace("'", ""))
+    from_code_body = Suite(
+        [
+            Assign("maybe_err", "ANCHOR_ERROR_MAP.get(code)"),
+            If("maybe_err is None", Return("None")),
+            Return("maybe_err()"),
+        ]
+    )
+    from_code_fn = Function(
+        "from_code",
+        [TypedParam("code", "int")],
+        from_code_body,
+        "Optional[AnchorError]",
+    )
+    return str(
+        Suite(
+            [typing_import, error_import, *classes, type_alias, error_map, from_code_fn]
+        )
+    )
+
+
+def gen_anchor_errors(out: Path) -> None:
+    code = gen_anchor_errors_code()
 
 
 def gen_index_code(idl: Idl) -> str:
@@ -133,10 +184,9 @@ def gen_index_code(idl: Idl) -> str:
 
 def gen_index(idl: Idl, out_path: Path) -> None:
     code = gen_index_code(idl)
-    print("index code!!!!")
-    print(code)
 
 
 def gen_errors(idl: Idl, out_path: Path) -> None:
     gen_index(idl, out_path)
     gen_custom_errors(idl, out_path)
+    gen_anchor_errors(out_path)
