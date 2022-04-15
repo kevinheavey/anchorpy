@@ -95,6 +95,15 @@ class _IdlAccount:
     name: str = field(metadata=snake_case_conversion)
     is_mut: bool = field(metadata=alias("isMut"))
     is_signer: bool = field(metadata=alias("isSigner"))
+    pda: Optional[_IdlPda] = None
+
+_IdlSeed = Any
+
+@dataclass
+class _IdlPda:
+    seeds: List[_IdlSeed]
+    program_id: Optional[_IdlSeed] = None
+
 
 
 @dataclass
