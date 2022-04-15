@@ -172,8 +172,7 @@ class _IdlTypeDef:
 
 
 @dataclass
-class _IdlAccountDef:
-    name: str
+class _IdlAccountDef(_IdlTypeDef):
     type: _IdlTypeDefTyStruct
 
 
