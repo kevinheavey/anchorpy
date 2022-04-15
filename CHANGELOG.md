@@ -1,10 +1,10 @@
 # Changelog
 
-## [0.9.0] - Unreleased
+## [0.8.2] - 2022-04-15
 
 ### Added
 
-- Partial support for coption
+- Update IDL types
 
 ## [0.8.1] - 2022-03-16
 
