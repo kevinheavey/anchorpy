@@ -13,7 +13,7 @@ from genpy import (
 )
 from anchorpy.idl import Idl, _IdlErrorCode
 from anchorpy.error import _LangErrorCode, LangErrorMessage
-from .utils import Function, TypedParam, Try, Break, Union
+from anchorpy.clientgen.utils import Function, TypedParam, Try, Break, Union
 
 
 def gen_from_code_fn(has_custom_errors: bool) -> Function:
