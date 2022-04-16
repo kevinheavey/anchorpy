@@ -8,6 +8,7 @@ from anchorpy.idl import (
     _IdlTypeDefined,
     _IdlTypeDefTyStruct,
     _IdlTypeArray,
+    _IdlField,
 )
 
 
@@ -63,6 +64,7 @@ def py_type_from_idl(
         )
         return f"Optional[{inner_type}]"
     elif isinstance(ty, _IdlTypeDefined):
+        defined = ty.defined
         filtered = [t for t in idl.types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
@@ -83,39 +85,44 @@ def py_type_from_idl(
         return f"list[{inner_type}]"
     raise ValueError(f"Unrecognized type: {ty}")
 
-def layout_for_type(ty: _IdlType, name: Optional[str] = None, defined_types_prefix: str = "types.",) -> str:
+
+def layout_for_type(
+    ty: _IdlType,
+    name: Optional[str] = None,
+    defined_types_prefix: str = "types.",
+) -> str:
     if ty == "bool":
-      inner = f"borsh.Bool"
+        inner = "borsh.Bool"
     elif ty == "u8":
-      inner = f"borsh.U8"
+        inner = "borsh.U8"
     elif ty == "i8":
-      inner = f"borsh.I8"
+        inner = "borsh.I8"
     elif ty == "u16":
-      inner = f"borsh.U16"
+        inner = "borsh.U16"
     elif ty == "i16":
-      inner = f"borsh.I16"
+        inner = "borsh.I16"
     elif ty == "u32":
-      inner = f"borsh.U32"
+        inner = "borsh.U32"
     elif ty == "f32":
-      inner = f"borsh.F32"
+        inner = "borsh.F32"
     elif ty == "i32":
-      inner = f"borsh.I32"
+        inner = "borsh.I32"
     elif ty == "u64":
-      inner = f"borsh.U64"
+        inner = "borsh.U64"
     elif ty == "i64":
-      inner = f"borsh.I64"
+        inner = "borsh.I64"
     elif ty == "f64":
-      inner = f"borsh.F64"
+        inner = "borsh.F64"
     elif ty == "u128":
-      inner = f"borsh.U128"
+        inner = "borsh.U128"
     elif ty == "i128":
-      inner = f"borsh.I128"
+        inner = "borsh.I128"
     elif ty == "bytes":
-      inner = f"borsh.Bytes"
+        inner = "borsh.Bytes"
     elif ty == "string":
-      inner = f"borsh.String"
+        inner = "borsh.String"
     elif ty == "publicKey":
-      inner = f"_BorshPubkey"
+        inner = "_BorshPubkey"
     elif isinstance(ty, _IdlTypeVec):
         inner = f"borsh.Vec({layout_for_type(ty.vec)})"
     elif isinstance(ty, _IdlTypeOption):
@@ -132,3 +139,66 @@ def layout_for_type(ty: _IdlType, name: Optional[str] = None, defined_types_pref
     if name is None:
         return inner
     return f'"{name}" / {inner}'
+
+
+def field_to_encodable(
+    idl: Idl, ty: _IdlField, val_prefix: str = "", defined_types_prefix: str = "types."
+) -> str:
+    ty_type = ty.type
+    if ty_type in (
+        "bool",
+        "u8",
+        "i8",
+        "u16",
+        "i16",
+        "u32",
+        "i32",
+        "f32",
+        "u64",
+        "i64",
+        "f64",
+        "u128",
+        "i128",
+        "string",
+        "publicKey",
+    ):
+        return f"{val_prefix}{ty.name}"
+    if ty_type == "bytes":
+        return f'b"{val_prefix}{ty.name}"'
+    if isinstance(ty_type, _IdlTypeVec):
+        map_body = field_to_encodable(
+            idl, _IdlField("item", ty_type.vec), "", defined_types_prefix
+        )
+        # skip mapping when not needed
+        if map_body == "item":
+            return f"{val_prefix}{ty.name}"
+        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
+    if isinstance(ty_type, _IdlTypeOption):
+        encodable = field_to_encodable(
+            idl, _IdlField(ty.name, ty_type.option), val_prefix, defined_types_prefix
+        )
+        if encodable == f"{val_prefix}{ty.name}":
+            return encodable
+        return f"({val_prefix}{ty.name} and {encodable}) or None"
+    if isinstance(ty_type, _IdlTypeCOption):
+        raise NotImplementedError("COption not implemented.")
+    if isinstance(ty_type, _IdlTypeDefined):
+        defined = ty_type.defined
+        filtered = [t for t in idl.types if t.name == defined]
+        if len(filtered) != 1:
+            raise ValueError(f"Type not found {defined}")
+        type_kind = filtered[0].type.kind
+        if isinstance(type_kind, _IdlTypeDefTyStruct):
+            return (
+                f"{defined_types_prefix}{defined}.to_encodable({val_prefix}{ty.name})"
+            )
+        return f"{val_prefix}{ty.name}.to_encodable()"
+    if isinstance(ty_type, _IdlTypeArray):
+        map_body = field_to_encodable(
+            idl, _IdlField("item", ty_type.array[0]), "", defined_types_prefix
+        )
+        # skip mapping when not needed
+        if map_body == "item":
+            return f"{val_prefix}{ty.name}"
+        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
+    raise ValueError(f"Unrecognized type: {ty_type}")
