@@ -27,7 +27,7 @@ from borsh_construct import (
     Option,
 )
 
-from anchorpy.borsh_extension import _BorshPubkey, _DataclassStruct
+from anchorpy.borsh_extension import _BorshPubkey, _DataclassStruct, COption
 from anchorpy.idl import (
     _IdlEnumFieldsNamed,
     _IdlEnumFieldsTuple,
@@ -211,7 +211,7 @@ def _type_layout(type_: _IdlType, types: list[_IdlTypeDef]) -> Construct:
     elif isinstance(field_type, _IdlTypeOption):
         return Option(_type_layout(field_type.option, types))
     elif isinstance(field_type, _IdlTypeCOption):
-        raise NotImplementedError("COption not yet supported.")
+        raise COption(_type_layout(field_type.option, types))
     elif isinstance(field_type, _IdlTypeDefined):
         defined = field_type.defined
         if not types:

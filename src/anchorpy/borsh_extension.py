@@ -4,7 +4,7 @@ from keyword import kwlist
 from dataclasses import asdict
 from borsh_construct import CStruct
 from solana import publickey
-from construct import Bytes, Adapter, Container
+from construct import Bytes, Adapter, Container, Padding
 
 
 class _BorshPubkeyAdapter(Adapter):
@@ -16,6 +16,24 @@ class _BorshPubkeyAdapter(Adapter):
 
     def _encode(self, obj: publickey.PublicKey, context, path) -> bytes:
         return bytes(obj)
+
+class COption(Adapter):
+    _discriminator_key = "discriminator"
+    _value_key = "value"
+    def __init__(self, subcon: Construct) -> None:
+        option_struct = CStruct(
+            self._discriminator_key / U8,
+            self._value_key
+            / IfThenElse(lambda this: this[self._discriminator_key] == 0, Padding(subcon.sizeof()), subcon),
+        )
+
+    def _decode(self, obj, context, path) -> Any:
+        discriminator = obj[self._discriminator_key]
+        return None if discriminator == 0 else obj[self._value_key]
+
+    def _encode(self, obj, context, path) -> dict:
+        discriminator = 0 if obj is None else 1
+        return {self._discriminator_key: discriminator, self._value_key: obj}
 
 
 T = TypeVar("T")
