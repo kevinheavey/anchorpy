@@ -28,7 +28,7 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
         else "Optional[anchor.AnchorError]"
     )
     return Function(
-        "from_code", [TypedParam("code", "int")], from_code_body, from_code_return_type
+        "from_code", [TypedParam("code", "int")], from_code_body, str(from_code_return_type)
     )
 
 
