@@ -1,7 +1,7 @@
 from pathlib import Path
 from pyheck import snake
 from genpy import FromImport, Assign, Suite
-from anchorpy.idl import Idl, _IdlTypeDefTyStruct
+from anchorpy.idl import Idl, _IdlTypeDefTyStruct, _IdlTypeDefTyEnum
 from anchorpy.clientgen.utils import Union
 from anchorpy.clientgen.common import _fields_interface_name, _json_interface_name
 
@@ -21,9 +21,11 @@ def gen_index_file(idl: Idl, out: Path) -> None:
 
 
 def gen_index_code(idl: Idl) -> str:
+    lines = []
     for ty in idl.types:
+        ty_type = ty.type
         module_name = snake(ty.name)
-        if isinstance(ty, _IdlTypeDefTyStruct):
+        if isinstance(ty_type, _IdlTypeDefTyStruct):
             code_to_add = FromImport(
                 f".{module_name}",
                 [
@@ -33,12 +35,14 @@ def gen_index_code(idl: Idl) -> str:
                 ],
             )
         else:
-            import_line = FromImport(f".", [module_name])
+            import_line = FromImport(".", [module_name])
             json_variants = Union(
                 [
                     f"{ty.name}.{_json_interface_name(variant.name)}"
-                    for variant in ty.type.variants
+                    for variant in ty_type.variants
                 ]
             )
             json_type_alias = Assign(_json_interface_name(ty.name), json_variants)
             code_to_add = Suite([import_line, json_type_alias])
+        lines.append(code_to_add)
+    return str(Suite(lines))
