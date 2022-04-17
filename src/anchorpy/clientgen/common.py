@@ -36,12 +36,10 @@ def py_type_from_idl(
 ) -> str:
     if ty == "bool":
         return "bool"
-    elif ty in ("u8", "i8", "u16", "u16" "u32", "i32", "u64", "i64", "u128", "i128"):
+    elif ty in {"u8", "i8", "u16", "u16" "u32", "i32", "u64", "i64", "u128", "i128"}:
         return "int"
-    elif ty in ("f32", "f64"):
+    elif ty in {"f32", "f64"}:
         return "float"
-    elif ty == "bytes":
-        return "bytes"
     elif ty == "bytes":
         return "bytes"
     elif ty == "string":
@@ -378,3 +376,28 @@ def field_to_json(idl: Idl, ty: _IdlField, val_prefix: str = "") -> str:
             raise ValueError(f"Type not found {defined}")
         return f"{val_prefix}{ty.name}.to_json()"
     raise ValueError(f"Unrecognized type: {ty_type}")
+
+def idl_type_to_json_type(ty: _IdlType, defined_types_prefix: str = "types.") -> str:
+    if ty == "bool":
+        return "bool"
+    if ty in {"u8", "i8", "u16", "u16" "u32", "i32", "u64", "i64", "u128", "i128"}:
+        return "int"
+    if ty in {"f32", "f64"}:
+        return "float"
+    if ty in {"string", "bytes", "publicKey"}:
+        return "str"
+    if isinstance(ty, _IdlTypeVec):
+        inner = idl_type_to_json_type(ty.vec, defined_types_prefix)
+        return f"list[{inner}]"
+    if isinstance(ty, _IdlTypeArray):
+        inner = idl_type_to_json_type(ty.array[0], defined_types_prefix)
+        return f"list[{inner}]"
+    if isinstance(ty, _IdlTypeOption):
+        inner = idl_type_to_json_type(ty.option, defined_types_prefix)
+        return f"Optional[{inner}]"
+    if isinstance(ty, _IdlTypeCOption):
+        inner = idl_type_to_json_type(ty.coption, defined_types_prefix)
+        return f"Optional[{inner}]"
+    if isinstance(ty, _IdlTypeDefined):
+        return f"{defined_types_prefix}{json_interface_name(ty.defined)}"
+    raise ValueError(f"Unrecognized type: {ty}")
