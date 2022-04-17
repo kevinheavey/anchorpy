@@ -161,10 +161,9 @@ def field_to_encodable(
         "i128",
         "string",
         "publicKey",
+        "bytes",
     ):
         return f"{val_prefix}{ty.name}"
-    if ty_type == "bytes":
-        return f'b"{val_prefix}{ty.name}"'
     if isinstance(ty_type, _IdlTypeVec):
         map_body = field_to_encodable(
             idl, _IdlField("item", ty_type.vec), "", defined_types_prefix
@@ -195,6 +194,64 @@ def field_to_encodable(
         return f"{val_prefix}{ty.name}.to_encodable()"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = field_to_encodable(
+            idl, _IdlField("item", ty_type.array[0]), "", defined_types_prefix
+        )
+        # skip mapping when not needed
+        if map_body == "item":
+            return f"{val_prefix}{ty.name}"
+        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
+    raise ValueError(f"Unrecognized type: {ty_type}")
+
+
+def field_from_decoded(
+    idl: Idl, ty: _IdlField, val_prefix: str = "", defined_types_prefix: str = "types."
+) -> str:
+    ty_type = ty.type
+    if ty_type in (
+        "bool",
+        "u8",
+        "i8",
+        "u16",
+        "i16",
+        "u32",
+        "i32",
+        "f32",
+        "u64",
+        "i64",
+        "f64",
+        "u128",
+        "i128",
+        "string",
+        "publicKey",
+        "bytes",
+    ):
+        return f"{val_prefix}{ty.name}"
+    if isinstance(ty_type, _IdlTypeVec):
+        map_body = field_from_decoded(
+            idl, _IdlField("item", ty_type.vec), "", defined_types_prefix
+        )
+        # skip mapping when not needed
+        if map_body == "item":
+            return f"{val_prefix}{ty.name}"
+        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
+    if isinstance(ty_type, _IdlTypeOption):
+        decoded = field_from_decoded(
+            idl, _IdlField(ty.name, ty_type.option), val_prefix
+        )
+        # skip coercion when not needed
+        if decoded == f"{val_prefix}{ty.name}":
+            return decoded
+        return f"({val_prefix}{ty.name} and {decoded}) or None"
+    if isinstance(ty_type, _IdlTypeCOption):
+        raise NotImplementedError("COption not implemented.")
+    if isinstance(ty_type, _IdlTypeDefined):
+        defined = ty_type.defined
+        filtered = [t for t in idl.types if t.name == defined]
+        if len(filtered) != 1:
+            raise ValueError(f"Type not found {defined}")
+        return f"{defined_types_prefix}${defined}.from_decoded(${val_prefix}${ty.name})"
+    if isinstance(ty_type, _IdlTypeArray):
+        map_body = field_from_decoded(
             idl, _IdlField("item", ty_type.array[0]), "", defined_types_prefix
         )
         # skip mapping when not needed
