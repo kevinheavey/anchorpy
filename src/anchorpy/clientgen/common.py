@@ -324,3 +324,57 @@ def struct_field_initializer(
             return f"{prefix}{field.name}"
         return f"list(map(lambda item: {map_body}, {prefix}{field.name}))"
     raise ValueError(f"Unrecognized type: {field_type}")
+
+def field_to_json(idl: Idl, ty: _IdlField, val_prefix: str = "") -> str:
+    ty_type = ty.type
+    if ty_type in {
+        "bool",
+        "u8",
+        "i8",
+        "u16",
+        "i16",
+        "u32",
+        "i32",
+        "f32",
+        "u64",
+        "i64",
+        "f64",
+        "u128",
+        "i128",
+        "string",
+        "bytes",
+    }:
+        return f"{val_prefix}{ty.name}"
+    if ty_type == "publicKey":
+        return f"{val_prefix}{ty.name}.to_base58()"
+    if isinstance(ty_type, _IdlTypeVec):
+        map_body = field_to_json(idl, _IdlField("item", ty_type.vec))
+        # skip mapping when not needed
+        if map_body == "item":
+            return f"{val_prefix}{ty.name}"
+        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
+    if isinstance(ty_type, _IdlTypeArray):
+        map_body = field_to_json(idl, _IdlField("item", ty_type.array[0]))
+        # skip mapping when not needed
+        if map_body == "item":
+            return f"{val_prefix}{ty.name}"
+        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
+    if isinstance(ty_type, _IdlTypeOption):
+        value = field_to_json(idl, _IdlField(ty.name, ty_type.option), val_prefix)
+        # skip coercion when not needed
+        if value == f"{val_prefix}{ty.name}":
+            return value
+        return f"({val_prefix}{ty.name} and {value}) or None"
+    if isinstance(ty_type, _IdlTypeCOption):
+        value = field_to_json(idl, _IdlField(ty.name, ty_type.coption), val_prefix)
+        # skip coercion when not needed
+        if value == f"{val_prefix}{ty.name}":
+            return value
+        return f"({val_prefix}{ty.name} and {value}) or None"
+    if isinstance(ty_type, _IdlTypeDefined):
+        defined = ty_type.defined
+        filtered = [t for t in idl.types if t.name == defined]
+        if len(filtered) != 1:
+            raise ValueError(f"Type not found {defined}")
+        return f"{val_prefix}{ty.name}.to_json()"
+    raise ValueError(f"Unrecognized type: {ty_type}")
