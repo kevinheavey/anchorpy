@@ -145,7 +145,7 @@ def field_to_encodable(
     idl: Idl, ty: _IdlField, val_prefix: str = "", defined_types_prefix: str = "types."
 ) -> str:
     ty_type = ty.type
-    if ty_type in (
+    if ty_type in {
         "bool",
         "u8",
         "i8",
@@ -162,7 +162,7 @@ def field_to_encodable(
         "string",
         "publicKey",
         "bytes",
-    ):
+    }:
         return f"{val_prefix}{ty.name}"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = field_to_encodable(
@@ -207,7 +207,7 @@ def field_from_decoded(
     idl: Idl, ty: _IdlField, val_prefix: str = "", defined_types_prefix: str = "types."
 ) -> str:
     ty_type = ty.type
-    if ty_type in (
+    if ty_type in {
         "bool",
         "u8",
         "i8",
@@ -224,7 +224,7 @@ def field_from_decoded(
         "string",
         "publicKey",
         "bytes",
-    ):
+    }:
         return f"{val_prefix}{ty.name}"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = field_from_decoded(
@@ -259,3 +259,68 @@ def field_from_decoded(
             return f"{val_prefix}{ty.name}"
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
     raise ValueError(f"Unrecognized type: {ty_type}")
+
+
+def struct_field_initializer(
+    idl: Idl, field: _IdlField, prefix: str = "fields."
+) -> str:
+    field_type = field.type
+    if field_type in {
+        "bool",
+        "u8",
+        "i8",
+        "u16",
+        "i16",
+        "u32",
+        "i32",
+        "f32",
+        "u64",
+        "i64",
+        "f64",
+        "u128",
+        "i128",
+        "string",
+        "publicKey",
+        "bytes",
+    }:
+        return f"{prefix}{field.name}"
+    if isinstance(field_type, _IdlTypeDefined):
+        defined = field_type.defined
+        filtered = [t for t in idl.types if t.name == defined]
+        if len(filtered) != 1:
+            raise ValueError(f"Type not found {defined}")
+        type_kind = filtered[0].type.kind
+        if isinstance(type_kind, _IdlTypeDefTyStruct):
+            return f"types.{type_kind.name}(**{prefix}{field.name})"
+        return f"{prefix}{field.name}"
+    if isinstance(field_type, _IdlTypeOption):
+        initializer = struct_field_initializer(
+            idl, _IdlField(field.name, field_type.option), prefix
+        )
+        # skip coercion when not needed
+        if initializer == f"{prefix}{field.name}":
+            return initializer
+        return f"({prefix}{field.name} and {initializer}) or None"
+    if isinstance(field_type, _IdlTypeCOption):
+        initializer = struct_field_initializer(
+            idl, _IdlField(field.name, field_type.coption), prefix
+        )
+        # skip coercion when not needed
+        if initializer == f"{prefix}{field.name}":
+            return initializer
+        return f"({prefix}{field.name} and {initializer}) or None"
+    if isinstance(field_type, _IdlTypeArray):
+        map_body = struct_field_initializer(
+            idl, _IdlField("item", field_type.array[0]), ""
+        )
+        # skip mapping when not needed
+        if map_body == "item":
+            return f"{prefix}{field.name}"
+        return f"list(map(lambda item: {map_body}, {prefix}{field.name}))"
+    if isinstance(field_type, _IdlTypeVec):
+        map_body = struct_field_initializer(idl, _IdlField("item", field_type.vec), "")
+        # skip mapping when not needed
+        if map_body == "item":
+            return f"{prefix}{field.name}"
+        return f"list(map(lambda item: {map_body}, {prefix}{field.name}))"
+    raise ValueError(f"Unrecognized type: {field_type}")
