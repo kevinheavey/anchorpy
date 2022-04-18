@@ -23,6 +23,8 @@ from anchorpy.clientgen.common import (
     _layout_for_type,
     _field_from_decoded,
     _field_to_encodable,
+    _field_to_json,
+    _field_from_json,
 )
 
 
@@ -82,6 +84,8 @@ def gen_type_files(idl: Idl, out: Path) -> None:
             if isinstance(ty.type, _IdlTypeDefTyStruct)
             else gen_enum(idl, ty.name, ty.type.variants)
         )
+        print("struct or enum file")
+        print(code)
 
 
 def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
@@ -95,11 +99,14 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
         ]
     )
     fields_interface_name = _fields_interface_name(name)
+    json_interface_name = _json_interface_name(name)
     fields_interface_params: list[TypedParam] = []
     json_interface_params: list[TypedParam] = []
     layout_items: list[str] = []
     from_decoded_items: list[str] = []
     to_encodable_items: list[str] = []
+    to_json_items: list[str] = []
+    from_json_items: list[str] = []
     for field in fields:
         fields_interface_params.append(
             TypedParam(field.name, _py_type_from_idl(idl, field.type))
@@ -114,11 +121,15 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
         to_encodable_items.append(
             f'"{field.name}": {_field_to_encodable(idl, field, "fields.")}'
         )
+        to_json_items.append(f'"{field.name}": {_field_to_json(idl, field, "self.")}')
+        from_json_items.append(f"{field.name}={_field_from_json(field)}")
     fields_interface = Dataclass(fields_interface_name, fields_interface_params)
-    json_interface = Dataclass(_json_interface_name(name), json_interface_params)
-    layout = f"borsh.CStruct{tuple(layout_items)}"
+    json_interface = Dataclass(json_interface_name, json_interface_params)
+    layout = f"borsh.CStruct({','.join(layout_items)})"
     args_for_from_decoded = ",".join(from_decoded_items)
     to_encodable_body = "{" + ",".join(to_encodable_items) + "}"
+    to_json_body = "{" + ",".join(to_json_items) + "}"
+    args_for_from_json = ",".join(from_json_items)
     struct_cls = Class(
         name,
         None,
@@ -144,5 +155,13 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
             Method(
                 "to_encodable", [], Return(to_encodable_body), "dict[str, typing.Any]"
             ),
+            Method("to_json", [], Return(to_json_body), json_interface_name),
+            ClassMethod(
+                "from_json",
+                [TypedParam("obj", json_interface_name)],
+                Return(f"cls({json_interface_name}({args_for_from_json}))"),
+                f'"{name}"',
+            ),
         ],
     )
+    return str(Suite([imports, fields_interface, json_interface, struct_cls]))
