@@ -13,7 +13,7 @@ from genpy import (
 )
 from anchorpy.idl import Idl, _IdlErrorCode
 from anchorpy.error import _LangErrorCode, LangErrorMessage
-from anchorpy.clientgen.utils import Function, TypedParam, Try, Break, Union
+from anchorpy.clientgen.utils import Function, TypedParam, Try, Break, Union, InitMethod
 
 
 def gen_from_code_fn(has_custom_errors: bool) -> Function:
@@ -82,7 +82,7 @@ def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
         msg = None if maybe_msg is None else f'"{maybe_msg}"'
         init_body = Statement(f"super().__init__({code}, {msg})")
         attrs = [
-            UntypedFunction("__init__", ["self"], init_body),
+            InitMethod([], init_body),
             Assign("code", code),
             Assign("name", f'"{name}"'),
             Assign("msg", msg),

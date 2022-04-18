@@ -1,14 +1,17 @@
-from typing import List, Iterator
+from typing import List, Iterator, Optional
 from genpy import Function as FunctionOriginal, Generable, Suite, Class
 
 
 class TypedParam(Generable):
-    def __init__(self, name: str, type_: str) -> None:
+    def __init__(self, name: str, type_: Optional[str]) -> None:
         self.name = name
         self.type = type_
 
     def generate(self) -> Iterator[str]:
-        yield f"{self.name}: {self.type}"
+        if self.type is None:
+            yield self.name
+        else:
+            yield f"{self.name}: {self.type}"
 
 
 class Break(Generable):
@@ -32,17 +35,54 @@ class Union(Generable):
 
 class Function(FunctionOriginal):
     def __init__(
-        self, name: str, args: List[TypedParam], body: Generable, return_type: str
+        self,
+        name: str,
+        args: List[TypedParam],
+        body: Generable,
+        return_type: str,
+        decorators: tuple[str, ...] = (),
     ) -> None:
-        super().__init__(name, args, body)
+        super().__init__(name, args, body, decorators)
         self.return_type = return_type
 
     def generate(self) -> Iterator[str]:
-        arg_strings = [f"{arg.name}: {arg.type}" for arg in self.args]
+        yield from self.decorators
+        arg_strings = []
+        for arg in self.args:
+            annotation = "" if arg.type is None else f": {arg.type}"
+            arg_strings.append(f"{arg.name}{annotation}")
         yield "def {}({}): -> {}".format(
             self.name, ", ".join(arg_strings), self.return_type
         )
         yield from self.body.generate()
+
+
+class StaticMethod(Function):
+    def __init__(
+        self, name: str, args: list[TypedParam], body: Generable, return_type: str
+    ) -> None:
+        super().__init__(name, args, body, return_type, ("@staticmethod"))
+
+
+class ClassMethod(Function):
+    def __init__(
+        self, name: str, extra_args: list[TypedParam], body: Generable, return_type: str
+    ) -> None:
+        args = [TypedParam("cls", None), *extra_args]
+        super().__init__(name, args, body, return_type)
+
+
+class Method(Function):
+    def __init__(
+        self, name: str, extra_args: list[TypedParam], body: Generable, return_type: str
+    ) -> None:
+        args = [TypedParam("self", None), *extra_args]
+        super().__init__(name, args, body, return_type)
+
+
+class InitMethod(Method):
+    def __init__(self, extra_args: list[TypedParam], body: Generable) -> None:
+        super().__init__("__init__", extra_args, body, "None")
 
 
 class Dataclass(Class):
