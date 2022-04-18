@@ -22,6 +22,7 @@ from anchorpy.clientgen.common import (
     _struct_field_initializer,
     _layout_for_type,
     _field_from_decoded,
+    _field_to_encodable,
 )
 
 
@@ -94,25 +95,30 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
         ]
     )
     fields_interface_name = _fields_interface_name(name)
-    fields_interface = Dataclass(
-        fields_interface_name,
-        [
+    fields_interface_params: list[TypedParam] = []
+    json_interface_params: list[TypedParam] = []
+    layout_items: list[str] = []
+    from_decoded_items: list[str] = []
+    to_encodable_items: list[str] = []
+    for field in fields:
+        fields_interface_params.append(
             TypedParam(field.name, _py_type_from_idl(idl, field.type))
-            for field in fields
-        ],
-    )
-    json_interface = Dataclass(
-        _json_interface_name(name),
-        [
+        )
+        json_interface_params.append(
             TypedParam(field.name, _idl_type_to_json_type(field.type))
-            for field in fields
-        ],
-    )
-    layout_items = tuple(_layout_for_type(field.type, field.name) for field in fields)
-    layout = f"borsh.CStruct{layout_items}"
-    args_for_from_decoded = ",".join(
-        [f"{field.name}={_field_from_decoded(idl, field, 'obj.')}" for field in fields]
-    )
+        )
+        layout_items.append(_layout_for_type(field.type, field.name))
+        from_decoded_items.append(
+            f"{field.name}={_field_from_decoded(idl, field, 'obj.')}"
+        )
+        to_encodable_items.append(
+            f'"{field.name}": {_field_to_encodable(idl, field, "fields.")}'
+        )
+    fields_interface = Dataclass(fields_interface_name, fields_interface_params)
+    json_interface = Dataclass(_json_interface_name(name), json_interface_params)
+    layout = f"borsh.CStruct{tuple(layout_items)}"
+    args_for_from_decoded = ",".join(from_decoded_items)
+    to_encodable_body = "{" + ",".join(to_encodable_items) + "}"
     struct_cls = Class(
         name,
         None,
@@ -134,6 +140,9 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
                 [TypedParam("obj", "typing.Any")],
                 Return(f"cls({fields_interface_name}({args_for_from_decoded}))"),
                 f'"{name}"',
+            ),
+            Method(
+                "to_encodable", [], Return(to_encodable_body), "dict[str, typing.Any]"
             ),
         ],
     )
