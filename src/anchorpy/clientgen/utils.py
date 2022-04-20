@@ -33,6 +33,35 @@ class Union(Generable):
         yield f"Union[{joined}]"
 
 
+class Tuple(Generable):
+    def __init__(self, members: list[str]) -> None:
+        self.members = members
+
+    def generate(self) -> Iterator[str]:
+        joined = ",".join(self.members)
+        yield f"tuple[{joined}]"
+
+
+class StrDictEntry(Generable):
+    def __init__(self, key: str, val: str) -> None:
+        self.key = key
+        self.val = val
+
+    def generate(self) -> Iterator[str]:
+        yield f'"{self.key}": {self.val},'
+
+
+class StrDict(Generable):
+    def __init__(self, mapping: list[StrDictEntry]) -> None:
+        self.mapping = mapping
+
+    def generate(self) -> Iterator[str]:
+        yield "{"
+        for item in self.mapping:
+            yield str(item)
+        yield "}"
+
+
 class Function(FunctionOriginal):
     def __init__(
         self,
@@ -61,7 +90,7 @@ class StaticMethod(Function):
     def __init__(
         self, name: str, args: list[TypedParam], body: Generable, return_type: str
     ) -> None:
-        super().__init__(name, args, body, return_type, ("@staticmethod"))
+        super().__init__(name, args, body, return_type, ("@staticmethod",))
 
 
 class ClassMethod(Function):
@@ -69,7 +98,7 @@ class ClassMethod(Function):
         self, name: str, extra_args: list[TypedParam], body: Generable, return_type: str
     ) -> None:
         args = [TypedParam("cls", None), *extra_args]
-        super().__init__(name, args, body, return_type)
+        super().__init__(name, args, body, return_type, ("@classmethod",))
 
 
 class Method(Function):
@@ -91,6 +120,14 @@ class Dataclass(Class):
 
     def generate(self) -> Iterator[str]:
         yield "@dataclass"
+        yield from super().generate()
+
+
+class TypedDict(Class):
+    def __init__(self, name, params: list[TypedParam]) -> None:
+        super().__init__(name, ["typing.TypedDict"], params)
+
+    def generate(self) -> Iterator[str]:
         yield from super().generate()
 
 
