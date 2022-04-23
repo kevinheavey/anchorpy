@@ -7,7 +7,7 @@ from anchorpy.idl import (
     _IdlTypeDefTyStruct,
     _IdlField,
     _IdlEnumVariant,
-    _IdlType,
+    _IdlEnumFieldsTuple,
 )
 from anchorpy.clientgen.utils import (
     Union,
@@ -235,7 +235,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 )
                 extra_aliases.append(json_interface_value_field_type)
             else:
-                tuple_enum_fields = cast(list[_IdlType], fields)
+                tuple_enum_fields = cast(_IdlEnumFieldsTuple, fields)
                 fields_type_aliases.append(
                     Assign(
                         fields_interface_name,
@@ -279,63 +279,83 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
             Assign("kind", f'"{variant.name}"'),
         ]
         to_json_items_base = StrDictEntry("kind", variant.name)
+        encodable_value_items: list[StrDictEntry] = []
         if fields:
             if isinstance(fields[0], _IdlField):
                 named_enum_fields = cast(list[_IdlField], fields)
-                init_method_body = Assign(
-                    "self.value",
-                    StrDict(
-                        [
-                            StrDictEntry(
-                                field.name, _struct_field_initializer(idl, field)
-                            )
-                            for field in named_enum_fields
-                        ]
-                    ),
-                )
-                json_value_entry = StrDict(
-                    [
+                init_method_body_items: list[StrDictEntry] = []
+                json_value_items: list[StrDictEntry] = []
+                for field in named_enum_fields:
+                    init_method_body_items.append(
+                        StrDictEntry(field.name, _struct_field_initializer(idl, field))
+                    )
+                    json_value_items.append(
                         StrDictEntry(
                             field.name, _field_to_json(idl, field, "self.value.")
                         )
-                        for field in named_enum_fields
-                    ]
+                    )
+                    encodable_value_items.append(
+                        StrDictEntry(
+                            field.name, _field_to_encodable(idl, field, "self.value.")
+                        )
+                    )
+                init_method_body = Assign(
+                    "self.value",
+                    init_method_body_items,
                 )
+                json_value_entry = StrDict(json_value_items)
                 to_json_body = Return(
                     StrDict(
                         [to_json_items_base, StrDictEntry("value", json_value_entry)]
                     )
                 )
+                encodable_value_entry = StrDict(encodable_value_items)
             else:
-                tuple_enum_fields = cast(list[_IdlType], fields)
+                tuple_enum_fields = cast(_IdlEnumFieldsTuple, fields)
                 elements: list[str] = []
-                for i, field in enumerate(tuple_enum_fields):
+                json_value_elements: list[str] = []
+                for i, unnamed_field in enumerate(tuple_enum_fields):
                     name = f"value[{i}]"
                     elements.append(
-                        _struct_field_initializer(idl, _IdlField(name, field), "")
+                        _struct_field_initializer(
+                            idl, _IdlField(name, unnamed_field), ""
+                        )
                     )
+                    json_value_elements.append(
+                        _field_to_json(idl, _IdlField(name, unnamed_field))
+                    )
+                    encodable = _field_to_encodable(
+                        idl, _IdlField(f"[{i}]", unnamed_field), "self.value"
+                    )
+                    encodable_value_items.append(StrDictEntry(f"_{i}", encodable))
+                encodable_value_entry = StrDict(encodable_value_items)
                 tuple_str = ",".join(x for x in elements)
                 init_method_body = Assign(
                     "self.value",
                     tuple_str,
                 )
-                json_value_items: list[str] = []
-                for idx, field in enumerate(tuple_enum_fields):
-                    name = f"value[{idx}]"
-                    json_value_items.append(_field_to_json(idl, _IdlField(name, field)))
                 to_json_body = Return(
                     StrDict(
                         [
                             to_json_items_base,
-                            StrDictEntry("value", f'[{",".join(json_value_items)}]'),
+                            StrDictEntry("value", f'[{",".join(json_value_elements)}]'),
                         ]
                     )
                 )
+            to_encodable_body = Return(
+                StrDict([StrDictEntry(variant.name, encodable_value_entry)])
+            )
             to_json_method = Method("to_json", [], to_json_body, json_interface_name)
+            to_encodable_method = Method("to_encodable", [], to_encodable_body, "dict")
             init_method = InitMethod(
                 [TypedParam("value", fields_interface_name)], init_method_body
             )
-            attrs = [*class_common_attrs, init_method, to_json_method]
+            attrs = [
+                *class_common_attrs,
+                init_method,
+                to_json_method,
+                to_encodable_method,
+            ]
         else:
             to_json_method = ClassMethod(
                 "to_json",
@@ -343,5 +363,5 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 Return(StrDict([to_json_items_base])),
                 json_interface_name,
             )
-            attrs = [*class_common_attrs, to_json_method]
+            attrs = [*class_common_attrs, to_json_method, to_encodable_method]
         klass = Class(variant.name, None, attrs)
