@@ -1,4 +1,4 @@
-from typing import List, Iterator, Optional
+from typing import List, Iterator, Optional, Union as TypingUnion
 from genpy import Function as FunctionOriginal, Generable, Suite, Class
 
 
@@ -43,7 +43,7 @@ class Tuple(Generable):
 
 
 class StrDictEntry(Generable):
-    def __init__(self, key: str, val: str) -> None:
+    def __init__(self, key: str, val: TypingUnion[str, "StrDictEntry"]) -> None:
         self.key = key
         self.val = val
 
@@ -52,13 +52,12 @@ class StrDictEntry(Generable):
 
 
 class StrDict(Generable):
-    def __init__(self, mapping: list[StrDictEntry]) -> None:
-        self.mapping = mapping
+    def __init__(self, items: list[StrDictEntry]) -> None:
+        self.items = items
 
     def generate(self) -> Iterator[str]:
         yield "{"
-        for item in self.mapping:
-            yield str(item)
+        yield from ("    " + str(item) for item in self.items)
         yield "}"
 
 
