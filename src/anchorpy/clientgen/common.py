@@ -325,7 +325,9 @@ def _struct_field_initializer(
     raise ValueError(f"Unrecognized type: {field_type}")
 
 
-def _field_to_json(idl: Idl, ty: _IdlField, val_prefix: str = "") -> str:
+def _field_to_json(
+    idl: Idl, ty: _IdlField, val_prefix: str = "", val_suffix: str = ""
+) -> str:
     ty_type = ty.type
     if ty_type in {
         "bool",
@@ -344,39 +346,43 @@ def _field_to_json(idl: Idl, ty: _IdlField, val_prefix: str = "") -> str:
         "string",
         "bytes",
     }:
-        return f"{val_prefix}{ty.name}"
+        return f"{val_prefix}{ty.name}{val_suffix}"
     if ty_type == "publicKey":
-        return f"{val_prefix}{ty.name}.to_base58()"
+        return f"{val_prefix}{ty.name}{val_suffix}.to_base58()"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_to_json(idl, _IdlField("item", ty_type.vec))
         # skip mapping when not needed
         if map_body == "item":
-            return f"{val_prefix}{ty.name}"
-        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
+            return f"{val_prefix}{ty.name}{val_suffix}"
+        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}{val_suffix}))"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_to_json(idl, _IdlField("item", ty_type.array[0]))
         # skip mapping when not needed
         if map_body == "item":
-            return f"{val_prefix}{ty.name}"
-        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
+            return f"{val_prefix}{ty.name}{val_suffix}"
+        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}{val_suffix}))"
     if isinstance(ty_type, _IdlTypeOption):
-        value = _field_to_json(idl, _IdlField(ty.name, ty_type.option), val_prefix)
+        value = _field_to_json(
+            idl, _IdlField(ty.name, ty_type.option), val_prefix, val_suffix
+        )
         # skip coercion when not needed
-        if value == f"{val_prefix}{ty.name}":
+        if value == f"{val_prefix}{ty.name}{val_suffix}":
             return value
-        return f"({val_prefix}{ty.name} and {value}) or None"
+        return f"({val_prefix}{ty.name}{val_suffix} and {value}) or None"
     if isinstance(ty_type, _IdlTypeCOption):
-        value = _field_to_json(idl, _IdlField(ty.name, ty_type.coption), val_prefix)
+        value = _field_to_json(
+            idl, _IdlField(ty.name, ty_type.coption), val_prefix, val_suffix
+        )
         # skip coercion when not needed
-        if value == f"{val_prefix}{ty.name}":
+        if value == f"{val_prefix}{ty.name}{val_suffix}":
             return value
-        return f"({val_prefix}{ty.name} and {value}) or None"
+        return f"({val_prefix}{ty.name}{val_suffix} and {value}) or None"
     if isinstance(ty_type, _IdlTypeDefined):
         defined = ty_type.defined
         filtered = [t for t in idl.types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        return f"{val_prefix}{ty.name}.to_json()"
+        return f"{val_prefix}{ty.name}{val_suffix}.to_json()"
     raise ValueError(f"Unrecognized type: {ty_type}")
 
 
