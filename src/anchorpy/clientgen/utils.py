@@ -1,4 +1,4 @@
-from typing import List, Iterator, Optional, Union as TypingUnion
+from typing import Iterator, Optional, Union as TypingUnion
 from genpy import Function as FunctionOriginal, Generable, Suite, Class
 
 
@@ -74,7 +74,7 @@ class Function(FunctionOriginal):
     def __init__(
         self,
         name: str,
-        args: List[TypedParam],
+        args: list[TypedParam],
         body: Generable,
         return_type: str,
         decorators: tuple[str, ...] = (),
