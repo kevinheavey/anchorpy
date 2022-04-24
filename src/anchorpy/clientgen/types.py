@@ -204,6 +204,9 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
     invalid_enum_raise = Raise('ValueError("Invalid enum object")')
     from_decoded_dict_check = If("not isinstance(obj, dict)", invalid_enum_raise)
     variant_name_in_obj_checks: list[Generable] = []
+    obj_kind_checks: list[Generable] = []
+    json_interfaces: list[TypedDict] = []
+    classes: list[Class] = []
     for idx, variant in enumerate(variants):
         discriminator = idx
         fields = variant.fields
@@ -221,6 +224,9 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
         def make_variant_name_in_obj_check(then: Generable) -> Generable:
             return If(f'"{variant.name}" in obj', then)
 
+        def make_obj_kind_check(return_val: str) -> Generable:
+            return If(f'kind == "{variant.name}"', Return(return_val))
+
         if fields:
             val_line_for_from_decoded = Assign("val", f'obj["{variant.name}"]')
             if isinstance(fields[0], _IdlField):
@@ -231,6 +237,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 init_method_body_items: list[StrDictEntry] = []
                 json_value_items: list[StrDictEntry] = []
                 init_entries_for_from_decoded: list[StrDictEntry] = []
+                init_entries_for_from_json: list[StrDictEntry] = []
                 for named_field in named_enum_fields:
                     field_type_alias_entries.append(
                         TypedParam(
@@ -282,6 +289,15 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                             ),
                         )
                     )
+                    init_entries_for_from_json.append(
+                        StrDictEntry(
+                            named_field.name,
+                            _field_from_json(
+                                named_field,
+                                'obj["value"]',
+                            ),
+                        )
+                    )
 
                 fields_type_aliases.append(
                     TypedDict(fields_interface_name, field_type_alias_entries)
@@ -300,6 +316,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                     )
                 )
                 init_arg_for_from_decoded = StrDict(init_entries_for_from_decoded)
+                init_arg_for_from_json = StrDict(init_entries_for_from_json)
             else:
                 tuple_enum_fields = cast(_IdlEnumFieldsTuple, fields)
                 field_type_alias_elements: list[str] = []
@@ -308,6 +325,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 tuple_elements: list[str] = []
                 json_value_elements: list[str] = []
                 init_elements_for_from_decoded: list[str] = []
+                init_elements_for_from_json: list[str] = []
                 for i, unnamed_field in enumerate(tuple_enum_fields):
                     field_type_alias_elements.append(
                         _py_type_from_idl(idl, unnamed_field)
@@ -336,6 +354,11 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                     init_elements_for_from_decoded.append(
                         _field_from_decoded(
                             idl, _IdlField(f'val["_{i}"]', unnamed_field), ""
+                        ),
+                    )
+                    init_elements_for_from_json.append(
+                        _field_from_json(
+                            _IdlField(f'value["{i}"]', unnamed_field),
                         ),
                     )
                 fields_type_aliases.append(
@@ -369,6 +392,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                     )
                 )
                 init_arg_for_from_decoded = Tuple(init_elements_for_from_decoded)
+                init_arg_for_from_json = Tuple(init_elements_for_from_json)
             to_json_method = Method("to_json", [], to_json_body, json_interface_name)
             encodable_value_entry = StrDict(encodable_value_items)
             to_encodable_body = Return(
@@ -387,6 +411,9 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                     ]
                 )
             )
+            obj_kind_check = make_obj_kind_check(
+                f"{variant.name}({init_arg_for_from_json})",
+            )
         else:
             to_json_method = ClassMethod(
                 "to_json",
@@ -401,7 +428,8 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
             variant_name_in_obj_check = make_variant_name_in_obj_check(
                 Return(f"{variant.name}()")
             )
-        json_interface = TypedDict(json_interface_name, json_interface_params)
+            obj_kind_check = make_obj_kind_check(f"{variant.name}()")
+        json_interfaces.append(TypedDict(json_interface_name, json_interface_params))
         class_common_attrs = [
             Assign("discriminator", discriminator),
             Assign("kind", f'"{variant.name}"'),
@@ -417,8 +445,9 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
             to_json_method,
             to_encodable_method,
         ]
-        klass = Class(variant.name, None, attrs)
+        classes.append(Class(variant.name, None, attrs))
         variant_name_in_obj_checks.append(variant_name_in_obj_check)
+        obj_kind_checks.append(obj_kind_check)
     from_decoded_fn = Function(
         "from_decoded",
         [TypedParam("obj", "dict")],
@@ -426,4 +455,19 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
             [from_decoded_dict_check, *variant_name_in_obj_checks, invalid_enum_raise]
         ),
         f"types.{_kind_interface_name(name)}",
+    )
+    from_json_fn = Function(
+        "from_json",
+        [TypedParam("obj", f"types.{_json_interface_name(name)}")],
+        Suite(
+            [
+                Assign("kind", 'obj["kind"]'),
+                *obj_kind_checks,
+                Raise("ValueError(Uncrecognized enum kind: kind)"),
+            ]
+        ),
+        _kind_interface_name(name),
+    )
+    return str(
+        Suite([imports, *json_interfaces, *classes, from_decoded_fn, from_json_fn])
     )
