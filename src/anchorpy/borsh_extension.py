@@ -31,9 +31,9 @@ class EnumForCodegen(Adapter):
     _index_key = "index"
     _value_key = "value"
 
-    def __init__(self, *variants: Renamed[CStruct, CStruct]) -> None:
+    def __init__(self, *variants: "Renamed[CStruct, CStruct]") -> None:
         """Init enum."""  # noqa: DAR101
-        switch_cases: dict[int, Renamed[CStruct, CStruct]] = {}
+        switch_cases: dict[int, "Renamed[CStruct, CStruct]"] = {}
         variant_name_to_index: dict[str, int] = {}
         index_to_variant_name: dict[int, str] = {}
         for idx, parser in enumerate(variants):
