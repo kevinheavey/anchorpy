@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import cast, Union as TypingUnion
+from dataclasses import dataclass
 from pyheck import snake
 from genpy import (
     FromImport,
@@ -17,6 +18,7 @@ from anchorpy.idl import (
     Idl,
     _IdlTypeDefTyStruct,
     _IdlField,
+    _IdlType,
     _IdlEnumVariant,
     _IdlEnumFieldsTuple,
     _IdlEnumFieldsNamed,
@@ -196,6 +198,105 @@ def _make_cstruct(fields: dict[str, str]) -> str:
     return f"borsh.CStruct({formatted_fields})"
 
 
+@dataclass
+class _NamedFieldRecord:
+    field_type_alias_entry: TypedParam
+    value_type_alias_entry: TypedParam
+    json_interface_value_type_entry: TypedParam
+    init_method_body_item: StrDictEntry
+    json_value_item: StrDictEntry
+    encodable_value_item: StrDictEntry
+    init_entry_for_from_decoded: StrDictEntry
+    init_entry_for_from_json: StrDictEntry
+
+
+def _make_named_field_record(named_field: _IdlField, idl: Idl) -> _NamedFieldRecord:
+    return _NamedFieldRecord(
+        field_type_alias_entry=TypedParam(
+            named_field.name, _py_type_from_idl(idl, named_field.type)
+        ),
+        value_type_alias_entry=TypedParam(
+            named_field.name,
+            _py_type_from_idl(
+                idl,
+                named_field.type,
+                use_fields_interface_for_struct=False,
+            ),
+        ),
+        json_interface_value_type_entry=TypedParam(
+            named_field.name, _idl_type_to_json_type(named_field.type)
+        ),
+        init_method_body_item=StrDictEntry(
+            named_field.name,
+            _struct_field_initializer(idl, named_field),
+        ),
+        json_value_item=StrDictEntry(
+            named_field.name,
+            _field_to_json(idl, named_field, "self.value."),
+        ),
+        encodable_value_item=StrDictEntry(
+            named_field.name,
+            _field_to_encodable(idl, named_field, "self.value."),
+        ),
+        init_entry_for_from_decoded=StrDictEntry(
+            named_field.name,
+            _field_from_decoded(
+                idl,
+                _IdlField(f'val["{named_field.name}"]', named_field.type),
+                "",
+            ),
+        ),
+        init_entry_for_from_json=StrDictEntry(
+            named_field.name,
+            _field_from_json(
+                named_field,
+                'obj["value"]',
+            ),
+        ),
+    )
+
+
+@dataclass
+class _UnnamedFieldRecord:
+    field_type_alias_element: str
+    value_type_alias_element: str
+    json_interface_value_element: str
+    tuple_element: str
+    json_value_element: str
+    encodable_value_item: StrDict
+    init_element_for_from_decoded: str
+    init_element_for_from_json: str
+
+
+def _make_unnamed_field_record(
+    index: int,
+    unnamed_field: _IdlType,
+    idl: Idl,
+) -> _UnnamedFieldRecord:
+    elem_name = f"value[{index}]"
+    encodable = _field_to_encodable(
+        idl, _IdlField(f"[{index}]", unnamed_field), "self.value"
+    )
+    return _UnnamedFieldRecord(
+        field_type_alias_element=_py_type_from_idl(idl, unnamed_field),
+        value_type_alias_element=_py_type_from_idl(
+            idl, unnamed_field, use_fields_interface_for_struct=False
+        ),
+        json_interface_value_element=_idl_type_to_json_type(unnamed_field),
+        tuple_element=_struct_field_initializer(
+            idl, _IdlField(elem_name, unnamed_field), ""
+        ),
+        json_value_element=_field_to_json(idl, _IdlField(elem_name, unnamed_field)),
+        encodable_value_item=StrDictEntry(f"_{index}", encodable),
+        init_element_for_from_decoded=_field_from_decoded(
+            idl, _IdlField(f'val["_{index}"]', unnamed_field), ""
+        ),
+        init_element_for_from_json=_field_from_json(
+            _IdlField(f'value["{index}"]', unnamed_field),
+        ),
+    )
+
+
 def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
     imports = Suite(
         [
@@ -248,65 +349,20 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 init_entries_for_from_decoded: list[StrDictEntry] = []
                 init_entries_for_from_json: list[StrDictEntry] = []
                 for named_field in named_enum_fields:
-                    field_type_alias_entries.append(
-                        TypedParam(
-                            named_field.name, _py_type_from_idl(idl, named_field.type)
-                        )
-                    )
-                    value_type_alias_entries.append(
-                        TypedParam(
-                            named_field.name,
-                            _py_type_from_idl(
-                                idl,
-                                named_field.type,
-                                use_fields_interface_for_struct=False,
-                            ),
-                        )
-                    )
+                    rec = _make_named_field_record(named_field, idl)
+                    field_type_alias_entries.append(rec.field_type_alias_entry)
+                    value_type_alias_entries.append(rec.value_type_alias_entry)
                     json_interface_value_type_entries.append(
-                        TypedParam(
-                            named_field.name, _idl_type_to_json_type(named_field.type)
-                        )
+                        rec.json_interface_value_type_entry
                     )
-                    init_method_body_items.append(
-                        StrDictEntry(
-                            named_field.name,
-                            _struct_field_initializer(idl, named_field),
-                        )
-                    )
-                    json_value_items.append(
-                        StrDictEntry(
-                            named_field.name,
-                            _field_to_json(idl, named_field, "self.value."),
-                        )
-                    )
-                    encodable_value_items.append(
-                        StrDictEntry(
-                            named_field.name,
-                            _field_to_encodable(idl, named_field, "self.value."),
-                        )
-                    )
+                    init_method_body_items.append(rec.init_method_body_item)
+                    json_value_items.append(rec.json_value_item)
+                    encodable_value_items.append(rec.encodable_value_item)
                     init_entries_for_from_decoded.append(
-                        StrDictEntry(
-                            named_field.name,
-                            _field_from_decoded(
-                                idl,
-                                _IdlField(
-                                    f'val["{named_field.name}"]', named_field.type
-                                ),
-                                "",
-                            ),
-                        )
+                        rec.init_entry_for_from_decoded
                     )
-                    init_entries_for_from_json.append(
-                        StrDictEntry(
-                            named_field.name,
-                            _field_from_json(
-                                named_field,
-                                'obj["value"]',
-                            ),
-                        )
-                    )
+                    init_entries_for_from_json.append(rec.init_entry_for_from_json)
+
                     cstruct_fields[named_field.name] = _layout_for_type(
                         named_field.type
                     )
@@ -339,39 +395,24 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 init_elements_for_from_decoded: list[str] = []
                 init_elements_for_from_json: list[str] = []
                 for i, unnamed_field in enumerate(tuple_enum_fields):
+                    rec_unnamed = _make_unnamed_field_record(i, unnamed_field, idl)
                     field_type_alias_elements.append(
-                        _py_type_from_idl(idl, unnamed_field)
+                        rec_unnamed.field_type_alias_element
                     )
                     value_type_alias_elements.append(
-                        _py_type_from_idl(
-                            idl, unnamed_field, use_fields_interface_for_struct=False
-                        )
+                        rec_unnamed.value_type_alias_element
                     )
                     json_interface_value_elements.append(
-                        _idl_type_to_json_type(unnamed_field)
+                        rec_unnamed.json_interface_value_element
                     )
-                    elem_name = f"value[{i}]"
-                    tuple_elements.append(
-                        _struct_field_initializer(
-                            idl, _IdlField(elem_name, unnamed_field), ""
-                        )
-                    )
-                    json_value_elements.append(
-                        _field_to_json(idl, _IdlField(elem_name, unnamed_field))
-                    )
-                    encodable = _field_to_encodable(
-                        idl, _IdlField(f"[{i}]", unnamed_field), "self.value"
-                    )
-                    encodable_value_items.append(StrDictEntry(f"_{i}", encodable))
+                    tuple_elements.append(rec_unnamed.tuple_element)
+                    json_value_elements.append(rec_unnamed.json_value_element)
+                    encodable_value_items.append(rec_unnamed.encodable_value_item)
                     init_elements_for_from_decoded.append(
-                        _field_from_decoded(
-                            idl, _IdlField(f'val["_{i}"]', unnamed_field), ""
-                        ),
+                        rec_unnamed.init_element_for_from_decoded
                     )
                     init_elements_for_from_json.append(
-                        _field_from_json(
-                            _IdlField(f'value["{i}"]', unnamed_field),
-                        ),
+                        rec_unnamed.init_element_for_from_json
                     )
                     cstruct_fields[f"_{i}"] = _layout_for_type(unnamed_field)
                 fields_type_aliases.append(
