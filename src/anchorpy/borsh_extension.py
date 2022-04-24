@@ -1,10 +1,19 @@
 """Extensions to the Borsh spec for Solana-specific types."""
-from typing import Any, Dict, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar, cast
 from keyword import kwlist
 from dataclasses import asdict
 from borsh_construct import CStruct, U8
 from solana import publickey
-from construct import Bytes, Adapter, Container, Padding, Construct, IfThenElse
+from construct import (
+    Bytes,
+    Adapter,
+    Container,
+    Padding,
+    Construct,
+    IfThenElse,
+    Switch,
+    Renamed,
+)
 
 
 class _BorshPubkeyAdapter(Adapter):
@@ -16,6 +25,40 @@ class _BorshPubkeyAdapter(Adapter):
 
     def _encode(self, obj: publickey.PublicKey, context, path) -> bytes:
         return bytes(obj)
+
+
+class EnumForCodegen(Adapter):
+    _index_key = "index"
+    _value_key = "value"
+
+    def __init__(self, *variants: Renamed[CStruct, CStruct]) -> None:
+        """Init enum."""  # noqa: DAR101
+        switch_cases: dict[int, Renamed[CStruct, CStruct]] = {}
+        variant_name_to_index: dict[str, int] = {}
+        index_to_variant_name: dict[int, str] = {}
+        for idx, parser in enumerate(variants):
+            switch_cases[idx] = parser
+            name = cast(str, parser.name)
+            variant_name_to_index[name] = idx
+            index_to_variant_name[idx] = name
+        enum_struct = CStruct(
+            self._index_key / U8,
+            self._value_key
+            / Switch(lambda this: this.index, cast(dict[int, Construct], switch_cases)),
+        )
+        super().__init__(enum_struct)  # type: ignore
+        self.variant_name_to_index = variant_name_to_index
+        self.index_to_variant_name = index_to_variant_name
+
+    def _decode(self, obj: CStruct, context, path) -> dict[str, Any]:
+        index = obj.index
+        variant_name = self.index_to_variant_name[index]
+        return {variant_name: obj.value}
+
+    def _encode(self, obj: dict[str, Any], context, path) -> dict[str, Any]:
+        variant_name = list(obj.keys())[0]
+        index = self.variant_name_to_index[variant_name]
+        return {self._index_key: index, self._value_key: obj[variant_name]}
 
 
 class COption(Adapter):
