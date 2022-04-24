@@ -39,7 +39,16 @@ class Tuple(Generable):
 
     def generate(self) -> Iterator[str]:
         joined = ",".join(self.members)
-        yield f"tuple[{joined}]"
+        yield f"({joined})"
+
+
+class List(Generable):
+    def __init__(self, members: list[str]) -> None:
+        self.members = members
+
+    def generate(self) -> Iterator[str]:
+        joined = ",".join(self.members)
+        yield f"[{joined}]"
 
 
 class StrDictEntry(Generable):
