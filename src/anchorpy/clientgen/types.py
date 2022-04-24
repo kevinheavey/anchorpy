@@ -8,7 +8,6 @@ from genpy import (
     Assign,
     Suite,
     ImportAs,
-    Class,
     Return,
     If,
     Raise,
@@ -25,6 +24,7 @@ from anchorpy.idl import (
 )
 from anchorpy.clientgen.utils import (
     Union,
+    Class,
     Tuple,
     List,
     Method,
@@ -118,7 +118,7 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
         [
             Import("typing"),
             FromImport("dataclasses", ["dataclass"]),
-            FromImport("construct", "Container"),
+            FromImport("construct", ["Container"]),
             FromImport("solana.publickey", ["PublicKey"]),
             FromImport("..", ["types"]),
             ImportAs("borsh_construct", "borsh"),
@@ -302,7 +302,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
         [
             Import("typing"),
             FromImport("dataclasses", ["dataclass"]),
-            FromImport("construct", "Container"),
+            FromImport("construct", ["Container"]),
             FromImport("solana.publickey", ["PublicKey"]),
             FromImport("anchorpy.borsh_extension", ["EnumForCodegen"]),
             ImportAs("borsh_construct", "borsh"),
@@ -377,6 +377,10 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                     json_interface_value_type_name, json_interface_value_type_entries
                 )
                 extra_aliases.append(json_interface_value_field_type)
+                init_method_body = Assign(
+                    "self.value",
+                    StrDict(init_method_body_items),
+                )
                 json_value_entry = StrDict(json_value_items)
                 to_json_body = Return(
                     StrDict(
@@ -430,10 +434,6 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 json_interface_value_field_type = Tuple(json_interface_value_elements)
                 init_method_body = Assign(
                     "self.value",
-                    init_method_body_items,
-                )
-                init_method_body = Assign(
-                    "self.value",
                     Tuple(tuple_elements),
                 )
                 to_json_body = Return(
@@ -446,6 +446,10 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 )
                 init_arg_for_from_decoded = Tuple(init_elements_for_from_decoded)
                 init_arg_for_from_json = Tuple(init_elements_for_from_json)
+            init_method = InitMethod(
+                [TypedParam("value", fields_interface_name)], init_method_body
+            )
+            init_method_container = [init_method]
             to_json_method = Method("to_json", [], to_json_body, json_interface_name)
             encodable_value_entry = StrDict(encodable_value_items)
             to_encodable_body = Return(
@@ -475,8 +479,12 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 json_interface_name,
             )
             to_encodable_method = ClassMethod(
-                "to_encodable", [], Return(StrDict), "dict"
+                "to_encodable",
+                [],
+                Return(StrDict([StrDictEntry(variant.name, StrDict([]))])),
+                "dict",
             )
+            init_method_container = []
             json_interface_params = [json_interface_kind_field]
             variant_name_in_obj_check = make_variant_name_in_obj_check(
                 Return(f"{variant.name}()")
@@ -488,20 +496,16 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
             Assign("kind", f'"{variant.name}"'),
         ]
 
-        init_method = InitMethod(
-            [TypedParam("value", fields_interface_name)], init_method_body
-        )
-
         attrs = [
             *class_common_attrs,
-            init_method,
+            *init_method_container,
             to_json_method,
             to_encodable_method,
         ]
         classes.append(Class(variant.name, None, attrs))
         variant_name_in_obj_checks.append(variant_name_in_obj_check)
         obj_kind_checks.append(obj_kind_check)
-        cstructs.append(f"{variant.name} / _make_cstruct(cstruct_fields)")
+        cstructs.append(f'"{variant.name}" / _make_cstruct(cstruct_fields)')
     from_decoded_fn = Function(
         "from_decoded",
         [TypedParam("obj", "dict")],
