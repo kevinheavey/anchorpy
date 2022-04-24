@@ -523,10 +523,10 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
             [
                 Assign("kind", 'obj["kind"]'),
                 *obj_kind_checks,
-                Raise("ValueError(Uncrecognized enum kind: kind)"),
+                Raise('ValueError(f"Uncrecognized enum kind: {kind}")'),
             ]
         ),
-        _kind_interface_name(name),
+        f"types.{_kind_interface_name(name)}",
     )
     formatted_cstructs = ",".join(cstructs)
     layout_fn = Function(
