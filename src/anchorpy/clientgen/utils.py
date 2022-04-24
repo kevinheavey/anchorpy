@@ -1,5 +1,17 @@
 from typing import Iterator, Optional, Union as TypingUnion
-from genpy import Function as FunctionOriginal, Generable, Suite, Class
+from genpy import Function as FunctionOriginal, Generable, Suite, Class as BrokenClass
+
+
+class Class(BrokenClass):
+    def generate(self) -> Iterator[str]:
+        bases = self.bases
+        if not bases:
+            bases = ["object"]
+
+        yield "class {}({}):".format(self.name, ", ".join(bases))
+        for f in self.attributes:
+            for f_line in f.generate():
+                yield "    " + f_line
 
 
 class TypedParam(Generable):
@@ -65,9 +77,8 @@ class StrDict(Generable):
         self.items = items
 
     def generate(self) -> Iterator[str]:
-        yield "{"
-        yield from ("    " + str(item) for item in self.items)
-        yield "}"
+        formatted_items = "".join(str(item) for item in self.items)
+        yield "{" + formatted_items + "}"
 
 
 class Function(FunctionOriginal):
