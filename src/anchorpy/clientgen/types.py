@@ -24,6 +24,7 @@ from anchorpy.idl import (
 from anchorpy.clientgen.utils import (
     Union,
     Tuple,
+    List,
     Method,
     InitMethod,
     StaticMethod,
@@ -190,6 +191,11 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
     return str(Suite([imports, fields_interface, json_interface, struct_cls]))
 
 
+def _make_cstruct(fields: dict[str, str]) -> str:
+    formatted_fields = ",".join([f'"{key}" / {val}' for key, val in fields.items()])
+    return f"borsh.CStruct({formatted_fields})"
+
+
 def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
     imports = Suite(
         [
@@ -197,8 +203,9 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
             FromImport("dataclasses", ["dataclass"]),
             FromImport("construct", "Container"),
             FromImport("solana.publickey", ["PublicKey"]),
-            FromImport("..", ["types"]),
+            FromImport("anchorpy.borsh_extension", ["EnumForCodegen"]),
             ImportAs("borsh_construct", "borsh"),
+            FromImport("..", ["types"]),
         ]
     )
     invalid_enum_raise = Raise('ValueError("Invalid enum object")')
@@ -218,8 +225,10 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
         value_type_aliases: list[TypingUnion[TypedDict, Assign]] = []
         extra_aliases: list[TypedDict] = []
         encodable_value_items: list[StrDictEntry] = []
+        cstruct_fields: dict[str, str] = {}
         to_json_items_base = StrDictEntry("kind", variant.name)
         json_interface_kind_field = TypedParam("kind", f'"{variant.name}"')
+        cstructs: list[str] = []
 
         def make_variant_name_in_obj_check(then: Generable) -> Generable:
             return If(f'"{variant.name}" in obj', then)
@@ -298,6 +307,9 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                             ),
                         )
                     )
+                    cstruct_fields[named_field.name] = _layout_for_type(
+                        named_field.type
+                    )
 
                 fields_type_aliases.append(
                     TypedDict(fields_interface_name, field_type_alias_entries)
@@ -361,6 +373,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                             _IdlField(f'value["{i}"]', unnamed_field),
                         ),
                     )
+                    cstruct_fields[f"_{i}"] = _layout_for_type(unnamed_field)
                 fields_type_aliases.append(
                     Assign(
                         fields_interface_name,
@@ -378,16 +391,15 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                     "self.value",
                     init_method_body_items,
                 )
-                tuple_str = ",".join(x for x in tuple_elements)
                 init_method_body = Assign(
                     "self.value",
-                    tuple_str,
+                    Tuple(tuple_elements),
                 )
                 to_json_body = Return(
                     StrDict(
                         [
                             to_json_items_base,
-                            StrDictEntry("value", f'[{",".join(json_value_elements)}]'),
+                            StrDictEntry("value", str(List(json_value_elements))),
                         ]
                     )
                 )
@@ -448,6 +460,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
         classes.append(Class(variant.name, None, attrs))
         variant_name_in_obj_checks.append(variant_name_in_obj_check)
         obj_kind_checks.append(obj_kind_check)
+        cstructs.append(f"{variant.name} / _make_cstruct(cstruct_fields)")
     from_decoded_fn = Function(
         "from_decoded",
         [TypedParam("obj", "dict")],
@@ -468,6 +481,19 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
         ),
         _kind_interface_name(name),
     )
+    formatted_cstructs = ",".join(cstructs)
+    layout_fn = Function(
+        "layout", [], Return(f"EnumForCodegen({formatted_cstructs})"), "EnumForCodegen"
+    )
     return str(
-        Suite([imports, *json_interfaces, *classes, from_decoded_fn, from_json_fn])
+        Suite(
+            [
+                imports,
+                *json_interfaces,
+                *classes,
+                from_decoded_fn,
+                from_json_fn,
+                layout_fn,
+            ]
+        )
     )
