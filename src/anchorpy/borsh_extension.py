@@ -2,9 +2,9 @@
 from typing import Any, Dict, Type, TypeVar
 from keyword import kwlist
 from dataclasses import asdict
-from borsh_construct import CStruct
+from borsh_construct import CStruct, U8
 from solana import publickey
-from construct import Bytes, Adapter, Container, Padding, Construct
+from construct import Bytes, Adapter, Container, Padding, Construct, IfThenElse
 
 
 class _BorshPubkeyAdapter(Adapter):
@@ -32,6 +32,7 @@ class COption(Adapter):
                 subcon,
             ),
         )
+        super().__init__(option_struct)  # type: ignore
 
     def _decode(self, obj, context, path) -> Any:
         discriminator = obj[self._discriminator_key]
