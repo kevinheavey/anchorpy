@@ -239,7 +239,7 @@ def _field_from_decoded(
         filtered = [t for t in idl.types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        return f"{defined_types_prefix}${defined}.from_decoded(${val_prefix}${ty.name})"
+        return f"{defined_types_prefix}{defined}.from_decoded({val_prefix}{ty.name})"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_from_decoded(
             idl, _IdlField("item", ty_type.array[0]), "", defined_types_prefix
