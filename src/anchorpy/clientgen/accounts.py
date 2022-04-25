@@ -9,10 +9,12 @@ from genpy import (
     Suite,
     ImportAs,
     Return,
+    For,
     If,
     IfThen,
     Raise,
     Generable,
+    Statement,
 )
 from anchorpy.coder.accounts import _account_discriminator
 from anchorpy.idl import (
@@ -90,6 +92,7 @@ def gen_account_files(idl: Idl, out: Path) -> None:
 
 def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     base_imports = [
+        FromImport("typing", ["Optional"]),
         FromImport(
             "solana.publickey",
             ["PublicKey"],
@@ -97,7 +100,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
             FromImport("solana.rpc.commitment", ["Commitment"]),
             ImportAs("borsh_construct", "borsh"),
             FromImport("..program_id", ["PROGRAM_ID"]),
-        )
+        ),
     ]
     imports = [*base_imports, FromImport(".", ["types"])] if idl.types else base_imports
     fields_interface_params: list[TypedParam] = []
@@ -149,4 +152,40 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         ),
         f"typing.Optional[{name}]",
         is_async=True,
+    )
+    fetch_multiple_method = ClassMethod(
+        "fetch_multiple",
+        [
+            TypedParam("conn", "AsyncClient"),
+            TypedParam("addresses", "list[PublicKey]"),
+            TypedParam("commitment", "Optional[Commitment] = None"),
+        ],
+        Suite(
+            [
+                Assign(
+                    "resp",
+                    "await conn.get_account_info(address, commitment=commitment)",
+                ),
+                Assign("infos", 'resp["result"]["value"]'),
+                Assign("result", "[]"),
+                For(
+                    "info",
+                    "infos",
+                    Suite(
+                        [
+                            IfThen('info is None"', Return("None")),
+                            IfThen(
+                                'info["owner"] != str(PROGRAM_ID)',
+                                Raise(
+                                    'ValueError("Account does not belong to this program")'
+                                ),
+                            ),
+                            Statement('res.append(cls.decode(info["data"]))'),
+                        ]
+                    ),
+                ),
+                Return("res"),
+            ]
+        ),
+        f"list[Optional[{name}]]",
     )
