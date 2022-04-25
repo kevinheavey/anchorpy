@@ -35,19 +35,7 @@ def _py_type_from_idl(
     defined_types_prefix: str = "types.",
     use_fields_interface_for_struct: bool = True,
 ) -> str:
-    if ty == "bool":
-        return "bool"
-    elif ty in {"u8", "i8", "u16", "u16" "u32", "i32", "u64", "i64", "u128", "i128"}:
-        return "int"
-    elif ty in {"f32", "f64"}:
-        return "float"
-    elif ty == "bytes":
-        return "bytes"
-    elif ty == "string":
-        return "str"
-    elif ty == "publicKey":
-        return "PublicKey"
-    elif isinstance(ty, _IdlTypeVec):
+    if isinstance(ty, _IdlTypeVec):
         inner_type = _py_type_from_idl(
             idl, ty.vec, defined_types_prefix, use_fields_interface_for_struct
         )
@@ -82,6 +70,18 @@ def _py_type_from_idl(
             idl, ty.array[0], defined_types_prefix, use_fields_interface_for_struct
         )
         return f"list[{inner_type}]"
+    elif ty == "bool":
+        return "bool"
+    elif ty in {"u8", "i8", "u16", "u16" "u32", "i32", "u64", "i64", "u128", "i128"}:
+        return "int"
+    elif ty in {"f32", "f64"}:
+        return "float"
+    elif ty == "bytes":
+        return "bytes"
+    elif ty == "string":
+        return "str"
+    elif ty == "publicKey":
+        return "PublicKey"
     raise ValueError(f"Unrecognized type: {ty}")
 
 
@@ -216,25 +216,6 @@ def _field_from_decoded(
     idl: Idl, ty: _IdlField, val_prefix: str = "", defined_types_prefix: str = "types."
 ) -> str:
     ty_type = ty.type
-    if ty_type in {
-        "bool",
-        "u8",
-        "i8",
-        "u16",
-        "i16",
-        "u32",
-        "i32",
-        "f32",
-        "u64",
-        "i64",
-        "f64",
-        "u128",
-        "i128",
-        "string",
-        "publicKey",
-        "bytes",
-    }:
-        return f"{val_prefix}{ty.name}"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_from_decoded(
             idl, _IdlField("item", ty_type.vec), "", defined_types_prefix
@@ -267,14 +248,7 @@ def _field_from_decoded(
         if map_body == "item":
             return f"{val_prefix}{ty.name}"
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
-    raise ValueError(f"Unrecognized type: {ty_type}")
-
-
-def _struct_field_initializer(
-    idl: Idl, field: _IdlField, prefix: str = 'fields["', suffix: str = '"]'
-) -> str:
-    field_type = field.type
-    if field_type in {
+    if ty_type in {
         "bool",
         "u8",
         "i8",
@@ -292,7 +266,14 @@ def _struct_field_initializer(
         "publicKey",
         "bytes",
     }:
-        return f"{prefix}{field.name}{suffix}"
+        return f"{val_prefix}{ty.name}"
+    raise ValueError(f"Unrecognized type: {ty_type}")
+
+
+def _struct_field_initializer(
+    idl: Idl, field: _IdlField, prefix: str = 'fields["', suffix: str = '"]'
+) -> str:
+    field_type = field.type
     if isinstance(field_type, _IdlTypeDefined):
         defined = field_type.defined
         filtered = [t for t in idl.types if t.name == defined]
@@ -334,14 +315,7 @@ def _struct_field_initializer(
         if map_body == "item":
             return f"{prefix}{field.name}{suffix}"
         return f"list(map(lambda item: {map_body}, {prefix}{field.name}{suffix}))"
-    raise ValueError(f"Unrecognized type: {field_type}")
-
-
-def _field_to_json(
-    idl: Idl, ty: _IdlField, val_prefix: str = "", val_suffix: str = ""
-) -> str:
-    ty_type = ty.type
-    if ty_type in {
+    if field_type in {
         "bool",
         "u8",
         "i8",
@@ -356,9 +330,17 @@ def _field_to_json(
         "u128",
         "i128",
         "string",
+        "publicKey",
         "bytes",
     }:
-        return f"{val_prefix}{ty.name}{val_suffix}"
+        return f"{prefix}{field.name}{suffix}"
+    raise ValueError(f"Unrecognized type: {field_type}")
+
+
+def _field_to_json(
+    idl: Idl, ty: _IdlField, val_prefix: str = "", val_suffix: str = ""
+) -> str:
+    ty_type = ty.type
     if ty_type == "publicKey":
         return f"{val_prefix}{ty.name}{val_suffix}.to_base58()"
     if isinstance(ty_type, _IdlTypeVec):
@@ -395,18 +377,28 @@ def _field_to_json(
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
         return f"{val_prefix}{ty.name}{val_suffix}.to_json()"
+    if ty_type in {
+        "bool",
+        "u8",
+        "i8",
+        "u16",
+        "i16",
+        "u32",
+        "i32",
+        "f32",
+        "u64",
+        "i64",
+        "f64",
+        "u128",
+        "i128",
+        "string",
+        "bytes",
+    }:
+        return f"{val_prefix}{ty.name}{val_suffix}"
     raise ValueError(f"Unrecognized type: {ty_type}")
 
 
 def _idl_type_to_json_type(ty: _IdlType, defined_types_prefix: str = "types.") -> str:
-    if ty == "bool":
-        return "bool"
-    if ty in {"u8", "i8", "u16", "u16" "u32", "i32", "u64", "i64", "u128", "i128"}:
-        return "int"
-    if ty in {"f32", "f64"}:
-        return "float"
-    if ty in {"string", "bytes", "publicKey"}:
-        return "str"
     if isinstance(ty, _IdlTypeVec):
         inner = _idl_type_to_json_type(ty.vec, defined_types_prefix)
         return f"list[{inner}]"
@@ -421,6 +413,14 @@ def _idl_type_to_json_type(ty: _IdlType, defined_types_prefix: str = "types.") -
         return f"Optional[{inner}]"
     if isinstance(ty, _IdlTypeDefined):
         return f"{defined_types_prefix}{_json_interface_name(ty.defined)}"
+    if ty == "bool":
+        return "bool"
+    if ty in {"u8", "i8", "u16", "u16" "u32", "i32", "u64", "i64", "u128", "i128"}:
+        return "int"
+    if ty in {"f32", "f64"}:
+        return "float"
+    if ty in {"string", "bytes", "publicKey"}:
+        return "str"
     raise ValueError(f"Unrecognized type: {ty}")
 
 
@@ -430,24 +430,6 @@ def _field_from_json(
     param_prefix = json_param_name + '["' if json_param_name else ""
     param_suffix = '"]' if json_param_name else ""
     ty_type = ty.type
-    if ty_type in {
-        "bool",
-        "u8",
-        "i8",
-        "u16",
-        "i16",
-        "u32",
-        "i32",
-        "u64",
-        "i64",
-        "u128",
-        "i128",
-        "f32",
-        "f64",
-        "string",
-        "bytes",
-    }:
-        return f"{param_prefix}{ty.name}{param_suffix}"
     if ty_type == "publicKey":
         return f"PublicKey({param_prefix}{ty.name}{param_suffix})"
     if isinstance(ty_type, _IdlTypeVec):
@@ -489,4 +471,22 @@ def _field_from_json(
     if isinstance(ty_type, _IdlTypeDefined):
         from_json_arg = f"{param_prefix}{ty.name}{param_suffix}"
         return f"{defined_types_prefix}{ty.name}.from_json({from_json_arg})"
+    if ty_type in {
+        "bool",
+        "u8",
+        "i8",
+        "u16",
+        "i16",
+        "u32",
+        "i32",
+        "u64",
+        "i64",
+        "u128",
+        "i128",
+        "f32",
+        "f64",
+        "string",
+        "bytes",
+    }:
+        return f"{param_prefix}{ty.name}{param_suffix}"
     raise ValueError(f"Unrecognized type: {ty_type}")
