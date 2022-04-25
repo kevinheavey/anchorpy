@@ -10,6 +10,7 @@ from genpy import (
     ImportAs,
     Return,
     If,
+    IfThen,
     Raise,
     Generable,
 )
@@ -126,7 +127,18 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     fetch_method = ClassMethod(
         "fetch",
         [TypedParam("conn", "AsyncClient"), TypedParam("address", "PublicKey")],
-        Suite([Assign("info", "await conn.get_account_info(address)"), ])
+        Suite(
+            [
+                Assign("resp", "await conn.get_account_info(address)"),
+                Assign("info", 'resp["result"]["value"]'),
+                IfThen('info is None"', Return("None")),
+                IfThen(
+                    'info["owner"] != str(PROGRAM_ID)',
+                    Raise('ValueError("Account does not belong to this program")'),
+                ),
+                Return('cls.decode(info["data"])'),
+            ]
+        ),
         f"typing.Optional[{name}]",
-        is_async=True
+        is_async=True,
     )
