@@ -141,7 +141,11 @@ def _layout_for_type(
 
 
 def _field_to_encodable(
-    idl: Idl, ty: _IdlField, val_prefix: str = "", defined_types_prefix: str = "types."
+    idl: Idl,
+    ty: _IdlField,
+    val_prefix: str = "",
+    defined_types_prefix: str = "types.",
+    val_suffix: str = "",
 ) -> str:
     ty_type = ty.type
     if ty_type in {
@@ -162,22 +166,26 @@ def _field_to_encodable(
         "publicKey",
         "bytes",
     }:
-        return f"{val_prefix}{ty.name}"
+        return f"{val_prefix}{ty.name}{val_suffix}"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_to_encodable(
-            idl, _IdlField("item", ty_type.vec), "", defined_types_prefix
+            idl, _IdlField("item", ty_type.vec), "", defined_types_prefix, val_suffix
         )
         # skip mapping when not needed
         if map_body == "item":
-            return f"{val_prefix}{ty.name}"
-        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
+            return f"{val_prefix}{ty.name}{val_suffix}"
+        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}{val_suffix}))"
     if isinstance(ty_type, _IdlTypeOption):
         encodable = _field_to_encodable(
-            idl, _IdlField(ty.name, ty_type.option), val_prefix, defined_types_prefix
+            idl,
+            _IdlField(ty.name, ty_type.option),
+            val_prefix,
+            defined_types_prefix,
+            val_suffix,
         )
-        if encodable == f"{val_prefix}{ty.name}":
+        if encodable == f"{val_prefix}{ty.name}{val_suffix}":
             return encodable
-        return f"({val_prefix}{ty.name} and {encodable}) or None"
+        return f"({val_prefix}{ty.name}{val_suffix} and {encodable}) or None"
     if isinstance(ty_type, _IdlTypeCOption):
         raise NotImplementedError("COption not implemented.")
     if isinstance(ty_type, _IdlTypeDefined):
@@ -187,18 +195,20 @@ def _field_to_encodable(
             raise ValueError(f"Type not found {defined}")
         type_kind = filtered[0].type.kind
         if isinstance(type_kind, _IdlTypeDefTyStruct):
-            return (
-                f"{defined_types_prefix}{defined}.to_encodable({val_prefix}{ty.name})"
-            )
-        return f"{val_prefix}{ty.name}.to_encodable()"
+            val_full_name = f"{val_prefix}{ty.name}{val_suffix}"
+            return f"{defined_types_prefix}{defined}.to_encodable({val_full_name})"
+        return f"{val_prefix}{ty.name}{val_suffix}.to_encodable()"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_to_encodable(
-            idl, _IdlField("item", ty_type.array[0]), "", defined_types_prefix
+            idl,
+            _IdlField("item", ty_type.array[0]),
+            "",
+            defined_types_prefix,
         )
         # skip mapping when not needed
         if map_body == "item":
-            return f"{val_prefix}{ty.name}"
-        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
+            return f"{val_prefix}{ty.name}{val_suffix}"
+        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}{val_suffix}))"
     raise ValueError(f"Unrecognized type: {ty_type}")
 
 
@@ -261,7 +271,7 @@ def _field_from_decoded(
 
 
 def _struct_field_initializer(
-    idl: Idl, field: _IdlField, prefix: str = "fields."
+    idl: Idl, field: _IdlField, prefix: str = 'fields["', suffix: str = '"]'
 ) -> str:
     field_type = field.type
     if field_type in {
@@ -282,7 +292,7 @@ def _struct_field_initializer(
         "publicKey",
         "bytes",
     }:
-        return f"{prefix}{field.name}"
+        return f"{prefix}{field.name}{suffix}"
     if isinstance(field_type, _IdlTypeDefined):
         defined = field_type.defined
         filtered = [t for t in idl.types if t.name == defined]
@@ -290,38 +300,40 @@ def _struct_field_initializer(
             raise ValueError(f"Type not found {defined}")
         type_kind = filtered[0].type.kind
         if isinstance(type_kind, _IdlTypeDefTyStruct):
-            return f"types.{type_kind.name}(**{prefix}{field.name})"
-        return f"{prefix}{field.name}"
+            return f"types.{type_kind.name}(**{prefix}{field.name}{suffix})"
+        return f"{prefix}{field.name}{suffix}"
     if isinstance(field_type, _IdlTypeOption):
         initializer = _struct_field_initializer(
-            idl, _IdlField(field.name, field_type.option), prefix
+            idl, _IdlField(field.name, field_type.option), prefix, suffix
         )
         # skip coercion when not needed
-        if initializer == f"{prefix}{field.name}":
+        if initializer == f"{prefix}{field.name}{suffix}":
             return initializer
-        return f"({prefix}{field.name} and {initializer}) or None"
+        return f"({prefix}{field.name}{suffix} and {initializer}) or None"
     if isinstance(field_type, _IdlTypeCOption):
         initializer = _struct_field_initializer(
-            idl, _IdlField(field.name, field_type.coption), prefix
+            idl, _IdlField(field.name, field_type.coption), prefix, suffix
         )
         # skip coercion when not needed
-        if initializer == f"{prefix}{field.name}":
+        if initializer == f"{prefix}{field.name}{suffix}":
             return initializer
         return f"({prefix}{field.name} and {initializer}) or None"
     if isinstance(field_type, _IdlTypeArray):
         map_body = _struct_field_initializer(
-            idl, _IdlField("item", field_type.array[0]), ""
+            idl, _IdlField("item", field_type.array[0]), "", ""
         )
         # skip mapping when not needed
         if map_body == "item":
-            return f"{prefix}{field.name}"
-        return f"list(map(lambda item: {map_body}, {prefix}{field.name}))"
+            return f"{prefix}{field.name}{suffix}"
+        return f"list(map(lambda item: {map_body}, {prefix}{field.name}{suffix}))"
     if isinstance(field_type, _IdlTypeVec):
-        map_body = _struct_field_initializer(idl, _IdlField("item", field_type.vec), "")
+        map_body = _struct_field_initializer(
+            idl, _IdlField("item", field_type.vec), "", ""
+        )
         # skip mapping when not needed
         if map_body == "item":
-            return f"{prefix}{field.name}"
-        return f"list(map(lambda item: {map_body}, {prefix}{field.name}))"
+            return f"{prefix}{field.name}{suffix}"
+        return f"list(map(lambda item: {map_body}, {prefix}{field.name}{suffix}))"
     raise ValueError(f"Unrecognized type: {field_type}")
 
 
@@ -415,7 +427,8 @@ def _idl_type_to_json_type(ty: _IdlType, defined_types_prefix: str = "types.") -
 def _field_from_json(
     ty: _IdlField, json_param_name: str = "obj", defined_types_prefix: str = "types."
 ) -> str:
-    param_prefix = json_param_name + "." if json_param_name else ""
+    param_prefix = json_param_name + '["' if json_param_name else ""
+    param_suffix = '"]' if json_param_name else ""
     ty_type = ty.type
     if ty_type in {
         "bool",
@@ -434,41 +447,46 @@ def _field_from_json(
         "string",
         "bytes",
     }:
-        return f"{param_prefix}{ty.name}"
+        return f"{param_prefix}{ty.name}{param_suffix}"
     if ty_type == "publicKey":
-        return f"PublicKey({param_prefix}{ty.name})"
+        return f"PublicKey({param_prefix}{ty.name}{param_suffix})"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_from_json(
             _IdlField("item", ty_type.vec), "", defined_types_prefix
         )
         # skip mapping when not needed
         if map_body == "item":
-            return f"{param_prefix}{ty.name}"
-        return f"list(map(lambda item: {map_body}, {param_prefix}{ty.name}))"
+            return f"{param_prefix}{ty.name}{param_suffix}"
+        return (
+            f"list(map(lambda item: {map_body}, {param_prefix}{ty.name}{param_suffix}))"
+        )
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_from_json(
             _IdlField("item", ty_type.array[0]), "", defined_types_prefix
         )
         # skip mapping when not needed
         if map_body == "item":
-            return f"{param_prefix}{ty.name}"
-        return f"list(map(lambda item: {map_body}, {param_prefix}{ty.name}))"
+            return f"{param_prefix}{ty.name}{param_suffix}"
+        return (
+            f"list(map(lambda item: {map_body}, {param_prefix}{ty.name}{param_suffix}))"
+        )
     if isinstance(ty_type, _IdlTypeOption):
         inner = _field_from_json(
             _IdlField(ty.name, ty_type.option), json_param_name, defined_types_prefix
         )
         # skip coercion when not needed
-        if inner == f"{param_prefix}{ty.name}":
+        if inner == f"{param_prefix}{ty.name}{param_suffix}":
             return inner
-        return f"({param_prefix}{ty.name} and {inner}) or None"
+        return f"({param_prefix}{ty.name}{param_suffix} and {inner}) or None"
     if isinstance(ty_type, _IdlTypeCOption):
         inner = _field_from_json(
             _IdlField(ty.name, ty_type.coption), json_param_name, defined_types_prefix
         )
         # skip coercion when not needed
-        if inner == f"{param_prefix}{ty.name}":
+        if inner == f"{param_prefix}{ty.name}{param_suffix}":
             return inner
-        return f"({param_prefix}{ty.name} and {inner}) or None"
+        return f"({param_prefix}{ty.name}{param_suffix} and {inner}) or None"
     if isinstance(ty_type, _IdlTypeDefined):
-        return f"{defined_types_prefix}{ty.name}.from_json({param_prefix}{ty.name})"
+        from_json_arg = f"{param_prefix}{ty.name}{param_suffix}"
+        return f"{defined_types_prefix}{ty.name}.from_json({from_json_arg})"
     raise ValueError(f"Unrecognized type: {ty_type}")

@@ -232,11 +232,11 @@ def _make_named_field_record(named_field: _IdlField, idl: Idl) -> _NamedFieldRec
         ),
         json_value_item=StrDictEntry(
             named_field.name,
-            _field_to_json(idl, named_field, 'self.value["', '"]'),
+            _field_to_json(idl, named_field, 'self.value["', val_suffix='"]'),
         ),
         encodable_value_item=StrDictEntry(
             named_field.name,
-            _field_to_encodable(idl, named_field, 'self.value["', '"]'),
+            _field_to_encodable(idl, named_field, 'self.value["', val_suffix='"]'),
         ),
         init_entry_for_from_decoded=StrDictEntry(
             named_field.name,
@@ -284,7 +284,7 @@ def _make_unnamed_field_record(
         ),
         json_interface_value_element=_idl_type_to_json_type(unnamed_field),
         tuple_element=_struct_field_initializer(
-            idl, _IdlField(elem_name, unnamed_field), ""
+            idl, _IdlField(elem_name, unnamed_field), "", ""
         ),
         json_value_element=_field_to_json(idl, _IdlField(elem_name, unnamed_field)),
         encodable_value_item=StrDictEntry(f"_{index}", encodable),
@@ -315,6 +315,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
     obj_kind_checks: list[Generable] = []
     json_interfaces: list[TypedDict] = []
     classes: list[Class] = []
+    cstructs: list[str] = []
     for idx, variant in enumerate(variants):
         discriminator = idx
         fields = variant.fields
@@ -331,7 +332,6 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
         json_interface_kind_field = TypedParam(
             "kind", f'typing.Literal["{variant.name}"]'
         )
-        cstructs: list[str] = []
 
         def make_variant_name_in_obj_check(then: Generable) -> Generable:
             return If(f'"{variant.name}" in obj', then)
