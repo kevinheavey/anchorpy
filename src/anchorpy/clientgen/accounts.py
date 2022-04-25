@@ -94,6 +94,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
             "solana.publickey",
             ["PublicKey"],
             FromImport("solana.rpc.api.async_client", ["AsyncClient"]),
+            FromImport("solana.rpc.commitment", ["Commitment"]),
             ImportAs("borsh_construct", "borsh"),
             FromImport("..program_id", ["PROGRAM_ID"]),
         )
@@ -126,10 +127,17 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     )
     fetch_method = ClassMethod(
         "fetch",
-        [TypedParam("conn", "AsyncClient"), TypedParam("address", "PublicKey")],
+        [
+            TypedParam("conn", "AsyncClient"),
+            TypedParam("address", "PublicKey"),
+            TypedParam("commitment", "Optional[Commitment] = None"),
+        ],
         Suite(
             [
-                Assign("resp", "await conn.get_account_info(address)"),
+                Assign(
+                    "resp",
+                    "await conn.get_account_info(address, commitment=commitment)",
+                ),
                 Assign("info", 'resp["result"]["value"]'),
                 IfThen('info is None"', Return("None")),
                 IfThen(
