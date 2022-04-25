@@ -89,9 +89,11 @@ class Function(FunctionOriginal):
         body: Generable,
         return_type: str,
         decorators: tuple[str, ...] = (),
+        is_async: bool = False,
     ) -> None:
         super().__init__(name, args, body, decorators)
         self.return_type = return_type
+        self.is_async
 
     def generate(self) -> Iterator[str]:
         yield from self.decorators
@@ -99,8 +101,9 @@ class Function(FunctionOriginal):
         for arg in self.args:
             annotation = "" if arg.type is None else f": {arg.type}"
             arg_strings.append(f"{arg.name}{annotation}")
-        yield "def {}({}): -> {}".format(
-            self.name, ", ".join(arg_strings), self.return_type
+        def_base = "async def" if self.is_async else "def"
+        yield "{} {}({}): -> {}".format(
+            def_base, self.name, ", ".join(arg_strings), self.return_type
         )
         yield from self.body.generate()
 
@@ -114,10 +117,15 @@ class StaticMethod(Function):
 
 class ClassMethod(Function):
     def __init__(
-        self, name: str, extra_args: list[TypedParam], body: Generable, return_type: str
+        self,
+        name: str,
+        extra_args: list[TypedParam],
+        body: Generable,
+        return_type: str,
+        is_async: bool = False,
     ) -> None:
         args = [TypedParam("cls", None), *extra_args]
-        super().__init__(name, args, body, return_type, ("@classmethod",))
+        super().__init__(name, args, body, return_type, ("@classmethod",), is_async)
 
 
 class Method(Function):
