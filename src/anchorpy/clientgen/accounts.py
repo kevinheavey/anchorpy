@@ -85,7 +85,9 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         FromImport("anchorpy.error", ["AccountInvalidDiscriminator"]),
         FromImport("..program_id", ["PROGRAM_ID"]),
     ]
-    imports = [*base_imports, FromImport(".", ["types"])] if idl.types else base_imports
+    imports = (
+        [*base_imports, FromImport("..", ["types"])] if idl.types else base_imports
+    )
     fields_interface_params: list[TypedParam] = []
     json_interface_params: list[TypedParam] = []
     fields = acc.type.fields
