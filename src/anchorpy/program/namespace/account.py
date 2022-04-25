@@ -19,7 +19,7 @@ from anchorpy.coder.accounts import (
 )
 from anchorpy.coder.coder import Coder
 from anchorpy.error import AccountDoesNotExistError, AccountInvalidDiscriminator
-from anchorpy.idl import Idl, _IdlTypeDef, _IdlAccountDef
+from anchorpy.idl import Idl, _IdlAccountDef
 from anchorpy.provider import Provider
 from anchorpy.utils.rpc import get_multiple_accounts
 
