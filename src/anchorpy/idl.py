@@ -160,6 +160,14 @@ class _IdlTypeDef:
     type: _IdlTypeDefTy
 
 
+@dataclass
+class _IdlAccountDef:
+    """IDL representation of an account."""
+
+    name: str
+    type: _IdlTypeDefTyStruct
+
+
 _IdlStateMethod = _IdlInstruction
 
 
@@ -231,7 +239,7 @@ class Idl:
     name: str
     instructions: List[_IdlInstruction]
     state: Optional[_IdlState] = None
-    accounts: List[_IdlTypeDef] = field(default_factory=list)
+    accounts: List[_IdlAccountDef] = field(default_factory=list)
     types: List[_IdlTypeDef] = field(default_factory=list)
     events: List[_IdlEvent] = field(default_factory=list)
     errors: List[_IdlErrorCode] = field(default_factory=list)
