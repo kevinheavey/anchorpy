@@ -1,6 +1,6 @@
 """Contains code for parsing the IDL file."""
 from dataclasses import dataclass, field
-from typing import List, Union, Optional, Dict, Any, Literal, Tuple, TypedDict
+from typing import List, Union, Optional, Dict, Any, Literal, Tuple, TypedDict, Sequence
 
 from apischema import deserialize, alias
 from apischema.metadata import conversion
@@ -292,3 +292,7 @@ def _decode_idl_account(data: bytes) -> IdlProgramAccount:
         Decoded IDL.
     """
     return IDL_ACCOUNT_LAYOUT.parse(data)
+
+
+_AccountDefOrTypeDef = Union[_IdlTypeDef, _IdlAccountDef]
+_AccountDefsOrTypeDefs = Sequence[_AccountDefOrTypeDef]

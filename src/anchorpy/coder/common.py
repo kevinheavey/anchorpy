@@ -8,6 +8,7 @@ from anchorpy.idl import (
     _IdlField,
     _IdlType,
     _IdlTypeDef,
+    _IdlAccountDef,
     _IdlTypeDefTyEnum,
     _IdlTypeOption,
     _IdlTypeCOption,
@@ -16,6 +17,7 @@ from anchorpy.idl import (
     _IdlTypeVec,
     _LiteralStrings,
     _NonLiteralIdlTypes,
+    _AccountDefOrTypeDef,
 )
 
 
@@ -105,7 +107,7 @@ def _variant_size(idl: Idl, variant: _IdlEnumVariant) -> int:
     return sum(field_sizes)
 
 
-def _account_size(idl: Idl, idl_account: _IdlTypeDef) -> int:
+def _account_size(idl: Idl, idl_account: _AccountDefOrTypeDef) -> int:
     """Calculate account size in bytes.
 
     Args:

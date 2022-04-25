@@ -1,5 +1,5 @@
 """This module deals (de)serializing program instructions."""
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, cast, TypeVar, Protocol
 
 from borsh_construct import CStruct
 from construct import Sequence, Bytes
@@ -8,7 +8,7 @@ from construct import Construct, Adapter, Switch, Container
 from anchorpy.coder.common import _sighash
 from anchorpy.program.common import Instruction
 from anchorpy.coder.idl import _field_layout
-from anchorpy.idl import Idl
+from anchorpy.idl import Idl, _AccountDefsOrTypeDefs
 
 
 class _Sighash(Adapter):
@@ -72,11 +72,23 @@ class InstructionCoder(Adapter):
         return (self.sighashes[obj.name], obj.data)
 
 
+_SA = TypeVar("_SA", bound="_SupportsAdd")
+
+
+class _SupportsAdd(Protocol):
+    """Any type T where +(:T, :T) -> T"""
+
+    def __add__(self: _SA, other: _SA) -> _SA:
+        ...
+
+
 def _parse_ix_layout(idl: Idl) -> Dict[str, Construct]:
     ix_layout: Dict[str, Construct] = {}
     for ix in idl.instructions:
+        typedefs = cast(_SupportsAdd, idl.accounts) + cast(_SupportsAdd, idl.types)
         field_layouts = [
-            _field_layout(arg, idl.accounts + idl.types) for arg in ix.args
+            _field_layout(arg, cast(_AccountDefsOrTypeDefs, typedefs))
+            for arg in ix.args
         ]
         ix_layout[ix.name] = ix.name / CStruct(*field_layouts)
     return ix_layout

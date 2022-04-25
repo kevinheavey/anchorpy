@@ -2,7 +2,7 @@
 from dataclasses import make_dataclass, asdict, fields as dc_fields
 from types import MappingProxyType
 from keyword import kwlist
-from typing import Mapping, Optional, cast, Type
+from typing import Mapping, Optional, cast, Type, Sequence, Union
 from solana.publickey import PublicKey
 
 from construct import Construct
@@ -35,6 +35,7 @@ from anchorpy.idl import (
     _IdlType,
     _IdlTypeArray,
     _IdlTypeDef,
+    _IdlAccountDef,
     _IdlTypeDefTyEnum,
     _IdlTypeDefTyStruct,
     _IdlTypeDefined,
@@ -42,6 +43,8 @@ from anchorpy.idl import (
     _IdlTypeCOption,
     _IdlTypeVec,
     _NonLiteralIdlTypes,
+    _AccountDefOrTypeDef,
+    _AccountDefsOrTypeDefs,
 )
 
 
@@ -84,12 +87,13 @@ FIELD_PYTHON_TYPE_MAP: Mapping[str, Type] = MappingProxyType(
     },
 )
 
+
 _enums_cache: dict[tuple[str, str], Enum] = {}
 
 
 def _handle_enum_variants(
     idl_enum: _IdlTypeDefTyEnum,
-    types: list[_IdlTypeDef],
+    types: _AccountDefsOrTypeDefs,
     name: str,
 ) -> Enum:
     dict_key = (name, str(idl_enum))
@@ -103,7 +107,7 @@ def _handle_enum_variants(
 
 def _handle_enum_variants_no_cache(
     idl_enum: _IdlTypeDefTyEnum,
-    types: list[_IdlTypeDef],
+    types: _AccountDefsOrTypeDefs,
     name: str,
 ) -> Enum:
     variants = []
@@ -164,8 +168,8 @@ def _handle_enum_variants_no_cache(
 
 
 def _typedef_layout_without_field_name(
-    typedef: _IdlTypeDef,
-    types: list[_IdlTypeDef],
+    typedef: _AccountDefOrTypeDef,
+    types: _AccountDefsOrTypeDefs,
 ) -> Construct:
     typedef_type = typedef.type
     name = typedef.name
@@ -181,7 +185,9 @@ def _typedef_layout_without_field_name(
 
 
 def _typedef_layout(
-    typedef: _IdlTypeDef, types: list[_IdlTypeDef], field_name: str
+    typedef: _AccountDefOrTypeDef,
+    types: list[_IdlTypeDef],
+    field_name: str,
 ) -> Construct:
     """Map an IDL typedef to a `Construct` object.
 
@@ -199,7 +205,7 @@ def _typedef_layout(
     return field_name / _typedef_layout_without_field_name(typedef, types)
 
 
-def _type_layout(type_: _IdlType, types: list[_IdlTypeDef]) -> Construct:
+def _type_layout(type_: _IdlType, types: _AccountDefsOrTypeDefs) -> Construct:
     if isinstance(type_, str):
         return FIELD_TYPE_MAP[type_]
     field_type = cast(
@@ -211,7 +217,7 @@ def _type_layout(type_: _IdlType, types: list[_IdlTypeDef]) -> Construct:
     elif isinstance(field_type, _IdlTypeOption):
         return Option(_type_layout(field_type.option, types))
     elif isinstance(field_type, _IdlTypeCOption):
-        raise COption(_type_layout(field_type.option, types))
+        return COption(_type_layout(field_type.coption, types))
     elif isinstance(field_type, _IdlTypeDefined):
         defined = field_type.defined
         if not types:
@@ -228,7 +234,7 @@ def _type_layout(type_: _IdlType, types: list[_IdlTypeDef]) -> Construct:
     raise ValueError(f"Type {field_type} not implemented yet")
 
 
-def _field_layout(field: _IdlField, types: list[_IdlTypeDef]) -> Construct:
+def _field_layout(field: _IdlField, types: _AccountDefsOrTypeDefs) -> Construct:
     """Map IDL spec to `borsh-construct` types.
 
     Args:
@@ -249,7 +255,7 @@ def _field_layout(field: _IdlField, types: list[_IdlTypeDef]) -> Construct:
 
 def _idl_type_to_python_type(
     idl_type: _IdlType,
-    types: list[_IdlTypeDef],
+    types: _AccountDefsOrTypeDefs,
 ) -> Type:
     """Find the Python type corresponding to an IDL type.
 
@@ -319,7 +325,7 @@ _idl_typedef_ty_struct_to_dataclass_type_cache: dict[tuple[str, str], Type] = {}
 
 def _idl_typedef_ty_struct_to_dataclass_type(
     typedef_type: _IdlTypeDefTyStruct,
-    types: list[_IdlTypeDef],
+    types: _AccountDefsOrTypeDefs,
     name: str,
 ) -> Type:
     dict_key = (name, str(typedef_type))
@@ -335,7 +341,7 @@ def _idl_typedef_ty_struct_to_dataclass_type(
 
 def _idl_typedef_ty_struct_to_dataclass_type_no_cache(
     typedef_type: _IdlTypeDefTyStruct,
-    types: list[_IdlTypeDef],
+    types: _AccountDefsOrTypeDefs,
     name: str,
 ) -> Type:
     """Generate a dataclass definition from an IDL struct.
@@ -363,7 +369,7 @@ _idl_enum_fields_named_to_dataclass_type_cache: dict[tuple[str, str], Type] = {}
 
 def _idl_enum_fields_named_to_dataclass_type(
     fields: _IdlEnumFieldsNamed,
-    types: list[_IdlTypeDef],
+    types: _AccountDefsOrTypeDefs,
     name: str,
 ) -> Type:
     dict_key = (name, str(fields))
@@ -377,7 +383,7 @@ def _idl_enum_fields_named_to_dataclass_type(
 
 def _idl_enum_fields_named_to_dataclass_type_no_cache(
     fields: _IdlEnumFieldsNamed,
-    types: list[_IdlTypeDef],
+    types: _AccountDefsOrTypeDefs,
     name: str,
 ) -> Type:
     """Generate a dataclass definition from IDL named enum fields.
@@ -402,7 +408,7 @@ def _idl_enum_fields_named_to_dataclass_type_no_cache(
 
 def _idl_enum_fields_tuple_to_tuple_type(
     fields: _IdlEnumFieldsTuple,
-    types: list[_IdlTypeDef],
+    types: _AccountDefsOrTypeDefs,
 ) -> Type:
     """Generate a tuple definition from IDL named enum fields.
 
@@ -421,8 +427,8 @@ def _idl_enum_fields_tuple_to_tuple_type(
 
 
 def _idl_typedef_to_python_type(
-    typedef: _IdlTypeDef,
-    types: list[_IdlTypeDef],
+    typedef: _AccountDefOrTypeDef,
+    types: _AccountDefsOrTypeDefs,
 ) -> Type:
     """Generate Python type from IDL user-defined type.
 
