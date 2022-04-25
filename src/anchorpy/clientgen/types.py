@@ -109,8 +109,6 @@ def gen_type_files(idl: Idl, out: Path) -> None:
             if isinstance(ty.type, _IdlTypeDefTyStruct)
             else gen_enum(idl, ty.name, ty.type.variants)
         )
-        print("struct or enum file")
-        print(code)
 
 
 def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
