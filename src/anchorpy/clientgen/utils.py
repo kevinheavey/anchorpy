@@ -93,7 +93,7 @@ class Function(FunctionOriginal):
     ) -> None:
         super().__init__(name, args, body, decorators)
         self.return_type = return_type
-        self.is_async
+        self.is_async = is_async
 
     def generate(self) -> Iterator[str]:
         yield from self.decorators
