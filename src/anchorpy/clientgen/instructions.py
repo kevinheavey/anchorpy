@@ -1,5 +1,6 @@
+from typing import get_args, cast, Optional
 from pathlib import Path
-from pyheck import snake
+from pyheck import snake, upper_camel
 from genpy import (
     FromImport,
     Assign,
@@ -15,6 +16,8 @@ from anchorpy.coder.accounts import _account_discriminator
 from anchorpy.idl import (
     Idl,
     _IdlAccountDef,
+    _IdlAccounts,
+    _IdlAccountItem,
 )
 from anchorpy.clientgen.utils import (
     Class,
@@ -36,8 +39,39 @@ from anchorpy.clientgen.common import (
     _field_from_decoded,
     _field_to_json,
     _field_from_json,
-    _args_interface_name,
 )
+
+
+def args_interface_name(ix_name: str) -> str:
+    return f"{upper_camel(ix_name)}Args"
+
+
+def accounts_interface_name(ix_name: str) -> str:
+    return f"{upper_camel(ix_name)}Accounts"
+
+
+def gen_accounts(
+    name,
+    idl_accs: list[_IdlAccountItem],
+    extra_typeddicts: Optional[list[TypedDict]] = None,
+) -> list[TypedDict]:
+    extra_typeddicts_to_use = [] if extra_typeddicts is None else extra_typeddicts
+    params: list[TypedParam] = []
+    for acc in idl_accs:
+        if isinstance(acc, _IdlAccounts):
+            nested_accs = cast(_IdlAccounts, acc)
+            nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
+            params.append(TypedParam(acc.name, nested_acc_name))
+            extra_typeddicts_to_use = extra_typeddicts_to_use + (
+                gen_accounts(
+                    nested_acc_name,
+                    nested_accs.accounts,
+                    extra_typeddicts_to_use,
+                )
+            )
+        else:
+            params.append(TypedParam(acc.name, "PublicKey"))
+    return [TypedDict(name, params)] + extra_typeddicts_to_use
 
 
 def gen_instruction_files(idl: Idl, out: Path) -> None:
@@ -60,7 +94,7 @@ def gen_instruction_files(idl: Idl, out: Path) -> None:
             layout_items.append(_layout_for_type(arg.type, arg.name))
         if ix.args:
             args_interface_container = [
-                TypedDict(_args_interface_name(ix.name), args_interface_params)
+                TypedDict(args_interface_name(ix.name), args_interface_params)
             ]
             layout_assignment_container = [
                 Assign("layout", f"borsh.CStruct({','.join(layout_items)})")
