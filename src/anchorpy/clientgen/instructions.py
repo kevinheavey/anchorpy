@@ -1,53 +1,58 @@
-from typing import get_args, cast, Optional
+from typing import cast, Optional
 from pathlib import Path
-from pyheck import snake, upper_camel
+from pyheck import upper_camel
 from genpy import (
     FromImport,
     Assign,
     Suite,
     ImportAs,
     Return,
-    For,
-    If,
-    Raise,
-    Statement,
 )
-from anchorpy.coder.accounts import _account_discriminator
+from anchorpy.coder.common import _sighash
 from anchorpy.idl import (
     Idl,
-    _IdlAccountDef,
     _IdlAccounts,
     _IdlAccountItem,
 )
 from anchorpy.clientgen.utils import (
-    Class,
-    Method,
-    InitMethod,
-    ClassMethod,
     TypedParam,
     TypedDict,
     StrDict,
     StrDictEntry,
+    List,
+    Function,
 )
 from anchorpy.clientgen.common import (
-    _fields_interface_name,
-    _json_interface_name,
     _py_type_from_idl,
-    _idl_type_to_json_type,
-    _struct_field_initializer,
     _layout_for_type,
-    _field_from_decoded,
-    _field_to_json,
-    _field_from_json,
+    _field_to_encodable,
 )
 
 
-def args_interface_name(ix_name: str) -> str:
+def _args_interface_name(ix_name: str) -> str:
     return f"{upper_camel(ix_name)}Args"
 
 
-def accounts_interface_name(ix_name: str) -> str:
+def _accounts_interface_name(ix_name: str) -> str:
     return f"{upper_camel(ix_name)}Accounts"
+
+
+def recurse_accounts(accs: list[_IdlAccountItem], nested_names: list[str]) -> list[str]:
+    elements: list[str] = []
+    for acc in accs:
+        names = [*nested_names, acc.name]
+        if isinstance(acc, _IdlAccounts):
+            nested_accs = cast(_IdlAccounts, acc)
+            elements.extend(recurse_accounts(nested_accs.accounts, names))
+        else:
+            nested_keys = [f'["{key}"]' for key in names]
+            dict_accessor = "".join(nested_keys)
+            elements.append(
+                f"AccountMeta(pubkey=accounts{dict_accessor}, "
+                f"is_signer={acc.is_signer}, "
+                f"is_writable={acc.is_mut})"
+            )
+    return elements
 
 
 def gen_accounts(
@@ -75,30 +80,75 @@ def gen_accounts(
 
 
 def gen_instruction_files(idl: Idl, out: Path) -> None:
+    types_import = [FromImport("..", ["types"])] if idl.types else []
+    imports = [
+        FromImport("solana.publickey", ["PublicKey"]),
+        FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
+        ImportAs("borsh_construct", "borsh"),
+        *types_import,
+        FromImport("..", ["PROGRAM_ID"]),
+    ]
     for ix in idl.instructions:
         filename = (out / ix.name).with_suffix(".py")
-        types_import = [FromImport("..", ["types"])] if idl.types else []
-        imports = [
-            FromImport("solana.publickey", ["PublicKey"]),
-            FromImport("solana.transaction", ["TransactionInstruction"]),
-            ImportAs("borsh_construct", "borsh"),
-            *types_import,
-            FromImport("..", ["PROGRAM_ID"]),
-        ]
         args_interface_params: list[TypedParam] = []
         layout_items: list[str] = []
+        encoded_args_entries: list[StrDictEntry] = []
+        accounts_interface_name = _accounts_interface_name(ix.name)
         for arg in ix.args:
             args_interface_params.append(
                 TypedParam(arg.name, _py_type_from_idl(idl, arg.type))
             )
             layout_items.append(_layout_for_type(arg.type, arg.name))
+            encoded_args_entries.append(
+                StrDictEntry(
+                    arg.name, _field_to_encodable(idl, arg, 'args["', val_suffix='"]')
+                )
+            )
         if ix.args:
+            args_interface_name = _args_interface_name(ix.name)
             args_interface_container = [
-                TypedDict(args_interface_name(ix.name), args_interface_params)
+                TypedDict(args_interface_name, args_interface_params)
             ]
             layout_assignment_container = [
                 Assign("layout", f"borsh.CStruct({','.join(layout_items)})")
             ]
+            args_container = [TypedParam("args", args_interface_name)]
+            accounts_container = [TypedParam("accounts", accounts_interface_name)]
         else:
             args_interface_container = []
             layout_assignment_container = []
+            args_container = []
+            accounts_container = []
+        accounts = gen_accounts(accounts_interface_name, ix.accounts)
+        keys_assignment = Assign("keys", List(recurse_accounts(ix.accounts, [])))
+        identifier_assignment = Assign("identifier", _sighash(ix.name))
+        encoded_args_assignment = Assign(
+            "encoded_args", f"layout.build({StrDict(encoded_args_entries)})"
+        )
+        data_assignment = Assign("data", "identifier + encoded_args")
+        returning = Return("TransactionInstruction(data, keys, PROGRAM_ID)")
+        ix_fn = Function(
+            ix.name,
+            [*args_container, *accounts_container],
+            Suite(
+                [
+                    keys_assignment,
+                    identifier_assignment,
+                    encoded_args_assignment,
+                    data_assignment,
+                    returning,
+                ]
+            ),
+            "TransactionInstruction",
+        )
+        contents = Suite(
+            [
+                *imports,
+                *args_interface_container,
+                *layout_assignment_container,
+                *accounts,
+                ix_fn,
+            ]
+        )
+        print(filename)
+        print(contents)
