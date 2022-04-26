@@ -1,6 +1,6 @@
 """Common utilities."""
 from dataclasses import dataclass
-from typing import Dict, Any, Union, cast, get_args, Tuple, NamedTuple
+from typing import Dict, Any, Union, Tuple, NamedTuple
 from construct import Container
 
 from solana.publickey import PublicKey
@@ -66,9 +66,8 @@ def validate_accounts(ix_accounts: list[_IdlAccountItem], accounts: Accounts):
         ValueError: If `ctx` accounts don't match the IDL.
     """
     for acc in ix_accounts:
-        if isinstance(acc, get_args(_IdlAccounts)):
-            idl_accounts = cast(_IdlAccounts, acc)
-            validate_accounts(idl_accounts.accounts, accounts[acc.name])
+        if isinstance(acc, _IdlAccounts):
+            validate_accounts(acc.accounts, accounts[acc.name])
         elif acc.name not in accounts:
             raise ValueError(f"Invalid arguments: {acc.name} not provided")
 
