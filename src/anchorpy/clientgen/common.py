@@ -148,25 +148,6 @@ def _field_to_encodable(
     val_suffix: str = "",
 ) -> str:
     ty_type = ty.type
-    if ty_type in {
-        "bool",
-        "u8",
-        "i8",
-        "u16",
-        "i16",
-        "u32",
-        "i32",
-        "f32",
-        "u64",
-        "i64",
-        "f64",
-        "u128",
-        "i128",
-        "string",
-        "publicKey",
-        "bytes",
-    }:
-        return f"{val_prefix}{ty.name}{val_suffix}"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_to_encodable(
             idl, _IdlField("item", ty_type.vec), "", defined_types_prefix, val_suffix
@@ -209,6 +190,25 @@ def _field_to_encodable(
         if map_body == "item":
             return f"{val_prefix}{ty.name}{val_suffix}"
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}{val_suffix}))"
+    if ty_type in {
+        "bool",
+        "u8",
+        "i8",
+        "u16",
+        "i16",
+        "u32",
+        "i32",
+        "f32",
+        "u64",
+        "i64",
+        "f64",
+        "u128",
+        "i128",
+        "string",
+        "publicKey",
+        "bytes",
+    }:
+        return f"{val_prefix}{ty.name}{val_suffix}"
     raise ValueError(f"Unrecognized type: {ty_type}")
 
 
