@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import cast, Union as TypingUnion
 from dataclasses import dataclass
+from black import format_str, FileMode
 from pyheck import snake
 from genpy import (
     FromImport,
@@ -67,7 +68,8 @@ def gen_types(idl: Idl, root: Path) -> None:
 def gen_index_file(idl: Idl, types_dir: Path) -> None:
     code = gen_index_code(idl)
     path = types_dir / "__init__.py"
-    path.write_text(code)
+    formatted = format_str(code, mode=FileMode())
+    path.write_text(formatted)
 
 
 def gen_index_code(idl: Idl) -> str:
@@ -108,7 +110,8 @@ def gen_index_code(idl: Idl) -> str:
 def gen_type_files(idl: Idl, types_dir: Path) -> None:
     types_code = gen_types_code(idl, types_dir)
     for path, code in types_code.items():
-        path.write_text(code)
+        formatted = format_str(code, mode=FileMode())
+        path.write_text(formatted)
 
 
 def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
@@ -125,16 +128,14 @@ def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
 
 
 def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
-    imports = Suite(
-        [
-            Import("typing"),
-            FromImport("dataclasses", ["dataclass"]),
-            FromImport("construct", ["Container"]),
-            FromImport("solana.publickey", ["PublicKey"]),
-            FromImport("..", ["types"]),
-            ImportAs("borsh_construct", "borsh"),
-        ]
-    )
+    imports = [
+        Import("typing"),
+        FromImport("dataclasses", ["dataclass"]),
+        FromImport("construct", ["Container"]),
+        FromImport("solana.publickey", ["PublicKey"]),
+        FromImport("..", ["types"]),
+        ImportAs("borsh_construct", "borsh"),
+    ]
     fields_interface_name = _fields_interface_name(name)
     json_interface_name = _json_interface_name(name)
     fields_interface_params: list[TypedParam] = []
@@ -201,7 +202,7 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
             ),
         ],
     )
-    return str(Suite([imports, fields_interface, json_interface, struct_cls]))
+    return str(Collection([*imports, fields_interface, json_interface, struct_cls]))
 
 
 def _make_cstruct(fields: dict[str, str]) -> str:

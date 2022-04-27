@@ -1,4 +1,5 @@
 from pathlib import Path
+from black import format_str, FileMode
 from genpy import (
     FromImport,
     Suite,
@@ -126,7 +127,8 @@ def gen_custom_errors(idl: Idl, errors_dir: Path) -> None:
     if errors is None or not errors:
         return
     code = gen_custom_errors_code(errors)
-    (errors_dir / "custom.py").with_suffix(".py").write_text(code)
+    formatted = format_str(code, mode=FileMode())
+    (errors_dir / "custom.py").with_suffix(".py").write_text(formatted)
 
 
 def gen_anchor_errors_code() -> str:
@@ -175,7 +177,8 @@ def gen_anchor_errors_code() -> str:
 
 def gen_anchor_errors(errors_dir: Path) -> None:
     code = gen_anchor_errors_code()
-    (errors_dir / "anchor").with_suffix(".py").write_text(code)
+    formatted = format_str(code, mode=FileMode())
+    (errors_dir / "anchor").with_suffix(".py").write_text(formatted)
 
 
 def gen_index_code(idl: Idl) -> str:
@@ -200,7 +203,8 @@ def gen_index_code(idl: Idl) -> str:
 def gen_index_file(idl: Idl, errors_dir: Path) -> None:
     code = gen_index_code(idl)
     path = errors_dir / "__init__.py"
-    path.write_text(code)
+    formatted = format_str(code, mode=FileMode())
+    path.write_text(formatted)
 
 
 def gen_errors(idl: Idl, root: Path) -> None:

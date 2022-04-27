@@ -1,4 +1,5 @@
 from pathlib import Path
+from black import format_str, FileMode
 from pyheck import snake
 from genpy import (
     FromImport,
@@ -49,12 +50,14 @@ def gen_accounts(idl: Idl, root: Path) -> None:
     gen_index_file(idl, accounts_dir)
     accounts_dict = gen_accounts_code(idl, accounts_dir)
     for path, code in accounts_dict.items():
-        path.write_text(code)
+        formatted = format_str(code, mode=FileMode())
+        path.write_text(formatted)
 
 
 def gen_index_file(idl: Idl, accounts_dir: Path) -> None:
     code = gen_index_code(idl)
-    (accounts_dir / "__init__.py").write_text(code)
+    formatted = format_str(code, mode=FileMode())
+    (accounts_dir / "__init__.py").write_text(formatted)
 
 
 def gen_index_code(idl: Idl) -> str:

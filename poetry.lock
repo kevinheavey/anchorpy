@@ -1552,7 +1552,7 @@ cli = ["typer", "ipython", "genpy", "black", "autoflake"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "e10a15ca138670615bd16ce452313547d7146df9240a6cdae0016838f8a84cdf"
+content-hash = "c3abbb0161c1d3a1945d33e1498dd325e3392e6f7e2f6990c376d877f4809025"
 
 [metadata.files]
 anyio = [

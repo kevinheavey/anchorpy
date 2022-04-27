@@ -1,4 +1,5 @@
 from typing import cast, Optional
+from black import format_str, FileMode
 from pathlib import Path
 from pyheck import upper_camel
 from genpy import (
@@ -37,13 +38,15 @@ def gen_instructions(idl: Idl, root: Path) -> None:
     gen_index_file(idl, instructions_dir)
     instructions = gen_instructions_code(idl, instructions_dir)
     for path, code in instructions.items():
-        path.write_text(code)
+        formatted = format_str(code, mode=FileMode())
+        path.write_text(formatted)
 
 
 def gen_index_file(idl: Idl, instructions_dir: Path) -> None:
     code = gen_index_code(idl)
     path = instructions_dir / "__init__.py"
-    path.write_text(code)
+    formatted = format_str(code, mode=FileMode())
+    path.write_text(formatted)
 
 
 def gen_index_code(idl: Idl) -> str:
