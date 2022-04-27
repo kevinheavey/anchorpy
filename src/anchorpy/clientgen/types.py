@@ -74,20 +74,27 @@ def gen_index_file(idl: Idl, types_dir: Path) -> None:
 
 def gen_index_code(idl: Idl) -> str:
     lines = []
+    imports: list[FromImport] = [FromImport("typing", ["Union"])]
+    all_members: list[str] = []
     for ty in idl.types:
         ty_type = ty.type
         module_name = snake(ty.name)
         if isinstance(ty_type, _IdlTypeDefTyStruct):
-            code_to_add = FromImport(
-                f".{module_name}",
-                [
-                    ty.name,
-                    _fields_interface_name(ty.name),
-                    _json_interface_name(ty.name),
-                ],
+            import_members = [
+                ty.name,
+                _fields_interface_name(ty.name),
+                _json_interface_name(ty.name),
+            ]
+            imports.append(
+                FromImport(
+                    f".{module_name}",
+                    import_members,
+                )
             )
+            all_members.extend(f'"{mem}"' for mem in import_members)
         else:
-            import_line = FromImport(".", [module_name])
+            imports.append(FromImport(".", [module_name]))
+            all_members.append(f'"{module_name}"')
             json_variants = Union(
                 [
                     f"{module_name}.{_json_interface_name(variant.name)}"
@@ -102,9 +109,8 @@ def gen_index_code(idl: Idl) -> str:
             )
             kind_type_alias = Assign(_kind_interface_name(ty.name), type_variants)
             json_type_alias = Assign(_json_interface_name(ty.name), json_variants)
-            code_to_add = Collection([import_line, kind_type_alias, json_type_alias])
-        lines.append(code_to_add)
-    return str(Collection(lines))
+            lines.extend([kind_type_alias, json_type_alias])
+    return str(Collection([*imports, *lines]))
 
 
 def gen_type_files(idl: Idl, types_dir: Path) -> None:
@@ -190,8 +196,11 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
                 Return(f"cls({fields_interface_name}({args_for_from_decoded}))"),
                 f'"{name}"',
             ),
-            Method(
-                "to_encodable", [], Return(to_encodable_body), "dict[str, typing.Any]"
+            ClassMethod(
+                "to_encodable",
+                [TypedParam("fields", fields_interface_name)],
+                Return(to_encodable_body),
+                "dict[str, typing.Any]",
             ),
             Method("to_json", [], Return(to_json_body), json_interface_name),
             ClassMethod(
@@ -240,7 +249,7 @@ def _make_named_field_record(named_field: _IdlField, idl: Idl) -> _NamedFieldRec
         ),
         init_method_body_item=StrDictEntry(
             named_field.name,
-            _struct_field_initializer(idl, named_field),
+            _struct_field_initializer(idl, named_field, 'value["'),
         ),
         json_value_item=StrDictEntry(
             named_field.name,
@@ -312,12 +321,9 @@ def _make_unnamed_field_record(
 def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
     imports = [
         Import("typing"),
-        FromImport("dataclasses", ["dataclass"]),
-        FromImport("construct", ["Container"]),
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("anchorpy.borsh_extension", ["EnumForCodegen"]),
         ImportAs("borsh_construct", "borsh"),
-        FromImport("..", ["types"]),
     ]
     invalid_enum_raise = Raise('ValueError("Invalid enum object")')
     from_decoded_dict_check = If("not isinstance(obj, dict)", invalid_enum_raise)
@@ -326,6 +332,8 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
     json_interfaces: list[TypedDict] = []
     classes: list[Class] = []
     cstructs: list[str] = []
+    type_variants_members: list[str] = []
+    json_variants_members: list[str] = []
     for idx, variant in enumerate(variants):
         discriminator = idx
         fields = variant.fields
@@ -342,6 +350,8 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
         json_interface_kind_field = TypedParam(
             "kind", f'typing.Literal["{variant.name}"]'
         )
+        type_variants_members.append(variant.name)
+        json_variants_members.append(_json_interface_name(variant.name))
 
         def make_variant_name_in_obj_check(then: Generable) -> Generable:
             return If(f'"{variant.name}" in obj', then)
@@ -524,11 +534,11 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
         Suite(
             [from_decoded_dict_check, *variant_name_in_obj_checks, invalid_enum_raise]
         ),
-        f"types.{_kind_interface_name(name)}",
+        _kind_interface_name(name),
     )
     from_json_fn = Function(
         "from_json",
-        [TypedParam("obj", f"types.{_json_interface_name(name)}")],
+        [TypedParam("obj", _json_interface_name(name))],
         Suite(
             [
                 Assign("kind", 'obj["kind"]'),
@@ -536,12 +546,16 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 Raise('ValueError(f"Uncrecognized enum kind: {kind}")'),
             ]
         ),
-        f"types.{_kind_interface_name(name)}",
+        _kind_interface_name(name),
     )
     formatted_cstructs = ",".join(cstructs)
     layout_fn = Function(
         "layout", [], Return(f"EnumForCodegen({formatted_cstructs})"), "EnumForCodegen"
     )
+    json_variants = Union(json_variants_members)
+    type_variants = Union(type_variants_members)
+    kind_type_alias = Assign(_kind_interface_name(name), type_variants)
+    json_type_alias = Assign(_json_interface_name(name), json_variants)
     return str(
         Collection(
             [
@@ -551,6 +565,8 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
                 *value_type_aliases,
                 *json_interfaces,
                 *classes,
+                kind_type_alias,
+                json_type_alias,
                 from_decoded_fn,
                 from_json_fn,
                 layout_fn,

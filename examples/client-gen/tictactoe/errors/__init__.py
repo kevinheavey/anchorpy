@@ -3,9 +3,15 @@ import re
 from .program_id import PROGRAM_ID
 from . import anchor
 from . import custom
-def from_code(code: int) -> Union[custom.CustomError,anchor.AnchorError,None]:
+
+
+def from_code(code: int) -> typing.Union[custom.CustomError, anchor.AnchorError, None]:
     return custom.from_code(code) if code >= 6000 else anchor.from_code(code)
+
+
 error_re = re.compile("Program (\w+) failed: custom program error: (\w+)")
+
+
 def from_tx_error(error: Any) -> Optional[anchor.AnchorError]:
     if "logs" not in error:
         return None

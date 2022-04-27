@@ -10,8 +10,7 @@ class Class(BrokenClass):
 
         yield "class {}({}):".format(self.name, ", ".join(bases))
         for f in self.attributes:
-            for f_line in f.generate():
-                yield "    " + f_line
+            yield from ("    " + f_line for f_line in f.generate())
 
 
 class TypedParam(Generable):
@@ -42,7 +41,7 @@ class Union(Generable):
 
     def generate(self) -> Iterator[str]:
         joined = ",".join(self.members)
-        yield f"Union[{joined}]"
+        yield f"typing.Union[{joined}]"
 
 
 class Tuple(Generable):

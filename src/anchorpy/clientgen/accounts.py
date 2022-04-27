@@ -21,6 +21,7 @@ from anchorpy.idl import (
 from anchorpy.clientgen.utils import (
     Class,
     Method,
+    List,
     InitMethod,
     ClassMethod,
     TypedParam,

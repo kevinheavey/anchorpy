@@ -101,7 +101,7 @@ def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
         error_names.append(name)
         error_map[code] = name
     type_alias = Assign("CustomError", Union(error_names))
-    error_map = Assign("ANCHOR_ERROR_MAP", str(error_map).replace("'", ""))
+    error_map = Assign("CUSTOM_ERROR_MAP", str(error_map).replace("'", ""))
     from_code_body = Suite(
         [
             Assign("maybe_err", "CUSTOM_ERROR_MAP.get(code)"),
