@@ -30,7 +30,7 @@ class Tile(object):
 
     @classmethod
     def to_encodable(cls, fields: TileFields) -> dict[str, typing.Any]:
-        return {"row": fields.row, "column": fields.column}
+        return {"row": fields["row"], "column": fields["column"]}
 
     def to_json(self) -> TileJSON:
         return {"row": self.row, "column": self.column}

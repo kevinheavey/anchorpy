@@ -101,7 +101,7 @@ class Game(object):
 
     def to_json(self) -> GameJSON:
         return {
-            "players": list(map(lambda item: item.to_base58(), self.players)),
+            "players": list(map(lambda item: str(item), self.players)),
             "turn": self.turn,
             "board": list(
                 map(

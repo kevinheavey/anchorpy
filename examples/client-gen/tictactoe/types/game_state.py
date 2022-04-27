@@ -76,7 +76,7 @@ class Won(object):
         return {
             "kind": "Won",
             "value": {
-                "winner": self.value["winner"].to_base58(),
+                "winner": str(self.value["winner"]),
             },
         }
 

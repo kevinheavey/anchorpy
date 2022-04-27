@@ -158,9 +158,10 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
         from_decoded_items.append(
             f"{field.name}={_field_from_decoded(idl, field, 'obj.')}"
         )
-        to_encodable_items.append(
-            f'"{field.name}": {_field_to_encodable(idl, field, "fields.")}'
+        as_encodable = _field_to_encodable(
+            idl, field, val_prefix='fields["', val_suffix='"]'
         )
+        to_encodable_items.append(f'"{field.name}": {as_encodable}')
         to_json_items.append(f'"{field.name}": {_field_to_json(idl, field, "self.")}')
         from_json_items.append(f"{field.name}={_field_from_json(field)}")
     fields_interface = TypedDict(fields_interface_name, fields_interface_params)
