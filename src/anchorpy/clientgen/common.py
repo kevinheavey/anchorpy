@@ -1,5 +1,6 @@
 """Code generation utilities."""
 from typing import Optional
+from pyheck import snake
 from anchorpy.idl import (
     Idl,
     _IdlType,
@@ -44,12 +45,12 @@ def _py_type_from_idl(
         inner_type = _py_type_from_idl(
             idl, ty.option, defined_types_prefix, use_fields_interface_for_struct
         )
-        return f"Optional[{inner_type}]"
+        return f"typing.Optional[{inner_type}]"
     elif isinstance(ty, _IdlTypeCOption):
         inner_type = _py_type_from_idl(
             idl, ty.coption, defined_types_prefix, use_fields_interface_for_struct
         )
-        return f"Optional[{inner_type}]"
+        return f"typing.Optional[{inner_type}]"
     elif isinstance(ty, _IdlTypeDefined):
         defined = ty.defined
         filtered = [t for t in idl.types if t.name == defined]
@@ -129,7 +130,7 @@ def _layout_for_type(
     elif isinstance(ty, _IdlTypeCOption):
         inner = f"COption({_layout_for_type(ty.coption)})"
     elif isinstance(ty, _IdlTypeDefined):
-        inner = f"{defined_types_prefix}{ty.defined}.layout()"
+        inner = f"{defined_types_prefix}{snake(ty.defined)}.layout()"
     elif isinstance(ty, _IdlTypeArray):
         inner = f"{_layout_for_type(ty.array[0])}[{ty.array[1]}]"
     else:
@@ -342,7 +343,7 @@ def _field_to_json(
 ) -> str:
     ty_type = ty.type
     if ty_type == "publicKey":
-        return f"{val_prefix}{ty.name}{val_suffix}.to_base58()"
+        return f"str({val_prefix}{ty.name}{val_suffix})"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_to_json(idl, _IdlField("item", ty_type.vec))
         # skip mapping when not needed
@@ -407,10 +408,10 @@ def _idl_type_to_json_type(ty: _IdlType, defined_types_prefix: str = "types.") -
         return f"list[{inner}]"
     if isinstance(ty, _IdlTypeOption):
         inner = _idl_type_to_json_type(ty.option, defined_types_prefix)
-        return f"Optional[{inner}]"
+        return f"typing.Optional[{inner}]"
     if isinstance(ty, _IdlTypeCOption):
         inner = _idl_type_to_json_type(ty.coption, defined_types_prefix)
-        return f"Optional[{inner}]"
+        return f"typing.Optional[{inner}]"
     if isinstance(ty, _IdlTypeDefined):
         return f"{defined_types_prefix}{_json_interface_name(ty.defined)}"
     if ty == "bool":

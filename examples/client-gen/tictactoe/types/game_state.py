@@ -1,6 +1,6 @@
 import typing
 from solana.publickey import PublicKey
-from anchorpy.borsh_extension import EnumForCodegen
+from anchorpy.borsh_extension import EnumForCodegen, BorshPubkey
 import borsh_construct as borsh
 
 

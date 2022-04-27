@@ -74,7 +74,7 @@ def gen_index_file(idl: Idl, types_dir: Path) -> None:
 
 def gen_index_code(idl: Idl) -> str:
     lines = []
-    imports: list[FromImport] = [FromImport("typing", ["Union"])]
+    imports: list[TypingUnion[Import, FromImport]] = [Import("typing")]
     all_members: list[str] = []
     for ty in idl.types:
         ty_type = ty.type
@@ -102,10 +102,7 @@ def gen_index_code(idl: Idl) -> str:
                 ]
             )
             type_variants = Union(
-                [
-                    f"{module_name}.{_kind_interface_name(variant.name)}"
-                    for variant in ty_type.variants
-                ]
+                [f"{module_name}.{variant.name}" for variant in ty_type.variants]
             )
             kind_type_alias = Assign(_kind_interface_name(ty.name), type_variants)
             json_type_alias = Assign(_json_interface_name(ty.name), json_variants)
@@ -139,7 +136,6 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
         FromImport("dataclasses", ["dataclass"]),
         FromImport("construct", ["Container"]),
         FromImport("solana.publickey", ["PublicKey"]),
-        FromImport("..", ["types"]),
         ImportAs("borsh_construct", "borsh"),
     ]
     fields_interface_name = _fields_interface_name(name)
@@ -322,7 +318,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
     imports = [
         Import("typing"),
         FromImport("solana.publickey", ["PublicKey"]),
-        FromImport("anchorpy.borsh_extension", ["EnumForCodegen"]),
+        FromImport("anchorpy.borsh_extension", ["EnumForCodegen", "BorshPubkey"]),
         ImportAs("borsh_construct", "borsh"),
     ]
     invalid_enum_raise = Raise('ValueError("Invalid enum object")')

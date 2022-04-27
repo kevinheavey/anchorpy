@@ -1,10 +1,11 @@
-from typing import Optional
+import typing
 from solana.publickey import PublicKey
-from solana.rpc.api.async_client import AsyncClient
+from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 import borsh_construct as borsh
 from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE
 from anchorpy.error import AccountInvalidDiscriminator
+from anchorpy.borsh_extension import BorshPubkey, EnumForCodegen
 from ..program_id import PROGRAM_ID
 from .. import types
 
@@ -12,14 +13,14 @@ from .. import types
 class GameFields(typing.TypedDict):
     players: list[PublicKey]
     turn: int
-    board: list[list[Optional[types.SignKind]]]
+    board: list[list[typing.Optional[types.SignKind]]]
     state: types.GameStateKind
 
 
 class GameJSON(typing.TypedDict):
     players: list[str]
     turn: int
-    board: list[list[Optional[types.SignJSON]]]
+    board: list[list[typing.Optional[types.SignJSON]]]
     state: types.GameStateJSON
 
 
@@ -28,8 +29,8 @@ class Game(object):
     layout = borsh.CStruct(
         "players" / BorshPubkey[2],
         "turn" / borsh.U8,
-        "board" / borsh.Option(types.Sign.layout())[3][3],
-        "state" / types.GameState.layout(),
+        "board" / borsh.Option(types.sign.layout())[3][3],
+        "state" / types.game_state.layout(),
     )
 
     def __init__(self, fields: GameFields) -> None:
@@ -43,8 +44,8 @@ class Game(object):
         cls,
         conn: AsyncClient,
         address: PublicKey,
-        commitment: Optional[Commitment] = None,
-    ) -> typing.Optional[Game]:
+        commitment: typing.Optional[Commitment] = None,
+    ) -> typing.Optional["Game"]:
         resp = await conn.get_account_info(address, commitment=commitment)
         info = resp["result"]["value"]
         if info is None:
@@ -54,12 +55,12 @@ class Game(object):
         return cls.decode(info["data"])
 
     @classmethod
-    def fetch_multiple(
+    async def fetch_multiple(
         cls,
         conn: AsyncClient,
         addresses: list[PublicKey],
-        commitment: Optional[Commitment] = None,
-    ) -> list[Optional[Game]]:
+        commitment: typing.Optional[Commitment] = None,
+    ) -> list[typing.Optional["Game"]]:
         resp = await conn.get_account_info(address, commitment=commitment)
         infos = resp["result"]["value"]
         result = []

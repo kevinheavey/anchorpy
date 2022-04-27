@@ -1,4 +1,3 @@
-from typing import Optional
 from pathlib import Path
 from black import format_str, FileMode
 from genpy import Assign, FromImport, Collection

@@ -1,4 +1,4 @@
-from typing import Union, Optional, Any
+import typing
 import re
 from .program_id import PROGRAM_ID
 from . import anchor
@@ -12,7 +12,7 @@ def from_code(code: int) -> typing.Union[custom.CustomError, anchor.AnchorError,
 error_re = re.compile("Program (\w+) failed: custom program error: (\w+)")
 
 
-def from_tx_error(error: Any) -> Optional[anchor.AnchorError]:
+def from_tx_error(error: Any) -> typing.Optional[anchor.AnchorError]:
     if "logs" not in error:
         return None
     for logline in error["logs"]:

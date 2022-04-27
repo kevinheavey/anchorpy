@@ -1,4 +1,4 @@
-from typing import Union
+import typing
 from anchorpy.error import ProgramError
 
 
@@ -482,7 +482,7 @@ ANCHOR_ERROR_MAP = {
 }
 
 
-def from_code(code: int) -> Optional[AnchorError]:
+def from_code(code: int) -> typing.Optional[AnchorError]:
     maybe_err = ANCHOR_ERROR_MAP.get(code)
     if maybe_err is None:
         return None

@@ -7,8 +7,6 @@ from anchorpy.idl import (
     _IdlEnumVariant,
     _IdlField,
     _IdlType,
-    _IdlTypeDef,
-    _IdlAccountDef,
     _IdlTypeDefTyEnum,
     _IdlTypeOption,
     _IdlTypeCOption,

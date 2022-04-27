@@ -10,7 +10,7 @@ class PlayArgs(typing.TypedDict):
     tile: types.TileKind
 
 
-layout = borsh.CStruct("tile" / types.Tile.layout())
+layout = borsh.CStruct("tile" / types.tile.layout())
 
 
 class PlayAccounts(typing.TypedDict):

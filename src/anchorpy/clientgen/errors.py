@@ -34,7 +34,7 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
     from_code_return_type = (
         Union(["custom.CustomError", "anchor.AnchorError", "None"])
         if has_custom_errors
-        else "Optional[anchor.AnchorError]"
+        else "typing.Optional[anchor.AnchorError]"
     )
     return Function(
         "from_code",
@@ -74,12 +74,12 @@ def gen_from_tx_error_fn() -> Function:
         "from_tx_error",
         [TypedParam("error", "Any")],
         fn_body,
-        "Optional[anchor.AnchorError]",
+        "typing.Optional[anchor.AnchorError]",
     )
 
 
 def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
-    typing_import = FromImport("typing", ["Union", "Optional"])
+    typing_import = Import("typing")
     error_import = FromImport("anchorpy.error", ["ProgramError"])
     error_names: list[str] = []
     classes: list[Class] = []
@@ -113,7 +113,7 @@ def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
         "from_code",
         [TypedParam("code", "int")],
         from_code_body,
-        "Optional[CustomError]",
+        "typing.Optional[CustomError]",
     )
     return str(
         Collection(
@@ -132,7 +132,7 @@ def gen_custom_errors(idl: Idl, errors_dir: Path) -> None:
 
 
 def gen_anchor_errors_code() -> str:
-    typing_import = FromImport("typing", ["Union"])
+    typing_import = Import("typing")
     error_import = FromImport("anchorpy.error", ["ProgramError"])
     error_names: list[str] = []
     classes: list[Class] = []
@@ -166,7 +166,7 @@ def gen_anchor_errors_code() -> str:
         "from_code",
         [TypedParam("code", "int")],
         from_code_body,
-        "Optional[AnchorError]",
+        "typing.Optional[AnchorError]",
     )
     return str(
         Collection(
@@ -183,7 +183,7 @@ def gen_anchor_errors(errors_dir: Path) -> None:
 
 def gen_index_code(idl: Idl) -> str:
     has_custom_errors = bool(idl.errors)
-    typing_import = FromImport("typing", ["Union", "Optional", "Any"])
+    typing_import = Import("typing")
     program_id_import = FromImport(".program_id", ["PROGRAM_ID"])
     anchor_import = FromImport(".", ["anchor"])
     re_import = Import("re")

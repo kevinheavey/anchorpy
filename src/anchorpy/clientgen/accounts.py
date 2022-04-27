@@ -3,6 +3,7 @@ from black import format_str, FileMode
 from pyheck import snake
 from genpy import (
     FromImport,
+    Import,
     Assign,
     Suite,
     Collection,
@@ -21,7 +22,6 @@ from anchorpy.idl import (
 from anchorpy.clientgen.utils import (
     Class,
     Method,
-    List,
     InitMethod,
     ClassMethod,
     TypedParam,
@@ -85,13 +85,14 @@ def gen_accounts_code(idl: Idl, accounts_dir: Path) -> dict[Path, str]:
 
 def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     base_imports = [
-        FromImport("typing", ["Optional"]),
+        Import("typing"),
         FromImport("solana.publickey", ["PublicKey"]),
-        FromImport("solana.rpc.api.async_client", ["AsyncClient"]),
+        FromImport("solana.rpc.async_api", ["AsyncClient"]),
         FromImport("solana.rpc.commitment", ["Commitment"]),
         ImportAs("borsh_construct", "borsh"),
         FromImport("anchorpy.coder.accounts", ["ACCOUNT_DISCRIMINATOR_SIZE"]),
         FromImport("anchorpy.error", ["AccountInvalidDiscriminator"]),
+        FromImport("anchorpy.borsh_extension", ["BorshPubkey", "EnumForCodegen"]),
         FromImport("..program_id", ["PROGRAM_ID"]),
     ]
     imports = (
@@ -137,7 +138,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         [
             TypedParam("conn", "AsyncClient"),
             TypedParam("address", "PublicKey"),
-            TypedParam("commitment", "Optional[Commitment] = None"),
+            TypedParam("commitment", "typing.Optional[Commitment] = None"),
         ],
         Suite(
             [
@@ -154,7 +155,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                 Return('cls.decode(info["data"])'),
             ]
         ),
-        f"typing.Optional[{name}]",
+        f'typing.Optional["{name}"]',
         is_async=True,
     )
     account_does_not_belong_raise = Raise(
@@ -165,7 +166,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         [
             TypedParam("conn", "AsyncClient"),
             TypedParam("addresses", "list[PublicKey]"),
-            TypedParam("commitment", "Optional[Commitment] = None"),
+            TypedParam("commitment", "typing.Optional[Commitment] = None"),
         ],
         Suite(
             [
@@ -192,8 +193,8 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                 Return("res"),
             ]
         ),
-        f"list[Optional[{name}]]",
-        is_async=False,
+        f'list[typing.Optional["{name}"]]',
+        is_async=True,
     )
     decode_body_end_arg = StrDict(decode_body_entries)
     account_invalid_raise = Raise(

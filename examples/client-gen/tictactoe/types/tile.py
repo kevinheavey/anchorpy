@@ -2,7 +2,6 @@ import typing
 from dataclasses import dataclass
 from construct import Container
 from solana.publickey import PublicKey
-from .. import types
 import borsh_construct as borsh
 
 
