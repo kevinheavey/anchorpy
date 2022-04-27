@@ -2,18 +2,26 @@ from pathlib import Path
 from genpy import (
     FromImport,
     Suite,
+    Collection,
     Return,
     Assign,
     If,
     For,
     Import,
-    Class,
     Function as UntypedFunction,
     Statement,
 )
 from anchorpy.idl import Idl, _IdlErrorCode
 from anchorpy.error import _LangErrorCode, LangErrorMessage
-from anchorpy.clientgen.utils import Function, TypedParam, Try, Break, Union, InitMethod
+from anchorpy.clientgen.utils import (
+    Function,
+    TypedParam,
+    Try,
+    Break,
+    Union,
+    InitMethod,
+    Class,
+)
 
 
 def gen_from_code_fn(has_custom_errors: bool) -> Function:
@@ -36,11 +44,11 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
 
 
 def gen_from_tx_error_fn() -> Function:
-    has_logs_block = If('"logs" not in err', Return(None))
+    has_logs_block = If('"logs" not in error', Return(None))
     regex_match = Assign("first_match", "error_re.match(logline)")
     break_if_match = If("first_match is not None", Break())
     loop_body = Suite([regex_match, break_if_match])
-    for_loop = For("logline", 'err["logs"]', loop_body)
+    for_loop = For("logline", 'error["logs"]', loop_body)
     no_match = If("first_match is None", Return("None"))
     assign_program_id_and_code = Assign(
         "program_id_raw, code_raw", "first_match.groups()"
@@ -107,17 +115,18 @@ def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
         "Optional[CustomError]",
     )
     return str(
-        Suite(
+        Collection(
             [typing_import, error_import, *classes, type_alias, error_map, from_code_fn]
         )
     )
 
 
-def gen_custom_errors(idl: Idl, out: Path) -> None:
+def gen_custom_errors(idl: Idl, errors_dir: Path) -> None:
     errors = idl.errors
     if errors is None or not errors:
         return
     code = gen_custom_errors_code(errors)
+    (errors_dir / "custom.py").with_suffix(".py").write_text(code)
 
 
 def gen_anchor_errors_code() -> str:
@@ -158,14 +167,15 @@ def gen_anchor_errors_code() -> str:
         "Optional[AnchorError]",
     )
     return str(
-        Suite(
+        Collection(
             [typing_import, error_import, *classes, type_alias, error_map, from_code_fn]
         )
     )
 
 
-def gen_anchor_errors(out: Path) -> None:
+def gen_anchor_errors(errors_dir: Path) -> None:
     code = gen_anchor_errors_code()
+    (errors_dir / "anchor").with_suffix(".py").write_text(code)
 
 
 def gen_index_code(idl: Idl) -> str:
@@ -182,14 +192,20 @@ def gen_index_code(idl: Idl) -> str:
         "error_re", 're.compile("Program (\\w+) failed: custom program error: (\\w+)")'
     )
     from_tx_error_fn = gen_from_tx_error_fn()
-    return str(Suite(import_lines + [from_code_fn, error_re_line, from_tx_error_fn]))
+    return str(
+        Collection(import_lines + [from_code_fn, error_re_line, from_tx_error_fn])
+    )
 
 
-def gen_index(idl: Idl, out_path: Path) -> None:
+def gen_index_file(idl: Idl, errors_dir: Path) -> None:
     code = gen_index_code(idl)
+    path = errors_dir / "__init__.py"
+    path.write_text(code)
 
 
-def gen_errors(idl: Idl, out_path: Path) -> None:
-    gen_index(idl, out_path)
-    gen_custom_errors(idl, out_path)
-    gen_anchor_errors(out_path)
+def gen_errors(idl: Idl, root: Path) -> None:
+    errors_dir = root / "errors"
+    errors_dir.mkdir(exist_ok=True)
+    gen_index_file(idl, errors_dir)
+    gen_custom_errors(idl, errors_dir)
+    gen_anchor_errors(errors_dir)

@@ -4,6 +4,7 @@ from genpy import (
     FromImport,
     Assign,
     Suite,
+    Collection,
     ImportAs,
     Return,
     For,
@@ -39,18 +40,21 @@ from anchorpy.clientgen.common import (
 )
 
 
-def gen_accounts(idl: Idl, out: Path) -> None:
+def gen_accounts(idl: Idl, root: Path) -> None:
     accounts = idl.accounts
     if accounts is None or not accounts:
         return
-    gen_index_file(idl, out)
-    gen_account_files(idl, out)
+    accounts_dir = root / "accounts"
+    accounts_dir.mkdir(exist_ok=True)
+    gen_index_file(idl, accounts_dir)
+    accounts_dict = gen_accounts_code(idl, accounts_dir)
+    for path, code in accounts_dict.items():
+        path.write_text(code)
 
 
-def gen_index_file(idl: Idl, out: Path) -> None:
+def gen_index_file(idl: Idl, accounts_dir: Path) -> None:
     code = gen_index_code(idl)
-    print("accounts index")
-    print(code)
+    (accounts_dir / "__init__.py").write_text(code)
 
 
 def gen_index_code(idl: Idl) -> str:
@@ -62,16 +66,17 @@ def gen_index_code(idl: Idl) -> str:
             _json_interface_name(acc.name),
         ]
         imports.append(FromImport(f".{snake(acc.name)}", members))
-    return str(Suite(imports))
+    return str(Collection(imports))
 
 
-def gen_account_files(idl: Idl, out: Path) -> None:
+def gen_accounts_code(idl: Idl, accounts_dir: Path) -> dict[Path, str]:
+    res = {}
     for acc in idl.accounts:
         filename = f"{snake(acc.name)}.py"
-        path = out / filename
+        path = accounts_dir / filename
         code = gen_account_code(acc, idl)
-        print(path)
-        print(code)
+        res[path] = code
+    return res
 
 
 def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
@@ -231,7 +236,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         ],
     )
     return str(
-        Suite(
+        Collection(
             [
                 *imports,
                 fields_interface,

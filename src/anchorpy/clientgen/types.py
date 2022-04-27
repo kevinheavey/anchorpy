@@ -7,6 +7,7 @@ from genpy import (
     Import,
     Assign,
     Suite,
+    Collection,
     ImportAs,
     Return,
     If,
@@ -53,18 +54,20 @@ from anchorpy.clientgen.common import (
 )
 
 
-def gen_types(idl: Idl, out: Path) -> None:
+def gen_types(idl: Idl, root: Path) -> None:
     types = idl.types
     if types is None or not types:
         return
-    gen_index_file(idl, out)
-    gen_type_files(idl, out)
+    types_dir = root / "types"
+    types_dir.mkdir(exist_ok=True)
+    gen_index_file(idl, types_dir)
+    gen_type_files(idl, types_dir)
 
 
-def gen_index_file(idl: Idl, out: Path) -> None:
+def gen_index_file(idl: Idl, types_dir: Path) -> None:
     code = gen_index_code(idl)
-    print("types index file")
-    print(code)
+    path = types_dir / "__init__.py"
+    path.write_text(code)
 
 
 def gen_index_code(idl: Idl) -> str:
@@ -97,18 +100,28 @@ def gen_index_code(idl: Idl) -> str:
             )
             kind_type_alias = Assign(_kind_interface_name(ty.name), type_variants)
             json_type_alias = Assign(_json_interface_name(ty.name), json_variants)
-            code_to_add = Suite([import_line, kind_type_alias, json_type_alias])
+            code_to_add = Collection([import_line, kind_type_alias, json_type_alias])
         lines.append(code_to_add)
-    return str(Suite(lines))
+    return str(Collection(lines))
 
 
-def gen_type_files(idl: Idl, out: Path) -> None:
+def gen_type_files(idl: Idl, types_dir: Path) -> None:
+    types_code = gen_types_code(idl, types_dir)
+    for path, code in types_code.items():
+        path.write_text(code)
+
+
+def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
+    res = {}
     for ty in idl.types:
         code = (
             gen_struct(idl, ty.name, ty.type.fields)
             if isinstance(ty.type, _IdlTypeDefTyStruct)
             else gen_enum(idl, ty.name, ty.type.variants)
         )
+        path = (out / snake(ty.name)).with_suffix(".py")
+        res[path] = code
+    return res
 
 
 def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
@@ -296,17 +309,15 @@ def _make_unnamed_field_record(
 
 
 def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
-    imports = Suite(
-        [
-            Import("typing"),
-            FromImport("dataclasses", ["dataclass"]),
-            FromImport("construct", ["Container"]),
-            FromImport("solana.publickey", ["PublicKey"]),
-            FromImport("anchorpy.borsh_extension", ["EnumForCodegen"]),
-            ImportAs("borsh_construct", "borsh"),
-            FromImport("..", ["types"]),
-        ]
-    )
+    imports = [
+        Import("typing"),
+        FromImport("dataclasses", ["dataclass"]),
+        FromImport("construct", ["Container"]),
+        FromImport("solana.publickey", ["PublicKey"]),
+        FromImport("anchorpy.borsh_extension", ["EnumForCodegen"]),
+        ImportAs("borsh_construct", "borsh"),
+        FromImport("..", ["types"]),
+    ]
     invalid_enum_raise = Raise('ValueError("Invalid enum object")')
     from_decoded_dict_check = If("not isinstance(obj, dict)", invalid_enum_raise)
     variant_name_in_obj_checks: list[Generable] = []
@@ -531,9 +542,9 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
         "layout", [], Return(f"EnumForCodegen({formatted_cstructs})"), "EnumForCodegen"
     )
     return str(
-        Suite(
+        Collection(
             [
-                imports,
+                *imports,
                 *extra_aliases,
                 *fields_type_aliases,
                 *value_type_aliases,

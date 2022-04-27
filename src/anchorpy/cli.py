@@ -12,6 +12,8 @@ from anchorpy.template import INIT_TESTS
 from anchorpy.clientgen.program_id import gen_program_id
 from anchorpy.clientgen.errors import gen_errors
 from anchorpy.clientgen.types import gen_types
+from anchorpy.clientgen.accounts import gen_accounts
+from anchorpy.clientgen.instructions import gen_instructions
 
 app = typer.Typer()
 
@@ -123,12 +125,13 @@ def client_gen(
     else:
         program_id_to_use = program_id
 
+    out.mkdir(exist_ok=True)
     typer.echo("generating program_id.py...")
     gen_program_id(idl_obj, program_id_to_use, out)
     typer.echo("generating errors.py...")
     gen_errors(idl_obj, out)
     typer.echo("generating instructions...")
-    # gen_instructions(idl_obj, out)
+    gen_instructions(idl_obj, out)
     typer.echo("generating types...")
     gen_types(idl_obj, out)
     typer.echo("generating accounts...")

@@ -2,9 +2,11 @@ from typing import cast, Optional
 from pathlib import Path
 from pyheck import upper_camel
 from genpy import (
+    Import,
     FromImport,
     Assign,
     Suite,
+    Collection,
     ImportAs,
     Return,
 )
@@ -27,6 +29,33 @@ from anchorpy.clientgen.common import (
     _layout_for_type,
     _field_to_encodable,
 )
+
+
+def gen_instructions(idl: Idl, root: Path) -> None:
+    instructions_dir = root / "instructions"
+    instructions_dir.mkdir(exist_ok=True)
+    gen_index_file(idl, instructions_dir)
+    instructions = gen_instructions_code(idl, instructions_dir)
+    for path, code in instructions.items():
+        path.write_text(code)
+
+
+def gen_index_file(idl: Idl, instructions_dir: Path) -> None:
+    code = gen_index_code(idl)
+    path = instructions_dir / "__init__.py"
+    path.write_text(code)
+
+
+def gen_index_code(idl: Idl) -> str:
+    imports: list[FromImport] = []
+    for ix in idl.instructions:
+        import_members: list[str] = []
+        if ix.args:
+            import_members.append(_args_interface_name(ix.name))
+        if ix.accounts:
+            import_members.append(_accounts_interface_name(ix.name))
+        imports.append(FromImport(f".{ix.name}", import_members))
+    return str(Collection(imports))
 
 
 def _args_interface_name(ix_name: str) -> str:
@@ -79,15 +108,17 @@ def gen_accounts(
     return [TypedDict(name, params)] + extra_typeddicts_to_use
 
 
-def gen_instruction_files(idl: Idl, out: Path) -> None:
+def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
     types_import = [FromImport("..", ["types"])] if idl.types else []
     imports = [
+        Import("typing"),
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
         ImportAs("borsh_construct", "borsh"),
         *types_import,
-        FromImport("..", ["PROGRAM_ID"]),
+        FromImport("..program_id", ["PROGRAM_ID"]),
     ]
+    result = {}
     for ix in idl.instructions:
         filename = (out / ix.name).with_suffix(".py")
         args_interface_params: list[TypedParam] = []
@@ -141,7 +172,7 @@ def gen_instruction_files(idl: Idl, out: Path) -> None:
             ),
             "TransactionInstruction",
         )
-        contents = Suite(
+        contents = Collection(
             [
                 *imports,
                 *args_interface_container,
@@ -150,5 +181,5 @@ def gen_instruction_files(idl: Idl, out: Path) -> None:
                 ix_fn,
             ]
         )
-        print(filename)
-        print(contents)
+        result[filename] = str(contents)
+    return result

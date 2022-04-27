@@ -102,7 +102,7 @@ class Function(FunctionOriginal):
             annotation = "" if arg.type is None else f": {arg.type}"
             arg_strings.append(f"{arg.name}{annotation}")
         def_base = "async def" if self.is_async else "def"
-        yield "{} {}({}): -> {}".format(
+        yield "{} {}({}) -> {}:".format(
             def_base, self.name, ", ".join(arg_strings), self.return_type
         )
         yield from self.body.generate()
