@@ -8,7 +8,7 @@ from pyheck import snake, upper_camel
 from borsh_construct import CStruct, Vec, U8
 import solana.publickey  # noqa: WPS301
 
-from anchorpy.borsh_extension import _BorshPubkey
+from anchorpy.borsh_extension import BorshPubkey
 
 _LiteralStrings = Literal[
     "bool",
@@ -279,7 +279,7 @@ class IdlProgramAccount(TypedDict):
     data: bytes
 
 
-IDL_ACCOUNT_LAYOUT = CStruct("authority" / _BorshPubkey, "data" / Vec(U8))
+IDL_ACCOUNT_LAYOUT = CStruct("authority" / BorshPubkey, "data" / Vec(U8))
 
 
 def _decode_idl_account(data: bytes) -> IdlProgramAccount:

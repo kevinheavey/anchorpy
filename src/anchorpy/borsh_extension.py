@@ -16,7 +16,7 @@ from construct import (
 )
 
 
-class _BorshPubkeyAdapter(Adapter):
+class BorshPubkeyAdapter(Adapter):
     def __init__(self) -> None:
         super().__init__(Bytes(32))  # type: ignore
 
@@ -116,5 +116,5 @@ class _DataclassStruct(Adapter):
         return asdict(obj)
 
 
-_BorshPubkey = _BorshPubkeyAdapter()  # noqa: WPS462
+BorshPubkey = BorshPubkeyAdapter()  # noqa: WPS462
 """Adapter for (de)serializing a public key."""  # noqa: WPS322

@@ -26,7 +26,7 @@ class GameJSON(typing.TypedDict):
 class Game(object):
     discriminator = b"\x1bZ\xa6}Jdy\x12"
     layout = borsh.CStruct(
-        "players" / _BorshPubkey[2],
+        "players" / BorshPubkey[2],
         "turn" / borsh.U8,
         "board" / borsh.Option(types.Sign.layout())[3][3],
         "state" / types.GameState.layout(),

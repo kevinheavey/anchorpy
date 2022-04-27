@@ -121,7 +121,7 @@ def _layout_for_type(
     elif ty == "string":
         inner = "borsh.String"
     elif ty == "publicKey":
-        inner = "_BorshPubkey"
+        inner = "BorshPubkey"
     elif isinstance(ty, _IdlTypeVec):
         inner = f"borsh.Vec({_layout_for_type(ty.vec)})"
     elif isinstance(ty, _IdlTypeOption):

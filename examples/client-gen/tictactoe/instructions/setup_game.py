@@ -10,7 +10,7 @@ class SetupGameArgs(typing.TypedDict):
     player_two: PublicKey
 
 
-layout = borsh.CStruct("player_two" / _BorshPubkey)
+layout = borsh.CStruct("player_two" / BorshPubkey)
 
 
 class SetupGameAccounts(typing.TypedDict):

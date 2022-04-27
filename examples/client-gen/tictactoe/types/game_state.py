@@ -128,5 +128,5 @@ def layout() -> EnumForCodegen:
     return EnumForCodegen(
         "Active" / borsh.CStruct(),
         "Tie" / borsh.CStruct(),
-        "Won" / borsh.CStruct("winner" / _BorshPubkey),
+        "Won" / borsh.CStruct("winner" / BorshPubkey),
     )

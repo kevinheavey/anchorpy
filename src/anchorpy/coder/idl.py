@@ -27,7 +27,7 @@ from borsh_construct import (
     Option,
 )
 
-from anchorpy.borsh_extension import _BorshPubkey, _DataclassStruct, COption
+from anchorpy.borsh_extension import BorshPubkey, _DataclassStruct, COption
 from anchorpy.idl import (
     _IdlEnumFieldsNamed,
     _IdlEnumFieldsTuple,
@@ -63,7 +63,7 @@ FIELD_TYPE_MAP: Mapping[str, Construct] = MappingProxyType(
         "i128": I128,
         "bytes": Bytes,
         "string": String,
-        "publicKey": _BorshPubkey,
+        "publicKey": BorshPubkey,
     },
 )
 
