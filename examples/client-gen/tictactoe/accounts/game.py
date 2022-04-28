@@ -29,8 +29,8 @@ class Game(object):
     layout = borsh.CStruct(
         "players" / BorshPubkey[2],
         "turn" / borsh.U8,
-        "board" / borsh.Option(types.sign.layout())[3][3],
-        "state" / types.game_state.layout(),
+        "board" / borsh.Option(types.sign.layout)[3][3],
+        "state" / types.game_state.layout,
     )
 
     def __init__(self, fields: GameFields) -> None:

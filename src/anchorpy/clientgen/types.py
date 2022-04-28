@@ -32,7 +32,6 @@ from anchorpy.clientgen.genpy_extension import (
     List,
     Method,
     InitMethod,
-    StaticMethod,
     ClassMethod,
     TypedParam,
     TypedDict,
@@ -150,7 +149,7 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
         json_interface_params.append(
             TypedParam(field.name, _idl_type_to_json_type(ty=field.type))
         )
-        layout_items.append(_layout_for_type(ty=field.type, name=field.name))
+        layout_items.append(_layout_for_type(idl=idl, ty=field.type, name=field.name))
         from_decoded_items.append(
             f"{field.name}={_field_from_decoded(idl=idl, ty=field, val_prefix='obj.')}"
         )
@@ -171,6 +170,7 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
         name,
         None,
         [
+            Assign("layout", layout),
             InitMethod(
                 [TypedParam("fields", fields_interface_name)],
                 Suite(
@@ -183,7 +183,6 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
                     ]
                 ),
             ),
-            StaticMethod("layout", [], Return(layout), "borsh.CStruct"),
             ClassMethod(
                 "from_decoded",
                 [TypedParam("obj", "Container")],
@@ -385,7 +384,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
                     init_entries_for_from_json.append(rec.init_entry_for_from_json)
 
                     cstruct_fields[named_field.name] = _layout_for_type(
-                        ty=named_field.type
+                        idl=idl, ty=named_field.type
                     )
 
                 fields_type_aliases.append(
@@ -439,7 +438,9 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
                     init_elements_for_from_json.append(
                         rec_unnamed.init_element_for_from_json
                     )
-                    cstruct_fields[f"_{i}"] = _layout_for_type(ty=unnamed_field)
+                    cstruct_fields[f"_{i}"] = _layout_for_type(
+                        idl=idl, ty=unnamed_field
+                    )
                 fields_type_aliases.append(
                     Assign(
                         fields_interface_name,
@@ -548,8 +549,9 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
         _kind_interface_name(name),
     )
     formatted_cstructs = ",".join(cstructs)
-    layout_fn = Function(
-        "layout", [], Return(f"EnumForCodegen({formatted_cstructs})"), "EnumForCodegen"
+    layout_assignment = Assign(
+        "layout",
+        f"EnumForCodegen({formatted_cstructs})",
     )
     json_variants = Union(json_variants_members)
     type_variants = Union(type_variants_members)
@@ -567,6 +569,6 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
             json_type_alias,
             from_decoded_fn,
             from_json_fn,
-            layout_fn,
+            layout_assignment,
         ]
     )

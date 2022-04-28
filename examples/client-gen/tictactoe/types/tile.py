@@ -14,13 +14,11 @@ class TileJSON(typing.TypedDict):
 
 
 class Tile(object):
+    layout = borsh.CStruct("row" / borsh.U8, "column" / borsh.U8)
+
     def __init__(self, fields: TileFields) -> None:
         self.row = fields["row"]
         self.column = fields["column"]
-
-    @staticmethod
-    def layout() -> borsh.CStruct:
-        return borsh.CStruct("row" / borsh.U8, "column" / borsh.U8)
 
     @classmethod
     def from_decoded(cls, obj: Container) -> "Tile":

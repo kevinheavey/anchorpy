@@ -124,9 +124,8 @@ def from_json(obj: GameStateJSON) -> GameStateKind:
     raise ValueError(f"Uncrecognized enum kind: {kind}")
 
 
-def layout() -> EnumForCodegen:
-    return EnumForCodegen(
-        "Active" / borsh.CStruct(),
-        "Tie" / borsh.CStruct(),
-        "Won" / borsh.CStruct("winner" / BorshPubkey),
-    )
+layout = EnumForCodegen(
+    "Active" / borsh.CStruct(),
+    "Tie" / borsh.CStruct(),
+    "Won" / borsh.CStruct("winner" / BorshPubkey),
+)

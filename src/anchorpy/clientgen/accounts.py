@@ -118,7 +118,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         json_interface_params.append(
             TypedParam(field.name, _idl_type_to_json_type(ty=field.type))
         )
-        layout_items.append(_layout_for_type(ty=field.type, name=field.name))
+        layout_items.append(_layout_for_type(idl=idl, ty=field.type, name=field.name))
         initializer = _struct_field_initializer(idl=idl, field=field)
         init_body_assignments.append(Assign(f"self.{field.name}", initializer))
         decode_body_entries.append(

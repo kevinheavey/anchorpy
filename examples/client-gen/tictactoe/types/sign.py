@@ -68,5 +68,4 @@ def from_json(obj: SignJSON) -> SignKind:
     raise ValueError(f"Uncrecognized enum kind: {kind}")
 
 
-def layout() -> EnumForCodegen:
-    return EnumForCodegen("X" / borsh.CStruct(), "O" / borsh.CStruct())
+layout = EnumForCodegen("X" / borsh.CStruct(), "O" / borsh.CStruct())

@@ -7,10 +7,10 @@ from ..program_id import PROGRAM_ID
 
 
 class PlayArgs(typing.TypedDict):
-    tile: types.tileTileFields
+    tile: types.tile.TileFields
 
 
-layout = borsh.CStruct("tile" / types.tile.layout())
+layout = borsh.CStruct("tile" / types.tile.Tile.layout)
 
 
 class PlayAccounts(typing.TypedDict):

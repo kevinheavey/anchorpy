@@ -135,7 +135,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
             args_interface_params.append(
                 TypedParam(arg.name, _py_type_from_idl(idl=idl, ty=arg.type))
             )
-            layout_items.append(_layout_for_type(ty=arg.type, name=arg.name))
+            layout_items.append(_layout_for_type(idl=idl, ty=arg.type, name=arg.name))
             encoded_args_entries.append(
                 StrDictEntry(
                     arg.name,
@@ -146,7 +146,6 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
             )
         if ix.args:
             args_interface_name = _args_interface_name(ix.name)
-            print(f"args")
             args_interface_container = [
                 TypedDict(args_interface_name, args_interface_params)
             ]

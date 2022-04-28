@@ -78,7 +78,6 @@ def _py_type_from_idl(
                 if use_fields_interface_for_struct
                 else ty.defined
             )
-            return f"{defined_types_prefix}{module}{name}"
         else:
             # enum
             name = _kind_interface_name(ty.defined)
@@ -107,6 +106,7 @@ def _py_type_from_idl(
 
 
 def _layout_for_type(
+    idl: Idl,
     ty: _IdlType,
     name: Optional[str] = None,
     types_relative_imports: bool = False,
@@ -144,19 +144,26 @@ def _layout_for_type(
     elif ty == "publicKey":
         inner = "BorshPubkey"
     elif isinstance(ty, _IdlTypeVec):
-        inner = f"borsh.Vec({_layout_for_type(ty=ty.vec)})"
+        inner = f"borsh.Vec({_layout_for_type(idl=idl, ty=ty.vec)})"
     elif isinstance(ty, _IdlTypeOption):
-        inner = f"borsh.Option({_layout_for_type(ty=ty.option)})"
+        inner = f"borsh.Option({_layout_for_type(idl=idl, ty=ty.option)})"
     elif isinstance(ty, _IdlTypeCOption):
-        inner = f"COption({_layout_for_type(ty=ty.coption)})"
+        inner = f"COption({_layout_for_type(idl=idl, ty=ty.coption)})"
     elif isinstance(ty, _IdlTypeDefined):
+        defined = ty.defined
+        filtered = [t for t in idl.types if t.name == defined]
+        typedef_type = filtered[0].type
         defined_types_prefix = (
             "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
         )
-        module = snake(ty.defined)
-        inner = f"{defined_types_prefix}{module}.layout()"
+        module = snake(defined)
+        inner = (
+            f"{defined_types_prefix}{module}.{defined}.layout"
+            if isinstance(typedef_type, _IdlTypeDefTyStruct)
+            else f"{defined_types_prefix}{module}.layout"
+        )
     elif isinstance(ty, _IdlTypeArray):
-        inner = f"{_layout_for_type(ty=ty.array[0])}[{ty.array[1]}]"
+        inner = f"{_layout_for_type(idl=idl, ty=ty.array[0])}[{ty.array[1]}]"
     else:
         raise ValueError(f"Unrecognized type: {ty}")
 
