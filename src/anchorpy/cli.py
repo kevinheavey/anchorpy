@@ -110,7 +110,6 @@ def client_gen(
     idl_obj = Idl.from_json(idl_dict)
     if program_id is None:
         idl_metadata = idl_obj.metadata
-        print(idl_metadata)
         if idl_metadata is None:
             address_from_idl = None
         else:
