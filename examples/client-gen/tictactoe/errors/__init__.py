@@ -12,7 +12,9 @@ def from_code(code: int) -> typing.Union[custom.CustomError, anchor.AnchorError,
 error_re = re.compile(r"Program (\w+) failed: custom program error: (\w+)")
 
 
-def from_tx_error(error: Any) -> typing.Optional[anchor.AnchorError]:
+def from_tx_error(
+    error: typing.Any,
+) -> typing.Union[anchor.AnchorError, custom.CustomError, None]:
     if "logs" not in error:
         return None
     for logline in error["logs"]:
@@ -25,7 +27,7 @@ def from_tx_error(error: Any) -> typing.Optional[anchor.AnchorError]:
     if program_id_raw != str(PROGRAM_ID):
         return None
     try:
-        error_code = int(code_raw(16))
+        error_code = int(code_raw, 16)
     except ValueError:
         return None
     return from_code(error_code)

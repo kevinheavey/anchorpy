@@ -30,4 +30,4 @@ def play(args: PlayArgs, accounts: PlayAccounts) -> TransactionInstruction:
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(data, keys, PROGRAM_ID)
+    return TransactionInstruction(keys, PROGRAM_ID, data)

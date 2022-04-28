@@ -59,7 +59,7 @@ def gen_from_tx_error_fn() -> Function:
     )
     program_id_check = If("program_id_raw != str(PROGRAM_ID)", Return("None"))
     parse_error_code = Try(
-        Assign("error_code", "int(code_raw(16))"), "ValueError", Return("None")
+        Assign("error_code", "int(code_raw, 16)"), "ValueError", Return("None")
     )
     final_return = Return("from_code(error_code)")
     fn_body = Suite(
@@ -75,9 +75,9 @@ def gen_from_tx_error_fn() -> Function:
     )
     return Function(
         "from_tx_error",
-        [TypedParam("error", "Any")],
+        [TypedParam("error", "typing.Any")],
         fn_body,
-        "typing.Optional[anchor.AnchorError]",
+        "typing.Union[anchor.AnchorError, custom.CustomError, None]",
     )
 
 
@@ -104,7 +104,9 @@ def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
         error_names.append(name)
         error_map_entries.append(IntDictEntry(code, f"{name}()"))
     type_alias = Assign("CustomError", Union(error_names))
-    error_map = Assign("CUSTOM_ERROR_MAP", IntDict(error_map_entries))
+    error_map = Assign(
+        "CUSTOM_ERROR_MAP: dict[int, CustomError]", IntDict(error_map_entries)
+    )
     from_code_body = Suite(
         [
             Assign("maybe_err", "CUSTOM_ERROR_MAP.get(code)"),

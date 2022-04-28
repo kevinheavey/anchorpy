@@ -50,7 +50,7 @@ class GameAlreadyStarted(ProgramError):
 CustomError = typing.Union[
     TileOutOfBounds, TileAlreadySet, GameAlreadyOver, NotPlayersTurn, GameAlreadyStarted
 ]
-CUSTOM_ERROR_MAP = {
+CUSTOM_ERROR_MAP: dict[int, CustomError] = {
     6000: TileOutOfBounds(),
     6001: TileAlreadySet(),
     6002: GameAlreadyOver(),

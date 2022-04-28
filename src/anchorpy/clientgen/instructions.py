@@ -119,6 +119,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
         Import("typing"),
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
+        FromImport("anchorpy.borsh_extension", ["EnumForCodegen", "BorshPubkey"]),
         ImportAs("borsh_construct", "borsh"),
         *types_import,
         FromImport("..program_id", ["PROGRAM_ID"]),
@@ -145,6 +146,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
             )
         if ix.args:
             args_interface_name = _args_interface_name(ix.name)
+            print(f"args")
             args_interface_container = [
                 TypedDict(args_interface_name, args_interface_params)
             ]
@@ -165,7 +167,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
             "encoded_args", f"layout.build({StrDict(encoded_args_entries)})"
         )
         data_assignment = Assign("data", "identifier + encoded_args")
-        returning = Return("TransactionInstruction(data, keys, PROGRAM_ID)")
+        returning = Return("TransactionInstruction(keys, PROGRAM_ID, data)")
         ix_fn = Function(
             ix.name,
             [*args_container, *accounts_container],

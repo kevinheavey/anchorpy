@@ -1,6 +1,7 @@
 import typing
 from solana.publickey import PublicKey
 from solana.transaction import TransactionInstruction, AccountMeta
+from anchorpy.borsh_extension import BorshPubkey
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
@@ -35,4 +36,4 @@ def setup_game(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(data, keys, PROGRAM_ID)
+    return TransactionInstruction(keys, PROGRAM_ID, data)
