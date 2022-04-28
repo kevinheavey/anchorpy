@@ -70,9 +70,9 @@ def _py_type_from_idl(
         )
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        type_kind = filtered[0].type.kind
+        typedef_type = filtered[0].type
         module = snake(ty.defined)
-        if isinstance(type_kind, _IdlTypeDefTyStruct):
+        if isinstance(typedef_type, _IdlTypeDefTyStruct):
             name = (
                 _fields_interface_name(ty.defined)
                 if use_fields_interface_for_struct
@@ -203,8 +203,8 @@ def _field_to_encodable(
         filtered = [t for t in idl.types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        type_kind = filtered[0].type.kind
-        if isinstance(type_kind, _IdlTypeDefTyStruct):
+        typedef_type = filtered[0].type
+        if isinstance(typedef_type, _IdlTypeDefTyStruct):
             val_full_name = f"{val_prefix}{ty.name}{val_suffix}"
             defined_types_prefix = (
                 "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
@@ -330,13 +330,13 @@ def _struct_field_initializer(
         filtered = [t for t in idl.types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        type_kind = filtered[0].type.kind
-        if isinstance(type_kind, _IdlTypeDefTyStruct):
-            module = snake(type_kind.name)
+        typedef_type = filtered[0].type
+        if isinstance(typedef_type, _IdlTypeDefTyStruct):
+            module = snake(defined)
             defined_types_prefix = (
                 "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
             )
-            obj_name = f"{defined_types_prefix}{module}.{type_kind.name}"
+            obj_name = f"{defined_types_prefix}{module}.{defined}"
             return f"{obj_name}(**{prefix}{field.name}{suffix})"
         return f"{prefix}{field.name}{suffix}"
     if isinstance(field_type, _IdlTypeOption):
