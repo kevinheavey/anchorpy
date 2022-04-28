@@ -15,7 +15,7 @@ from genpy import (
 )
 from anchorpy.idl import Idl, _IdlErrorCode
 from anchorpy.error import _LangErrorCode, LangErrorMessage
-from anchorpy.clientgen.utils import (
+from anchorpy.clientgen.genpy_extension import (
     Function,
     TypedParam,
     Try,

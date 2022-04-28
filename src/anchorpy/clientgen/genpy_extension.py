@@ -187,10 +187,6 @@ class Try(Generable):
 
     def generate(self):
         yield "try:"
-
-        for line in self.try_body.generate():
-            yield line
-
+        yield from self.try_body.generate()
         yield f"except {self.to_catch}:"
-        for line in self.except_body.generate():
-            yield line
+        yield from self.except_body.generate()

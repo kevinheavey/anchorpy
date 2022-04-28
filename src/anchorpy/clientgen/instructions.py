@@ -18,7 +18,7 @@ from anchorpy.idl import (
     _IdlAccounts,
     _IdlAccountItem,
 )
-from anchorpy.clientgen.utils import (
+from anchorpy.clientgen.genpy_extension import (
     TypedParam,
     TypedDict,
     StrDict,

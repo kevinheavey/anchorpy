@@ -20,7 +20,7 @@ from anchorpy.idl import (
     Idl,
     _IdlAccountDef,
 )
-from anchorpy.clientgen.utils import (
+from anchorpy.clientgen.genpy_extension import (
     Class,
     Method,
     InitMethod,

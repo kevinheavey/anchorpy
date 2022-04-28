@@ -25,7 +25,7 @@ from anchorpy.idl import (
     _IdlEnumFieldsTuple,
     _IdlEnumFieldsNamed,
 )
-from anchorpy.clientgen.utils import (
+from anchorpy.clientgen.genpy_extension import (
     Union,
     Class,
     Tuple,
