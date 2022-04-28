@@ -73,43 +73,29 @@ def gen_index_file(idl: Idl, types_dir: Path) -> None:
 
 
 def gen_index_code(idl: Idl) -> str:
-    lines = []
     imports: list[TypingUnion[Import, FromImport]] = [Import("typing")]
-    all_members: list[str] = []
     for ty in idl.types:
         ty_type = ty.type
         module_name = snake(ty.name)
+        imports.append(FromImport(".", [module_name]))
         if isinstance(ty_type, _IdlTypeDefTyStruct):
             import_members = [
                 ty.name,
                 _fields_interface_name(ty.name),
                 _json_interface_name(ty.name),
             ]
-            imports.append(
-                FromImport(
-                    f".{module_name}",
-                    import_members,
-                )
-            )
-            all_members.extend(f'"{mem}"' for mem in import_members)
         else:
-            imports.append(FromImport(".", [module_name]))
-            all_members.append(f'"{module_name}"')
-            json_variants = Union(
-                [
-                    f"{module_name}.{_json_interface_name(variant.name)}"
-                    for variant in ty_type.variants
-                ]
+            import_members = [
+                _kind_interface_name(ty.name),
+                _json_interface_name(ty.name),
+            ]
+        imports.append(
+            FromImport(
+                f".{module_name}",
+                import_members,
             )
-            type_variants = Union(
-                [f"{module_name}.{variant.name}" for variant in ty_type.variants]
-            )
-            kind_type_alias_imports = Assign(
-                _kind_interface_name(ty.name), type_variants
-            )
-            json_type_alias = Assign(_json_interface_name(ty.name), json_variants)
-            lines.extend([kind_type_alias, json_type_alias])
-    return str(Collection([*imports, *lines]))
+        )
+    return str(Collection(imports))
 
 
 def gen_type_files(idl: Idl, types_dir: Path) -> None:
