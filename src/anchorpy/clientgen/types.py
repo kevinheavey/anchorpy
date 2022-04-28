@@ -107,18 +107,24 @@ def gen_type_files(idl: Idl, types_dir: Path) -> None:
 
 def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
     res = {}
+    types_module_names = [snake(ty.name) for ty in idl.types]
     for ty in idl.types:
-        code = (
+        module_name = snake(ty.name)
+        relative_import = FromImport(
+            ".", [mod for mod in types_module_names if mod != module_name]
+        )
+        body = (
             gen_struct(idl, ty.name, ty.type.fields)
             if isinstance(ty.type, _IdlTypeDefTyStruct)
             else gen_enum(idl, ty.name, ty.type.variants)
         )
-        path = (out / snake(ty.name)).with_suffix(".py")
+        code = str(Collection([relative_import, body]))
+        path = (out / module_name).with_suffix(".py")
         res[path] = code
     return res
 
 
-def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
+def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
     imports = [
         Import("typing"),
         FromImport("dataclasses", ["dataclass"]),
@@ -197,7 +203,7 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> str:
             ),
         ],
     )
-    return str(Collection([*imports, fields_interface, json_interface, struct_cls]))
+    return Collection([*imports, fields_interface, json_interface, struct_cls])
 
 
 def _make_cstruct(fields: dict[str, str]) -> str:
@@ -306,7 +312,7 @@ def _make_unnamed_field_record(
     )
 
 
-def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
+def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection:
     imports = [
         Import("typing"),
         FromImport("solana.publickey", ["PublicKey"]),
@@ -544,20 +550,18 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> str:
     type_variants = Union(type_variants_members)
     kind_type_alias = Assign(_kind_interface_name(name), type_variants)
     json_type_alias = Assign(_json_interface_name(name), json_variants)
-    return str(
-        Collection(
-            [
-                *imports,
-                *extra_aliases,
-                *fields_type_aliases,
-                *value_type_aliases,
-                *json_interfaces,
-                *classes,
-                kind_type_alias,
-                json_type_alias,
-                from_decoded_fn,
-                from_json_fn,
-                layout_fn,
-            ]
-        )
+    return Collection(
+        [
+            *imports,
+            *extra_aliases,
+            *fields_type_aliases,
+            *value_type_aliases,
+            *json_interfaces,
+            *classes,
+            kind_type_alias,
+            json_type_alias,
+            from_decoded_fn,
+            from_json_fn,
+            layout_fn,
+        ]
     )
