@@ -80,6 +80,20 @@ class StrDict(Generable):
         yield "{" + formatted_items + "}"
 
 
+class IntDictEntry(Generable):
+    def __init__(self, key: int, val: str) -> None:
+        self.key = key
+        self.val = val
+
+    def generate(self) -> Iterator[str]:
+        yield f"{self.key}: {self.val},"
+
+
+class IntDict(StrDict):
+    def __init__(self, items: list[IntDictEntry]) -> None:
+        self.items = items
+
+
 class Function(FunctionOriginal):
     def __init__(
         self,

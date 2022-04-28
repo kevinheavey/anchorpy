@@ -276,14 +276,18 @@ def _field_from_decoded(
         filtered = [t for t in idl.types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        module = snake(defined)
+        typedef_type = filtered[0].type
+        from_decoded_func_path = (
+            f"{snake(defined)}.{defined}"
+            if isinstance(typedef_type, _IdlTypeDefTyStruct)
+            else f"{snake(defined)}"
+        )
         defined_types_prefix = (
             "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
         )
+        full_func_path = f"{defined_types_prefix}{from_decoded_func_path}"
         from_decoded_arg = f"{val_prefix}{ty.name}"
-        return (
-            f"{defined_types_prefix}{module}.{defined}.from_decoded({from_decoded_arg})"
-        )
+        return f"{full_func_path}.from_decoded({from_decoded_arg})"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_from_decoded(
             idl=idl,
@@ -499,7 +503,10 @@ def _idl_type_to_json_type(ty: _IdlType, types_relative_imports: bool = False) -
 
 
 def _field_from_json(
-    ty: _IdlField, json_param_name: str = "obj", types_relative_imports: bool = False
+    idl: Idl,
+    ty: _IdlField,
+    json_param_name: str = "obj",
+    types_relative_imports: bool = False,
 ) -> str:
     param_prefix = json_param_name + '["' if json_param_name else ""
     param_suffix = '"]' if json_param_name else ""
@@ -508,6 +515,7 @@ def _field_from_json(
         return f"PublicKey({param_prefix}{ty.name}{param_suffix})"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_from_json(
+            idl=idl,
             ty=_IdlField("item", ty_type.vec),
             json_param_name="",
             types_relative_imports=types_relative_imports,
@@ -520,6 +528,7 @@ def _field_from_json(
         )
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_from_json(
+            idl=idl,
             ty=_IdlField("item", ty_type.array[0]),
             json_param_name="",
             types_relative_imports=types_relative_imports,
@@ -532,6 +541,7 @@ def _field_from_json(
         )
     if isinstance(ty_type, _IdlTypeOption):
         inner = _field_from_json(
+            idl=idl,
             ty=_IdlField(ty.name, ty_type.option),
             json_param_name=json_param_name,
             types_relative_imports=types_relative_imports,
@@ -542,6 +552,7 @@ def _field_from_json(
         return f"({param_prefix}{ty.name}{param_suffix} and {inner}) or None"
     if isinstance(ty_type, _IdlTypeCOption):
         inner = _field_from_json(
+            idl=idl,
             ty=_IdlField(ty.name, ty_type.coption),
             json_param_name=json_param_name,
             types_relative_imports=types_relative_imports,
@@ -552,11 +563,19 @@ def _field_from_json(
         return f"({param_prefix}{ty.name}{param_suffix} and {inner}) or None"
     if isinstance(ty_type, _IdlTypeDefined):
         from_json_arg = f"{param_prefix}{ty.name}{param_suffix}"
-        module = snake(ty.name)
+        defined = ty_type.defined
+        filtered = [t for t in idl.types if t.name == defined]
+        typedef_type = filtered[0].type
+        from_json_func_path = (
+            f"{snake(defined)}.{defined}"
+            if isinstance(typedef_type, _IdlTypeDefTyStruct)
+            else f"{snake(defined)}"
+        )
         defined_types_prefix = (
             "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
         )
-        return f"{defined_types_prefix}{module}.{ty.name}.from_json({from_json_arg})"
+        full_func_path = f"{defined_types_prefix}{from_json_func_path}"
+        return f"{full_func_path}.from_json({from_json_arg})"
     if ty_type in {
         "bool",
         "u8",

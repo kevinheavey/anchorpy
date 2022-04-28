@@ -23,6 +23,8 @@ from anchorpy.clientgen.utils import (
     Union,
     InitMethod,
     Class,
+    IntDict,
+    IntDictEntry,
 )
 
 
@@ -84,7 +86,7 @@ def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
     error_import = FromImport("anchorpy.error", ["ProgramError"])
     error_names: list[str] = []
     classes: list[Class] = []
-    error_map: dict[int, str] = {}
+    error_map_entries: list[IntDictEntry] = []
     for error in errors:
         code = error.code
         name = error.name
@@ -100,14 +102,14 @@ def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
         klass = Class(name=name, bases=["ProgramError"], attributes=attrs)
         classes.append(klass)
         error_names.append(name)
-        error_map[code] = name
+        error_map_entries.append(IntDictEntry(code, f"{name}()"))
     type_alias = Assign("CustomError", Union(error_names))
-    error_map = Assign("CUSTOM_ERROR_MAP", str(error_map).replace("'", ""))
+    error_map = Assign("CUSTOM_ERROR_MAP", IntDict(error_map_entries))
     from_code_body = Suite(
         [
             Assign("maybe_err", "CUSTOM_ERROR_MAP.get(code)"),
             If("maybe_err is None", Return("None")),
-            Return("maybe_err()"),
+            Return("maybe_err"),
         ]
     )
     from_code_fn = Function(
@@ -138,7 +140,7 @@ def gen_anchor_errors_code() -> str:
     error_import = FromImport("anchorpy.error", ["ProgramError"])
     error_names: list[str] = []
     classes: list[Class] = []
-    error_map: dict[int, str] = {}
+    error_map_entries: list[IntDictEntry] = []
     for variant in _LangErrorCode:
         name = variant.name
         code = variant.value
@@ -154,14 +156,17 @@ def gen_anchor_errors_code() -> str:
         klass = Class(name=name, bases=["ProgramError"], attributes=attrs)
         classes.append(klass)
         error_names.append(name)
-        error_map[code] = name
+        error_map_entries.append(IntDictEntry(code, f"{name}()"))
     type_alias = Assign("AnchorError", Union(error_names))
-    error_map = Assign("ANCHOR_ERROR_MAP", str(error_map).replace("'", ""))
+    error_map = Assign(
+        "ANCHOR_ERROR_MAP: dict[int, AnchorError]",
+        IntDict(error_map_entries),
+    )
     from_code_body = Suite(
         [
             Assign("maybe_err", "ANCHOR_ERROR_MAP.get(code)"),
             If("maybe_err is None", Return("None")),
-            Return("maybe_err()"),
+            Return("maybe_err"),
         ]
     )
     from_code_fn = Function(

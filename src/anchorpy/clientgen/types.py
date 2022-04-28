@@ -159,7 +159,7 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
         )
         to_encodable_items.append(f'"{field.name}": {as_encodable}')
         to_json_items.append(f'"{field.name}": {_field_to_json(idl, field, "self.")}')
-        from_json_items.append(f"{field.name}={_field_from_json(ty=field)}")
+        from_json_items.append(f"{field.name}={_field_from_json(idl=idl, ty=field)}")
     fields_interface = TypedDict(fields_interface_name, fields_interface_params)
     json_interface = TypedDict(json_interface_name, json_interface_params)
     layout = f"borsh.CStruct({','.join(layout_items)})"
@@ -266,6 +266,7 @@ def _make_named_field_record(named_field: _IdlField, idl: Idl) -> _NamedFieldRec
         init_entry_for_from_json=StrDictEntry(
             named_field.name,
             _field_from_json(
+                idl=idl,
                 ty=named_field,
                 json_param_name='obj["value"]',
             ),
@@ -309,6 +310,7 @@ def _make_unnamed_field_record(
             idl=idl, ty=_IdlField(f'val["_{index}"]', unnamed_field), val_prefix=""
         ),
         init_element_for_from_json=_field_from_json(
+            idl=idl,
             ty=_IdlField(f'value["{index}"]', unnamed_field),
         ),
     )

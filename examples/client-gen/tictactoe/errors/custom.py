@@ -51,11 +51,11 @@ CustomError = typing.Union[
     TileOutOfBounds, TileAlreadySet, GameAlreadyOver, NotPlayersTurn, GameAlreadyStarted
 ]
 CUSTOM_ERROR_MAP = {
-    6000: TileOutOfBounds,
-    6001: TileAlreadySet,
-    6002: GameAlreadyOver,
-    6003: NotPlayersTurn,
-    6004: GameAlreadyStarted,
+    6000: TileOutOfBounds(),
+    6001: TileAlreadySet(),
+    6002: GameAlreadyOver(),
+    6003: NotPlayersTurn(),
+    6004: GameAlreadyStarted(),
 }
 
 
@@ -63,4 +63,4 @@ def from_code(code: int) -> typing.Optional[CustomError]:
     maybe_err = CUSTOM_ERROR_MAP.get(code)
     if maybe_err is None:
         return None
-    return maybe_err()
+    return maybe_err

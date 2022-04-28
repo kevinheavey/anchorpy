@@ -129,7 +129,9 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         to_json_entries.append(
             StrDictEntry(field.name, _field_to_json(idl, field, "self."))
         )
-        from_json_entries.append(StrDictEntry(field.name, _field_from_json(ty=field)))
+        from_json_entries.append(
+            StrDictEntry(field.name, _field_from_json(idl=idl, ty=field))
+        )
     fields_interface = TypedDict(fields_interface_name, fields_interface_params)
     json_interface = TypedDict(json_interface_name, json_interface_params)
     discriminator_assignment = Assign("discriminator", _account_discriminator(name))
