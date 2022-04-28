@@ -6,7 +6,7 @@ from anchorpy.idl import Idl
 
 def gen_program_id_code(idl: Idl, program_id: str) -> str:
     import_line = FromImport("solana.publickey", ["PublicKey"])
-    assignment_line = Assign("PROGRAM_ID", f'PublicKey({"program_id"})')
+    assignment_line = Assign("PROGRAM_ID", f'PublicKey("{program_id}")')
     return str(Collection([import_line, assignment_line]))
 
 
