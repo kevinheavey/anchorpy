@@ -174,10 +174,10 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
             [
                 Assign(
                     "resp",
-                    "await conn.get_account_info(address, commitment=commitment)",
+                    "await conn.get_multiple_accounts(addresses, commitment=commitment)",
                 ),
                 Assign("infos", 'resp["result"]["value"]'),
-                Assign("result", "[]"),
+                Assign("res", "[]"),
                 For(
                     "info",
                     "infos",

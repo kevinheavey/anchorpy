@@ -63,7 +63,7 @@ class Game(object):
     ) -> list[typing.Optional["Game"]]:
         resp = await conn.get_account_info(address, commitment=commitment)
         infos = resp["result"]["value"]
-        result = []
+        res = []
         for info in infos:
             if info is None:
                 return None
