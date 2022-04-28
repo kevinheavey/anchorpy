@@ -9,7 +9,7 @@ def from_code(code: int) -> typing.Union[custom.CustomError, anchor.AnchorError,
     return custom.from_code(code) if code >= 6000 else anchor.from_code(code)
 
 
-error_re = re.compile("Program (\w+) failed: custom program error: (\w+)")
+error_re = re.compile(r"Program (\w+) failed: custom program error: (\w+)")
 
 
 def from_tx_error(error: Any) -> typing.Optional[anchor.AnchorError]:
