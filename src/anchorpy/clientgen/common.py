@@ -38,17 +38,26 @@ def _py_type_from_idl(
 ) -> str:
     if isinstance(ty, _IdlTypeVec):
         inner_type = _py_type_from_idl(
-            idl, ty.vec, defined_types_prefix, use_fields_interface_for_struct
+            idl=idl,
+            ty=ty.vec,
+            defined_types_prefix=defined_types_prefix,
+            use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"list[{inner_type}]"
     elif isinstance(ty, _IdlTypeOption):
         inner_type = _py_type_from_idl(
-            idl, ty.option, defined_types_prefix, use_fields_interface_for_struct
+            idl=idl,
+            ty=ty.option,
+            defined_types_prefix=defined_types_prefix,
+            use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"typing.Optional[{inner_type}]"
     elif isinstance(ty, _IdlTypeCOption):
         inner_type = _py_type_from_idl(
-            idl, ty.coption, defined_types_prefix, use_fields_interface_for_struct
+            idl=idl,
+            ty=ty.coption,
+            defined_types_prefix=defined_types_prefix,
+            use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"typing.Optional[{inner_type}]"
     elif isinstance(ty, _IdlTypeDefined):
@@ -68,7 +77,10 @@ def _py_type_from_idl(
         return f"{defined_types_prefix}{name}"
     elif isinstance(ty, _IdlTypeArray):
         inner_type = _py_type_from_idl(
-            idl, ty.array[0], defined_types_prefix, use_fields_interface_for_struct
+            idl=idl,
+            ty=ty.array[0],
+            defined_types_prefix=defined_types_prefix,
+            use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"list[{inner_type}]"
     elif ty == "bool":
@@ -124,15 +136,15 @@ def _layout_for_type(
     elif ty == "publicKey":
         inner = "BorshPubkey"
     elif isinstance(ty, _IdlTypeVec):
-        inner = f"borsh.Vec({_layout_for_type(ty.vec)})"
+        inner = f"borsh.Vec({_layout_for_type(ty=ty.vec)})"
     elif isinstance(ty, _IdlTypeOption):
-        inner = f"borsh.Option({_layout_for_type(ty.option)})"
+        inner = f"borsh.Option({_layout_for_type(ty=ty.option)})"
     elif isinstance(ty, _IdlTypeCOption):
-        inner = f"COption({_layout_for_type(ty.coption)})"
+        inner = f"COption({_layout_for_type(ty=ty.coption)})"
     elif isinstance(ty, _IdlTypeDefined):
         inner = f"{defined_types_prefix}{snake(ty.defined)}.layout()"
     elif isinstance(ty, _IdlTypeArray):
-        inner = f"{_layout_for_type(ty.array[0])}[{ty.array[1]}]"
+        inner = f"{_layout_for_type(ty=ty.array[0])}[{ty.array[1]}]"
     else:
         raise ValueError(f"Unrecognized type: {ty}")
 
@@ -151,7 +163,11 @@ def _field_to_encodable(
     ty_type = ty.type
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_to_encodable(
-            idl, _IdlField("item", ty_type.vec), "", defined_types_prefix, val_suffix
+            idl=idl,
+            ty=_IdlField("item", ty_type.vec),
+            val_prefix="",
+            defined_types_prefix=defined_types_prefix,
+            val_suffix=val_suffix,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -159,11 +175,11 @@ def _field_to_encodable(
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}{val_suffix}))"
     if isinstance(ty_type, _IdlTypeOption):
         encodable = _field_to_encodable(
-            idl,
-            _IdlField(ty.name, ty_type.option),
-            val_prefix,
-            defined_types_prefix,
-            val_suffix,
+            idl=idl,
+            ty=_IdlField(ty.name, ty_type.option),
+            val_prefix=val_prefix,
+            defined_types_prefix=defined_types_prefix,
+            val_suffix=val_suffix,
         )
         if encodable == f"{val_prefix}{ty.name}{val_suffix}":
             return encodable
@@ -182,10 +198,10 @@ def _field_to_encodable(
         return f"{val_prefix}{ty.name}{val_suffix}.to_encodable()"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_to_encodable(
-            idl,
-            _IdlField("item", ty_type.array[0]),
-            "",
-            defined_types_prefix,
+            idl=idl,
+            ty=_IdlField("item", ty_type.array[0]),
+            val_prefix="",
+            defined_types_prefix=defined_types_prefix,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -219,7 +235,10 @@ def _field_from_decoded(
     ty_type = ty.type
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_from_decoded(
-            idl, _IdlField("item", ty_type.vec), "", defined_types_prefix
+            idl=idl,
+            ty=_IdlField("item", ty_type.vec),
+            val_prefix="",
+            defined_types_prefix=defined_types_prefix,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -227,7 +246,7 @@ def _field_from_decoded(
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
     if isinstance(ty_type, _IdlTypeOption):
         decoded = _field_from_decoded(
-            idl, _IdlField(ty.name, ty_type.option), val_prefix
+            idl=idl, ty=_IdlField(ty.name, ty_type.option), val_prefix=val_prefix
         )
         # skip coercion when not needed
         if decoded == f"{val_prefix}{ty.name}":
@@ -243,7 +262,10 @@ def _field_from_decoded(
         return f"{defined_types_prefix}{defined}.from_decoded({val_prefix}{ty.name})"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_from_decoded(
-            idl, _IdlField("item", ty_type.array[0]), "", defined_types_prefix
+            idl=idl,
+            ty=_IdlField("item", ty_type.array[0]),
+            val_prefix="",
+            defined_types_prefix=defined_types_prefix,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -272,7 +294,11 @@ def _field_from_decoded(
 
 
 def _struct_field_initializer(
-    idl: Idl, field: _IdlField, prefix: str = 'fields["', suffix: str = '"]'
+    idl: Idl,
+    field: _IdlField,
+    prefix: str = 'fields["',
+    suffix: str = '"]',
+    defined_types_prefix: str = "types.",
 ) -> str:
     field_type = field.type
     if isinstance(field_type, _IdlTypeDefined):
@@ -282,11 +308,15 @@ def _struct_field_initializer(
             raise ValueError(f"Type not found {defined}")
         type_kind = filtered[0].type.kind
         if isinstance(type_kind, _IdlTypeDefTyStruct):
-            return f"types.{type_kind.name}(**{prefix}{field.name}{suffix})"
+            obj_name = f"{defined_types_prefix}{type_kind.name}"
+            return f"{obj_name}(**{prefix}{field.name}{suffix})"
         return f"{prefix}{field.name}{suffix}"
     if isinstance(field_type, _IdlTypeOption):
         initializer = _struct_field_initializer(
-            idl, _IdlField(field.name, field_type.option), prefix, suffix
+            idl=idl,
+            field=_IdlField(field.name, field_type.option),
+            prefix=prefix,
+            suffix=suffix,
         )
         # skip coercion when not needed
         if initializer == f"{prefix}{field.name}{suffix}":
@@ -294,7 +324,10 @@ def _struct_field_initializer(
         return f"({prefix}{field.name}{suffix} and {initializer}) or None"
     if isinstance(field_type, _IdlTypeCOption):
         initializer = _struct_field_initializer(
-            idl, _IdlField(field.name, field_type.coption), prefix, suffix
+            idl=idl,
+            field=_IdlField(field.name, field_type.coption),
+            prefix=prefix,
+            suffix=suffix,
         )
         # skip coercion when not needed
         if initializer == f"{prefix}{field.name}{suffix}":
@@ -302,7 +335,7 @@ def _struct_field_initializer(
         return f"({prefix}{field.name} and {initializer}) or None"
     if isinstance(field_type, _IdlTypeArray):
         map_body = _struct_field_initializer(
-            idl, _IdlField("item", field_type.array[0]), "", ""
+            idl=idl, field=_IdlField("item", field_type.array[0]), prefix="", suffix=""
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -310,7 +343,7 @@ def _struct_field_initializer(
         return f"list(map(lambda item: {map_body}, {prefix}{field.name}{suffix}))"
     if isinstance(field_type, _IdlTypeVec):
         map_body = _struct_field_initializer(
-            idl, _IdlField("item", field_type.vec), "", ""
+            idl=idl, field=_IdlField("item", field_type.vec), prefix="", suffix=""
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -401,16 +434,24 @@ def _field_to_json(
 
 def _idl_type_to_json_type(ty: _IdlType, defined_types_prefix: str = "types.") -> str:
     if isinstance(ty, _IdlTypeVec):
-        inner = _idl_type_to_json_type(ty.vec, defined_types_prefix)
+        inner = _idl_type_to_json_type(
+            ty=ty.vec, defined_types_prefix=defined_types_prefix
+        )
         return f"list[{inner}]"
     if isinstance(ty, _IdlTypeArray):
-        inner = _idl_type_to_json_type(ty.array[0], defined_types_prefix)
+        inner = _idl_type_to_json_type(
+            ty=ty.array[0], defined_types_prefix=defined_types_prefix
+        )
         return f"list[{inner}]"
     if isinstance(ty, _IdlTypeOption):
-        inner = _idl_type_to_json_type(ty.option, defined_types_prefix)
+        inner = _idl_type_to_json_type(
+            ty=ty.option, defined_types_prefix=defined_types_prefix
+        )
         return f"typing.Optional[{inner}]"
     if isinstance(ty, _IdlTypeCOption):
-        inner = _idl_type_to_json_type(ty.coption, defined_types_prefix)
+        inner = _idl_type_to_json_type(
+            ty=ty.coption, defined_types_prefix=defined_types_prefix
+        )
         return f"typing.Optional[{inner}]"
     if isinstance(ty, _IdlTypeDefined):
         return f"{defined_types_prefix}{_json_interface_name(ty.defined)}"
@@ -435,7 +476,9 @@ def _field_from_json(
         return f"PublicKey({param_prefix}{ty.name}{param_suffix})"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_from_json(
-            _IdlField("item", ty_type.vec), "", defined_types_prefix
+            ty=_IdlField("item", ty_type.vec),
+            json_param_name="",
+            defined_types_prefix=defined_types_prefix,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -445,7 +488,9 @@ def _field_from_json(
         )
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_from_json(
-            _IdlField("item", ty_type.array[0]), "", defined_types_prefix
+            ty=_IdlField("item", ty_type.array[0]),
+            json_param_name="",
+            defined_types_prefix=defined_types_prefix,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -455,7 +500,9 @@ def _field_from_json(
         )
     if isinstance(ty_type, _IdlTypeOption):
         inner = _field_from_json(
-            _IdlField(ty.name, ty_type.option), json_param_name, defined_types_prefix
+            ty=_IdlField(ty.name, ty_type.option),
+            json_param_name=json_param_name,
+            defined_types_prefix=defined_types_prefix,
         )
         # skip coercion when not needed
         if inner == f"{param_prefix}{ty.name}{param_suffix}":
@@ -463,7 +510,9 @@ def _field_from_json(
         return f"({param_prefix}{ty.name}{param_suffix} and {inner}) or None"
     if isinstance(ty_type, _IdlTypeCOption):
         inner = _field_from_json(
-            _IdlField(ty.name, ty_type.coption), json_param_name, defined_types_prefix
+            ty=_IdlField(ty.name, ty_type.coption),
+            json_param_name=json_param_name,
+            defined_types_prefix=defined_types_prefix,
         )
         # skip coercion when not needed
         if inner == f"{param_prefix}{ty.name}{param_suffix}":

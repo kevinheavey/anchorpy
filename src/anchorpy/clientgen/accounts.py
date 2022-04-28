@@ -111,21 +111,23 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     from_json_entries: list[StrDictEntry] = []
     for field in fields:
         fields_interface_params.append(
-            TypedParam(field.name, _py_type_from_idl(idl, field.type))
+            TypedParam(field.name, _py_type_from_idl(idl=idl, ty=field.type))
         )
         json_interface_params.append(
-            TypedParam(field.name, _idl_type_to_json_type(field.type))
+            TypedParam(field.name, _idl_type_to_json_type(ty=field.type))
         )
-        layout_items.append(_layout_for_type(field.type, field.name))
-        initializer = _struct_field_initializer(idl, field)
+        layout_items.append(_layout_for_type(ty=field.type, name=field.name))
+        initializer = _struct_field_initializer(idl=idl, field=field)
         init_body_assignments.append(Assign(f"self.{field.name}", initializer))
         decode_body_entries.append(
-            StrDictEntry(field.name, _field_from_decoded(idl, field, "dec."))
+            StrDictEntry(
+                field.name, _field_from_decoded(idl=idl, ty=field, val_prefix="dec.")
+            )
         )
         to_json_entries.append(
             StrDictEntry(field.name, _field_to_json(idl, field, "self."))
         )
-        from_json_entries.append(StrDictEntry(field.name, _field_from_json(field)))
+        from_json_entries.append(StrDictEntry(field.name, _field_from_json(ty=field)))
     fields_interface = TypedDict(fields_interface_name, fields_interface_params)
     json_interface = TypedDict(json_interface_name, json_interface_params)
     discriminator_assignment = Assign("discriminator", _account_discriminator(name))
