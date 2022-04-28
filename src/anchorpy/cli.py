@@ -125,7 +125,9 @@ def client_gen(
     else:
         program_id_to_use = program_id
 
+    typer.echo("generating package")
     out.mkdir(exist_ok=True)
+    (out / "__init__.py").touch()
     typer.echo("generating program_id.py...")
     gen_program_id(idl_obj, program_id_to_use, out)
     typer.echo("generating errors.py...")

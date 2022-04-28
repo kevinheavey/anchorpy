@@ -1,5 +1,6 @@
 from pathlib import Path
 from black import format_str, FileMode
+from autoflake import fix_code
 from genpy import (
     FromImport,
     Suite,
@@ -128,7 +129,8 @@ def gen_custom_errors(idl: Idl, errors_dir: Path) -> None:
         return
     code = gen_custom_errors_code(errors)
     formatted = format_str(code, mode=FileMode())
-    (errors_dir / "custom.py").with_suffix(".py").write_text(formatted)
+    fixed = fix_code(formatted, remove_all_unused_imports=True)
+    (errors_dir / "custom.py").with_suffix(".py").write_text(fixed)
 
 
 def gen_anchor_errors_code() -> str:

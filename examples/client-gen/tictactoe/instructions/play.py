@@ -7,7 +7,7 @@ from ..program_id import PROGRAM_ID
 
 
 class PlayArgs(typing.TypedDict):
-    tile: types.TileKind
+    tile: types.tile.TileKind
 
 
 layout = borsh.CStruct("tile" / types.tile.layout())

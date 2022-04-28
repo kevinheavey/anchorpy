@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import cast, Union as TypingUnion
 from dataclasses import dataclass
 from black import format_str, FileMode
+from autoflake import fix_code
 from pyheck import snake
 from genpy import (
     FromImport,
@@ -102,7 +103,8 @@ def gen_type_files(idl: Idl, types_dir: Path) -> None:
     types_code = gen_types_code(idl, types_dir)
     for path, code in types_code.items():
         formatted = format_str(code, mode=FileMode())
-        path.write_text(formatted)
+        fixed = fix_code(formatted, remove_all_unused_imports=True)
+        path.write_text(fixed)
 
 
 def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:

@@ -13,6 +13,8 @@ from anchorpy.idl import (
     _IdlField,
 )
 
+_DEFAULT_DEFINED_TYPES_PREFIX = "types."
+
 
 def _fields_interface_name(type_name: str) -> str:
     return f"{type_name}Fields"
@@ -33,14 +35,14 @@ def _json_interface_name(type_name: str) -> str:
 def _py_type_from_idl(
     idl: Idl,
     ty: _IdlType,
-    defined_types_prefix: str = "types.",
+    types_relative_imports: bool = False,
     use_fields_interface_for_struct: bool = True,
 ) -> str:
     if isinstance(ty, _IdlTypeVec):
         inner_type = _py_type_from_idl(
             idl=idl,
             ty=ty.vec,
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
             use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"list[{inner_type}]"
@@ -48,7 +50,7 @@ def _py_type_from_idl(
         inner_type = _py_type_from_idl(
             idl=idl,
             ty=ty.option,
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
             use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"typing.Optional[{inner_type}]"
@@ -56,30 +58,36 @@ def _py_type_from_idl(
         inner_type = _py_type_from_idl(
             idl=idl,
             ty=ty.coption,
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
             use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"typing.Optional[{inner_type}]"
     elif isinstance(ty, _IdlTypeDefined):
         defined = ty.defined
         filtered = [t for t in idl.types if t.name == defined]
+        defined_types_prefix = (
+            "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
+        )
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
         type_kind = filtered[0].type.kind
+        module = snake(ty.defined)
         if isinstance(type_kind, _IdlTypeDefTyStruct):
             name = (
                 _fields_interface_name(ty.defined)
                 if use_fields_interface_for_struct
                 else ty.defined
             )
-            return f"{defined_types_prefix}{name}"
-        name = _kind_interface_name(ty.defined)
-        return f"{defined_types_prefix}{name}"
+            return f"{defined_types_prefix}{module}{name}"
+        else:
+            # enum
+            name = _kind_interface_name(ty.defined)
+        return f"{defined_types_prefix}{module}.{name}"
     elif isinstance(ty, _IdlTypeArray):
         inner_type = _py_type_from_idl(
             idl=idl,
             ty=ty.array[0],
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
             use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"list[{inner_type}]"
@@ -101,7 +109,7 @@ def _py_type_from_idl(
 def _layout_for_type(
     ty: _IdlType,
     name: Optional[str] = None,
-    defined_types_prefix: str = "types.",
+    types_relative_imports: bool = False,
 ) -> str:
     if ty == "bool":
         inner = "borsh.Bool"
@@ -142,7 +150,11 @@ def _layout_for_type(
     elif isinstance(ty, _IdlTypeCOption):
         inner = f"COption({_layout_for_type(ty=ty.coption)})"
     elif isinstance(ty, _IdlTypeDefined):
-        inner = f"{defined_types_prefix}{snake(ty.defined)}.layout()"
+        defined_types_prefix = (
+            "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
+        )
+        module = snake(ty.defined)
+        inner = f"{defined_types_prefix}{module}.layout()"
     elif isinstance(ty, _IdlTypeArray):
         inner = f"{_layout_for_type(ty=ty.array[0])}[{ty.array[1]}]"
     else:
@@ -157,7 +169,7 @@ def _field_to_encodable(
     idl: Idl,
     ty: _IdlField,
     val_prefix: str = "",
-    defined_types_prefix: str = "types.",
+    types_relative_imports: bool = False,
     val_suffix: str = "",
 ) -> str:
     ty_type = ty.type
@@ -166,7 +178,7 @@ def _field_to_encodable(
             idl=idl,
             ty=_IdlField("item", ty_type.vec),
             val_prefix="",
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
             val_suffix=val_suffix,
         )
         # skip mapping when not needed
@@ -178,7 +190,7 @@ def _field_to_encodable(
             idl=idl,
             ty=_IdlField(ty.name, ty_type.option),
             val_prefix=val_prefix,
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
             val_suffix=val_suffix,
         )
         if encodable == f"{val_prefix}{ty.name}{val_suffix}":
@@ -194,14 +206,19 @@ def _field_to_encodable(
         type_kind = filtered[0].type.kind
         if isinstance(type_kind, _IdlTypeDefTyStruct):
             val_full_name = f"{val_prefix}{ty.name}{val_suffix}"
-            return f"{defined_types_prefix}{defined}.to_encodable({val_full_name})"
+            defined_types_prefix = (
+                "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
+            )
+            module = snake(defined)
+            obj_full_path = f"{defined_types_prefix}{module}.{defined}"
+            return f"{obj_full_path}.to_encodable({val_full_name})"
         return f"{val_prefix}{ty.name}{val_suffix}.to_encodable()"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_to_encodable(
             idl=idl,
             ty=_IdlField("item", ty_type.array[0]),
             val_prefix="",
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -230,7 +247,7 @@ def _field_to_encodable(
 
 
 def _field_from_decoded(
-    idl: Idl, ty: _IdlField, val_prefix: str = "", defined_types_prefix: str = "types."
+    idl: Idl, ty: _IdlField, val_prefix: str = "", types_relative_imports: bool = False
 ) -> str:
     ty_type = ty.type
     if isinstance(ty_type, _IdlTypeVec):
@@ -238,7 +255,7 @@ def _field_from_decoded(
             idl=idl,
             ty=_IdlField("item", ty_type.vec),
             val_prefix="",
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -259,13 +276,20 @@ def _field_from_decoded(
         filtered = [t for t in idl.types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        return f"{defined_types_prefix}{defined}.from_decoded({val_prefix}{ty.name})"
+        module = snake(defined)
+        defined_types_prefix = (
+            "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
+        )
+        from_decoded_arg = f"{val_prefix}{ty.name}"
+        return (
+            f"{defined_types_prefix}{module}.{defined}.from_decoded({from_decoded_arg})"
+        )
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_from_decoded(
             idl=idl,
             ty=_IdlField("item", ty_type.array[0]),
             val_prefix="",
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -298,7 +322,7 @@ def _struct_field_initializer(
     field: _IdlField,
     prefix: str = 'fields["',
     suffix: str = '"]',
-    defined_types_prefix: str = "types.",
+    types_relative_imports: bool = False,
 ) -> str:
     field_type = field.type
     if isinstance(field_type, _IdlTypeDefined):
@@ -308,7 +332,11 @@ def _struct_field_initializer(
             raise ValueError(f"Type not found {defined}")
         type_kind = filtered[0].type.kind
         if isinstance(type_kind, _IdlTypeDefTyStruct):
-            obj_name = f"{defined_types_prefix}{type_kind.name}"
+            module = snake(type_kind.name)
+            defined_types_prefix = (
+                "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
+            )
+            obj_name = f"{defined_types_prefix}{module}.{type_kind.name}"
             return f"{obj_name}(**{prefix}{field.name}{suffix})"
         return f"{prefix}{field.name}{suffix}"
     if isinstance(field_type, _IdlTypeOption):
@@ -432,29 +460,33 @@ def _field_to_json(
     raise ValueError(f"Unrecognized type: {ty_type}")
 
 
-def _idl_type_to_json_type(ty: _IdlType, defined_types_prefix: str = "types.") -> str:
+def _idl_type_to_json_type(ty: _IdlType, types_relative_imports: bool = False) -> str:
     if isinstance(ty, _IdlTypeVec):
         inner = _idl_type_to_json_type(
-            ty=ty.vec, defined_types_prefix=defined_types_prefix
+            ty=ty.vec, types_relative_imports=types_relative_imports
         )
         return f"list[{inner}]"
     if isinstance(ty, _IdlTypeArray):
         inner = _idl_type_to_json_type(
-            ty=ty.array[0], defined_types_prefix=defined_types_prefix
+            ty=ty.array[0], types_relative_imports=types_relative_imports
         )
         return f"list[{inner}]"
     if isinstance(ty, _IdlTypeOption):
         inner = _idl_type_to_json_type(
-            ty=ty.option, defined_types_prefix=defined_types_prefix
+            ty=ty.option, types_relative_imports=types_relative_imports
         )
         return f"typing.Optional[{inner}]"
     if isinstance(ty, _IdlTypeCOption):
         inner = _idl_type_to_json_type(
-            ty=ty.coption, defined_types_prefix=defined_types_prefix
+            ty=ty.coption, types_relative_imports=types_relative_imports
         )
         return f"typing.Optional[{inner}]"
     if isinstance(ty, _IdlTypeDefined):
-        return f"{defined_types_prefix}{_json_interface_name(ty.defined)}"
+        defined_types_prefix = (
+            "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
+        )
+        module = snake(ty.defined)
+        return f"{defined_types_prefix}{module}.{_json_interface_name(ty.defined)}"
     if ty == "bool":
         return "bool"
     if ty in {"u8", "i8", "u16", "u16" "u32", "i32", "u64", "i64", "u128", "i128"}:
@@ -467,7 +499,7 @@ def _idl_type_to_json_type(ty: _IdlType, defined_types_prefix: str = "types.") -
 
 
 def _field_from_json(
-    ty: _IdlField, json_param_name: str = "obj", defined_types_prefix: str = "types."
+    ty: _IdlField, json_param_name: str = "obj", types_relative_imports: bool = False
 ) -> str:
     param_prefix = json_param_name + '["' if json_param_name else ""
     param_suffix = '"]' if json_param_name else ""
@@ -478,7 +510,7 @@ def _field_from_json(
         map_body = _field_from_json(
             ty=_IdlField("item", ty_type.vec),
             json_param_name="",
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -490,7 +522,7 @@ def _field_from_json(
         map_body = _field_from_json(
             ty=_IdlField("item", ty_type.array[0]),
             json_param_name="",
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -502,7 +534,7 @@ def _field_from_json(
         inner = _field_from_json(
             ty=_IdlField(ty.name, ty_type.option),
             json_param_name=json_param_name,
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
         )
         # skip coercion when not needed
         if inner == f"{param_prefix}{ty.name}{param_suffix}":
@@ -512,7 +544,7 @@ def _field_from_json(
         inner = _field_from_json(
             ty=_IdlField(ty.name, ty_type.coption),
             json_param_name=json_param_name,
-            defined_types_prefix=defined_types_prefix,
+            types_relative_imports=types_relative_imports,
         )
         # skip coercion when not needed
         if inner == f"{param_prefix}{ty.name}{param_suffix}":
@@ -520,7 +552,11 @@ def _field_from_json(
         return f"({param_prefix}{ty.name}{param_suffix} and {inner}) or None"
     if isinstance(ty_type, _IdlTypeDefined):
         from_json_arg = f"{param_prefix}{ty.name}{param_suffix}"
-        return f"{defined_types_prefix}{ty.name}.from_json({from_json_arg})"
+        module = snake(ty.name)
+        defined_types_prefix = (
+            "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
+        )
+        return f"{defined_types_prefix}{module}.{ty.name}.from_json({from_json_arg})"
     if ty_type in {
         "bool",
         "u8",

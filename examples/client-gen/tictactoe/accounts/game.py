@@ -5,7 +5,7 @@ from solana.rpc.commitment import Commitment
 import borsh_construct as borsh
 from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE
 from anchorpy.error import AccountInvalidDiscriminator
-from anchorpy.borsh_extension import BorshPubkey, EnumForCodegen
+from anchorpy.borsh_extension import BorshPubkey
 from ..program_id import PROGRAM_ID
 from .. import types
 
@@ -13,15 +13,15 @@ from .. import types
 class GameFields(typing.TypedDict):
     players: list[PublicKey]
     turn: int
-    board: list[list[typing.Optional[types.SignKind]]]
-    state: types.GameStateKind
+    board: list[list[typing.Optional[types.sign.SignKind]]]
+    state: types.game_state.GameStateKind
 
 
 class GameJSON(typing.TypedDict):
     players: list[str]
     turn: int
-    board: list[list[typing.Optional[types.SignJSON]]]
-    state: types.GameStateJSON
+    board: list[list[typing.Optional[types.sign.SignJSON]]]
+    state: types.game_state.GameStateJSON
 
 
 class Game(object):
@@ -58,15 +58,15 @@ class Game(object):
     async def fetch_multiple(
         cls,
         conn: AsyncClient,
-        addresses: list[PublicKey],
+        addresses: list[typing.Union[PublicKey, str]],
         commitment: typing.Optional[Commitment] = None,
-    ) -> list[typing.Optional["Game"]]:
-        resp = await conn.get_account_info(address, commitment=commitment)
+    ) -> typing.List[typing.Optional["Game"]]:
+        resp = await conn.get_multiple_accounts(addresses, commitment=commitment)
         infos = resp["result"]["value"]
-        res = []
+        res: typing.List[typing.Optional["Game"]] = []
         for info in infos:
             if info is None:
-                return None
+                res.append(None)
             if info["owner"] != str(PROGRAM_ID):
                 raise ValueError("Account does not belong to this program")
             res.append(cls.decode(info["data"]))
@@ -87,7 +87,9 @@ class Game(object):
                     map(
                         lambda item: list(
                             map(
-                                lambda item: (item and types.Sign.from_decoded(item))
+                                lambda item: (
+                                    item and types.sign.Sign.from_decoded(item)
+                                )
                                 or None,
                                 item,
                             )
@@ -95,7 +97,7 @@ class Game(object):
                         dec.board,
                     )
                 ),
-                "state": types.GameState.from_decoded(dec.state),
+                "state": types.game_state.GameState.from_decoded(dec.state),
             }
         )
 
@@ -124,7 +126,7 @@ class Game(object):
                     map(
                         lambda item: list(
                             map(
-                                lambda item: (item and types.item.from_json(item))
+                                lambda item: (item and types.item.item.from_json(item))
                                 or None,
                                 item,
                             )
@@ -132,6 +134,6 @@ class Game(object):
                         obj["board"],
                     )
                 ),
-                "state": types.state.from_json(obj["state"]),
+                "state": types.state.state.from_json(obj["state"]),
             }
         )

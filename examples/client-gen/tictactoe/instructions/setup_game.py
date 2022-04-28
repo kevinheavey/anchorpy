@@ -2,7 +2,6 @@ import typing
 from solana.publickey import PublicKey
 from solana.transaction import TransactionInstruction, AccountMeta
 import borsh_construct as borsh
-from .. import types
 from ..program_id import PROGRAM_ID
 
 

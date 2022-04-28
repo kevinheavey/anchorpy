@@ -1,5 +1,6 @@
 from pathlib import Path
 from black import format_str, FileMode
+from autoflake import fix_code
 from pyheck import snake
 from genpy import (
     FromImport,
@@ -52,7 +53,8 @@ def gen_accounts(idl: Idl, root: Path) -> None:
     accounts_dict = gen_accounts_code(idl, accounts_dir)
     for path, code in accounts_dict.items():
         formatted = format_str(code, mode=FileMode())
-        path.write_text(formatted)
+        fixed = fix_code(formatted, remove_all_unused_imports=True)
+        path.write_text(fixed)
 
 
 def gen_index_file(idl: Idl, accounts_dir: Path) -> None:
@@ -163,27 +165,28 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     account_does_not_belong_raise = Raise(
         'ValueError("Account does not belong to this program")'
     )
+    fetch_multiple_return_type = f'typing.List[typing.Optional["{name}"]]'
     fetch_multiple_method = ClassMethod(
         "fetch_multiple",
         [
             TypedParam("conn", "AsyncClient"),
-            TypedParam("addresses", "list[PublicKey]"),
+            TypedParam("addresses", "list[typing.Union[PublicKey, str]]"),
             TypedParam("commitment", "typing.Optional[Commitment] = None"),
         ],
         Suite(
             [
                 Assign(
                     "resp",
-                    "await conn.get_multiple_accounts(addresses, commitment=commitment)",
+                    "await conn.get_multiple_accounts(addresses,commitment=commitment)",
                 ),
                 Assign("infos", 'resp["result"]["value"]'),
-                Assign("res", "[]"),
+                Assign(f"res: {fetch_multiple_return_type}", "[]"),
                 For(
                     "info",
                     "infos",
                     Suite(
                         [
-                            If("info is None", Return("None")),
+                            If("info is None", Statement("res.append(None)")),
                             If(
                                 'info["owner"] != str(PROGRAM_ID)',
                                 account_does_not_belong_raise,
@@ -195,7 +198,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                 Return("res"),
             ]
         ),
-        f'list[typing.Optional["{name}"]]',
+        f'typing.List[typing.Optional["{name}"]]',
         is_async=True,
     )
     decode_body_end_arg = StrDict(decode_body_entries)

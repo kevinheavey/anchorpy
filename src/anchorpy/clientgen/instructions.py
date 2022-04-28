@@ -1,5 +1,6 @@
 from typing import cast, Optional
 from black import format_str, FileMode
+from autoflake import fix_code
 from pathlib import Path
 from pyheck import upper_camel
 from genpy import (
@@ -39,7 +40,8 @@ def gen_instructions(idl: Idl, root: Path) -> None:
     instructions = gen_instructions_code(idl, instructions_dir)
     for path, code in instructions.items():
         formatted = format_str(code, mode=FileMode())
-        path.write_text(formatted)
+        fixed = fix_code(formatted, remove_all_unused_imports=True)
+        path.write_text(fixed)
 
 
 def gen_index_file(idl: Idl, instructions_dir: Path) -> None:
