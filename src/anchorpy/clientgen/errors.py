@@ -199,7 +199,7 @@ def gen_index_code(idl: Idl) -> str:
     import_lines = base_import_lines + custom_import_lines
     from_code_fn = gen_from_code_fn(has_custom_errors)
     error_re_line = Assign(
-        "error_re", 're.compile("Program (\\w+) failed: custom program error: (\\w+)")'
+        "error_re", r're.compile(r"Program (\w+) failed: custom program error: (\w+)")'
     )
     from_tx_error_fn = gen_from_tx_error_fn()
     return str(
