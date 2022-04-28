@@ -110,17 +110,17 @@ def from_decoded(obj: dict) -> GameStateKind:
 
 
 def from_json(obj: GameStateJSON) -> GameStateKind:
-    kind = obj["kind"]
-    if kind == "Active":
+    if obj["kind"] == "Active":
         return Active()
-    if kind == "Tie":
+    if obj["kind"] == "Tie":
         return Tie()
-    if kind == "Won":
+    if obj["kind"] == "Won":
         return Won(
             {
                 "winner": PublicKey(obj["value"]["winner"]),
             }
         )
+    kind = obj["kind"]
     raise ValueError(f"Uncrecognized enum kind: {kind}")
 
 

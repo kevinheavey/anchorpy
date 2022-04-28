@@ -60,11 +60,11 @@ def from_decoded(obj: dict) -> SignKind:
 
 
 def from_json(obj: SignJSON) -> SignKind:
-    kind = obj["kind"]
-    if kind == "X":
+    if obj["kind"] == "X":
         return X()
-    if kind == "O":
+    if obj["kind"] == "O":
         return O()
+    kind = obj["kind"]
     raise ValueError(f"Uncrecognized enum kind: {kind}")
 
 

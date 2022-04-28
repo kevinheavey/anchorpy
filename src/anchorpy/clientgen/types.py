@@ -353,7 +353,8 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
             return If(f'"{variant.name}" in obj', then)
 
         def make_obj_kind_check(return_val: str) -> Generable:
-            return If(f'kind == "{variant.name}"', Return(return_val))
+            lhs = 'obj["kind"] == '
+            return If(f'{lhs}"{variant.name}"', Return(return_val))
 
         if fields:
             val_line_for_from_decoded = Assign("val", f'obj["{variant.name}"]')
@@ -537,8 +538,8 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
         [TypedParam("obj", _json_interface_name(name))],
         Suite(
             [
-                Assign("kind", 'obj["kind"]'),
                 *obj_kind_checks,
+                Assign("kind", 'obj["kind"]'),
                 Raise('ValueError(f"Uncrecognized enum kind: {kind}")'),
             ]
         ),
