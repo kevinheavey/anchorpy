@@ -60,6 +60,14 @@ class _LangErrorCode(IntEnum):
     ConstraintMintFreezeAuthority = 2017
     ConstraintMintDecimals = 2018
     ConstraintSpace = 2019
+    # Require
+    RequireViolated = 2500
+    RequireEqViolated = 2501
+    RequireKeysEqViolated = 2502
+    RequireNeqViolated = 2503
+    RequireKeysNeqViolated = 2504
+    RequireGtViolated = 2505
+    RequireGteViolated = 2506
     # Accounts.
     AccountDiscriminatorAlreadySet = 3000
     AccountDiscriminatorNotFound = 3001
@@ -75,6 +83,8 @@ class _LangErrorCode(IntEnum):
     AccountNotSystemOwned = 3011
     AccountNotInitialized = 3012
     AccountNotProgramData = 3013
+    AccountNotAssociatedTokenAccount = 3014
+    AccountSysvarMismatch = 3015
     # State.
     StateInvalidAddress = 4000
 
@@ -126,6 +136,14 @@ LangErrorMessage = {
     ),
     _LangErrorCode.ConstraintMintDecimals: "A mint decimals constraint was violated",
     _LangErrorCode.ConstraintSpace: "A space constraint was violated",
+    # Require.
+    _LangErrorCode.RequireViolated: "A require expression was violated",
+    _LangErrorCode.RequireEqViolated: "A require_eq expression was violated",
+    _LangErrorCode.RequireKeysEqViolated: "A require_keys_eq expression was violated",
+    _LangErrorCode.RequireNeqViolated: "A require_neq expression was violated",
+    _LangErrorCode.RequireKeysNeqViolated: "A require_keys_neq expression was violated",
+    _LangErrorCode.RequireGtViolated: "A require_gt expression was violated",
+    _LangErrorCode.RequireGteViolated: "A require_gte expression was violated",
     # Accounts.
     _LangErrorCode.AccountDiscriminatorAlreadySet: (
         "The account discriminator was already set on this account"
@@ -156,6 +174,12 @@ LangErrorMessage = {
     ),
     _LangErrorCode.AccountNotProgramData: (
         "The given account is not a program data account"
+    ),
+    _LangErrorCode.AccountNotAssociatedTokenAccount: (
+        "The given account is not the associated token account"
+    ),
+    _LangErrorCode.AccountSysvarMismatch: (
+        "The given public key does not match the required sysvar"
     ),
     # State.
     _LangErrorCode.StateInvalidAddress: (
