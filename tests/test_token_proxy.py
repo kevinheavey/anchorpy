@@ -17,7 +17,9 @@ from anchorpy.utils.token import get_mint_info, get_token_account, create_token_
 from anchorpy.workspace import WorkspaceType
 
 
-workspace = workspace_fixture("anchor/tests/spl/token-proxy/")
+workspace = workspace_fixture(
+    "anchor/tests/spl/token-proxy/", build_cmd="anchor build --skip-lint"
+)
 
 
 @fixture(scope="module")
@@ -163,7 +165,7 @@ async def burn_token(
             accounts={
                 "authority": provider.wallet.public_key,
                 "mint": created_mint,
-                "to": to_pubkey,
+                "from": to_pubkey,
                 "token_program": TOKEN_PROGRAM_ID,
             },
         ),

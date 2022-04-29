@@ -76,7 +76,7 @@ _SA = TypeVar("_SA", bound="_SupportsAdd")
 
 
 class _SupportsAdd(Protocol):
-    """Any type T where +(:T, :T) -> T"""
+    """Any type T where +(:T, :T) -> T."""
 
     def __add__(self: _SA, other: _SA) -> _SA:
         ...

@@ -14,7 +14,9 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 
 
-workspace = workspace_fixture("anchor/tests/pyth/")
+workspace = workspace_fixture(
+    "anchor/tests/pyth/", build_cmd="anchor build --skip-lint"
+)
 
 
 @fixture(scope="module")
@@ -27,7 +29,7 @@ async def create_price_feed(
     init_price: int,
     expo: int,
 ) -> PublicKey:
-    conf = int((init_price / 10) * 10 ** -expo)
+    conf = int((init_price / 10) * 10**-expo)
     space = 3312
     mbre_resp = (
         await oracle_program.provider.connection.get_minimum_balance_for_rent_exemption(
@@ -36,7 +38,7 @@ async def create_price_feed(
     )
     collateral_token_feed = Keypair()
     await oracle_program.rpc["initialize"](
-        int(init_price * 10 ** -expo),
+        int(init_price * 10**-expo),
         expo,
         conf,
         ctx=Context(
@@ -65,7 +67,7 @@ async def set_feed_price(
 ) -> None:
     data = await get_feed_data(oracle_program, price_feed)
     await oracle_program.rpc["set_price"](
-        int(new_price * 10 ** -data.exponent),
+        int(new_price * 10**-data.exponent),
         ctx=Context(accounts={"price": price_feed}),
     )
 
@@ -79,7 +81,7 @@ class PriceData:
 def parse_price_data(data: bytes) -> PriceData:
     exponent = Int32sl.parse(data[20:24])
     raw_price = Int64ul.parse(data[208:216])
-    price = raw_price * 10 ** exponent
+    price = raw_price * 10**exponent
     return PriceData(exponent, price)
 
 

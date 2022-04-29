@@ -1,7 +1,7 @@
 """Provides the `AccountClient` class."""
 import base64
 from dataclasses import dataclass
-from base58 import b58encode
+from based58 import b58encode
 from typing import Any, Optional, Dict, List
 
 from construct import Container

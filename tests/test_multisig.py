@@ -18,7 +18,9 @@ CreatedTransaction = tuple[
     Keypair, list[dict], bytes, Keypair, PublicKey, list[PublicKey]
 ]
 
-workspace = workspace_fixture("anchor/tests/multisig/")
+workspace = workspace_fixture(
+    "anchor/tests/multisig/", build_cmd="anchor build --skip-lint"
+)
 
 
 @fixture(scope="module")

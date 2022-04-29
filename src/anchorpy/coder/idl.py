@@ -2,7 +2,7 @@
 from dataclasses import make_dataclass, asdict, fields as dc_fields
 from types import MappingProxyType
 from keyword import kwlist
-from typing import Mapping, Optional, cast, Type, Sequence, Union
+from typing import Mapping, Optional, cast, Type
 from solana.publickey import PublicKey
 
 from construct import Construct
@@ -35,7 +35,6 @@ from anchorpy.idl import (
     _IdlType,
     _IdlTypeArray,
     _IdlTypeDef,
-    _IdlAccountDef,
     _IdlTypeDefTyEnum,
     _IdlTypeDefTyStruct,
     _IdlTypeDefined,

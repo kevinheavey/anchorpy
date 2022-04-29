@@ -19,7 +19,9 @@ from anchorpy.utils.token import (
 from anchorpy.workspace import WorkspaceType
 
 
-workspace = workspace_fixture("anchor/tests/cashiers-check")
+workspace = workspace_fixture(
+    "anchor/tests/cashiers-check", build_cmd="anchor build --skip-lint"
+)
 
 
 @dataclass

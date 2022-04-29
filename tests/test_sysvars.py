@@ -15,7 +15,9 @@ from anchorpy.workspace import WorkspaceType
 PATH = Path("anchor/tests/sysvars")
 
 
-workspace = workspace_fixture("anchor/tests/sysvars")
+workspace = workspace_fixture(
+    "anchor/tests/sysvars", build_cmd="anchor build --skip-lint"
+)
 
 
 @mark.asyncio
