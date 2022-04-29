@@ -15,6 +15,10 @@ from anchorpy.idl import (
 
 _DEFAULT_DEFINED_TYPES_PREFIX = "types."
 
+INT_TYPES = {"u8", "i8", "u16", "i16", "u32", "i32", "u64", "i64", "u128", "i128"}
+FLOAT_TYPES = {"f32", "f64"}
+NUMBER_TYPES = INT_TYPES | FLOAT_TYPES
+
 
 def _fields_interface_name(type_name: str) -> str:
     return f"{type_name}Fields"
@@ -92,9 +96,9 @@ def _py_type_from_idl(
         return f"list[{inner_type}]"
     elif ty == "bool":
         return "bool"
-    elif ty in {"u8", "i8", "u16", "i16", "u32", "i32", "u64", "i64", "u128", "i128"}:
+    elif ty in INT_TYPES:
         return "int"
-    elif ty in {"f32", "f64"}:
+    elif ty in FLOAT_TYPES:
         return "float"
     elif ty == "bytes":
         return "bytes"
@@ -234,18 +238,7 @@ def _field_to_encodable(
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}{val_suffix}))"
     if ty_type in {
         "bool",
-        "u8",
-        "i8",
-        "u16",
-        "i16",
-        "u32",
-        "i32",
-        "f32",
-        "u64",
-        "i64",
-        "f64",
-        "u128",
-        "i128",
+        *NUMBER_TYPES,
         "string",
         "publicKey",
         "bytes",
@@ -309,18 +302,7 @@ def _field_from_decoded(
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
     if ty_type in {
         "bool",
-        "u8",
-        "i8",
-        "u16",
-        "i16",
-        "u32",
-        "i32",
-        "f32",
-        "u64",
-        "i64",
-        "f64",
-        "u128",
-        "i128",
+        *NUMBER_TYPES,
         "string",
         "publicKey",
         "bytes",
@@ -391,18 +373,7 @@ def _struct_field_initializer(
         return f"list(map(lambda item: {map_body}, {prefix}{field.name}{suffix}))"
     if field_type in {
         "bool",
-        "u8",
-        "i8",
-        "u16",
-        "i16",
-        "u32",
-        "i32",
-        "f32",
-        "u64",
-        "i64",
-        "f64",
-        "u128",
-        "i128",
+        *NUMBER_TYPES,
         "string",
         "publicKey",
         "bytes",
@@ -453,18 +424,7 @@ def _field_to_json(
         return f"{val_prefix}{ty.name}{val_suffix}.to_json()"
     if ty_type in {
         "bool",
-        "u8",
-        "i8",
-        "u16",
-        "i16",
-        "u32",
-        "i32",
-        "f32",
-        "u64",
-        "i64",
-        "f64",
-        "u128",
-        "i128",
+        *NUMBER_TYPES,
         "string",
         "bytes",
     }:
@@ -501,9 +461,9 @@ def _idl_type_to_json_type(ty: _IdlType, types_relative_imports: bool = False) -
         return f"{defined_types_prefix}{module}.{_json_interface_name(ty.defined)}"
     if ty == "bool":
         return "bool"
-    if ty in {"u8", "i8", "u16", "u16" "u32", "i32", "u64", "i64", "u128", "i128"}:
+    if ty in INT_TYPES:
         return "int"
-    if ty in {"f32", "f64"}:
+    if ty in FLOAT_TYPES:
         return "float"
     if ty in {"string", "bytes", "publicKey"}:
         return "str"
@@ -586,18 +546,7 @@ def _field_from_json(
         return f"{full_func_path}.from_json({from_json_arg})"
     if ty_type in {
         "bool",
-        "u8",
-        "i8",
-        "u16",
-        "i16",
-        "u32",
-        "i32",
-        "u64",
-        "i64",
-        "u128",
-        "i128",
-        "f32",
-        "f64",
+        *NUMBER_TYPES,
         "string",
         "bytes",
     }:

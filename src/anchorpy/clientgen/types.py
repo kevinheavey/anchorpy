@@ -310,7 +310,7 @@ def _make_unnamed_field_record(
         ),
         init_element_for_from_json=_field_from_json(
             idl=idl,
-            ty=_IdlField(f'value["{index}"]', unnamed_field),
+            ty=_IdlField(f"value[{index}]", unnamed_field),
         ),
     )
 
@@ -479,7 +479,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
             )
             to_encodable_method = Method("to_encodable", [], to_encodable_body, "dict")
             json_interface_params = [
-                TypedParam("value", json_interface_value_field_type.name),
+                TypedParam("value", json_interface_value_type_name),
                 json_interface_kind_field,
             ]
             variant_name_in_obj_check = make_variant_name_in_obj_check(
