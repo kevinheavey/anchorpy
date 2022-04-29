@@ -59,7 +59,8 @@ def gen_index_code(idl: Idl) -> str:
             import_members.append(_args_interface_name(ix.name))
         if ix.accounts:
             import_members.append(_accounts_interface_name(ix.name))
-        imports.append(FromImport(f".{ix.name}", import_members))
+        if import_members:
+            imports.append(FromImport(f".{ix.name}", import_members))
     return str(Collection(imports))
 
 
