@@ -4,7 +4,7 @@
 
 ### Changed
 
-- Updated error codes [(#)]()
+- Updated error codes [(#69)](https://github.com/kevinheavey/anchorpy/pull/69)
 - Updated event parser to support sol_log_data [(#68)](https://github.com/kevinheavey/anchorpy/pull/68)
 - Updated solana-py dependency to 0.23.1 [(#67)](https://github.com/kevinheavey/anchorpy/pull/67)
 
