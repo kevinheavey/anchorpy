@@ -17,7 +17,9 @@ from anchorpy.utils.token import get_mint_info, get_token_account, create_token_
 from anchorpy.workspace import WorkspaceType
 
 
-workspace = workspace_fixture("anchor/tests/spl/token-proxy/")
+workspace = workspace_fixture(
+    "anchor/tests/spl/token-proxy/", build_cmd="anchor build --skip-lint"
+)
 
 
 @fixture(scope="module")

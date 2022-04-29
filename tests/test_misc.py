@@ -21,7 +21,7 @@ from anchorpy.workspace import WorkspaceType
 from anchorpy.idl import _IdlConstant
 
 PATH = Path("anchor/tests/misc/")
-workspace = workspace_fixture(PATH)
+workspace = workspace_fixture(PATH, build_cmd="anchor build --skip-lint")
 
 
 @fixture(scope="module")

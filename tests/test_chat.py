@@ -12,7 +12,9 @@ from anchorpy import Program, Context, Provider
 from anchorpy.pytest_plugin import workspace_fixture
 
 
-workspace = workspace_fixture("anchor/tests/chat/")
+workspace = workspace_fixture(
+    "anchor/tests/chat/", build_cmd="anchor build --skip-lint"
+)
 
 
 @fixture(scope="module")

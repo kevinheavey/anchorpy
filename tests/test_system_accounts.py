@@ -17,7 +17,9 @@ from anchorpy import (
 from anchorpy.error import ProgramError
 
 
-workspace = workspace_fixture("anchor/tests/system-accounts")
+workspace = workspace_fixture(
+    "anchor/tests/system-accounts", build_cmd="anchor build --skip-lint"
+)
 
 
 @dataclass

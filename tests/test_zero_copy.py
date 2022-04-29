@@ -20,7 +20,9 @@ from anchorpy.workspace import WorkspaceType
 PATH = Path("anchor/tests/zero-copy")
 DEFAULT_PUBKEY = PublicKey("11111111111111111111111111111111")
 
-workspace = workspace_fixture("anchor/tests/zero-copy")
+workspace = workspace_fixture(
+    "anchor/tests/zero-copy", build_cmd="anchor build --skip-lint"
+)
 
 
 @fixture(scope="module")
