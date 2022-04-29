@@ -153,7 +153,7 @@ async def test_can_retrieve_events_when_simulating_transaction(
 ) -> None:
     resp = await program.simulate["test_simulate"](44)
     expected_raw_first_entry = (
-        "Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS invoke [1]"
+        "Program 3TEqcc8xhrhdspwbvoamUJe2borm4Nr72JxL66k6rgrh invoke [1]"
     )
     events = resp.events
     assert resp.raw[0] == expected_raw_first_entry
