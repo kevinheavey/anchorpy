@@ -10,7 +10,9 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 
 
-workspace = workspace_fixture("anchor/examples/tutorial/basic-1")
+workspace = workspace_fixture(
+    "anchor/examples/tutorial/basic-1", build_cmd="anchor build --skip-lint"
+)
 
 
 @fixture(scope="module")

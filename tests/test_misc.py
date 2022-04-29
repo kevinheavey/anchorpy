@@ -21,7 +21,7 @@ from anchorpy.workspace import WorkspaceType
 from anchorpy.idl import _IdlConstant
 
 PATH = Path("anchor/tests/misc/")
-workspace = workspace_fixture(PATH)
+workspace = workspace_fixture(PATH, build_cmd="anchor build --skip-lint")
 
 
 @fixture(scope="module")
@@ -112,13 +112,6 @@ async def test_can_use_u16(
 
 
 @mark.asyncio
-async def test_can_embed_programs_into_genesis(program: Program) -> None:
-    pid = PublicKey("FtMNMKp9DZHKWUyVAsj3Q5QV8ow4P3fUPP7ZrWEQJzKr")
-    acc_info_raw = await program.provider.connection.get_account_info(pid)
-    assert acc_info_raw["result"]["value"]["executable"] is True
-
-
-@mark.asyncio
 async def test_can_use_owner_constraint(
     program: Program, initialized_keypair: Keypair
 ) -> None:
@@ -160,7 +153,7 @@ async def test_can_retrieve_events_when_simulating_transaction(
 ) -> None:
     resp = await program.simulate["test_simulate"](44)
     expected_raw_first_entry = (
-        "Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS invoke [1]"
+        "Program 3TEqcc8xhrhdspwbvoamUJe2borm4Nr72JxL66k6rgrh invoke [1]"
     )
     events = resp.events
     assert resp.raw[0] == expected_raw_first_entry

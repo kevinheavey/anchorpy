@@ -10,7 +10,9 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 
 
-workspace = workspace_fixture("anchor/tests/errors/")
+workspace = workspace_fixture(
+    "anchor/tests/errors/", build_cmd="anchor build --skip-lint"
+)
 
 
 @fixture(scope="module")
@@ -102,7 +104,7 @@ async def test_signer_err(program: Program) -> None:
     assert (
         excinfo.value.args[0]["message"]
         == "Transaction simulation failed: Error processing "
-        "Instruction 0: custom program error: 0x7d2"
+        "Instruction 0: custom program error: 0xbc2"
     )
 
 
