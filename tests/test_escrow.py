@@ -17,7 +17,9 @@ from anchorpy.workspace import WorkspaceType
 INITIALIZER_AMOUNT = 500
 TAKER_AMOUNT = 1000
 
-workspace = workspace_fixture("anchor/tests/escrow")
+workspace = workspace_fixture(
+    "anchor/tests/escrow", build_cmd="anchor build --skip-lint"
+)
 
 InitializeEscrowStateResult = tuple[
     AsyncToken, AsyncToken, PublicKey, PublicKey, PublicKey, PublicKey, Keypair

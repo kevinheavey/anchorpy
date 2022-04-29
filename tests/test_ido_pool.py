@@ -6,7 +6,9 @@ from anchorpy import Program, Provider
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 
-workspace = workspace_fixture("anchor/tests/composite/")
+workspace = workspace_fixture(
+    "anchor/tests/composite/", build_cmd="anchor build --skip-lint"
+)
 
 
 async def create_mint(prov: Provider) -> AsyncToken:
