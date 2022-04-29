@@ -1,5 +1,11 @@
 from typing import Iterator, Optional, Union as TypingUnion
-from genpy import Function as FunctionOriginal, Generable, Suite, Class as BrokenClass
+from genpy import (
+    Function as FunctionOriginal,
+    Generable,
+    Suite,
+    Class as BrokenClass,
+    FromImport,
+)
 
 
 class Class(BrokenClass):
@@ -190,3 +196,6 @@ class Try(Generable):
         yield from self.try_body.generate()
         yield f"except {self.to_catch}:"
         yield from self.except_body.generate()
+
+
+ANNOTATIONS_IMPORT = FromImport("__future__", ["annotations"])

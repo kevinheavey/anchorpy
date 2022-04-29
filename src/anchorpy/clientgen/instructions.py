@@ -25,6 +25,7 @@ from anchorpy.clientgen.genpy_extension import (
     StrDictEntry,
     List,
     Function,
+    ANNOTATIONS_IMPORT,
 )
 from anchorpy.clientgen.common import (
     _py_type_from_idl,
@@ -118,11 +119,12 @@ def gen_accounts(
 def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
     types_import = [FromImport("..", ["types"])] if idl.types else []
     imports = [
-        FromImport("__future__", ["annotations"]),
+        ANNOTATIONS_IMPORT,
         Import("typing"),
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
         FromImport("anchorpy.borsh_extension", ["EnumForCodegen", "BorshPubkey"]),
+        FromImport("construct", ["Pass"]),
         ImportAs("borsh_construct", "borsh"),
         *types_import,
         FromImport("..program_id", ["PROGRAM_ID"]),
@@ -152,14 +154,16 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
             args_interface_container = [
                 TypedDict(args_interface_name, args_interface_params)
             ]
-            layout_assignment_container = [
-                Assign("layout", f"borsh.CStruct({','.join(layout_items)})")
-            ]
+            layout_val = f"borsh.CStruct({','.join(layout_items)})"
+            layout_assignment_container = [Assign("layout", layout_val)]
             args_container = [TypedParam("args", args_interface_name)]
+            encoded_args_val = f"layout.build({StrDict(encoded_args_entries)})"
         else:
             args_interface_container = []
-            layout_assignment_container = []
+            layout_val = "Pass"
             args_container = []
+            layout_assignment_container = []
+            encoded_args_val = 'b""'
         accounts_container = (
             [TypedParam("accounts", accounts_interface_name)] if ix.accounts else []
         )
@@ -168,9 +172,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
             "keys: list[AccountMeta]", List(recurse_accounts(ix.accounts, []))
         )
         identifier_assignment = Assign("identifier", _sighash(ix.name))
-        encoded_args_assignment = Assign(
-            "encoded_args", f"layout.build({StrDict(encoded_args_entries)})"
-        )
+        encoded_args_assignment = Assign("encoded_args", encoded_args_val)
         data_assignment = Assign("data", "identifier + encoded_args")
         returning = Return("TransactionInstruction(keys, PROGRAM_ID, data)")
         ix_fn = Function(

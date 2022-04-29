@@ -148,11 +148,20 @@ def _layout_for_type(
     elif ty == "publicKey":
         inner = "BorshPubkey"
     elif isinstance(ty, _IdlTypeVec):
-        inner = f"borsh.Vec({_layout_for_type(idl=idl, ty=ty.vec)})"
+        layout = _layout_for_type(
+            idl=idl, ty=ty.vec, types_relative_imports=types_relative_imports
+        )
+        inner = f"borsh.Vec({layout})"
     elif isinstance(ty, _IdlTypeOption):
-        inner = f"borsh.Option({_layout_for_type(idl=idl, ty=ty.option)})"
+        layout = _layout_for_type(
+            idl=idl, ty=ty.option, types_relative_imports=types_relative_imports
+        )
+        inner = f"borsh.Option({layout})"
     elif isinstance(ty, _IdlTypeCOption):
-        inner = f"COption({_layout_for_type(idl=idl, ty=ty.coption)})"
+        layout = _layout_for_type(
+            idl=idl, ty=ty.coption, types_relative_imports=types_relative_imports
+        )
+        inner = f"COption({layout})"
     elif isinstance(ty, _IdlTypeDefined):
         defined = ty.defined
         filtered = [t for t in idl.types if t.name == defined]
@@ -167,7 +176,10 @@ def _layout_for_type(
             else f"{defined_types_prefix}{module}.layout"
         )
     elif isinstance(ty, _IdlTypeArray):
-        inner = f"{_layout_for_type(idl=idl, ty=ty.array[0])}[{ty.array[1]}]"
+        layout = _layout_for_type(
+            idl=idl, ty=ty.array[0], types_relative_imports=types_relative_imports
+        )
+        inner = f"{layout}[{ty.array[1]}]"
     else:
         raise ValueError(f"Unrecognized type: {ty}")
 
@@ -339,6 +351,7 @@ def _struct_field_initializer(
             field=_IdlField(field.name, field_type.option),
             prefix=prefix,
             suffix=suffix,
+            types_relative_imports=types_relative_imports,
         )
         # skip coercion when not needed
         if initializer == f"{prefix}{field.name}{suffix}":
@@ -350,6 +363,7 @@ def _struct_field_initializer(
             field=_IdlField(field.name, field_type.coption),
             prefix=prefix,
             suffix=suffix,
+            types_relative_imports=types_relative_imports,
         )
         # skip coercion when not needed
         if initializer == f"{prefix}{field.name}{suffix}":
@@ -357,7 +371,11 @@ def _struct_field_initializer(
         return f"({prefix}{field.name} and {initializer}) or None"
     if isinstance(field_type, _IdlTypeArray):
         map_body = _struct_field_initializer(
-            idl=idl, field=_IdlField("item", field_type.array[0]), prefix="", suffix=""
+            idl=idl,
+            field=_IdlField("item", field_type.array[0]),
+            prefix="",
+            suffix="",
+            types_relative_imports=types_relative_imports,
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -365,7 +383,11 @@ def _struct_field_initializer(
         return f"list(map(lambda item: {map_body}, {prefix}{field.name}{suffix}))"
     if isinstance(field_type, _IdlTypeVec):
         map_body = _struct_field_initializer(
-            idl=idl, field=_IdlField("item", field_type.vec), prefix="", suffix=""
+            idl=idl,
+            field=_IdlField("item", field_type.vec),
+            prefix="",
+            suffix="",
+            types_relative_imports=types_relative_imports,
         )
         # skip mapping when not needed
         if map_body == "item":
