@@ -165,7 +165,7 @@ async def burn_token(
             accounts={
                 "authority": provider.wallet.public_key,
                 "mint": created_mint,
-                "to": to_pubkey,
+                "from": to_pubkey,
                 "token_program": TOKEN_PROGRAM_ID,
             },
         ),
