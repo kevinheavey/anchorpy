@@ -112,13 +112,6 @@ async def test_can_use_u16(
 
 
 @mark.asyncio
-async def test_can_embed_programs_into_genesis(program: Program) -> None:
-    pid = PublicKey("FtMNMKp9DZHKWUyVAsj3Q5QV8ow4P3fUPP7ZrWEQJzKr")
-    acc_info_raw = await program.provider.connection.get_account_info(pid)
-    assert acc_info_raw["result"]["value"]["executable"] is True
-
-
-@mark.asyncio
 async def test_can_use_owner_constraint(
     program: Program, initialized_keypair: Keypair
 ) -> None:
