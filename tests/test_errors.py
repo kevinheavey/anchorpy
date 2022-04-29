@@ -104,7 +104,7 @@ async def test_signer_err(program: Program) -> None:
     assert (
         excinfo.value.args[0]["message"]
         == "Transaction simulation failed: Error processing "
-        "Instruction 0: custom program error: 0x7d2"
+        "Instruction 0: custom program error: 0xbc2"
     )
 
 
