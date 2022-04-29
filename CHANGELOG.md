@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.3] - 2022-04-29
+
+### Changed
+
+- Updated error codes [(#69)](https://github.com/kevinheavey/anchorpy/pull/69)
+- Updated event parser to support sol_log_data [(#68)](https://github.com/kevinheavey/anchorpy/pull/68)
+- Updated solana-py dependency to 0.23.1 [(#67)](https://github.com/kevinheavey/anchorpy/pull/67)
+
 ## [0.8.2] - 2022-04-15
 
 ### Added
