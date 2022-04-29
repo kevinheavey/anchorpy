@@ -92,7 +92,7 @@ def _py_type_from_idl(
         return f"list[{inner_type}]"
     elif ty == "bool":
         return "bool"
-    elif ty in {"u8", "i8", "u16", "u16" "u32", "i32", "u64", "i64", "u128", "i128"}:
+    elif ty in {"u8", "i8", "u16", "i16", "u32", "i32", "u64", "i64", "u128", "i128"}:
         return "int"
     elif ty in {"f32", "f64"}:
         return "float"
@@ -186,7 +186,7 @@ def _field_to_encodable(
             ty=_IdlField("item", ty_type.vec),
             val_prefix="",
             types_relative_imports=types_relative_imports,
-            val_suffix=val_suffix,
+            val_suffix="",
         )
         # skip mapping when not needed
         if map_body == "item":
@@ -226,6 +226,7 @@ def _field_to_encodable(
             ty=_IdlField("item", ty_type.array[0]),
             val_prefix="",
             types_relative_imports=types_relative_imports,
+            val_suffix="",
         )
         # skip mapping when not needed
         if map_body == "item":

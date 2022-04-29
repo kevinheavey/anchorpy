@@ -39,8 +39,9 @@ def gen_instructions(idl: Idl, root: Path) -> None:
     gen_index_file(idl, instructions_dir)
     instructions = gen_instructions_code(idl, instructions_dir)
     for path, code in instructions.items():
-        formatted = format_str(code, mode=FileMode())
-        fixed = fix_code(formatted, remove_all_unused_imports=True)
+        # formatted = format_str(code, mode=FileMode())
+        # fixed = fix_code(formatted, remove_all_unused_imports=True)
+        fixed = code
         path.write_text(fixed)
 
 
@@ -101,7 +102,7 @@ def gen_accounts(
         if isinstance(acc, _IdlAccounts):
             nested_accs = cast(_IdlAccounts, acc)
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
-            params.append(TypedParam(acc.name, nested_acc_name))
+            params.append(TypedParam(acc.name, f"{nested_acc_name}"))
             extra_typeddicts_to_use = extra_typeddicts_to_use + (
                 gen_accounts(
                     nested_acc_name,
@@ -111,12 +112,14 @@ def gen_accounts(
             )
         else:
             params.append(TypedParam(acc.name, "PublicKey"))
-    return [TypedDict(name, params)] + extra_typeddicts_to_use
+    maybe_typed_dict_container = [TypedDict(name, params)] if params else []
+    return maybe_typed_dict_container + extra_typeddicts_to_use
 
 
 def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
     types_import = [FromImport("..", ["types"])] if idl.types else []
     imports = [
+        FromImport("__future__", ["annotations"]),
         Import("typing"),
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
@@ -154,14 +157,17 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
                 Assign("layout", f"borsh.CStruct({','.join(layout_items)})")
             ]
             args_container = [TypedParam("args", args_interface_name)]
-            accounts_container = [TypedParam("accounts", accounts_interface_name)]
         else:
             args_interface_container = []
             layout_assignment_container = []
             args_container = []
-            accounts_container = []
+        accounts_container = (
+            [TypedParam("accounts", accounts_interface_name)] if ix.accounts else []
+        )
         accounts = gen_accounts(accounts_interface_name, ix.accounts)
-        keys_assignment = Assign("keys", List(recurse_accounts(ix.accounts, [])))
+        keys_assignment = Assign(
+            "keys: list[AccountMeta]", List(recurse_accounts(ix.accounts, []))
+        )
         identifier_assignment = Assign("identifier", _sighash(ix.name))
         encoded_args_assignment = Assign(
             "encoded_args", f"layout.build({StrDict(encoded_args_entries)})"
