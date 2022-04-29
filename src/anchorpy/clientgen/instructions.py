@@ -39,9 +39,8 @@ def gen_instructions(idl: Idl, root: Path) -> None:
     gen_index_file(idl, instructions_dir)
     instructions = gen_instructions_code(idl, instructions_dir)
     for path, code in instructions.items():
-        # formatted = format_str(code, mode=FileMode())
-        # fixed = fix_code(formatted, remove_all_unused_imports=True)
-        fixed = code
+        formatted = format_str(code, mode=FileMode())
+        fixed = fix_code(formatted, remove_all_unused_imports=True)
         path.write_text(fixed)
 
 
