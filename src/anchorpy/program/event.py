@@ -8,7 +8,10 @@ from anchorpy.coder.coder import Coder
 from anchorpy.program.common import Event
 
 
-LOG_START_INDEX = len("Program log: ")
+PROGRAM_LOG = "Program log: "
+PROGRAM_DATA = "Program data: "
+PROGRAM_LOG_START_INDEX = len(PROGRAM_LOG)
+PROGRAM_DATA_START_INDEX = len(PROGRAM_DATA)
 
 
 class _ExecutionContext:
@@ -109,9 +112,13 @@ class EventParser:
             log: log string from the RPC node.
 
         """
-        # This is a `msg!` log.
-        if log.startswith("Program log:"):
-            log_str = log[LOG_START_INDEX:]
+        # This is a `msg!` log or a `sol_log_data!` log.
+        if log.startswith(PROGRAM_LOG) or log.startswith(PROGRAM_DATA):
+            log_str = (
+                log[PROGRAM_LOG_START_INDEX:]
+                if log.startswith(PROGRAM_LOG)
+                else log[PROGRAM_DATA_START_INDEX:]
+            )
             try:
                 decoded = b64decode(log_str)
             except binascii.Error:

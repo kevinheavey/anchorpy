@@ -36,6 +36,7 @@ async def test_initialize(program: Program) -> None:
         logs = cast(list[str], notification.result.value.logs)
         parser = EventParser(program.program_id, program.coder)
         parsed = []
+        print(logs)
         parser.parse_logs(logs, lambda evt: parsed.append(evt))
         event = parsed[0]
         assert event.data.data == 5
