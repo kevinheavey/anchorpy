@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing
 from anchorpy.borsh_extension import EnumForCodegen
 import borsh_construct as borsh
@@ -65,7 +66,7 @@ def from_json(obj: SignJSON) -> SignKind:
     if obj["kind"] == "O":
         return O()
     kind = obj["kind"]
-    raise ValueError(f"Uncrecognized enum kind: {kind}")
+    raise ValueError(f"Unrecognized enum kind: {kind}")
 
 
 layout = EnumForCodegen("X" / borsh.CStruct(), "O" / borsh.CStruct())

@@ -296,7 +296,7 @@ def from_json(obj: FooEnumJSON) -> FooEnumKind:
     if obj["kind"] == "NoFields":
         return NoFields()
     kind = obj["kind"]
-    raise ValueError(f"Uncrecognized enum kind: {kind}")
+    raise ValueError(f"Unrecognized enum kind: {kind}")
 
 
 layout = EnumForCodegen(

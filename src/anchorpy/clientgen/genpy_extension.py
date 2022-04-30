@@ -69,7 +69,7 @@ class List(Generable):
 
 
 class StrDictEntry(Generable):
-    def __init__(self, key: str, val: TypingUnion[str, "StrDictEntry"]) -> None:
+    def __init__(self, key: str, val: TypingUnion[str, "StrDict"]) -> None:
         self.key = key
         self.val = val
 

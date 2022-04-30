@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing
 from solana.publickey import PublicKey
 from solana.transaction import TransactionInstruction, AccountMeta
@@ -22,7 +23,7 @@ class SetupGameAccounts(typing.TypedDict):
 def setup_game(
     args: SetupGameArgs, accounts: SetupGameAccounts
 ) -> TransactionInstruction:
-    keys = [
+    keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["game"], is_signer=True, is_writable=True),
         AccountMeta(pubkey=accounts["player_one"], is_signer=True, is_writable=True),
         AccountMeta(

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing
 from solana.publickey import PublicKey
 from anchorpy.borsh_extension import EnumForCodegen, BorshPubkey
@@ -121,7 +122,7 @@ def from_json(obj: GameStateJSON) -> GameStateKind:
             }
         )
     kind = obj["kind"]
-    raise ValueError(f"Uncrecognized enum kind: {kind}")
+    raise ValueError(f"Unrecognized enum kind: {kind}")
 
 
 layout = EnumForCodegen(
