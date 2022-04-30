@@ -600,7 +600,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
             [
                 *obj_kind_checks,
                 Assign("kind", 'obj["kind"]'),
-                Raise('ValueError(f"Uncrecognized enum kind: {kind}")'),
+                Raise('ValueError(f"Unrecognized enum kind: {kind}")'),
             ]
         ),
         _kind_interface_name(name),
