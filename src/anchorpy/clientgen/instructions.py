@@ -138,14 +138,14 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
         accounts_interface_name = _accounts_interface_name(ix.name)
         for arg in ix.args:
             args_interface_params.append(
-                TypedParam(arg.name, _py_type_from_idl(idl=idl, ty=arg.type))
+                TypedParam(arg.name, _py_type_from_idl(idl=idl, ty=arg.type, types_relative_imports=False))
             )
-            layout_items.append(_layout_for_type(idl=idl, ty=arg.type, name=arg.name))
+            layout_items.append(_layout_for_type(idl=idl, ty=arg.type, name=arg.name, types_relative_imports=False))
             encoded_args_entries.append(
                 StrDictEntry(
                     arg.name,
                     _field_to_encodable(
-                        idl=idl, ty=arg, val_prefix='args["', val_suffix='"]'
+                        idl=idl, ty=arg, types_relative_imports=False, val_prefix='args["', val_suffix='"]'
                     ),
                 )
             )

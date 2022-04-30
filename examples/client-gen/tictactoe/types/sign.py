@@ -12,15 +12,15 @@ class OJSON(typing.TypedDict):
     kind: typing.Literal["O"]
 
 
-class X(object):
+class X:
     discriminator = 0
     kind = "X"
 
     @classmethod
     def to_json(cls) -> XJSON:
-        return {
-            "kind": "X",
-        }
+        return XJSON(
+            kind="X",
+        )
 
     @classmethod
     def to_encodable(cls) -> dict:
@@ -29,15 +29,15 @@ class X(object):
         }
 
 
-class O(object):
+class O:
     discriminator = 1
     kind = "O"
 
     @classmethod
     def to_json(cls) -> OJSON:
-        return {
-            "kind": "O",
-        }
+        return OJSON(
+            kind="O",
+        )
 
     @classmethod
     def to_encodable(cls) -> dict:

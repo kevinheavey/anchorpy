@@ -39,7 +39,7 @@ def _json_interface_name(type_name: str) -> str:
 def _py_type_from_idl(
     idl: Idl,
     ty: _IdlType,
-    types_relative_imports: bool = False,
+    types_relative_imports: bool,
     use_fields_interface_for_struct: bool = True,
 ) -> str:
     if isinstance(ty, _IdlTypeVec):
@@ -112,8 +112,8 @@ def _py_type_from_idl(
 def _layout_for_type(
     idl: Idl,
     ty: _IdlType,
+    types_relative_imports: bool,
     name: Optional[str] = None,
-    types_relative_imports: bool = False,
 ) -> str:
     if ty == "bool":
         inner = "borsh.Bool"
@@ -191,8 +191,8 @@ def _layout_for_type(
 def _field_to_encodable(
     idl: Idl,
     ty: _IdlField,
+    types_relative_imports: bool,
     val_prefix: str = "",
-    types_relative_imports: bool = False,
     val_suffix: str = "",
 ) -> str:
     ty_type = ty.type
@@ -260,7 +260,7 @@ def _field_to_encodable(
 
 
 def _field_from_decoded(
-    idl: Idl, ty: _IdlField, val_prefix: str = "", types_relative_imports: bool = False
+    idl: Idl, ty: _IdlField, types_relative_imports: bool, val_prefix: str = ""
 ) -> str:
     ty_type = ty.type
     if isinstance(ty_type, _IdlTypeVec):
@@ -276,7 +276,7 @@ def _field_from_decoded(
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
     if isinstance(ty_type, _IdlTypeOption):
         decoded = _field_from_decoded(
-            idl=idl, ty=_IdlField(ty.name, ty_type.option), val_prefix=val_prefix
+            idl=idl, ty=_IdlField(ty.name, ty_type.option), types_relative_imports=types_relative_imports, val_prefix=val_prefix
         )
         # skip coercion when not needed
         if decoded == f"{val_prefix}{ty.name}":
@@ -326,9 +326,9 @@ def _field_from_decoded(
 def _struct_field_initializer(
     idl: Idl,
     field: _IdlField,
+    types_relative_imports: bool,
     prefix: str = 'fields["',
     suffix: str = '"]',
-    types_relative_imports: bool = False,
 ) -> str:
     field_type = field.type
     if isinstance(field_type, _IdlTypeDefined):
@@ -454,7 +454,7 @@ def _field_to_json(
     raise ValueError(f"Unrecognized type: {ty_type}")
 
 
-def _idl_type_to_json_type(ty: _IdlType, types_relative_imports: bool = False) -> str:
+def _idl_type_to_json_type(ty: _IdlType, types_relative_imports: bool) -> str:
     if isinstance(ty, _IdlTypeVec):
         inner = _idl_type_to_json_type(
             ty=ty.vec, types_relative_imports=types_relative_imports
@@ -495,8 +495,8 @@ def _idl_type_to_json_type(ty: _IdlType, types_relative_imports: bool = False) -
 def _field_from_json(
     idl: Idl,
     ty: _IdlField,
+    types_relative_imports: bool,
     json_param_name: str = "obj",
-    types_relative_imports: bool = False,
 ) -> str:
     param_prefix = json_param_name + '["' if json_param_name else ""
     param_suffix = '"]' if json_param_name else ""

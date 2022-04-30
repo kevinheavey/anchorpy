@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing
 from construct import Container
 import borsh_construct as borsh
@@ -13,7 +14,7 @@ class TileJSON(typing.TypedDict):
     column: int
 
 
-class Tile(object):
+class Tile:
     layout = borsh.CStruct("row" / borsh.U8, "column" / borsh.U8)
 
     def __init__(self, fields: TileFields) -> None:

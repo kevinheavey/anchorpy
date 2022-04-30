@@ -30,15 +30,15 @@ class WonJSON(typing.TypedDict):
     kind: typing.Literal["Won"]
 
 
-class Active(object):
+class Active:
     discriminator = 0
     kind = "Active"
 
     @classmethod
     def to_json(cls) -> ActiveJSON:
-        return {
-            "kind": "Active",
-        }
+        return ActiveJSON(
+            kind="Active",
+        )
 
     @classmethod
     def to_encodable(cls) -> dict:
@@ -47,15 +47,15 @@ class Active(object):
         }
 
 
-class Tie(object):
+class Tie:
     discriminator = 1
     kind = "Tie"
 
     @classmethod
     def to_json(cls) -> TieJSON:
-        return {
-            "kind": "Tie",
-        }
+        return TieJSON(
+            kind="Tie",
+        )
 
     @classmethod
     def to_encodable(cls) -> dict:
@@ -64,22 +64,22 @@ class Tie(object):
         }
 
 
-class Won(object):
+class Won:
     discriminator = 2
     kind = "Won"
 
     def __init__(self, value: WonFields) -> None:
-        self.value = {
+        self.value: WonValue = {
             "winner": value["winner"],
         }
 
     def to_json(self) -> WonJSON:
-        return {
-            "kind": "Won",
-            "value": {
+        return WonJSON(
+            kind="Won",
+            value={
                 "winner": str(self.value["winner"]),
             },
-        }
+        )
 
     def to_encodable(self) -> dict:
         return {

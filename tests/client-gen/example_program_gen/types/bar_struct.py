@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing
 from construct import Container
 import borsh_construct as borsh
@@ -13,7 +14,7 @@ class BarStructJSON(typing.TypedDict):
     other_field: int
 
 
-class BarStruct(object):
+class BarStruct:
     layout = borsh.CStruct("some_field" / borsh.Bool, "other_field" / borsh.U8)
 
     def __init__(self, fields: BarStructFields) -> None:

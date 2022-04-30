@@ -16,7 +16,7 @@ class State2JSON(typing.TypedDict):
     vec_of_option: list[typing.Optional[int]]
 
 
-class State2(object):
+class State2:
     discriminator = b"ja\xff\xa1\xfa\xcd\xb9\xc0"
     layout = borsh.CStruct("vec_of_option" / borsh.Vec(borsh.Option(borsh.U64)))
 

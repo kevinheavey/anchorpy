@@ -1,8 +1,48 @@
-from . import bar_struct
 from __future__ import annotations
+from . import bar_struct
 import typing
 from anchorpy.borsh_extension import EnumForCodegen
 import borsh_construct as borsh
+
+UnnamedJSONValue = tuple[bool, int, bar_struct.BarStructJSON]
+UnnamedSingleJSONValue = tuple[bar_struct.BarStructJSON]
+
+
+class NamedJSONValue(typing.TypedDict):
+    bool_field: bool
+    u8_field: int
+    nested: bar_struct.BarStructJSON
+
+
+StructJSONValue = tuple[bar_struct.BarStructJSON]
+OptionStructJSONValue = tuple[typing.Optional[bar_struct.BarStructJSON]]
+VecStructJSONValue = tuple[list[bar_struct.BarStructJSON]]
+UnnamedFields = tuple[bool, int, bar_struct.BarStructFields]
+UnnamedSingleFields = tuple[bar_struct.BarStructFields]
+
+
+class NamedFields(typing.TypedDict):
+    bool_field: bool
+    u8_field: int
+    nested: bar_struct.BarStructFields
+
+
+StructFields = tuple[bar_struct.BarStructFields]
+OptionStructFields = tuple[typing.Optional[bar_struct.BarStructFields]]
+VecStructFields = tuple[list[bar_struct.BarStructFields]]
+UnnamedValue = tuple[bool, int, bar_struct.BarStruct]
+UnnamedSingleValue = tuple[bar_struct.BarStruct]
+
+
+class NamedValue(typing.TypedDict):
+    bool_field: bool
+    u8_field: int
+    nested: bar_struct.BarStruct
+
+
+StructValue = tuple[bar_struct.BarStruct]
+OptionStructValue = tuple[typing.Optional[bar_struct.BarStruct]]
+VecStructValue = tuple[list[bar_struct.BarStruct]]
 
 
 class UnnamedJSON(typing.TypedDict):
@@ -39,18 +79,26 @@ class NoFieldsJSON(typing.TypedDict):
     kind: typing.Literal["NoFields"]
 
 
-class Unnamed(object):
+class Unnamed:
     discriminator = 0
     kind = "Unnamed"
 
     def __init__(self, value: UnnamedFields) -> None:
-        self.value = (value[0], value[1], bar_struct.BarStruct(**value[2]))
+        self.value: UnnamedValue = (
+            value[0],
+            value[1],
+            bar_struct.BarStruct(**value[2]),
+        )
 
     def to_json(self) -> UnnamedJSON:
-        return {
-            "kind": "Unnamed",
-            "value": [value[0], value[1], value[2].to_json()],
-        }
+        return UnnamedJSON(
+            kind="Unnamed",
+            value=(
+                self.value[0],
+                self.value[1],
+                self.value[2].to_json(),
+            ),
+        )
 
     def to_encodable(self) -> dict:
         return {
@@ -62,18 +110,18 @@ class Unnamed(object):
         }
 
 
-class UnnamedSingle(object):
+class UnnamedSingle:
     discriminator = 1
     kind = "UnnamedSingle"
 
     def __init__(self, value: UnnamedSingleFields) -> None:
-        self.value = bar_struct.BarStruct(**value[0])
+        self.value: UnnamedSingleValue = (bar_struct.BarStruct(**value[0]),)
 
     def to_json(self) -> UnnamedSingleJSON:
-        return {
-            "kind": "UnnamedSingle",
-            "value": [value[0].to_json()],
-        }
+        return UnnamedSingleJSON(
+            kind="UnnamedSingle",
+            value=(self.value[0].to_json(),),
+        )
 
     def to_encodable(self) -> dict:
         return {
@@ -83,26 +131,26 @@ class UnnamedSingle(object):
         }
 
 
-class Named(object):
+class Named:
     discriminator = 2
     kind = "Named"
 
     def __init__(self, value: NamedFields) -> None:
-        self.value = {
+        self.value: NamedValue = {
             "bool_field": value["bool_field"],
             "u8_field": value["u8_field"],
             "nested": bar_struct.BarStruct(**value["nested"]),
         }
 
     def to_json(self) -> NamedJSON:
-        return {
-            "kind": "Named",
-            "value": {
+        return NamedJSON(
+            kind="Named",
+            value={
                 "bool_field": self.value["bool_field"],
                 "u8_field": self.value["u8_field"],
                 "nested": self.value["nested"].to_json(),
             },
-        }
+        )
 
     def to_encodable(self) -> dict:
         return {
@@ -114,18 +162,18 @@ class Named(object):
         }
 
 
-class Struct(object):
+class Struct:
     discriminator = 3
     kind = "Struct"
 
     def __init__(self, value: StructFields) -> None:
-        self.value = bar_struct.BarStruct(**value[0])
+        self.value: StructValue = (bar_struct.BarStruct(**value[0]),)
 
     def to_json(self) -> StructJSON:
-        return {
-            "kind": "Struct",
-            "value": [value[0].to_json()],
-        }
+        return StructJSON(
+            kind="Struct",
+            value=(self.value[0].to_json(),),
+        )
 
     def to_encodable(self) -> dict:
         return {
@@ -135,18 +183,20 @@ class Struct(object):
         }
 
 
-class OptionStruct(object):
+class OptionStruct:
     discriminator = 4
     kind = "OptionStruct"
 
     def __init__(self, value: OptionStructFields) -> None:
-        self.value = (value[0] and bar_struct.BarStruct(**value[0])) or None
+        self.value: OptionStructValue = (
+            (value[0] and bar_struct.BarStruct(**value[0])) or None,
+        )
 
     def to_json(self) -> OptionStructJSON:
-        return {
-            "kind": "OptionStruct",
-            "value": [(value[0] and value[0].to_json()) or None],
-        }
+        return OptionStructJSON(
+            kind="OptionStruct",
+            value=((self.value[0] and self.value[0].to_json()) or None,),
+        )
 
     def to_encodable(self) -> dict:
         return {
@@ -159,18 +209,20 @@ class OptionStruct(object):
         }
 
 
-class VecStruct(object):
+class VecStruct:
     discriminator = 5
     kind = "VecStruct"
 
     def __init__(self, value: VecStructFields) -> None:
-        self.value = list(map(lambda item: bar_struct.BarStruct(**item), value[0]))
+        self.value: VecStructValue = (
+            list(map(lambda item: bar_struct.BarStruct(**item), value[0])),
+        )
 
     def to_json(self) -> VecStructJSON:
-        return {
-            "kind": "VecStruct",
-            "value": [list(map(lambda item: item.to_json(), value[0]))],
-        }
+        return VecStructJSON(
+            kind="VecStruct",
+            value=(list(map(lambda item: item.to_json(), self.value[0])),),
+        )
 
     def to_encodable(self) -> dict:
         return {
@@ -185,15 +237,15 @@ class VecStruct(object):
         }
 
 
-class NoFields(object):
+class NoFields:
     discriminator = 6
     kind = "NoFields"
 
     @classmethod
     def to_json(cls) -> NoFieldsJSON:
-        return {
-            "kind": "NoFields",
-        }
+        return NoFieldsJSON(
+            kind="NoFields",
+        )
 
     @classmethod
     def to_encodable(cls) -> dict:
@@ -222,32 +274,40 @@ def from_decoded(obj: dict) -> FooEnumKind:
     if "Unnamed" in obj:
         val = obj["Unnamed"]
         return Unnamed(
-            (val["_0"], val["_1"], bar_struct.BarStruct.from_decoded(val["_2"]))
+            (
+                val["_0"],
+                val["_1"],
+                bar_struct.BarStruct.from_decoded(val["_2"]),
+            )
         )
     if "UnnamedSingle" in obj:
         val = obj["UnnamedSingle"]
-        return UnnamedSingle((bar_struct.BarStruct.from_decoded(val["_0"])))
+        return UnnamedSingle((bar_struct.BarStruct.from_decoded(val["_0"]),))
     if "Named" in obj:
         val = obj["Named"]
         return Named(
             {
                 "bool_field": val["bool_field"],
                 "u8_field": val["u8_field"],
-                "nested": types.bar_struct.BarStruct.from_decoded(val["nested"]),
+                "nested": bar_struct.BarStruct.from_decoded(val["nested"]),
             }
         )
     if "Struct" in obj:
         val = obj["Struct"]
-        return Struct((bar_struct.BarStruct.from_decoded(val["_0"])))
+        return Struct((bar_struct.BarStruct.from_decoded(val["_0"]),))
     if "OptionStruct" in obj:
         val = obj["OptionStruct"]
         return OptionStruct(
-            ((val["_0"] and types.bar_struct.BarStruct.from_decoded(val["_0"])) or None)
+            ((val["_0"] and bar_struct.BarStruct.from_decoded(val["_0"])) or None,)
         )
     if "VecStruct" in obj:
         val = obj["VecStruct"]
         return VecStruct(
-            (list(map(lambda item: bar_struct.BarStruct.from_decoded(item), val["_0"])))
+            (
+                list(
+                    map(lambda item: bar_struct.BarStruct.from_decoded(item), val["_0"])
+                ),
+            )
         )
     if "NoFields" in obj:
         return NoFields()
@@ -264,7 +324,7 @@ def from_json(obj: FooEnumJSON) -> FooEnumKind:
             )
         )
     if obj["kind"] == "UnnamedSingle":
-        return UnnamedSingle((bar_struct.BarStruct.from_json(obj["value[0]"])))
+        return UnnamedSingle((bar_struct.BarStruct.from_json(obj["value[0]"]),))
     if obj["kind"] == "Named":
         return Named(
             {
@@ -274,12 +334,12 @@ def from_json(obj: FooEnumJSON) -> FooEnumKind:
             }
         )
     if obj["kind"] == "Struct":
-        return Struct((bar_struct.BarStruct.from_json(obj["value[0]"])))
+        return Struct((bar_struct.BarStruct.from_json(obj["value[0]"]),))
     if obj["kind"] == "OptionStruct":
         return OptionStruct(
             (
                 (obj["value[0]"] and bar_struct.BarStruct.from_json(obj["value[0]"]))
-                or None
+                or None,
             )
         )
     if obj["kind"] == "VecStruct":
@@ -290,7 +350,7 @@ def from_json(obj: FooEnumJSON) -> FooEnumKind:
                         lambda item: bar_struct.BarStruct.from_json(item),
                         obj["value[0]"],
                     )
-                )
+                ),
             )
         )
     if obj["kind"] == "NoFields":

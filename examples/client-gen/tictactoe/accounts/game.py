@@ -24,7 +24,7 @@ class GameJSON(typing.TypedDict):
     state: types.game_state.GameStateJSON
 
 
-class Game(object):
+class Game:
     discriminator = b"\x1bZ\xa6}Jdy\x12"
     layout = borsh.CStruct(
         "players" / BorshPubkey[2],
@@ -87,15 +87,14 @@ class Game(object):
                     map(
                         lambda item: list(
                             map(
-                                lambda item: (item and types.sign.from_decoded(item))
-                                or None,
+                                lambda item: (item and sign.from_decoded(item)) or None,
                                 item,
                             )
                         ),
                         dec.board,
                     )
                 ),
-                "state": types.game_state.from_decoded(dec.state),
+                "state": game_state.from_decoded(dec.state),
             }
         )
 

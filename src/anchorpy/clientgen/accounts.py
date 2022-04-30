@@ -113,24 +113,24 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     from_json_entries: list[StrDictEntry] = []
     for field in fields:
         fields_interface_params.append(
-            TypedParam(field.name, _py_type_from_idl(idl=idl, ty=field.type))
+            TypedParam(field.name, _py_type_from_idl(idl=idl, ty=field.type, types_relative_imports=False))
         )
         json_interface_params.append(
-            TypedParam(field.name, _idl_type_to_json_type(ty=field.type))
+            TypedParam(field.name, _idl_type_to_json_type(ty=field.type, types_relative_imports=False))
         )
-        layout_items.append(_layout_for_type(idl=idl, ty=field.type, name=field.name))
-        initializer = _struct_field_initializer(idl=idl, field=field)
+        layout_items.append(_layout_for_type(idl=idl, ty=field.type, name=field.name, types_relative_imports=False))
+        initializer = _struct_field_initializer(idl=idl, field=field, types_relative_imports=False)
         init_body_assignments.append(Assign(f"self.{field.name}", initializer))
         decode_body_entries.append(
             StrDictEntry(
-                field.name, _field_from_decoded(idl=idl, ty=field, val_prefix="dec.")
+                field.name, _field_from_decoded(idl=idl, ty=field, types_relative_imports=True, val_prefix="dec.")
             )
         )
         to_json_entries.append(
             StrDictEntry(field.name, _field_to_json(idl, field, "self."))
         )
         from_json_entries.append(
-            StrDictEntry(field.name, _field_from_json(idl=idl, ty=field))
+            StrDictEntry(field.name, _field_from_json(idl=idl, ty=field, types_relative_imports=False))
         )
     fields_interface = TypedDict(fields_interface_name, fields_interface_params)
     json_interface = TypedDict(json_interface_name, json_interface_params)

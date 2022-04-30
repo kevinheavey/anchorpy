@@ -19,7 +19,7 @@ class CounterJSON(typing.TypedDict):
     count: int
 
 
-class Counter(object):
+class Counter:
     discriminator = b"\xff\xb0\x04\xf5\xbc\xfd|\x19"
     layout = borsh.CStruct("authority" / BorshPubkey, "count" / borsh.U64)
 

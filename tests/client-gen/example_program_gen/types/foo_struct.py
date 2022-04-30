@@ -1,3 +1,4 @@
+from __future__ import annotations
 from . import bar_struct, foo_enum
 import typing
 from construct import Container
@@ -22,7 +23,7 @@ class FooStructJSON(typing.TypedDict):
     enum_field: foo_enum.FooEnumJSON
 
 
-class FooStruct(object):
+class FooStruct:
     layout = borsh.CStruct(
         "field1" / borsh.U8,
         "field2" / borsh.U16,
@@ -59,7 +60,7 @@ class FooStruct(object):
                 ),
                 option_nested=(
                     obj.option_nested
-                    and types.bar_struct.BarStruct.from_decoded(obj.option_nested)
+                    and bar_struct.BarStruct.from_decoded(obj.option_nested)
                 )
                 or None,
                 enum_field=foo_enum.from_decoded(obj.enum_field),

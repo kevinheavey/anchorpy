@@ -68,7 +68,7 @@ class StateJSON(typing.TypedDict):
     enum_field4: types.foo_enum.FooEnumJSON
 
 
-class State(object):
+class State:
     discriminator = b"\xd8\x92k^hK\xb6\xb1"
     layout = borsh.CStruct(
         "bool_field" / borsh.Bool,
@@ -196,24 +196,22 @@ class State(object):
                 "vec_field": dec.vec_field,
                 "vec_struct_field": list(
                     map(
-                        lambda item: types.foo_struct.FooStruct.from_decoded(item),
+                        lambda item: foo_struct.FooStruct.from_decoded(item),
                         dec.vec_struct_field,
                     )
                 ),
                 "option_field": dec.option_field,
                 "option_struct_field": (
                     dec.option_struct_field
-                    and types.foo_struct.FooStruct.from_decoded(dec.option_struct_field)
+                    and foo_struct.FooStruct.from_decoded(dec.option_struct_field)
                 )
                 or None,
-                "struct_field": types.foo_struct.FooStruct.from_decoded(
-                    dec.struct_field
-                ),
+                "struct_field": foo_struct.FooStruct.from_decoded(dec.struct_field),
                 "array_field": dec.array_field,
-                "enum_field1": types.foo_enum.from_decoded(dec.enum_field1),
-                "enum_field2": types.foo_enum.from_decoded(dec.enum_field2),
-                "enum_field3": types.foo_enum.from_decoded(dec.enum_field3),
-                "enum_field4": types.foo_enum.from_decoded(dec.enum_field4),
+                "enum_field1": foo_enum.from_decoded(dec.enum_field1),
+                "enum_field2": foo_enum.from_decoded(dec.enum_field2),
+                "enum_field3": foo_enum.from_decoded(dec.enum_field3),
+                "enum_field4": foo_enum.from_decoded(dec.enum_field4),
             }
         )
 
