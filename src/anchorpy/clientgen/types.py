@@ -120,7 +120,7 @@ def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
             if isinstance(ty.type, _IdlTypeDefTyStruct)
             else gen_enum(idl, ty.name, ty.type.variants)
         )
-        code = str(Collection([relative_import, body]))
+        code = str(Collection([ANNOTATIONS_IMPORT, relative_import, body]))
         path = (out / module_name).with_suffix(".py")
         res[path] = code
     return res
@@ -373,7 +373,6 @@ def _make_unnamed_field_record(
 
 def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection:
     imports = [
-        ANNOTATIONS_IMPORT,
         Import("typing"),
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("anchorpy.borsh_extension", ["EnumForCodegen", "BorshPubkey"]),
