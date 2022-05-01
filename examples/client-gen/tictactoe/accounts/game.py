@@ -87,14 +87,16 @@ class Game:
                     map(
                         lambda item: list(
                             map(
-                                lambda item: (item and sign.from_decoded(item)) or None,
+                                lambda item: None
+                                if item is None
+                                else types.sign.from_decoded(item),
                                 item,
                             )
                         ),
                         dec.board,
                     )
                 ),
-                "state": game_state.from_decoded(dec.state),
+                "state": types.game_state.from_decoded(dec.state),
             }
         )
 
@@ -105,7 +107,7 @@ class Game:
             "board": list(
                 map(
                     lambda item: list(
-                        map(lambda item: (item and item.to_json()) or None, item)
+                        map(lambda item: None if item is None else item.to_json(), item)
                     ),
                     self.board,
                 )
@@ -123,8 +125,9 @@ class Game:
                     map(
                         lambda item: list(
                             map(
-                                lambda item: (item and types.sign.from_json(item))
-                                or None,
+                                lambda item: None
+                                if item is None
+                                else types.sign.from_json(item),
                                 item,
                             )
                         ),

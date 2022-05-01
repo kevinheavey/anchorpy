@@ -26,10 +26,10 @@ class InitializeWithValuesArgs(typing.TypedDict):
     string_field: str
     pubkey_field: PublicKey
     vec_field: list[int]
-    vec_struct_field: list[types.foo_struct.FooStructFields]
+    vec_struct_field: list[types.foo_struct.FooStruct]
     option_field: typing.Optional[bool]
-    option_struct_field: typing.Optional[types.foo_struct.FooStructFields]
-    struct_field: types.foo_struct.FooStructFields
+    option_struct_field: typing.Optional[types.foo_struct.FooStruct]
+    struct_field: types.foo_struct.FooStruct
     array_field: list[bool]
     enum_field1: types.foo_enum.FooEnumKind
     enum_field2: types.foo_enum.FooEnumKind
@@ -116,20 +116,13 @@ def initialize_with_values(
             "pubkey_field": args["pubkey_field"],
             "vec_field": args["vec_field"],
             "vec_struct_field": list(
-                map(
-                    lambda item: types.foo_struct.FooStruct.to_encodable(item),
-                    args["vec_struct_field"],
-                )
+                map(lambda item: item.to_encodable(), args["vec_struct_field"])
             ),
             "option_field": args["option_field"],
-            "option_struct_field": (
-                args["option_struct_field"]
-                and types.foo_struct.FooStruct.to_encodable(args["option_struct_field"])
-            )
-            or None,
-            "struct_field": types.foo_struct.FooStruct.to_encodable(
-                args["struct_field"]
-            ),
+            "option_struct_field": None
+            if args["option_struct_field"] is None
+            else args["option_struct_field"].to_encodable(),
+            "struct_field": args["struct_field"].to_encodable(),
             "array_field": args["array_field"],
             "enum_field1": args["enum_field1"].to_encodable(),
             "enum_field2": args["enum_field2"].to_encodable(),

@@ -28,10 +28,10 @@ class StateFields(typing.TypedDict):
     string_field: str
     pubkey_field: PublicKey
     vec_field: list[int]
-    vec_struct_field: list[types.foo_struct.FooStructFields]
+    vec_struct_field: list[types.foo_struct.FooStruct]
     option_field: typing.Optional[bool]
-    option_struct_field: typing.Optional[types.foo_struct.FooStructFields]
-    struct_field: types.foo_struct.FooStructFields
+    option_struct_field: typing.Optional[types.foo_struct.FooStruct]
+    struct_field: types.foo_struct.FooStruct
     array_field: list[bool]
     enum_field1: types.foo_enum.FooEnumKind
     enum_field2: types.foo_enum.FooEnumKind
@@ -117,18 +117,10 @@ class State:
         self.string_field = fields["string_field"]
         self.pubkey_field = fields["pubkey_field"]
         self.vec_field = fields["vec_field"]
-        self.vec_struct_field = list(
-            map(
-                lambda item: types.foo_struct.FooStruct(**item),
-                fields["vec_struct_field"],
-            )
-        )
+        self.vec_struct_field = fields["vec_struct_field"]
         self.option_field = fields["option_field"]
-        self.option_struct_field = (
-            fields["option_struct_field"]
-            and types.foo_struct.FooStruct(**fields["option_struct_field"])
-        ) or None
-        self.struct_field = types.foo_struct.FooStruct(**fields["struct_field"])
+        self.option_struct_field = fields["option_struct_field"]
+        self.struct_field = fields["struct_field"]
         self.array_field = fields["array_field"]
         self.enum_field1 = fields["enum_field1"]
         self.enum_field2 = fields["enum_field2"]
@@ -196,22 +188,22 @@ class State:
                 "vec_field": dec.vec_field,
                 "vec_struct_field": list(
                     map(
-                        lambda item: foo_struct.FooStruct.from_decoded(item),
+                        lambda item: types.foo_struct.FooStruct.from_decoded(item),
                         dec.vec_struct_field,
                     )
                 ),
                 "option_field": dec.option_field,
-                "option_struct_field": (
-                    dec.option_struct_field
-                    and foo_struct.FooStruct.from_decoded(dec.option_struct_field)
-                )
-                or None,
-                "struct_field": foo_struct.FooStruct.from_decoded(dec.struct_field),
+                "option_struct_field": None
+                if dec.option_struct_field is None
+                else types.foo_struct.FooStruct.from_decoded(dec.option_struct_field),
+                "struct_field": types.foo_struct.FooStruct.from_decoded(
+                    dec.struct_field
+                ),
                 "array_field": dec.array_field,
-                "enum_field1": foo_enum.from_decoded(dec.enum_field1),
-                "enum_field2": foo_enum.from_decoded(dec.enum_field2),
-                "enum_field3": foo_enum.from_decoded(dec.enum_field3),
-                "enum_field4": foo_enum.from_decoded(dec.enum_field4),
+                "enum_field1": types.foo_enum.from_decoded(dec.enum_field1),
+                "enum_field2": types.foo_enum.from_decoded(dec.enum_field2),
+                "enum_field3": types.foo_enum.from_decoded(dec.enum_field3),
+                "enum_field4": types.foo_enum.from_decoded(dec.enum_field4),
             }
         )
 
@@ -230,7 +222,7 @@ class State:
             "f64_field": self.f64_field,
             "u128_field": self.u128_field,
             "i128_field": self.i128_field,
-            "bytes_field": self.bytes_field,
+            "bytes_field": self.bytes_field.decode(),
             "string_field": self.string_field,
             "pubkey_field": str(self.pubkey_field),
             "vec_field": self.vec_field,
@@ -238,10 +230,9 @@ class State:
                 map(lambda item: item.to_json(), self.vec_struct_field)
             ),
             "option_field": self.option_field,
-            "option_struct_field": (
-                self.option_struct_field and self.option_struct_field.to_json()
-            )
-            or None,
+            "option_struct_field": None
+            if self.option_struct_field is None
+            else self.option_struct_field.to_json(),
             "struct_field": self.struct_field.to_json(),
             "array_field": self.array_field,
             "enum_field1": self.enum_field1.to_json(),
@@ -267,7 +258,7 @@ class State:
                 "f64_field": obj["f64_field"],
                 "u128_field": obj["u128_field"],
                 "i128_field": obj["i128_field"],
-                "bytes_field": obj["bytes_field"],
+                "bytes_field": obj["bytes_field"].encode(),
                 "string_field": obj["string_field"],
                 "pubkey_field": PublicKey(obj["pubkey_field"]),
                 "vec_field": obj["vec_field"],
@@ -278,11 +269,9 @@ class State:
                     )
                 ),
                 "option_field": obj["option_field"],
-                "option_struct_field": (
-                    obj["option_struct_field"]
-                    and types.foo_struct.FooStruct.from_json(obj["option_struct_field"])
-                )
-                or None,
+                "option_struct_field": None
+                if obj["option_struct_field"] is None
+                else types.foo_struct.FooStruct.from_json(obj["option_struct_field"]),
                 "struct_field": types.foo_struct.FooStruct.from_json(
                     obj["struct_field"]
                 ),

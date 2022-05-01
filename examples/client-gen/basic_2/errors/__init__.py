@@ -1,6 +1,6 @@
 import typing
 import re
-from .program_id import PROGRAM_ID
+from ..program_id import PROGRAM_ID
 from . import anchor
 
 

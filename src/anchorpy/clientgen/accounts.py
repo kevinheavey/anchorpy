@@ -113,17 +113,16 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     from_json_entries: list[StrDictEntry] = []
     for field in fields:
         fields_interface_params.append(
-            TypedParam(field.name, _py_type_from_idl(idl=idl, ty=field.type, types_relative_imports=False))
+            TypedParam(field.name, _py_type_from_idl(idl=idl, ty=field.type, types_relative_imports=False, use_fields_interface_for_struct=False))
         )
         json_interface_params.append(
             TypedParam(field.name, _idl_type_to_json_type(ty=field.type, types_relative_imports=False))
         )
         layout_items.append(_layout_for_type(idl=idl, ty=field.type, name=field.name, types_relative_imports=False))
-        initializer = _struct_field_initializer(idl=idl, field=field, types_relative_imports=False)
-        init_body_assignments.append(Assign(f"self.{field.name}", initializer))
+        init_body_assignments.append(Assign(f"self.{field.name}", f'fields["{field.name}"]'))
         decode_body_entries.append(
             StrDictEntry(
-                field.name, _field_from_decoded(idl=idl, ty=field, types_relative_imports=True, val_prefix="dec.")
+                field.name, _field_from_decoded(idl=idl, ty=field, types_relative_imports=False, val_prefix="dec.")
             )
         )
         to_json_entries.append(

@@ -8,7 +8,7 @@ from ..program_id import PROGRAM_ID
 
 
 class PlayArgs(typing.TypedDict):
-    tile: types.tile.TileFields
+    tile: types.tile.Tile
 
 
 layout = borsh.CStruct("tile" / types.tile.Tile.layout)
@@ -27,7 +27,7 @@ def play(args: PlayArgs, accounts: PlayAccounts) -> TransactionInstruction:
     identifier = b"\xd5\x9d\xc1\x8e\xe48\xf8\x96"
     encoded_args = layout.build(
         {
-            "tile": types.tile.Tile.to_encodable(args["tile"]),
+            "tile": args["tile"].to_encodable(),
         }
     )
     data = identifier + encoded_args

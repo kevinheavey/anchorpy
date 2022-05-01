@@ -37,10 +37,10 @@ def _json_interface_name(type_name: str) -> str:
 
 
 def _py_type_from_idl(
-    idl: Idl,
-    ty: _IdlType,
-    types_relative_imports: bool,
-    use_fields_interface_for_struct: bool = True,
+        idl: Idl,
+        ty: _IdlType,
+        types_relative_imports: bool,
+        use_fields_interface_for_struct: bool,
 ) -> str:
     if isinstance(ty, _IdlTypeVec):
         inner_type = _py_type_from_idl(
@@ -50,7 +50,7 @@ def _py_type_from_idl(
             use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"list[{inner_type}]"
-    elif isinstance(ty, _IdlTypeOption):
+    if isinstance(ty, _IdlTypeOption):
         inner_type = _py_type_from_idl(
             idl=idl,
             ty=ty.option,
@@ -58,7 +58,7 @@ def _py_type_from_idl(
             use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"typing.Optional[{inner_type}]"
-    elif isinstance(ty, _IdlTypeCOption):
+    if isinstance(ty, _IdlTypeCOption):
         inner_type = _py_type_from_idl(
             idl=idl,
             ty=ty.coption,
@@ -66,7 +66,7 @@ def _py_type_from_idl(
             use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"typing.Optional[{inner_type}]"
-    elif isinstance(ty, _IdlTypeDefined):
+    if isinstance(ty, _IdlTypeDefined):
         defined = ty.defined
         filtered = [t for t in idl.types if t.name == defined]
         defined_types_prefix = (
@@ -86,7 +86,7 @@ def _py_type_from_idl(
             # enum
             name = _kind_interface_name(ty.defined)
         return f"{defined_types_prefix}{module}.{name}"
-    elif isinstance(ty, _IdlTypeArray):
+    if isinstance(ty, _IdlTypeArray):
         inner_type = _py_type_from_idl(
             idl=idl,
             ty=ty.array[0],
@@ -94,26 +94,24 @@ def _py_type_from_idl(
             use_fields_interface_for_struct=use_fields_interface_for_struct,
         )
         return f"list[{inner_type}]"
-    elif ty == "bool":
-        return "bool"
-    elif ty in INT_TYPES:
+    if ty in {"bool", "bytes"}:
+        return ty
+    if ty in INT_TYPES:
         return "int"
-    elif ty in FLOAT_TYPES:
+    if ty in FLOAT_TYPES:
         return "float"
-    elif ty == "bytes":
-        return "bytes"
-    elif ty == "string":
+    if ty == "string":
         return "str"
-    elif ty == "publicKey":
+    if ty == "publicKey":
         return "PublicKey"
     raise ValueError(f"Unrecognized type: {ty}")
 
 
 def _layout_for_type(
-    idl: Idl,
-    ty: _IdlType,
-    types_relative_imports: bool,
-    name: Optional[str] = None,
+        idl: Idl,
+        ty: _IdlType,
+        types_relative_imports: bool,
+        name: Optional[str] = None,
 ) -> str:
     if ty == "bool":
         inner = "borsh.Bool"
@@ -188,12 +186,16 @@ def _layout_for_type(
     return f'"{name}" / {inner}'
 
 
+def _maybe_none(to_check: str, if_not_none: str) -> str:
+    return f"None if {to_check} is None else {if_not_none}"
+
+
 def _field_to_encodable(
-    idl: Idl,
-    ty: _IdlField,
-    types_relative_imports: bool,
-    val_prefix: str = "",
-    val_suffix: str = "",
+        idl: Idl,
+        ty: _IdlField,
+        types_relative_imports: bool,
+        val_prefix: str = "",
+        val_suffix: str = "",
 ) -> str:
     ty_type = ty.type
     if isinstance(ty_type, _IdlTypeVec):
@@ -218,7 +220,7 @@ def _field_to_encodable(
         )
         if encodable == f"{val_prefix}{ty.name}{val_suffix}":
             return encodable
-        return f"({val_prefix}{ty.name}{val_suffix} and {encodable}) or None"
+        return _maybe_none(f"{val_prefix}{ty.name}{val_suffix}", encodable)
     if isinstance(ty_type, _IdlTypeCOption):
         raise NotImplementedError("COption not implemented.")
     if isinstance(ty_type, _IdlTypeDefined):
@@ -229,12 +231,7 @@ def _field_to_encodable(
         typedef_type = filtered[0].type
         if isinstance(typedef_type, _IdlTypeDefTyStruct):
             val_full_name = f"{val_prefix}{ty.name}{val_suffix}"
-            defined_types_prefix = (
-                "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
-            )
-            module = snake(defined)
-            obj_full_path = f"{defined_types_prefix}{module}.{defined}"
-            return f"{obj_full_path}.to_encodable({val_full_name})"
+            return f"{val_full_name}.to_encodable()"
         return f"{val_prefix}{ty.name}{val_suffix}.to_encodable()"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_to_encodable(
@@ -260,7 +257,7 @@ def _field_to_encodable(
 
 
 def _field_from_decoded(
-    idl: Idl, ty: _IdlField, types_relative_imports: bool, val_prefix: str = ""
+        idl: Idl, ty: _IdlField, types_relative_imports: bool, val_prefix: str = ""
 ) -> str:
     ty_type = ty.type
     if isinstance(ty_type, _IdlTypeVec):
@@ -276,12 +273,13 @@ def _field_from_decoded(
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
     if isinstance(ty_type, _IdlTypeOption):
         decoded = _field_from_decoded(
-            idl=idl, ty=_IdlField(ty.name, ty_type.option), types_relative_imports=types_relative_imports, val_prefix=val_prefix
+            idl=idl, ty=_IdlField(ty.name, ty_type.option), types_relative_imports=types_relative_imports,
+            val_prefix=val_prefix
         )
         # skip coercion when not needed
         if decoded == f"{val_prefix}{ty.name}":
             return decoded
-        return f"({val_prefix}{ty.name} and {decoded}) or None"
+        return _maybe_none(f"{val_prefix}{ty.name}", decoded)
     if isinstance(ty_type, _IdlTypeCOption):
         raise NotImplementedError("COption not implemented.")
     if isinstance(ty_type, _IdlTypeDefined):
@@ -324,11 +322,11 @@ def _field_from_decoded(
 
 
 def _struct_field_initializer(
-    idl: Idl,
-    field: _IdlField,
-    types_relative_imports: bool,
-    prefix: str = 'fields["',
-    suffix: str = '"]',
+        idl: Idl,
+        field: _IdlField,
+        types_relative_imports: bool,
+        prefix: str = 'fields["',
+        suffix: str = '"]',
 ) -> str:
     field_type = field.type
     if isinstance(field_type, _IdlTypeDefined):
@@ -356,7 +354,7 @@ def _struct_field_initializer(
         # skip coercion when not needed
         if initializer == f"{prefix}{field.name}{suffix}":
             return initializer
-        return f"({prefix}{field.name}{suffix} and {initializer}) or None"
+        return _maybe_none(f"{prefix}{field.name}{suffix}", initializer)
     if isinstance(field_type, _IdlTypeCOption):
         initializer = _struct_field_initializer(
             idl=idl,
@@ -368,7 +366,7 @@ def _struct_field_initializer(
         # skip coercion when not needed
         if initializer == f"{prefix}{field.name}{suffix}":
             return initializer
-        return f"({prefix}{field.name} and {initializer}) or None"
+        return _maybe_none(f"{prefix}{field.name}", initializer)
     if isinstance(field_type, _IdlTypeArray):
         map_body = _struct_field_initializer(
             idl=idl,
@@ -405,52 +403,54 @@ def _struct_field_initializer(
 
 
 def _field_to_json(
-    idl: Idl, ty: _IdlField, val_prefix: str = "", val_suffix: str = ""
+        idl: Idl, ty: _IdlField, val_prefix: str = "", val_suffix: str = ""
 ) -> str:
     ty_type = ty.type
+    var_name = f"{val_prefix}{ty.name}{val_suffix}"
     if ty_type == "publicKey":
-        return f"str({val_prefix}{ty.name}{val_suffix})"
+        return f"str({var_name})"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_to_json(idl, _IdlField("item", ty_type.vec))
         # skip mapping when not needed
         if map_body == "item":
-            return f"{val_prefix}{ty.name}{val_suffix}"
-        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}{val_suffix}))"
+            return var_name
+        return f"list(map(lambda item: {map_body}, {var_name}))"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_to_json(idl, _IdlField("item", ty_type.array[0]))
         # skip mapping when not needed
         if map_body == "item":
-            return f"{val_prefix}{ty.name}{val_suffix}"
-        return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}{val_suffix}))"
+            return var_name
+        return f"list(map(lambda item: {map_body}, {var_name}))"
     if isinstance(ty_type, _IdlTypeOption):
         value = _field_to_json(
             idl, _IdlField(ty.name, ty_type.option), val_prefix, val_suffix
         )
         # skip coercion when not needed
-        if value == f"{val_prefix}{ty.name}{val_suffix}":
+        if value == var_name:
             return value
-        return f"({val_prefix}{ty.name}{val_suffix} and {value}) or None"
+        return _maybe_none(var_name, value)
     if isinstance(ty_type, _IdlTypeCOption):
         value = _field_to_json(
             idl, _IdlField(ty.name, ty_type.coption), val_prefix, val_suffix
         )
         # skip coercion when not needed
-        if value == f"{val_prefix}{ty.name}{val_suffix}":
+        if value == var_name:
             return value
-        return f"({val_prefix}{ty.name}{val_suffix} and {value}) or None"
+        return _maybe_none(var_name, value)
     if isinstance(ty_type, _IdlTypeDefined):
         defined = ty_type.defined
         filtered = [t for t in idl.types if t.name == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
-        return f"{val_prefix}{ty.name}{val_suffix}.to_json()"
+        return f"{var_name}.to_json()"
+    if ty_type == "bytes":
+        return f"{var_name}.decode()"
     if ty_type in {
         "bool",
         *NUMBER_TYPES,
         "string",
-        "bytes",
     }:
-        return f"{val_prefix}{ty.name}{val_suffix}"
+        return var_name
     raise ValueError(f"Unrecognized type: {ty_type}")
 
 
@@ -493,66 +493,70 @@ def _idl_type_to_json_type(ty: _IdlType, types_relative_imports: bool) -> str:
 
 
 def _field_from_json(
-    idl: Idl,
-    ty: _IdlField,
-    types_relative_imports: bool,
-    json_param_name: str = "obj",
+        idl: Idl,
+        ty: _IdlField,
+        types_relative_imports: bool,
+        param_prefix: str = 'obj["',
+        param_suffix: str = '"]',
 ) -> str:
-    param_prefix = json_param_name + '["' if json_param_name else ""
-    param_suffix = '"]' if json_param_name else ""
     ty_type = ty.type
+    var_name = f"{param_prefix}{ty.name}{param_suffix}"
     if ty_type == "publicKey":
-        return f"PublicKey({param_prefix}{ty.name}{param_suffix})"
+        return f"PublicKey({var_name})"
     if isinstance(ty_type, _IdlTypeVec):
         map_body = _field_from_json(
             idl=idl,
             ty=_IdlField("item", ty_type.vec),
-            json_param_name="",
+            param_prefix="",
+            param_suffix="",
             types_relative_imports=types_relative_imports,
         )
         # skip mapping when not needed
         if map_body == "item":
-            return f"{param_prefix}{ty.name}{param_suffix}"
+            return var_name
         return (
-            f"list(map(lambda item: {map_body}, {param_prefix}{ty.name}{param_suffix}))"
+            f"list(map(lambda item: {map_body}, {var_name}))"
         )
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_from_json(
             idl=idl,
             ty=_IdlField("item", ty_type.array[0]),
-            json_param_name="",
+            param_prefix="",
+            param_suffix="",
             types_relative_imports=types_relative_imports,
         )
         # skip mapping when not needed
         if map_body == "item":
-            return f"{param_prefix}{ty.name}{param_suffix}"
+            return var_name
         return (
-            f"list(map(lambda item: {map_body}, {param_prefix}{ty.name}{param_suffix}))"
+            f"list(map(lambda item: {map_body}, {var_name}))"
         )
     if isinstance(ty_type, _IdlTypeOption):
         inner = _field_from_json(
             idl=idl,
             ty=_IdlField(ty.name, ty_type.option),
-            json_param_name=json_param_name,
+            param_prefix=param_prefix,
+            param_suffix=param_suffix,
             types_relative_imports=types_relative_imports,
         )
         # skip coercion when not needed
-        if inner == f"{param_prefix}{ty.name}{param_suffix}":
+        if inner == var_name:
             return inner
-        return f"({param_prefix}{ty.name}{param_suffix} and {inner}) or None"
+        return _maybe_none(var_name, inner)
     if isinstance(ty_type, _IdlTypeCOption):
         inner = _field_from_json(
             idl=idl,
             ty=_IdlField(ty.name, ty_type.coption),
-            json_param_name=json_param_name,
+            param_prefix=param_prefix,
+            param_suffix=param_suffix,
             types_relative_imports=types_relative_imports,
         )
         # skip coercion when not needed
-        if inner == f"{param_prefix}{ty.name}{param_suffix}":
+        if inner == var_name:
             return inner
-        return f"({param_prefix}{ty.name}{param_suffix} and {inner}) or None"
+        return _maybe_none(var_name, inner)
     if isinstance(ty_type, _IdlTypeDefined):
-        from_json_arg = f"{param_prefix}{ty.name}{param_suffix}"
+        from_json_arg = var_name
         defined = ty_type.defined
         filtered = [t for t in idl.types if t.name == defined]
         typedef_type = filtered[0].type
@@ -566,11 +570,12 @@ def _field_from_json(
         )
         full_func_path = f"{defined_types_prefix}{from_json_func_path}"
         return f"{full_func_path}.from_json({from_json_arg})"
+    if ty_type == "bytes":
+        return f"{var_name}.encode()"
     if ty_type in {
         "bool",
         *NUMBER_TYPES,
         "string",
-        "bytes",
     }:
-        return f"{param_prefix}{ty.name}{param_suffix}"
+        return var_name
     raise ValueError(f"Unrecognized type: {ty_type}")

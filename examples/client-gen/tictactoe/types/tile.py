@@ -25,13 +25,12 @@ class Tile:
     def from_decoded(cls, obj: Container) -> "Tile":
         return cls(TileFields(row=obj.row, column=obj.column))
 
-    @classmethod
-    def to_encodable(cls, fields: TileFields) -> dict[str, typing.Any]:
-        return {"row": fields["row"], "column": fields["column"]}
+    def to_encodable(self) -> dict[str, typing.Any]:
+        return {"row": self.row, "column": self.column}
 
     def to_json(self) -> TileJSON:
         return {"row": self.row, "column": self.column}
 
     @classmethod
     def from_json(cls, obj: TileJSON) -> "Tile":
-        return cls(TileJSON(row=obj["row"], column=obj["column"]))
+        return cls(TileFields(row=obj["row"], column=obj["column"]))

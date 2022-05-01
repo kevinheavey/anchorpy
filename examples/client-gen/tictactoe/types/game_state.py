@@ -103,9 +103,9 @@ def from_decoded(obj: dict) -> GameStateKind:
     if "Won" in obj:
         val = obj["Won"]
         return Won(
-            {
-                "winner": val["winner"],
-            }
+            WonFields(
+                winner=val["winner"],
+            )
         )
     raise ValueError("Invalid enum object")
 
@@ -116,10 +116,11 @@ def from_json(obj: GameStateJSON) -> GameStateKind:
     if obj["kind"] == "Tie":
         return Tie()
     if obj["kind"] == "Won":
+        won_json_value = typing.cast(WonJSONValue, obj["value"])
         return Won(
-            {
-                "winner": PublicKey(obj["value"]["winner"]),
-            }
+            WonFields(
+                winner=PublicKey(won_json_value["winner"]),
+            )
         )
     kind = obj["kind"]
     raise ValueError(f"Unrecognized enum kind: {kind}")

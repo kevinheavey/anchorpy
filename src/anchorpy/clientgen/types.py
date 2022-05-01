@@ -148,7 +148,8 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
         fields_interface_params.append(
             TypedParam(
                 field.name,
-                _py_type_from_idl(idl=idl, ty=field.type, types_relative_imports=True),
+                _py_type_from_idl(idl=idl, ty=field.type, types_relative_imports=True,
+                                  use_fields_interface_for_struct=False),
             )
         )
         json_interface_params.append(
@@ -169,8 +170,8 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
         as_encodable = _field_to_encodable(
             idl=idl,
             ty=field,
-            val_prefix='fields["',
-            val_suffix='"]',
+            val_prefix="self.",
+            val_suffix="",
             types_relative_imports=True,
         )
         to_encodable_items.append(f'"{field.name}": {as_encodable}')
@@ -197,9 +198,7 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
                     [
                         Assign(
                             f"self.{field.name}",
-                            _struct_field_initializer(
-                                idl=idl, field=field, types_relative_imports=True
-                            ),
+                            f'fields["{field.name}"]'
                         )
                         for field in fields
                     ]
@@ -211,9 +210,9 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
                 Return(f"cls({fields_interface_name}({args_for_from_decoded}))"),
                 f'"{name}"',
             ),
-            ClassMethod(
+            Method(
                 "to_encodable",
-                [TypedParam("fields", fields_interface_name)],
+                [],
                 Return(to_encodable_body),
                 "dict[str, typing.Any]",
             ),
@@ -221,7 +220,7 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
             ClassMethod(
                 "from_json",
                 [TypedParam("obj", json_interface_name)],
-                Return(f"cls({json_interface_name}({args_for_from_json}))"),
+                Return(f"cls({fields_interface_name}({args_for_from_json}))"),
                 f'"{name}"',
             ),
         ],
@@ -242,16 +241,16 @@ class _NamedFieldRecord:
     init_method_body_item: StrDictEntry
     json_value_item: StrDictEntry
     encodable_value_item: StrDictEntry
-    init_entry_for_from_decoded: StrDictEntry
-    init_entry_for_from_json: StrDictEntry
+    init_entry_for_from_decoded: NamedArg
+    init_entry_for_from_json: NamedArg
 
 
-def _make_named_field_record(named_field: _IdlField, idl: Idl) -> _NamedFieldRecord:
+def _make_named_field_record(named_field: _IdlField, idl: Idl, cast_obj_var_name: str) -> _NamedFieldRecord:
     return _NamedFieldRecord(
         field_type_alias_entry=TypedParam(
             named_field.name,
             _py_type_from_idl(
-                idl=idl, ty=named_field.type, types_relative_imports=True
+                idl=idl, ty=named_field.type, types_relative_imports=True, use_fields_interface_for_struct=False,
             ),
         ),
         value_type_alias_entry=TypedParam(
@@ -269,12 +268,7 @@ def _make_named_field_record(named_field: _IdlField, idl: Idl) -> _NamedFieldRec
         ),
         init_method_body_item=StrDictEntry(
             named_field.name,
-            _struct_field_initializer(
-                idl=idl,
-                field=named_field,
-                prefix='value["',
-                types_relative_imports=True,
-            ),
+            f'value["{named_field.name}"]'
         ),
         json_value_item=StrDictEntry(
             named_field.name,
@@ -290,7 +284,7 @@ def _make_named_field_record(named_field: _IdlField, idl: Idl) -> _NamedFieldRec
                 types_relative_imports=True,
             ),
         ),
-        init_entry_for_from_decoded=StrDictEntry(
+        init_entry_for_from_decoded=NamedArg(
             named_field.name,
             _field_from_decoded(
                 idl=idl,
@@ -299,12 +293,13 @@ def _make_named_field_record(named_field: _IdlField, idl: Idl) -> _NamedFieldRec
                 val_prefix="",
             ),
         ),
-        init_entry_for_from_json=StrDictEntry(
+        init_entry_for_from_json=NamedArg(
             named_field.name,
             _field_from_json(
                 idl=idl,
                 ty=named_field,
-                json_param_name='obj["value"]',
+                param_prefix=f'{cast_obj_var_name}["',
+                param_suffix='"]',
                 types_relative_imports=True,
             ),
         ),
@@ -316,7 +311,6 @@ class _UnnamedFieldRecord:
     field_type_alias_element: str
     value_type_alias_element: str
     json_interface_value_element: str
-    tuple_element: str
     json_value_element: str
     encodable_value_item: StrDictEntry
     init_element_for_from_decoded: str
@@ -327,6 +321,7 @@ def _make_unnamed_field_record(
         index: int,
         unnamed_field: _IdlType,
         idl: Idl,
+        cast_obj_var_name: str
 ) -> _UnnamedFieldRecord:
     elem_name = f"value[{index}]"
     encodable = _field_to_encodable(
@@ -340,6 +335,7 @@ def _make_unnamed_field_record(
             idl=idl,
             ty=unnamed_field,
             types_relative_imports=True,
+            use_fields_interface_for_struct=False
         ),
         value_type_alias_element=_py_type_from_idl(
             idl=idl,
@@ -349,13 +345,6 @@ def _make_unnamed_field_record(
         ),
         json_interface_value_element=_idl_type_to_json_type(
             ty=unnamed_field, types_relative_imports=True
-        ),
-        tuple_element=_struct_field_initializer(
-            idl=idl,
-            field=_IdlField(elem_name, unnamed_field),
-            prefix="",
-            suffix="",
-            types_relative_imports=True,
         ),
         json_value_element=_field_to_json(idl, _IdlField(elem_name, unnamed_field), "self."),
         encodable_value_item=StrDictEntry(f"_{index}", encodable),
@@ -367,7 +356,9 @@ def _make_unnamed_field_record(
         ),
         init_element_for_from_json=_field_from_json(
             idl=idl,
-            ty=_IdlField(f"value[{index}]", unnamed_field),
+            ty=_IdlField(str(index), unnamed_field),
+            param_prefix=f'{cast_obj_var_name}[',
+            param_suffix="]",
             types_relative_imports=True,
         ),
     )
@@ -399,6 +390,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
         value_interface_name = _value_interface_name(variant.name)
         json_interface_name = _json_interface_name(variant.name)
         json_interface_value_type_name = f"{json_interface_name}Value"
+        cast_obj_var_name = snake(json_interface_value_type_name)
         encodable_value_items: list[StrDictEntry] = []
         cstruct_fields: dict[str, str] = {}
         to_json_params_base = NamedArg("kind", f'"{variant.name}"')
@@ -412,8 +404,11 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
             return If(f'"{variant.name}" in obj', then)
 
         def make_obj_kind_check(return_val: str) -> Generable:
-            lhs = 'obj["kind"] == '
-            return If(f'{lhs}"{variant.name}"', Return(return_val))
+            accessed = 'obj["kind"]'
+            lhs = f'{accessed} == '
+            cast_obj_assignment_container = [Assign(cast_obj_var_name,
+                                                    f'typing.cast({json_interface_value_type_name}, obj["value"])')] if fields else []
+            return If(f'{lhs}"{variant.name}"', Suite([*cast_obj_assignment_container, Return(return_val)]))
 
         if fields:
             val_line_for_from_decoded = Assign("val", f'obj["{variant.name}"]')
@@ -424,10 +419,10 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
                 json_interface_value_type_entries: list[TypedParam] = []
                 init_method_body_items: list[StrDictEntry] = []
                 json_value_items: list[StrDictEntry] = []
-                init_entries_for_from_decoded: list[StrDictEntry] = []
-                init_entries_for_from_json: list[StrDictEntry] = []
+                init_entries_for_from_decoded: list[NamedArg] = []
+                init_entries_for_from_json: list[NamedArg] = []
                 for named_field in named_enum_fields:
-                    rec = _make_named_field_record(named_field, idl)
+                    rec = _make_named_field_record(named_field, idl, cast_obj_var_name)
                     field_type_alias_entries.append(rec.field_type_alias_entry)
                     value_type_alias_entries.append(rec.value_type_alias_entry)
                     json_interface_value_type_entries.append(
@@ -464,19 +459,18 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
                          [to_json_params_base, NamedArg("value", str(json_value_entry))]
                          )
                 )
-                init_arg_for_from_decoded = StrDict(init_entries_for_from_decoded)
-                init_arg_for_from_json = StrDict(init_entries_for_from_json)
+                init_arg_for_from_decoded = Call(fields_interface_name, init_entries_for_from_decoded)
+                init_arg_for_from_json = Call(fields_interface_name, init_entries_for_from_json)
             else:
                 tuple_enum_fields = cast(_IdlEnumFieldsTuple, fields)
                 field_type_alias_elements: list[str] = []
                 value_type_alias_elements: list[str] = []
                 json_interface_value_elements: list[str] = []
-                tuple_elements: list[str] = []
                 json_value_elements: list[str] = []
                 init_elements_for_from_decoded: list[str] = []
                 init_elements_for_from_json: list[str] = []
                 for i, unnamed_field in enumerate(tuple_enum_fields):
-                    rec_unnamed = _make_unnamed_field_record(i, unnamed_field, idl)
+                    rec_unnamed = _make_unnamed_field_record(i, unnamed_field, idl, cast_obj_var_name)
                     field_type_alias_elements.append(
                         rec_unnamed.field_type_alias_element
                     )
@@ -486,7 +480,6 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
                     json_interface_value_elements.append(
                         rec_unnamed.json_interface_value_element
                     )
-                    tuple_elements.append(rec_unnamed.tuple_element)
                     json_value_elements.append(rec_unnamed.json_value_element)
                     encodable_value_items.append(rec_unnamed.encodable_value_item)
                     init_elements_for_from_decoded.append(
@@ -513,8 +506,8 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
                 json_interface_value_field_type = TupleTypeAlias(json_interface_value_type_name,
                                                                  json_interface_value_elements)
                 init_method_body = Assign(
-                    f"self.value: {value_interface_name}",
-                    Tuple(tuple_elements),
+                    f"self.value",
+                    "value",
                 )
                 to_json_body = Return(
                     Call(json_interface_name,

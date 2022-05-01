@@ -27,12 +27,8 @@ class BarStruct:
             BarStructFields(some_field=obj.some_field, other_field=obj.other_field)
         )
 
-    @classmethod
-    def to_encodable(cls, fields: BarStructFields) -> dict[str, typing.Any]:
-        return {
-            "some_field": fields["some_field"],
-            "other_field": fields["other_field"],
-        }
+    def to_encodable(self) -> dict[str, typing.Any]:
+        return {"some_field": self.some_field, "other_field": self.other_field}
 
     def to_json(self) -> BarStructJSON:
         return {"some_field": self.some_field, "other_field": self.other_field}
@@ -40,5 +36,7 @@ class BarStruct:
     @classmethod
     def from_json(cls, obj: BarStructJSON) -> "BarStruct":
         return cls(
-            BarStructJSON(some_field=obj["some_field"], other_field=obj["other_field"])
+            BarStructFields(
+                some_field=obj["some_field"], other_field=obj["other_field"]
+            )
         )

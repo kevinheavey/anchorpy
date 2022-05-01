@@ -193,7 +193,7 @@ def gen_anchor_errors(errors_dir: Path) -> None:
 def gen_index_code(idl: Idl) -> str:
     has_custom_errors = bool(idl.errors)
     typing_import = Import("typing")
-    program_id_import = FromImport(".program_id", ["PROGRAM_ID"])
+    program_id_import = FromImport("..program_id", ["PROGRAM_ID"])
     anchor_import = FromImport(".", ["anchor"])
     re_import = Import("re")
     base_import_lines = [typing_import, re_import, program_id_import, anchor_import]
