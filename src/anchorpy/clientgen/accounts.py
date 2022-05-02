@@ -30,14 +30,14 @@ from anchorpy.clientgen.genpy_extension import (
     StrDict,
     StrDictEntry,
 NamedArg,
-Call
+Call,
+Continue
 )
 from anchorpy.clientgen.common import (
     _fields_interface_name,
     _json_interface_name,
     _py_type_from_idl,
     _idl_type_to_json_type,
-    _struct_field_initializer,
     _layout_for_type,
     _field_from_decoded,
     _field_to_json,
@@ -193,7 +193,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                     "infos",
                     Suite(
                         [
-                            If("info is None", Statement("res.append(None)")),
+                            If("info is None", Suite([Statement("res.append(None)"), Continue()])),
                             If(
                                 'info["owner"] != str(PROGRAM_ID)',
                                 account_does_not_belong_raise,

@@ -59,6 +59,7 @@ class Counter:
         for info in infos:
             if info is None:
                 res.append(None)
+                continue
             if info["owner"] != str(PROGRAM_ID):
                 raise ValueError("Account does not belong to this program")
             bytes_data = b64decode(info["data"][0])

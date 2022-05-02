@@ -42,6 +42,15 @@ class Break(Generable):
         yield "break"
 
 
+class Continue(Generable):
+    """
+    Inherits from :class:`Generable`.
+    .. automethod:: __init__
+    """
+
+    def generate(self):
+        yield "continue"
+
 class Union(Generable):
     def __init__(self, members: list[str]) -> None:
         self.members = members
