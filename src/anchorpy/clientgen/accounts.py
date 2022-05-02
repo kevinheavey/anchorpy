@@ -198,7 +198,8 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                                 'info["owner"] != str(PROGRAM_ID)',
                                 account_does_not_belong_raise,
                             ),
-                            Statement('res.append(cls.decode(info["data"]))'),
+                            Assign("bytes_data", 'b64decode(info["data"][0])'),
+                            Statement('res.append(cls.decode(bytes_data))'),
                         ]
                     ),
                 ),
