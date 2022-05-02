@@ -11,11 +11,6 @@ from anchorpy.borsh_extension import BorshPubkey
 from ..program_id import PROGRAM_ID
 
 
-class CounterFields(typing.TypedDict):
-    authority: PublicKey
-    count: int
-
-
 class CounterJSON(typing.TypedDict):
     authority: str
     count: int

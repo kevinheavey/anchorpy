@@ -13,35 +13,6 @@ from ..program_id import PROGRAM_ID
 from .. import types
 
 
-class StateFields(typing.TypedDict):
-    bool_field: bool
-    u8_field: int
-    i8_field: int
-    u16_field: int
-    i16_field: int
-    u32_field: int
-    i32_field: int
-    f32_field: float
-    u64_field: int
-    i64_field: int
-    f64_field: float
-    u128_field: int
-    i128_field: int
-    bytes_field: bytes
-    string_field: str
-    pubkey_field: PublicKey
-    vec_field: list[int]
-    vec_struct_field: list[types.foo_struct.FooStruct]
-    option_field: typing.Optional[bool]
-    option_struct_field: typing.Optional[types.foo_struct.FooStruct]
-    struct_field: types.foo_struct.FooStruct
-    array_field: list[bool]
-    enum_field1: types.foo_enum.FooEnumKind
-    enum_field2: types.foo_enum.FooEnumKind
-    enum_field3: types.foo_enum.FooEnumKind
-    enum_field4: types.foo_enum.FooEnumKind
-
-
 class StateJSON(typing.TypedDict):
     bool_field: bool
     u8_field: int

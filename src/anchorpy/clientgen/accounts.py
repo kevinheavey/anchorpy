@@ -34,7 +34,6 @@ Call,
 Continue
 )
 from anchorpy.clientgen.common import (
-    _fields_interface_name,
     _json_interface_name,
     _py_type_from_idl,
     _idl_type_to_json_type,
@@ -70,7 +69,6 @@ def gen_index_code(idl: Idl) -> str:
     for acc in idl.accounts:
         members = [
             acc.name,
-            _fields_interface_name(acc.name),
             _json_interface_name(acc.name),
         ]
         imports.append(FromImport(f".{snake(acc.name)}", members))
@@ -109,7 +107,6 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     json_interface_params: list[TypedParam] = []
     fields = acc.type.fields
     name = acc.name
-    fields_interface_name = _fields_interface_name(name)
     json_interface_name = _json_interface_name(name)
     layout_items: list[str] = []
     init_body_assignments: list[Assign] = []
@@ -136,13 +133,9 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         from_json_entries.append(
             NamedArg(field.name, _field_from_json(idl=idl, ty=field, types_relative_imports=False))
         )
-    fields_interface = TypedDict(fields_interface_name, fields_interface_params)
     json_interface = TypedDict(json_interface_name, json_interface_params)
     discriminator_assignment = Assign("discriminator: typing.ClassVar", _account_discriminator(name))
     layout_assignment = Assign("layout: typing.ClassVar", f"borsh.CStruct({','.join(layout_items)})")
-    init_method = InitMethod(
-        [TypedParam("fields", fields_interface_name)], Suite(init_body_assignments)
-    )
     fetch_method = ClassMethod(
         "fetch",
         [
@@ -256,7 +249,6 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         Collection(
             [
                 *imports,
-                fields_interface,
                 json_interface,
                 klass,
             ]

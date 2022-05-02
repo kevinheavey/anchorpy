@@ -1,1 +1,1 @@
-from .counter import Counter, CounterFields, CounterJSON
+from .counter import Counter, CounterJSON

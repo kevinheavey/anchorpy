@@ -11,10 +11,6 @@ from anchorpy.error import AccountInvalidDiscriminator
 from ..program_id import PROGRAM_ID
 
 
-class State2Fields(typing.TypedDict):
-    vec_of_option: list[typing.Optional[int]]
-
-
 class State2JSON(typing.TypedDict):
     vec_of_option: list[typing.Optional[int]]
 
