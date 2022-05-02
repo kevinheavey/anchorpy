@@ -88,6 +88,7 @@ def gen_accounts_code(idl: Idl, accounts_dir: Path) -> dict[Path, str]:
 def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     base_imports = [
         Import("typing"),
+        FromImport("base64", ["b64decode"]),
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("solana.rpc.async_api", ["AsyncClient"]),
         FromImport("solana.rpc.commitment", ["Commitment"]),
@@ -157,7 +158,8 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                     'info["owner"] != str(PROGRAM_ID)',
                     Raise('ValueError("Account does not belong to this program")'),
                 ),
-                Return('cls.decode(info["data"])'),
+                Assign("bytes_data", 'b64decode(info["data"][0])'),
+                Return('cls.decode(bytes_data)'),
             ]
         ),
         f'typing.Optional["{name}"]',
@@ -216,7 +218,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                     account_invalid_raise,
                 ),
                 Assign(
-                    "dec", f"{name}.layout.decode(data[ACCOUNT_DISCRIMINATOR_SIZE:])"
+                    "dec", f"{name}.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])"
                 ),
                 Return(f"cls({decode_body_end_arg})"),
             ]

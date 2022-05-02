@@ -444,7 +444,7 @@ def _field_to_json(
             raise ValueError(f"Type not found {defined}")
         return f"{var_name}.to_json()"
     if ty_type == "bytes":
-        return f"{var_name}.decode()"
+        return f"list({var_name})"
     if ty_type in {
         "bool",
         *NUMBER_TYPES,
@@ -487,7 +487,9 @@ def _idl_type_to_json_type(ty: _IdlType, types_relative_imports: bool) -> str:
         return "int"
     if ty in FLOAT_TYPES:
         return "float"
-    if ty in {"string", "bytes", "publicKey"}:
+    if ty == "bytes":
+        return "list[int]"
+    if ty in {"string", "publicKey"}:
         return "str"
     raise ValueError(f"Unrecognized type: {ty}")
 
@@ -571,7 +573,7 @@ def _field_from_json(
         full_func_path = f"{defined_types_prefix}{from_json_func_path}"
         return f"{full_func_path}.from_json({from_json_arg})"
     if ty_type == "bytes":
-        return f"{var_name}.encode()"
+        return f"bytes({var_name})"
     if ty_type in {
         "bool",
         *NUMBER_TYPES,

@@ -55,7 +55,7 @@ def gen_index_file(idl: Idl, instructions_dir: Path) -> None:
 def gen_index_code(idl: Idl) -> str:
     imports: list[FromImport] = []
     for ix in idl.instructions:
-        import_members: list[str] = []
+        import_members: list[str] = [ix.name]
         if ix.args:
             import_members.append(_args_interface_name(ix.name))
         if ix.accounts:

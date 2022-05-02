@@ -1,4 +1,5 @@
 import typing
+from base64 import b64decode
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
@@ -53,7 +54,7 @@ class StateJSON(typing.TypedDict):
     f64_field: float
     u128_field: int
     i128_field: int
-    bytes_field: str
+    bytes_field: list[int]
     string_field: str
     pubkey_field: str
     vec_field: list[int]
@@ -140,7 +141,8 @@ class State:
             return None
         if info["owner"] != str(PROGRAM_ID):
             raise ValueError("Account does not belong to this program")
-        return cls.decode(info["data"])
+        bytes_data = b64decode(info["data"][0])
+        return cls.decode(bytes_data)
 
     @classmethod
     async def fetch_multiple(
@@ -166,7 +168,7 @@ class State:
             raise AccountInvalidDiscriminator(
                 "The discriminator for this account is invalid"
             )
-        dec = State.layout.decode(data[ACCOUNT_DISCRIMINATOR_SIZE:])
+        dec = State.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
         return cls(
             {
                 "bool_field": dec.bool_field,
@@ -222,7 +224,7 @@ class State:
             "f64_field": self.f64_field,
             "u128_field": self.u128_field,
             "i128_field": self.i128_field,
-            "bytes_field": self.bytes_field.decode(),
+            "bytes_field": list(self.bytes_field),
             "string_field": self.string_field,
             "pubkey_field": str(self.pubkey_field),
             "vec_field": self.vec_field,
@@ -258,7 +260,7 @@ class State:
                 "f64_field": obj["f64_field"],
                 "u128_field": obj["u128_field"],
                 "i128_field": obj["i128_field"],
-                "bytes_field": obj["bytes_field"].encode(),
+                "bytes_field": bytes(obj["bytes_field"]),
                 "string_field": obj["string_field"],
                 "pubkey_field": PublicKey(obj["pubkey_field"]),
                 "vec_field": obj["vec_field"],

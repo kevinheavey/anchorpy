@@ -10,10 +10,10 @@ Generate typescript solana web3 clients from [anchor](https://github.com/project
 
 ```sh
 # npm
-$ npm install --global anchor-client-gen
+$ npm install --global anchor-client_gen
 
 # yarn
-$ yarn global add anchor-client-gen
+$ yarn global add anchor-client_gen
 ```
 
 To get the beta build which has unreleased features, install with `anchor-client-gen@beta`.
@@ -38,7 +38,7 @@ Options:
 ## Example
 
 ```sh
-$ anchor-client-gen path/to/idl.json output/directory
+$ anchor-client_gen path/to/idl.json output/directory
 ```
 
 This will generate code to `output/directory`:

@@ -99,9 +99,9 @@ class Unnamed:
     def to_encodable(self) -> dict:
         return {
             "Unnamed": {
-                "_0": self.value[0],
-                "_1": self.value[1],
-                "_2": self.value[2].to_encodable(),
+                "item_0": self.value[0],
+                "item_1": self.value[1],
+                "item_2": self.value[2].to_encodable(),
             },
         }
 
@@ -122,7 +122,7 @@ class UnnamedSingle:
     def to_encodable(self) -> dict:
         return {
             "UnnamedSingle": {
-                "_0": self.value[0].to_encodable(),
+                "item_0": self.value[0].to_encodable(),
             },
         }
 
@@ -174,7 +174,7 @@ class Struct:
     def to_encodable(self) -> dict:
         return {
             "Struct": {
-                "_0": self.value[0].to_encodable(),
+                "item_0": self.value[0].to_encodable(),
             },
         }
 
@@ -195,7 +195,9 @@ class OptionStruct:
     def to_encodable(self) -> dict:
         return {
             "OptionStruct": {
-                "_0": None if self.value[0] is None else self.value[0].to_encodable(),
+                "item_0": None
+                if self.value[0] is None
+                else self.value[0].to_encodable(),
             },
         }
 
@@ -216,7 +218,7 @@ class VecStruct:
     def to_encodable(self) -> dict:
         return {
             "VecStruct": {
-                "_0": list(map(lambda item: item.to_encodable(), self.value[0])),
+                "item_0": list(map(lambda item: item.to_encodable(), self.value[0])),
             },
         }
 
@@ -259,14 +261,14 @@ def from_decoded(obj: dict) -> FooEnumKind:
         val = obj["Unnamed"]
         return Unnamed(
             (
-                val["_0"],
-                val["_1"],
-                bar_struct.BarStruct.from_decoded(val["_2"]),
+                val["item_0"],
+                val["item_1"],
+                bar_struct.BarStruct.from_decoded(val["item_2"]),
             )
         )
     if "UnnamedSingle" in obj:
         val = obj["UnnamedSingle"]
-        return UnnamedSingle((bar_struct.BarStruct.from_decoded(val["_0"]),))
+        return UnnamedSingle((bar_struct.BarStruct.from_decoded(val["item_0"]),))
     if "Named" in obj:
         val = obj["Named"]
         return Named(
@@ -278,14 +280,14 @@ def from_decoded(obj: dict) -> FooEnumKind:
         )
     if "Struct" in obj:
         val = obj["Struct"]
-        return Struct((bar_struct.BarStruct.from_decoded(val["_0"]),))
+        return Struct((bar_struct.BarStruct.from_decoded(val["item_0"]),))
     if "OptionStruct" in obj:
         val = obj["OptionStruct"]
         return OptionStruct(
             (
                 None
-                if val["_0"] is None
-                else bar_struct.BarStruct.from_decoded(val["_0"]),
+                if val["item_0"] is None
+                else bar_struct.BarStruct.from_decoded(val["item_0"]),
             )
         )
     if "VecStruct" in obj:
@@ -293,7 +295,10 @@ def from_decoded(obj: dict) -> FooEnumKind:
         return VecStruct(
             (
                 list(
-                    map(lambda item: bar_struct.BarStruct.from_decoded(item), val["_0"])
+                    map(
+                        lambda item: bar_struct.BarStruct.from_decoded(item),
+                        val["item_0"],
+                    )
                 ),
             )
         )
@@ -359,17 +364,20 @@ def from_json(obj: FooEnumJSON) -> FooEnumKind:
 layout = EnumForCodegen(
     "Unnamed"
     / borsh.CStruct(
-        "_0" / borsh.Bool, "_1" / borsh.U8, "_2" / bar_struct.BarStruct.layout
+        "item_0" / borsh.Bool,
+        "item_1" / borsh.U8,
+        "item_2" / bar_struct.BarStruct.layout,
     ),
-    "UnnamedSingle" / borsh.CStruct("_0" / bar_struct.BarStruct.layout),
+    "UnnamedSingle" / borsh.CStruct("item_0" / bar_struct.BarStruct.layout),
     "Named"
     / borsh.CStruct(
         "bool_field" / borsh.Bool,
         "u8_field" / borsh.U8,
         "nested" / bar_struct.BarStruct.layout,
     ),
-    "Struct" / borsh.CStruct("_0" / bar_struct.BarStruct.layout),
-    "OptionStruct" / borsh.CStruct("_0" / borsh.Option(bar_struct.BarStruct.layout)),
-    "VecStruct" / borsh.CStruct("_0" / borsh.Vec(bar_struct.BarStruct.layout)),
+    "Struct" / borsh.CStruct("item_0" / bar_struct.BarStruct.layout),
+    "OptionStruct"
+    / borsh.CStruct("item_0" / borsh.Option(bar_struct.BarStruct.layout)),
+    "VecStruct" / borsh.CStruct("item_0" / borsh.Vec(bar_struct.BarStruct.layout)),
     "NoFields" / borsh.CStruct(),
 )

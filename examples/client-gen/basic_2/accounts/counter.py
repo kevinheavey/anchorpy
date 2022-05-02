@@ -1,4 +1,5 @@
 import typing
+from base64 import b64decode
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
@@ -40,7 +41,8 @@ class Counter:
             return None
         if info["owner"] != str(PROGRAM_ID):
             raise ValueError("Account does not belong to this program")
-        return cls.decode(info["data"])
+        bytes_data = b64decode(info["data"][0])
+        return cls.decode(bytes_data)
 
     @classmethod
     async def fetch_multiple(
@@ -66,7 +68,7 @@ class Counter:
             raise AccountInvalidDiscriminator(
                 "The discriminator for this account is invalid"
             )
-        dec = Counter.layout.decode(data[ACCOUNT_DISCRIMINATOR_SIZE:])
+        dec = Counter.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
         return cls(
             {
                 "authority": dec.authority,

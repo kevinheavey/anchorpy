@@ -347,10 +347,10 @@ def _make_unnamed_field_record(
             ty=unnamed_field, types_relative_imports=True
         ),
         json_value_element=_field_to_json(idl, _IdlField(elem_name, unnamed_field), "self."),
-        encodable_value_item=StrDictEntry(f"_{index}", encodable),
+        encodable_value_item=StrDictEntry(f"item_{index}", encodable),
         init_element_for_from_decoded=_field_from_decoded(
             idl=idl,
-            ty=_IdlField(f'val["_{index}"]', unnamed_field),
+            ty=_IdlField(f'val["item_{index}"]', unnamed_field),
             val_prefix="",
             types_relative_imports=True,
         ),
@@ -488,7 +488,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
                     init_elements_for_from_json.append(
                         rec_unnamed.init_element_for_from_json
                     )
-                    cstruct_fields[f"_{i}"] = _layout_for_type(
+                    cstruct_fields[f"item_{i}"] = _layout_for_type(
                         idl=idl, ty=unnamed_field, types_relative_imports=True
                     )
                 fields_type_aliases.append(
