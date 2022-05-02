@@ -48,11 +48,12 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
 
 
 def gen_from_tx_error_fn() -> Function:
-    has_logs_block = If('"logs" not in error', Return(None))
+    err_info_assign = Assign("err_info", "error.args[0]")
+    has_logs_block = If('"logs" not in err_info', Return(None))
     regex_match = Assign("first_match", "error_re.match(logline)")
     break_if_match = If("first_match is not None", Break())
     loop_body = Suite([regex_match, break_if_match])
-    for_loop = For("logline", 'error["logs"]', loop_body)
+    for_loop = For("logline", 'err_info["logs"]', loop_body)
     no_match = If("first_match is None", Return("None"))
     assign_program_id_and_code = Assign(
         "program_id_raw, code_raw", "first_match.groups()"
@@ -64,6 +65,7 @@ def gen_from_tx_error_fn() -> Function:
     final_return = Return("from_code(error_code)")
     fn_body = Suite(
         [
+            err_info_assign,
             has_logs_block,
             for_loop,
             no_match,
@@ -75,7 +77,7 @@ def gen_from_tx_error_fn() -> Function:
     )
     return Function(
         "from_tx_error",
-        [TypedParam("error", "typing.Any")],
+        [TypedParam("error", "RPCException")],
         fn_body,
         "typing.Union[anchor.AnchorError, custom.CustomError, None]",
     )
@@ -193,10 +195,11 @@ def gen_anchor_errors(errors_dir: Path) -> None:
 def gen_index_code(idl: Idl) -> str:
     has_custom_errors = bool(idl.errors)
     typing_import = Import("typing")
+    rpc_exception_import = FromImport("solana.rpc.core", ["RPCException"])
     program_id_import = FromImport("..program_id", ["PROGRAM_ID"])
     anchor_import = FromImport(".", ["anchor"])
     re_import = Import("re")
-    base_import_lines = [typing_import, re_import, program_id_import, anchor_import]
+    base_import_lines = [typing_import, re_import, rpc_exception_import, program_id_import, anchor_import]
     custom_import_lines = [FromImport(".", ["custom"])] if has_custom_errors else []
     import_lines = base_import_lines + custom_import_lines
     from_code_fn = gen_from_code_fn(has_custom_errors)
@@ -205,7 +208,7 @@ def gen_index_code(idl: Idl) -> str:
     )
     from_tx_error_fn = gen_from_tx_error_fn()
     return str(
-        Collection(import_lines + [from_code_fn, error_re_line, from_tx_error_fn])
+        Collection([*import_lines, from_code_fn, error_re_line, from_tx_error_fn])
     )
 
 
