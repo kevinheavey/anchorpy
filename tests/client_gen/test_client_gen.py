@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import AsyncGenerator
 import json
 import asyncio
 from filecmp import dircmp
@@ -47,7 +48,7 @@ def payer(localnet) -> Keypair:
 
 
 @async_fixture(scope="session")
-async def provider(localnet, payer: Keypair) -> Provider:
+async def provider(localnet, payer: Keypair) -> AsyncGenerator[Provider, None]:
     wallet = Wallet(payer)
     conn = AsyncClient(commitment=Processed)
     prov = Provider(conn, wallet)
