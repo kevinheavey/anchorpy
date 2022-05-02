@@ -1,5 +1,6 @@
 from __future__ import annotations
 import typing
+from dataclasses import dataclass
 from anchorpy.borsh_extension import EnumForCodegen
 import borsh_construct as borsh
 
@@ -12,9 +13,10 @@ class OJSON(typing.TypedDict):
     kind: typing.Literal["O"]
 
 
+@dataclass
 class X:
-    discriminator = 0
-    kind = "X"
+    discriminator: typing.ClassVar = 0
+    kind: typing.ClassVar = "X"
 
     @classmethod
     def to_json(cls) -> XJSON:
@@ -29,9 +31,10 @@ class X:
         }
 
 
+@dataclass
 class O:
-    discriminator = 1
-    kind = "O"
+    discriminator: typing.ClassVar = 1
+    kind: typing.ClassVar = "O"
 
     @classmethod
     def to_json(cls) -> OJSON:

@@ -1,12 +1,8 @@
 from __future__ import annotations
 import typing
+from dataclasses import dataclass
 from construct import Container
 import borsh_construct as borsh
-
-
-class TileFields(typing.TypedDict):
-    row: int
-    column: int
 
 
 class TileJSON(typing.TypedDict):
@@ -14,16 +10,15 @@ class TileJSON(typing.TypedDict):
     column: int
 
 
+@dataclass
 class Tile:
-    layout = borsh.CStruct("row" / borsh.U8, "column" / borsh.U8)
-
-    def __init__(self, fields: TileFields) -> None:
-        self.row = fields["row"]
-        self.column = fields["column"]
+    layout: typing.ClassVar = borsh.CStruct("row" / borsh.U8, "column" / borsh.U8)
+    row: int
+    column: int
 
     @classmethod
     def from_decoded(cls, obj: Container) -> "Tile":
-        return cls(TileFields(row=obj.row, column=obj.column))
+        return cls(row=obj.row, column=obj.column)
 
     def to_encodable(self) -> dict[str, typing.Any]:
         return {"row": self.row, "column": self.column}
@@ -33,4 +28,4 @@ class Tile:
 
     @classmethod
     def from_json(cls, obj: TileJSON) -> "Tile":
-        return cls(TileFields(row=obj["row"], column=obj["column"]))
+        return cls(row=obj["row"], column=obj["column"])

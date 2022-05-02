@@ -1,6 +1,7 @@
 from __future__ import annotations
 from . import bar_struct
 import typing
+from dataclasses import dataclass
 from construct import Construct
 from anchorpy.borsh_extension import EnumForCodegen
 import borsh_construct as borsh
@@ -18,19 +19,6 @@ class NamedJSONValue(typing.TypedDict):
 StructJSONValue = tuple[bar_struct.BarStructJSON]
 OptionStructJSONValue = tuple[typing.Optional[bar_struct.BarStructJSON]]
 VecStructJSONValue = tuple[list[bar_struct.BarStructJSON]]
-UnnamedFields = tuple[bool, int, bar_struct.BarStruct]
-UnnamedSingleFields = tuple[bar_struct.BarStruct]
-
-
-class NamedFields(typing.TypedDict):
-    bool_field: bool
-    u8_field: int
-    nested: bar_struct.BarStruct
-
-
-StructFields = tuple[bar_struct.BarStruct]
-OptionStructFields = tuple[typing.Optional[bar_struct.BarStruct]]
-VecStructFields = tuple[list[bar_struct.BarStruct]]
 UnnamedValue = tuple[bool, int, bar_struct.BarStruct]
 UnnamedSingleValue = tuple[bar_struct.BarStruct]
 
@@ -80,12 +68,11 @@ class NoFieldsJSON(typing.TypedDict):
     kind: typing.Literal["NoFields"]
 
 
+@dataclass
 class Unnamed:
-    discriminator = 0
-    kind = "Unnamed"
-
-    def __init__(self, value: UnnamedFields) -> None:
-        self.value = value
+    discriminator: typing.ClassVar = 0
+    kind: typing.ClassVar = "Unnamed"
+    value: UnnamedValue
 
     def to_json(self) -> UnnamedJSON:
         return UnnamedJSON(
@@ -107,12 +94,11 @@ class Unnamed:
         }
 
 
+@dataclass
 class UnnamedSingle:
-    discriminator = 1
-    kind = "UnnamedSingle"
-
-    def __init__(self, value: UnnamedSingleFields) -> None:
-        self.value = value
+    discriminator: typing.ClassVar = 1
+    kind: typing.ClassVar = "UnnamedSingle"
+    value: UnnamedSingleValue
 
     def to_json(self) -> UnnamedSingleJSON:
         return UnnamedSingleJSON(
@@ -128,16 +114,11 @@ class UnnamedSingle:
         }
 
 
+@dataclass
 class Named:
-    discriminator = 2
-    kind = "Named"
-
-    def __init__(self, value: NamedFields) -> None:
-        self.value: NamedValue = {
-            "bool_field": value["bool_field"],
-            "u8_field": value["u8_field"],
-            "nested": value["nested"],
-        }
+    discriminator: typing.ClassVar = 2
+    kind: typing.ClassVar = "Named"
+    value: NamedValue
 
     def to_json(self) -> NamedJSON:
         return NamedJSON(
@@ -159,12 +140,11 @@ class Named:
         }
 
 
+@dataclass
 class Struct:
-    discriminator = 3
-    kind = "Struct"
-
-    def __init__(self, value: StructFields) -> None:
-        self.value = value
+    discriminator: typing.ClassVar = 3
+    kind: typing.ClassVar = "Struct"
+    value: StructValue
 
     def to_json(self) -> StructJSON:
         return StructJSON(
@@ -180,12 +160,11 @@ class Struct:
         }
 
 
+@dataclass
 class OptionStruct:
-    discriminator = 4
-    kind = "OptionStruct"
-
-    def __init__(self, value: OptionStructFields) -> None:
-        self.value = value
+    discriminator: typing.ClassVar = 4
+    kind: typing.ClassVar = "OptionStruct"
+    value: OptionStructValue
 
     def to_json(self) -> OptionStructJSON:
         return OptionStructJSON(
@@ -203,12 +182,11 @@ class OptionStruct:
         }
 
 
+@dataclass
 class VecStruct:
-    discriminator = 5
-    kind = "VecStruct"
-
-    def __init__(self, value: VecStructFields) -> None:
-        self.value = value
+    discriminator: typing.ClassVar = 5
+    kind: typing.ClassVar = "VecStruct"
+    value: VecStructValue
 
     def to_json(self) -> VecStructJSON:
         return VecStructJSON(
@@ -224,9 +202,10 @@ class VecStruct:
         }
 
 
+@dataclass
 class NoFields:
-    discriminator = 6
-    kind = "NoFields"
+    discriminator: typing.ClassVar = 6
+    kind: typing.ClassVar = "NoFields"
 
     @classmethod
     def to_json(cls) -> NoFieldsJSON:
@@ -273,7 +252,7 @@ def from_decoded(obj: dict) -> FooEnumKind:
     if "Named" in obj:
         val = obj["Named"]
         return Named(
-            NamedFields(
+            NamedValue(
                 bool_field=val["bool_field"],
                 u8_field=val["u8_field"],
                 nested=bar_struct.BarStruct.from_decoded(val["nested"]),
@@ -328,7 +307,7 @@ def from_json(obj: FooEnumJSON) -> FooEnumKind:
     if obj["kind"] == "Named":
         named_json_value = typing.cast(NamedJSONValue, obj["value"])
         return Named(
-            NamedFields(
+            NamedValue(
                 bool_field=named_json_value["bool_field"],
                 u8_field=named_json_value["u8_field"],
                 nested=bar_struct.BarStruct.from_json(named_json_value["nested"]),

@@ -1,5 +1,6 @@
 from __future__ import annotations
 import typing
+from dataclasses import dataclass
 from solana.publickey import PublicKey
 from anchorpy.borsh_extension import EnumForCodegen, BorshPubkey
 import borsh_construct as borsh
@@ -7,10 +8,6 @@ import borsh_construct as borsh
 
 class WonJSONValue(typing.TypedDict):
     winner: str
-
-
-class WonFields(typing.TypedDict):
-    winner: PublicKey
 
 
 class WonValue(typing.TypedDict):
@@ -30,9 +27,10 @@ class WonJSON(typing.TypedDict):
     kind: typing.Literal["Won"]
 
 
+@dataclass
 class Active:
-    discriminator = 0
-    kind = "Active"
+    discriminator: typing.ClassVar = 0
+    kind: typing.ClassVar = "Active"
 
     @classmethod
     def to_json(cls) -> ActiveJSON:
@@ -47,9 +45,10 @@ class Active:
         }
 
 
+@dataclass
 class Tie:
-    discriminator = 1
-    kind = "Tie"
+    discriminator: typing.ClassVar = 1
+    kind: typing.ClassVar = "Tie"
 
     @classmethod
     def to_json(cls) -> TieJSON:
@@ -64,14 +63,11 @@ class Tie:
         }
 
 
+@dataclass
 class Won:
-    discriminator = 2
-    kind = "Won"
-
-    def __init__(self, value: WonFields) -> None:
-        self.value: WonValue = {
-            "winner": value["winner"],
-        }
+    discriminator: typing.ClassVar = 2
+    kind: typing.ClassVar = "Won"
+    value: WonValue
 
     def to_json(self) -> WonJSON:
         return WonJSON(
@@ -103,7 +99,7 @@ def from_decoded(obj: dict) -> GameStateKind:
     if "Won" in obj:
         val = obj["Won"]
         return Won(
-            WonFields(
+            WonValue(
                 winner=val["winner"],
             )
         )
@@ -118,7 +114,7 @@ def from_json(obj: GameStateJSON) -> GameStateKind:
     if obj["kind"] == "Won":
         won_json_value = typing.cast(WonJSONValue, obj["value"])
         return Won(
-            WonFields(
+            WonValue(
                 winner=PublicKey(won_json_value["winner"]),
             )
         )
