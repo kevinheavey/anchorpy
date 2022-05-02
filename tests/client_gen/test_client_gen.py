@@ -12,11 +12,13 @@ from solana.transaction import Transaction
 from solana.sysvar import SYSVAR_RENT_PUBKEY, SYSVAR_CLOCK_PUBKEY
 from solana.system_program import SYS_PROGRAM_ID
 from solana.rpc.commitment import Processed
+from solana.rpc.core import RPCException
 from solana.publickey import PublicKey
 from anchorpy.pytest_plugin import localnet_fixture
 from anchorpy import Provider, Wallet
-from tests.client_gen.example_program_gen.instructions import initialize
-from tests.client_gen.example_program_gen.accounts import State
+from tests.client_gen.example_program_gen.instructions import initialize, initialize_with_values, \
+    initialize_with_values2, InitializeWithValuesAccounts, InitializeWithValuesArgs, cause_error
+from tests.client_gen.example_program_gen.accounts import State, State2
 from tests.client_gen.example_program_gen.types import FooStruct, BarStruct
 from tests.client_gen.example_program_gen.types.foo_enum import Named, Unnamed, NoFields, Struct
 
@@ -91,13 +93,14 @@ async def init_and_account_fetch(provider: Provider) -> Keypair:
 async def test_init_and_account_fetch(init_and_account_fetch: Keypair, provider: Provider) -> None:
     state = init_and_account_fetch
     vec_struct_field_enum_field_expected = Named(
-                value={'bool_field': True, 'u8_field': 15, 'nested': BarStruct(some_field=True, other_field=10)})
+        value={'bool_field': True, 'u8_field': 15, 'nested': BarStruct(some_field=True, other_field=10)})
     assert vec_struct_field_enum_field_expected.discriminator == 2
     assert vec_struct_field_enum_field_expected.kind == "Named"
     vec_struct_field_expected = [
         FooStruct(field1=123, field2=999, nested=BarStruct(some_field=True, other_field=10),
                   vec_nested=[BarStruct(some_field=True, other_field=10)],
-                  option_nested=BarStruct(some_field=True, other_field=10), enum_field=vec_struct_field_enum_field_expected)]
+                  option_nested=BarStruct(some_field=True, other_field=10),
+                  enum_field=vec_struct_field_enum_field_expected)]
     option_struct_field_expected = FooStruct(field1=123, field2=999,
                                              nested=BarStruct(some_field=True, other_field=10),
                                              vec_nested=[
@@ -143,3 +146,114 @@ async def test_init_and_account_fetch(init_and_account_fetch: Keypair, provider:
                      enum_field3=enum_field3_expected, enum_field4=enum_field4_expected)
     res = await State.fetch(provider.connection, state.public_key)
     assert res == expected
+
+
+@async_fixture(scope="session")
+async def setup_fetch_multiple(provider: Provider) -> tuple[Keypair, Keypair]:
+    state = Keypair()
+    another_state = Keypair()
+    initialize_ixs = [initialize({"state": state.public_key, "payer": provider.wallet.public_key,
+                                  "nested": {"clock": SYSVAR_CLOCK_PUBKEY, "rent": SYSVAR_RENT_PUBKEY},
+                                  "system_program": SYS_PROGRAM_ID}),
+                      initialize({"state": another_state.public_key, "payer": provider.wallet.public_key,
+                                  "nested": {"clock": SYSVAR_CLOCK_PUBKEY, "rent": SYSVAR_RENT_PUBKEY},
+                                  "system_program": SYS_PROGRAM_ID})]
+    tx = Transaction().add(*initialize_ixs)
+    await provider.send(tx, [state, another_state, provider.wallet.payer])
+    return state, another_state
+
+
+@mark.asyncio
+async def test_fetch_multiple(provider: Provider, setup_fetch_multiple: tuple[Keypair, Keypair]) -> None:
+    state, another_state = setup_fetch_multiple
+    non_state = Keypair()
+    res = await State.fetch_multiple(provider.connection,
+                                     [state.public_key, non_state.public_key, another_state.public_key])
+    assert isinstance(res[0], State)
+    assert res[1] is None
+    assert isinstance(res[2], State)
+
+
+@async_fixture(scope="session")
+async def send_instructions_with_args(provider: Provider) -> tuple[Keypair, Keypair]:
+    state = Keypair()
+    state2 = Keypair()
+    vec_struct_field = [FooStruct(field1=1, field2=2,
+                                  nested=BarStruct(some_field=True,
+                                                   other_field=55),
+                                  vec_nested=[
+                                      BarStruct(some_field=False,
+                                                other_field=11)], option_nested=None,
+                                  enum_field=Unnamed((True, 22, BarStruct(some_field=True, other_field=33))))]
+    struct_field = FooStruct(field1=1, field2=2, nested=BarStruct(some_field=True, other_field=55),
+                             vec_nested=[BarStruct(some_field=False, other_field=11)], option_nested=None,
+                             enum_field=NoFields())
+    enum_field1 = Unnamed((True, 15, BarStruct(some_field=False, other_field=200)))
+    enum_field2 = Named({"bool_field": True, "u8_field": 128, "nested": BarStruct(some_field=False, other_field=1)})
+    enum_field3 = Struct((BarStruct(some_field=True, other_field=15),))
+    initialize_with_values_args = InitializeWithValuesArgs(bool_field=True, u8_field=253, i8_field=-120,
+                                                           u16_field=61234, i16_field=-31253, u32_field=1234567899,
+                                                           i32_field=-123456789, f32_field=123458.5,
+                                                           u64_field=9223372036854775810,
+                                                           i64_field=-4611686018427387912, f64_field=1234567892.445,
+                                                           u128_field=170141183460469231731687303715884105740,
+                                                           i128_field=-85070591730234615865843651857942052877,
+                                                           bytes_field=bytes([5, 10, 255]), string_field="string value",
+                                                           pubkey_field=PublicKey(
+                                                               "GDddEKTjLBqhskzSMYph5o54VYLQfPCR3PoFqKHLJK6s"),
+                                                           vec_field=[1, 123456789123456789],
+                                                           vec_struct_field=vec_struct_field, option_field=True,
+                                                           option_struct_field=None, struct_field=struct_field,
+                                                           array_field=[True, True, False], enum_field1=enum_field1,
+                                                           enum_field2=enum_field2, enum_field3=enum_field3,
+                                                           enum_field4=NoFields())
+    initialize_with_values_accounts = InitializeWithValuesAccounts(state=state.public_key,
+                                                                   nested={"clock": SYSVAR_CLOCK_PUBKEY,
+                                                                           "rent": SYSVAR_RENT_PUBKEY},
+                                                                   payer=provider.wallet.public_key,
+                                                                   system_program=SYS_PROGRAM_ID)
+    ix1 = initialize_with_values(initialize_with_values_args, initialize_with_values_accounts)
+    ix2 = initialize_with_values2({"vec_of_option": [None, None, 20]},
+                                  {"state": state2.public_key, "payer": provider.wallet.public_key,
+                                   "system_program": SYS_PROGRAM_ID})
+    tx = Transaction().add(ix1, ix2)
+    await provider.send(tx, [state, state2, provider.wallet.payer])
+    return state, state2
+
+
+@mark.asyncio
+async def test_instructions_with_args(send_instructions_with_args: tuple[Keypair, Keypair], provider: Provider) -> None:
+    state, state2 = send_instructions_with_args
+    expected = State(bool_field=True, u8_field=253, i8_field=-120, u16_field=61234, i16_field=-31253,
+                     u32_field=1234567899, i32_field=-123456789, f32_field=123458.5, u64_field=9223372036854775810,
+                     i64_field=-4611686018427387912, f64_field=1234567892.445,
+                     u128_field=170141183460469231731687303715884105740,
+                     i128_field=-85070591730234615865843651857942052877, bytes_field=b'\x05\n\xff',
+                     string_field='string value', pubkey_field=PublicKey("GDddEKTjLBqhskzSMYph5o54VYLQfPCR3PoFqKHLJK6s"),
+                     vec_field=ListContainer([1, 123456789123456789]), vec_struct_field=[
+            FooStruct(field1=1, field2=2, nested=BarStruct(some_field=True, other_field=55),
+                      vec_nested=[BarStruct(some_field=False, other_field=11)], option_nested=None,
+                      enum_field=Unnamed(value=(True, 22, BarStruct(some_field=True, other_field=33))))],
+                     option_field=True, option_struct_field=None,
+                     struct_field=FooStruct(field1=1, field2=2, nested=BarStruct(some_field=True, other_field=55),
+                                            vec_nested=[BarStruct(some_field=False, other_field=11)],
+                                            option_nested=None, enum_field=NoFields()),
+                     array_field=ListContainer([True, True, False]),
+                     enum_field1=Unnamed(value=(True, 15, BarStruct(some_field=False, other_field=200))),
+                     enum_field2=Named(value={'bool_field': True, 'u8_field': 128,
+                                              'nested': BarStruct(some_field=False, other_field=1)}),
+                     enum_field3=Struct(value=(BarStruct(some_field=True, other_field=15),)), enum_field4=NoFields())
+    expected2 = State2(vec_of_option=ListContainer([None, None, 20]))
+    res = await State.fetch(provider.connection, state.public_key)
+    res2 = await State2.fetch(provider.connection, state2.public_key)
+    assert res == expected
+    assert res2 == expected2
+
+@mark.asyncio
+async def test_cause_error(provider: Provider) -> None:
+    tx = Transaction().add(cause_error())
+    try:
+        await provider.send(tx, [provider.wallet.payer])
+    except RPCException as exc:
+        foo = exc
+        breakpoint()
