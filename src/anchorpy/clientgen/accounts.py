@@ -197,7 +197,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         "fetch_multiple",
         [
             TypedParam("conn", "AsyncClient"),
-            TypedParam("addresses", "list[typing.Union[PublicKey, str]]"),
+            TypedParam("addresses", "list[PublicKey]"),
             TypedParam("commitment", "typing.Optional[Commitment] = None"),
         ],
         Suite(

@@ -46,7 +46,7 @@ class Counter:
     async def fetch_multiple(
         cls,
         conn: AsyncClient,
-        addresses: list[typing.Union[PublicKey, str]],
+        addresses: list[PublicKey],
         commitment: typing.Optional[Commitment] = None,
     ) -> typing.List[typing.Optional["Counter"]]:
         infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
