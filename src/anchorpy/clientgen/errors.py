@@ -46,14 +46,18 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
         str(from_code_return_type),
     )
 
+def gen_find_first_match_fn() -> Function:
+    regex_match = Assign("first_match", "error_re.match(logline)")
+    return_if_match = If("first_match is not None", Return("first_match"))
+    loop_body = Suite([regex_match, return_if_match])
+    for_loop = For("logline", 'logs', loop_body)
+    return Function("_find_first_match", [TypedParam("logs", "list[str]")],
+                                   Suite([for_loop, Return("None")]), "typing.Optional[re.Match]")
 
 def gen_from_tx_error_fn() -> Function:
     err_info_assign = Assign("err_info", "error.args[0]")
-    has_logs_block = If('"logs" not in err_info', Return(None))
-    regex_match = Assign("first_match", "error_re.match(logline)")
-    break_if_match = If("first_match is not None", Break())
-    loop_body = Suite([regex_match, break_if_match])
-    for_loop = For("logline", 'err_info["logs"]', loop_body)
+    has_data_block = If('"data" not in err_info', Return(None))
+    has_logs_block = If('"logs" not in err_info["data"]', Return(None))
     no_match = If("first_match is None", Return("None"))
     assign_program_id_and_code = Assign(
         "program_id_raw, code_raw", "first_match.groups()"
@@ -66,8 +70,9 @@ def gen_from_tx_error_fn() -> Function:
     fn_body = Suite(
         [
             err_info_assign,
+            has_data_block,
             has_logs_block,
-            for_loop,
+            Assign("first_match", '_find_first_match(err_info["data"]["logs"])'),
             no_match,
             assign_program_id_and_code,
             program_id_check,
@@ -208,7 +213,7 @@ def gen_index_code(idl: Idl) -> str:
     )
     from_tx_error_fn = gen_from_tx_error_fn()
     return str(
-        Collection([*import_lines, from_code_fn, error_re_line, from_tx_error_fn])
+        Collection([*import_lines, from_code_fn, error_re_line, gen_find_first_match_fn(), from_tx_error_fn])
     )
 
 
