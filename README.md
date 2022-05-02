@@ -7,7 +7,7 @@
 
 [![Discord Chat](https://img.shields.io/discord/889577356681945098?color=blueviolet)](https://discord.gg/sxy4zxBckh)  
 
-AnchorPy is the Python client for [Anchor](https://github.com/project-serum/anchor). It allows you to interact with Anchor programs using Python.
+AnchorPy generates Python clients for [Anchor](https://github.com/project-serum/anchor) programs.
 
 Read the [Documentation](https://kevinheavey.github.io/anchorpy/).
 

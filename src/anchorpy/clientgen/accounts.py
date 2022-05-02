@@ -96,6 +96,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         ImportAs("borsh_construct", "borsh"),
         FromImport("anchorpy.coder.accounts", ["ACCOUNT_DISCRIMINATOR_SIZE"]),
         FromImport("anchorpy.error", ["AccountInvalidDiscriminator"]),
+        FromImport("anchorpy.utils.rpc", ["get_multiple_accounts"]),
         FromImport("anchorpy.borsh_extension", ["BorshPubkey", "EnumForCodegen"]),
         FromImport("..program_id", ["PROGRAM_ID"]),
     ]
@@ -202,10 +203,9 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         Suite(
             [
                 Assign(
-                    "resp",
-                    "await conn.get_multiple_accounts(addresses,commitment=commitment)",
+                    "infos",
+                    "await get_multiple_accounts(conn, addresses,commitment=commitment)",
                 ),
-                Assign("infos", 'resp["result"]["value"]'),
                 Assign(f"res: {fetch_multiple_return_type}", "[]"),
                 For(
                     "info",
@@ -217,11 +217,10 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                                 Suite([Statement("res.append(None)"), Continue()]),
                             ),
                             If(
-                                'info["owner"] != str(PROGRAM_ID)',
+                                "info.account.owner != PROGRAM_ID",
                                 account_does_not_belong_raise,
                             ),
-                            Assign("bytes_data", 'b64decode(info["data"][0])'),
-                            Statement("res.append(cls.decode(bytes_data))"),
+                            Statement("res.append(cls.decode(info.account.data))"),
                         ]
                     ),
                 ),
