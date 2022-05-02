@@ -20,9 +20,7 @@ def _find_first_match(logs: list[str]) -> typing.Optional[re.Match]:
     return None
 
 
-def from_tx_error(
-    error: RPCException,
-) -> typing.Union[anchor.AnchorError, custom.CustomError, None]:
+def from_tx_error(error: RPCException) -> typing.Optional[anchor.AnchorError]:
     err_info = error.args[0]
     if "data" not in err_info:
         return None

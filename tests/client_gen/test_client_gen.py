@@ -34,7 +34,7 @@ from tests.client_gen.example_program_gen.types.foo_enum import (
     NoFields,
     Struct,
 )
-from tests.client_gen.example_program_gen.errors import from_tx_error
+from tests.client_gen.example_program_gen.errors import from_tx_error  # noqa: WPS347
 from tests.client_gen.example_program_gen.errors.custom import SomeError
 from tests.client_gen.example_program_gen.errors.anchor import InvalidProgramId
 

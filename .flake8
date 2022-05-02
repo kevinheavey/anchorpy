@@ -11,4 +11,5 @@ per-file-ignores =
     src/anchorpy/cli.py: WPS404,B008
     tests/*: D,WPS226,WPS421,E800,S603,S607,WPS420,WPS411,WPS440,WPS204,WPS229,E501
     __init__.py:F401
+    tests/**/__init__.py:F401
 

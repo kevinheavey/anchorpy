@@ -33,21 +33,11 @@ class TypedParam(Generable):
 
 
 class Break(Generable):
-    """
-    Inherits from :class:`Generable`.
-    .. automethod:: __init__
-    """
-
     def generate(self):
         yield "break"
 
 
 class Continue(Generable):
-    """
-    Inherits from :class:`Generable`.
-    .. automethod:: __init__
-    """
-
     def generate(self):
         yield "continue"
 
@@ -225,10 +215,6 @@ class TypedDict(Class):
 
 
 class Try(Generable):
-    """A ```try-catch`` block. Inherits from :class:`Generable`.
-    .. automethod:: __init__
-    """
-
     def __init__(self, try_body, to_catch, except_body):
         if not isinstance(try_body, Suite):
             try_body = Suite(try_body)

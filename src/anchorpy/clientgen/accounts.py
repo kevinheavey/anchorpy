@@ -23,7 +23,6 @@ from anchorpy.idl import (
 from anchorpy.clientgen.genpy_extension import (
     Dataclass,
     Method,
-    InitMethod,
     ClassMethod,
     TypedParam,
     TypedDict,

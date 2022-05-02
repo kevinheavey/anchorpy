@@ -1,8 +1,6 @@
 import json
 from pathlib import Path
 from anchorpy import Idl, Program
-from anchorpy.idl import _IdlInstruction, _IdlField, _IdlAccountItem
-from apischema import deserialize
 from solana.publickey import PublicKey
 
 

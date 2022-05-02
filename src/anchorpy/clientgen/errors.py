@@ -19,7 +19,6 @@ from anchorpy.clientgen.genpy_extension import (
     Function,
     TypedParam,
     Try,
-    Break,
     Union,
     InitMethod,
     Class,
@@ -60,7 +59,7 @@ def gen_find_first_match_fn() -> Function:
     )
 
 
-def gen_from_tx_error_fn() -> Function:
+def gen_from_tx_error_fn(has_custom_errors: bool) -> Function:
     err_info_assign = Assign("err_info", "error.args[0]")
     has_data_block = If('"data" not in err_info', Return(None))
     has_logs_block = If('"logs" not in err_info["data"]', Return(None))
@@ -86,11 +85,16 @@ def gen_from_tx_error_fn() -> Function:
             final_return,
         ]
     )
+    return_type = (
+        "typing.Union[anchor.AnchorError, custom.CustomError, None]"
+        if has_custom_errors
+        else "typing.Optional[anchor.AnchorError]"
+    )
     return Function(
         "from_tx_error",
         [TypedParam("error", "RPCException")],
         fn_body,
-        "typing.Union[anchor.AnchorError, custom.CustomError, None]",
+        return_type,
     )
 
 
@@ -223,7 +227,7 @@ def gen_index_code(idl: Idl) -> str:
     error_re_line = Assign(
         "error_re", r're.compile(r"Program (\w+) failed: custom program error: (\w+)")'
     )
-    from_tx_error_fn = gen_from_tx_error_fn()
+    from_tx_error_fn = gen_from_tx_error_fn(has_custom_errors)
     return str(
         Collection(
             [
