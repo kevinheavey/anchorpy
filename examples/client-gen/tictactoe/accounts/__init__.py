@@ -1,1 +1,1 @@
-from .game import Game, GameFields, GameJSON
+from .game import Game, GameJSON

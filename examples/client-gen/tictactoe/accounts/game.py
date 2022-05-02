@@ -12,13 +12,6 @@ from ..program_id import PROGRAM_ID
 from .. import types
 
 
-class GameFields(typing.TypedDict):
-    players: list[PublicKey]
-    turn: int
-    board: list[list[typing.Optional[types.sign.SignKind]]]
-    state: types.game_state.GameStateKind
-
-
 class GameJSON(typing.TypedDict):
     players: list[str]
     turn: int
