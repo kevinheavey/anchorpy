@@ -29,9 +29,9 @@ from anchorpy.clientgen.genpy_extension import (
     TypedDict,
     StrDict,
     StrDictEntry,
-NamedArg,
-Call,
-Continue
+    NamedArg,
+    Call,
+    Continue,
 )
 from anchorpy.clientgen.common import (
     _json_interface_name,
@@ -88,7 +88,7 @@ def gen_accounts_code(idl: Idl, accounts_dir: Path) -> dict[Path, str]:
 def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     base_imports = [
         Import("typing"),
-        FromImport("dataclasses",["dataclass"]),
+        FromImport("dataclasses", ["dataclass"]),
         FromImport("base64", ["b64decode"]),
         FromImport("construct", ["Construct"]),
         FromImport("solana.publickey", ["PublicKey"]),
@@ -115,27 +115,54 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     from_json_entries: list[NamedArg] = []
     for field in fields:
         fields_interface_params.append(
-            TypedParam(field.name, _py_type_from_idl(idl=idl, ty=field.type, types_relative_imports=False, use_fields_interface_for_struct=False))
+            TypedParam(
+                field.name,
+                _py_type_from_idl(
+                    idl=idl,
+                    ty=field.type,
+                    types_relative_imports=False,
+                    use_fields_interface_for_struct=False,
+                ),
+            )
         )
         json_interface_params.append(
-            TypedParam(field.name, _idl_type_to_json_type(ty=field.type, types_relative_imports=False))
+            TypedParam(
+                field.name,
+                _idl_type_to_json_type(ty=field.type, types_relative_imports=False),
+            )
         )
-        layout_items.append(_layout_for_type(idl=idl, ty=field.type, name=field.name, types_relative_imports=False))
-        init_body_assignments.append(Assign(f"self.{field.name}", f'fields["{field.name}"]'))
+        layout_items.append(
+            _layout_for_type(
+                idl=idl, ty=field.type, name=field.name, types_relative_imports=False
+            )
+        )
+        init_body_assignments.append(
+            Assign(f"self.{field.name}", f'fields["{field.name}"]')
+        )
         decode_body_entries.append(
             NamedArg(
-                field.name, _field_from_decoded(idl=idl, ty=field, types_relative_imports=False, val_prefix="dec.")
+                field.name,
+                _field_from_decoded(
+                    idl=idl, ty=field, types_relative_imports=False, val_prefix="dec."
+                ),
             )
         )
         to_json_entries.append(
             StrDictEntry(field.name, _field_to_json(idl, field, "self."))
         )
         from_json_entries.append(
-            NamedArg(field.name, _field_from_json(idl=idl, ty=field, types_relative_imports=False))
+            NamedArg(
+                field.name,
+                _field_from_json(idl=idl, ty=field, types_relative_imports=False),
+            )
         )
     json_interface = TypedDict(json_interface_name, json_interface_params)
-    discriminator_assignment = Assign("discriminator: typing.ClassVar", _account_discriminator(name))
-    layout_assignment = Assign("layout: typing.ClassVar", f"borsh.CStruct({','.join(layout_items)})")
+    discriminator_assignment = Assign(
+        "discriminator: typing.ClassVar", _account_discriminator(name)
+    )
+    layout_assignment = Assign(
+        "layout: typing.ClassVar", f"borsh.CStruct({','.join(layout_items)})"
+    )
     fetch_method = ClassMethod(
         "fetch",
         [
@@ -156,7 +183,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                     Raise('ValueError("Account does not belong to this program")'),
                 ),
                 Assign("bytes_data", 'b64decode(info["data"][0])'),
-                Return('cls.decode(bytes_data)'),
+                Return("cls.decode(bytes_data)"),
             ]
         ),
         f'typing.Optional["{name}"]',
@@ -186,13 +213,16 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                     "infos",
                     Suite(
                         [
-                            If("info is None", Suite([Statement("res.append(None)"), Continue()])),
+                            If(
+                                "info is None",
+                                Suite([Statement("res.append(None)"), Continue()]),
+                            ),
                             If(
                                 'info["owner"] != str(PROGRAM_ID)',
                                 account_does_not_belong_raise,
                             ),
                             Assign("bytes_data", 'b64decode(info["data"][0])'),
-                            Statement('res.append(cls.decode(bytes_data))'),
+                            Statement("res.append(cls.decode(bytes_data))"),
                         ]
                     ),
                 ),

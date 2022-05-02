@@ -46,13 +46,19 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
         str(from_code_return_type),
     )
 
+
 def gen_find_first_match_fn() -> Function:
     regex_match = Assign("first_match", "error_re.match(logline)")
     return_if_match = If("first_match is not None", Return("first_match"))
     loop_body = Suite([regex_match, return_if_match])
-    for_loop = For("logline", 'logs', loop_body)
-    return Function("_find_first_match", [TypedParam("logs", "list[str]")],
-                                   Suite([for_loop, Return("None")]), "typing.Optional[re.Match]")
+    for_loop = For("logline", "logs", loop_body)
+    return Function(
+        "_find_first_match",
+        [TypedParam("logs", "list[str]")],
+        Suite([for_loop, Return("None")]),
+        "typing.Optional[re.Match]",
+    )
+
 
 def gen_from_tx_error_fn() -> Function:
     err_info_assign = Assign("err_info", "error.args[0]")
@@ -204,7 +210,13 @@ def gen_index_code(idl: Idl) -> str:
     program_id_import = FromImport("..program_id", ["PROGRAM_ID"])
     anchor_import = FromImport(".", ["anchor"])
     re_import = Import("re")
-    base_import_lines = [typing_import, re_import, rpc_exception_import, program_id_import, anchor_import]
+    base_import_lines = [
+        typing_import,
+        re_import,
+        rpc_exception_import,
+        program_id_import,
+        anchor_import,
+    ]
     custom_import_lines = [FromImport(".", ["custom"])] if has_custom_errors else []
     import_lines = base_import_lines + custom_import_lines
     from_code_fn = gen_from_code_fn(has_custom_errors)
@@ -213,7 +225,15 @@ def gen_index_code(idl: Idl) -> str:
     )
     from_tx_error_fn = gen_from_tx_error_fn()
     return str(
-        Collection([*import_lines, from_code_fn, error_re_line, gen_find_first_match_fn(), from_tx_error_fn])
+        Collection(
+            [
+                *import_lines,
+                from_code_fn,
+                error_re_line,
+                gen_find_first_match_fn(),
+                from_tx_error_fn,
+            ]
+        )
     )
 
 

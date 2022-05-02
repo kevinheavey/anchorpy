@@ -5,7 +5,7 @@ from genpy import (
     Suite,
     Class as BrokenClass,
     FromImport,
-    Assign
+    Assign,
 )
 
 
@@ -50,6 +50,7 @@ class Continue(Generable):
 
     def generate(self):
         yield "continue"
+
 
 class Union(Generable):
     def __init__(self, members: list[str]) -> None:
@@ -104,6 +105,7 @@ class NamedArg(Generable):
     def generate(self) -> Iterator[str]:
         yield f"{self.key}={self.val},"
 
+
 class Call(Generable):
     def __init__(self, func: str, args: list[NamedArg]) -> None:
         self.func = func
@@ -112,6 +114,7 @@ class Call(Generable):
     def generate(self) -> Iterator[str]:
         formatted_args = "".join(str(arg) for arg in self.args)
         yield f"{self.func}({formatted_args})"
+
 
 class StrDict(Generable):
     def __init__(self, items: list[StrDictEntry]) -> None:
@@ -142,13 +145,13 @@ class IntDict(Generable):
 
 class Function(FunctionOriginal):
     def __init__(
-            self,
-            name: str,
-            args: list[TypedParam],
-            body: Generable,
-            return_type: str,
-            decorators: tuple[str, ...] = (),
-            is_async: bool = False,
+        self,
+        name: str,
+        args: list[TypedParam],
+        body: Generable,
+        return_type: str,
+        decorators: tuple[str, ...] = (),
+        is_async: bool = False,
     ) -> None:
         super().__init__(name, args, body, decorators)
         self.return_type = return_type
@@ -169,19 +172,19 @@ class Function(FunctionOriginal):
 
 class StaticMethod(Function):
     def __init__(
-            self, name: str, args: list[TypedParam], body: Generable, return_type: str
+        self, name: str, args: list[TypedParam], body: Generable, return_type: str
     ) -> None:
         super().__init__(name, args, body, return_type, ("@staticmethod",))
 
 
 class ClassMethod(Function):
     def __init__(
-            self,
-            name: str,
-            extra_args: list[TypedParam],
-            body: Generable,
-            return_type: str,
-            is_async: bool = False,
+        self,
+        name: str,
+        extra_args: list[TypedParam],
+        body: Generable,
+        return_type: str,
+        is_async: bool = False,
     ) -> None:
         args = [TypedParam("cls", None), *extra_args]
         super().__init__(name, args, body, return_type, ("@classmethod",), is_async)
@@ -189,7 +192,7 @@ class ClassMethod(Function):
 
 class Method(Function):
     def __init__(
-            self, name: str, extra_args: list[TypedParam], body: Generable, return_type: str
+        self, name: str, extra_args: list[TypedParam], body: Generable, return_type: str
     ) -> None:
         args = [TypedParam("self", None), *extra_args]
         super().__init__(name, args, body, return_type)
@@ -201,7 +204,11 @@ class InitMethod(Method):
 
 
 class Dataclass(Class):
-    def __init__(self, name, attributes: list[TypingUnion[TypedParam, Assign, ClassMethod, Method]]) -> None:
+    def __init__(
+        self,
+        name,
+        attributes: list[TypingUnion[TypedParam, Assign, ClassMethod, Method]],
+    ) -> None:
         super().__init__(name, None, attributes)
 
     def generate(self) -> Iterator[str]:

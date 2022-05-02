@@ -92,9 +92,9 @@ def recurse_accounts(accs: list[_IdlAccountItem], nested_names: list[str]) -> li
 
 
 def gen_accounts(
-        name,
-        idl_accs: list[_IdlAccountItem],
-        extra_typeddicts: Optional[list[TypedDict]] = None,
+    name,
+    idl_accs: list[_IdlAccountItem],
+    extra_typeddicts: Optional[list[TypedDict]] = None,
 ) -> list[TypedDict]:
     extra_typeddicts_to_use = [] if extra_typeddicts is None else extra_typeddicts
     params: list[TypedParam] = []
@@ -138,15 +138,30 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
         accounts_interface_name = _accounts_interface_name(ix.name)
         for arg in ix.args:
             args_interface_params.append(
-                TypedParam(arg.name, _py_type_from_idl(idl=idl, ty=arg.type, types_relative_imports=False,
-                                                       use_fields_interface_for_struct=False))
+                TypedParam(
+                    arg.name,
+                    _py_type_from_idl(
+                        idl=idl,
+                        ty=arg.type,
+                        types_relative_imports=False,
+                        use_fields_interface_for_struct=False,
+                    ),
+                )
             )
-            layout_items.append(_layout_for_type(idl=idl, ty=arg.type, name=arg.name, types_relative_imports=False))
+            layout_items.append(
+                _layout_for_type(
+                    idl=idl, ty=arg.type, name=arg.name, types_relative_imports=False
+                )
+            )
             encoded_args_entries.append(
                 StrDictEntry(
                     arg.name,
                     _field_to_encodable(
-                        idl=idl, ty=arg, types_relative_imports=False, val_prefix='args["', val_suffix='"]'
+                        idl=idl,
+                        ty=arg,
+                        types_relative_imports=False,
+                        val_prefix='args["',
+                        val_suffix='"]',
                     ),
                 )
             )

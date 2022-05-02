@@ -37,10 +37,10 @@ def _json_interface_name(type_name: str) -> str:
 
 
 def _py_type_from_idl(
-        idl: Idl,
-        ty: _IdlType,
-        types_relative_imports: bool,
-        use_fields_interface_for_struct: bool,
+    idl: Idl,
+    ty: _IdlType,
+    types_relative_imports: bool,
+    use_fields_interface_for_struct: bool,
 ) -> str:
     if isinstance(ty, _IdlTypeVec):
         inner_type = _py_type_from_idl(
@@ -108,10 +108,10 @@ def _py_type_from_idl(
 
 
 def _layout_for_type(
-        idl: Idl,
-        ty: _IdlType,
-        types_relative_imports: bool,
-        name: Optional[str] = None,
+    idl: Idl,
+    ty: _IdlType,
+    types_relative_imports: bool,
+    name: Optional[str] = None,
 ) -> str:
     if ty == "bool":
         inner = "borsh.Bool"
@@ -192,11 +192,11 @@ def _maybe_none(to_check: str, if_not_none: str) -> str:
 
 
 def _field_to_encodable(
-        idl: Idl,
-        ty: _IdlField,
-        types_relative_imports: bool,
-        val_prefix: str = "",
-        val_suffix: str = "",
+    idl: Idl,
+    ty: _IdlField,
+    types_relative_imports: bool,
+    val_prefix: str = "",
+    val_suffix: str = "",
 ) -> str:
     ty_type = ty.type
     if isinstance(ty_type, _IdlTypeVec):
@@ -258,7 +258,7 @@ def _field_to_encodable(
 
 
 def _field_from_decoded(
-        idl: Idl, ty: _IdlField, types_relative_imports: bool, val_prefix: str = ""
+    idl: Idl, ty: _IdlField, types_relative_imports: bool, val_prefix: str = ""
 ) -> str:
     ty_type = ty.type
     if isinstance(ty_type, _IdlTypeVec):
@@ -274,8 +274,10 @@ def _field_from_decoded(
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty.name}))"
     if isinstance(ty_type, _IdlTypeOption):
         decoded = _field_from_decoded(
-            idl=idl, ty=_IdlField(ty.name, ty_type.option), types_relative_imports=types_relative_imports,
-            val_prefix=val_prefix
+            idl=idl,
+            ty=_IdlField(ty.name, ty_type.option),
+            types_relative_imports=types_relative_imports,
+            val_prefix=val_prefix,
         )
         # skip coercion when not needed
         if decoded == f"{val_prefix}{ty.name}":
@@ -323,11 +325,11 @@ def _field_from_decoded(
 
 
 def _struct_field_initializer(
-        idl: Idl,
-        field: _IdlField,
-        types_relative_imports: bool,
-        prefix: str = 'fields["',
-        suffix: str = '"]',
+    idl: Idl,
+    field: _IdlField,
+    types_relative_imports: bool,
+    prefix: str = 'fields["',
+    suffix: str = '"]',
 ) -> str:
     field_type = field.type
     if isinstance(field_type, _IdlTypeDefined):
@@ -404,7 +406,7 @@ def _struct_field_initializer(
 
 
 def _field_to_json(
-        idl: Idl, ty: _IdlField, val_prefix: str = "", val_suffix: str = ""
+    idl: Idl, ty: _IdlField, val_prefix: str = "", val_suffix: str = ""
 ) -> str:
     ty_type = ty.type
     var_name = f"{val_prefix}{ty.name}{val_suffix}"
@@ -496,11 +498,11 @@ def _idl_type_to_json_type(ty: _IdlType, types_relative_imports: bool) -> str:
 
 
 def _field_from_json(
-        idl: Idl,
-        ty: _IdlField,
-        types_relative_imports: bool,
-        param_prefix: str = 'obj["',
-        param_suffix: str = '"]',
+    idl: Idl,
+    ty: _IdlField,
+    types_relative_imports: bool,
+    param_prefix: str = 'obj["',
+    param_suffix: str = '"]',
 ) -> str:
     ty_type = ty.type
     var_name = f"{param_prefix}{ty.name}{param_suffix}"
@@ -517,9 +519,7 @@ def _field_from_json(
         # skip mapping when not needed
         if map_body == "item":
             return var_name
-        return (
-            f"list(map(lambda item: {map_body}, {var_name}))"
-        )
+        return f"list(map(lambda item: {map_body}, {var_name}))"
     if isinstance(ty_type, _IdlTypeArray):
         map_body = _field_from_json(
             idl=idl,
@@ -531,9 +531,7 @@ def _field_from_json(
         # skip mapping when not needed
         if map_body == "item":
             return var_name
-        return (
-            f"list(map(lambda item: {map_body}, {var_name}))"
-        )
+        return f"list(map(lambda item: {map_body}, {var_name}))"
     if isinstance(ty_type, _IdlTypeOption):
         inner = _field_from_json(
             idl=idl,
