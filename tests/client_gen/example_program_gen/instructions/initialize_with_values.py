@@ -3,6 +3,7 @@ import typing
 from solana.publickey import PublicKey
 from solana.transaction import TransactionInstruction, AccountMeta
 from anchorpy.borsh_extension import BorshPubkey
+from construct import Construct
 import borsh_construct as borsh
 from .. import types
 from ..program_id import PROGRAM_ID
@@ -54,8 +55,9 @@ layout = borsh.CStruct(
     "bytes_field" / borsh.Bytes,
     "string_field" / borsh.String,
     "pubkey_field" / BorshPubkey,
-    "vec_field" / borsh.Vec(borsh.U64),
-    "vec_struct_field" / borsh.Vec(types.foo_struct.FooStruct.layout),
+    "vec_field" / borsh.Vec(typing.cast(Construct, borsh.U64)),
+    "vec_struct_field"
+    / borsh.Vec(typing.cast(Construct, types.foo_struct.FooStruct.layout)),
     "option_field" / borsh.Option(borsh.Bool),
     "option_struct_field" / borsh.Option(types.foo_struct.FooStruct.layout),
     "struct_field" / types.foo_struct.FooStruct.layout,
@@ -119,9 +121,11 @@ def initialize_with_values(
                 map(lambda item: item.to_encodable(), args["vec_struct_field"])
             ),
             "option_field": args["option_field"],
-            "option_struct_field": None
-            if args["option_struct_field"] is None
-            else args["option_struct_field"].to_encodable(),
+            "option_struct_field": (
+                None
+                if args["option_struct_field"] is None
+                else args["option_struct_field"].to_encodable()
+            ),
             "struct_field": args["struct_field"].to_encodable(),
             "array_field": args["array_field"],
             "enum_field1": args["enum_field1"].to_encodable(),

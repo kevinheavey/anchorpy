@@ -124,7 +124,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
         FromImport("anchorpy.borsh_extension", ["EnumForCodegen", "BorshPubkey"]),
-        FromImport("construct", ["Pass"]),
+        FromImport("construct", ["Pass", "Construct"]),
         ImportAs("borsh_construct", "borsh"),
         *types_import,
         FromImport("..program_id", ["PROGRAM_ID"]),

@@ -1,4 +1,5 @@
 import typing
+from dataclasses import dataclass
 from base64 import b64decode
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
@@ -25,20 +26,19 @@ class GameJSON(typing.TypedDict):
     state: types.game_state.GameStateJSON
 
 
+@dataclass
 class Game:
-    discriminator = b"\x1bZ\xa6}Jdy\x12"
-    layout = borsh.CStruct(
+    discriminator: typing.ClassVar = b"\x1bZ\xa6}Jdy\x12"
+    layout: typing.ClassVar = borsh.CStruct(
         "players" / BorshPubkey[2],
         "turn" / borsh.U8,
         "board" / borsh.Option(types.sign.layout)[3][3],
         "state" / types.game_state.layout,
     )
-
-    def __init__(self, fields: GameFields) -> None:
-        self.players = fields["players"]
-        self.turn = fields["turn"]
-        self.board = fields["board"]
-        self.state = fields["state"]
+    players: list[PublicKey]
+    turn: int
+    board: list[list[typing.Optional[types.sign.SignKind]]]
+    state: types.game_state.GameStateKind
 
     @classmethod
     async def fetch(
@@ -82,24 +82,22 @@ class Game:
             )
         dec = Game.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
         return cls(
-            {
-                "players": dec.players,
-                "turn": dec.turn,
-                "board": list(
-                    map(
-                        lambda item: list(
-                            map(
-                                lambda item: None
-                                if item is None
-                                else types.sign.from_decoded(item),
-                                item,
-                            )
-                        ),
-                        dec.board,
-                    )
-                ),
-                "state": types.game_state.from_decoded(dec.state),
-            }
+            players=dec.players,
+            turn=dec.turn,
+            board=list(
+                map(
+                    lambda item: list(
+                        map(
+                            lambda item: (
+                                None if item is None else types.sign.from_decoded(item)
+                            ),
+                            item,
+                        )
+                    ),
+                    dec.board,
+                )
+            ),
+            state=types.game_state.from_decoded(dec.state),
         )
 
     def to_json(self) -> GameJSON:
@@ -109,7 +107,10 @@ class Game:
             "board": list(
                 map(
                     lambda item: list(
-                        map(lambda item: None if item is None else item.to_json(), item)
+                        map(
+                            lambda item: (None if item is None else item.to_json()),
+                            item,
+                        )
                     ),
                     self.board,
                 )
@@ -120,22 +121,20 @@ class Game:
     @classmethod
     def from_json(cls, obj: GameJSON) -> "Game":
         return cls(
-            {
-                "players": list(map(lambda item: PublicKey(item), obj["players"])),
-                "turn": obj["turn"],
-                "board": list(
-                    map(
-                        lambda item: list(
-                            map(
-                                lambda item: None
-                                if item is None
-                                else types.sign.from_json(item),
-                                item,
-                            )
-                        ),
-                        obj["board"],
-                    )
-                ),
-                "state": types.game_state.from_json(obj["state"]),
-            }
+            players=list(map(lambda item: PublicKey(item), obj["players"])),
+            turn=obj["turn"],
+            board=list(
+                map(
+                    lambda item: list(
+                        map(
+                            lambda item: (
+                                None if item is None else types.sign.from_json(item)
+                            ),
+                            item,
+                        )
+                    ),
+                    obj["board"],
+                )
+            ),
+            state=types.game_state.from_json(obj["state"]),
         )

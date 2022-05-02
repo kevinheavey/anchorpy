@@ -2,6 +2,7 @@ from __future__ import annotations
 import typing
 from solana.publickey import PublicKey
 from solana.transaction import TransactionInstruction, AccountMeta
+from construct import Construct
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
@@ -10,7 +11,9 @@ class InitializeWithValues2Args(typing.TypedDict):
     vec_of_option: list[typing.Optional[int]]
 
 
-layout = borsh.CStruct("vec_of_option" / borsh.Vec(borsh.Option(borsh.U64)))
+layout = borsh.CStruct(
+    "vec_of_option" / borsh.Vec(typing.cast(Construct, borsh.Option(borsh.U64)))
+)
 
 
 class InitializeWithValues2Accounts(typing.TypedDict):

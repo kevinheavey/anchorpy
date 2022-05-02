@@ -21,7 +21,7 @@ from anchorpy.idl import (
     _IdlAccountDef,
 )
 from anchorpy.clientgen.genpy_extension import (
-    Class,
+    Dataclass,
     Method,
     InitMethod,
     ClassMethod,
@@ -29,6 +29,8 @@ from anchorpy.clientgen.genpy_extension import (
     TypedDict,
     StrDict,
     StrDictEntry,
+NamedArg,
+Call
 )
 from anchorpy.clientgen.common import (
     _fields_interface_name,
@@ -88,7 +90,9 @@ def gen_accounts_code(idl: Idl, accounts_dir: Path) -> dict[Path, str]:
 def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     base_imports = [
         Import("typing"),
+        FromImport("dataclasses",["dataclass"]),
         FromImport("base64", ["b64decode"]),
+        FromImport("construct", ["Construct"]),
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("solana.rpc.async_api", ["AsyncClient"]),
         FromImport("solana.rpc.commitment", ["Commitment"]),
@@ -109,9 +113,9 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     json_interface_name = _json_interface_name(name)
     layout_items: list[str] = []
     init_body_assignments: list[Assign] = []
-    decode_body_entries: list[StrDictEntry] = []
+    decode_body_entries: list[NamedArg] = []
     to_json_entries: list[StrDictEntry] = []
-    from_json_entries: list[StrDictEntry] = []
+    from_json_entries: list[NamedArg] = []
     for field in fields:
         fields_interface_params.append(
             TypedParam(field.name, _py_type_from_idl(idl=idl, ty=field.type, types_relative_imports=False, use_fields_interface_for_struct=False))
@@ -122,7 +126,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         layout_items.append(_layout_for_type(idl=idl, ty=field.type, name=field.name, types_relative_imports=False))
         init_body_assignments.append(Assign(f"self.{field.name}", f'fields["{field.name}"]'))
         decode_body_entries.append(
-            StrDictEntry(
+            NamedArg(
                 field.name, _field_from_decoded(idl=idl, ty=field, types_relative_imports=False, val_prefix="dec.")
             )
         )
@@ -130,12 +134,12 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
             StrDictEntry(field.name, _field_to_json(idl, field, "self."))
         )
         from_json_entries.append(
-            StrDictEntry(field.name, _field_from_json(idl=idl, ty=field, types_relative_imports=False))
+            NamedArg(field.name, _field_from_json(idl=idl, ty=field, types_relative_imports=False))
         )
     fields_interface = TypedDict(fields_interface_name, fields_interface_params)
     json_interface = TypedDict(json_interface_name, json_interface_params)
-    discriminator_assignment = Assign("discriminator", _account_discriminator(name))
-    layout_assignment = Assign("layout", f"borsh.CStruct({','.join(layout_items)})")
+    discriminator_assignment = Assign("discriminator: typing.ClassVar", _account_discriminator(name))
+    layout_assignment = Assign("layout: typing.ClassVar", f"borsh.CStruct({','.join(layout_items)})")
     init_method = InitMethod(
         [TypedParam("fields", fields_interface_name)], Suite(init_body_assignments)
     )
@@ -204,7 +208,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         f'typing.List[typing.Optional["{name}"]]',
         is_async=True,
     )
-    decode_body_end_arg = StrDict(decode_body_entries)
+    decode_body_end = Call("cls", decode_body_entries)
     account_invalid_raise = Raise(
         'AccountInvalidDiscriminator("The discriminator for this account is invalid")'
     )
@@ -220,27 +224,26 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                 Assign(
                     "dec", f"{name}.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])"
                 ),
-                Return(f"cls({decode_body_end_arg})"),
+                Return(decode_body_end),
             ]
         ),
         f'"{name}"',
     )
     to_json_body = StrDict(to_json_entries)
     to_json_method = Method("to_json", [], Return(to_json_body), json_interface_name)
-    from_json_body_arg = StrDict(from_json_entries)
+    from_json_body = Call("cls", from_json_entries)
     from_json_method = ClassMethod(
         "from_json",
         [TypedParam("obj", json_interface_name)],
-        Return(f"cls({from_json_body_arg})"),
+        Return(from_json_body),
         f'"{name}"',
     )
-    klass = Class(
+    klass = Dataclass(
         name,
-        None,
         [
             discriminator_assignment,
             layout_assignment,
-            init_method,
+            *fields_interface_params,
             fetch_method,
             fetch_multiple_method,
             decode_method,

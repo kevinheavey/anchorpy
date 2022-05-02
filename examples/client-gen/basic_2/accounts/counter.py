@@ -1,4 +1,5 @@
 import typing
+from dataclasses import dataclass
 from base64 import b64decode
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
@@ -20,13 +21,14 @@ class CounterJSON(typing.TypedDict):
     count: int
 
 
+@dataclass
 class Counter:
-    discriminator = b"\xff\xb0\x04\xf5\xbc\xfd|\x19"
-    layout = borsh.CStruct("authority" / BorshPubkey, "count" / borsh.U64)
-
-    def __init__(self, fields: CounterFields) -> None:
-        self.authority = fields["authority"]
-        self.count = fields["count"]
+    discriminator: typing.ClassVar = b"\xff\xb0\x04\xf5\xbc\xfd|\x19"
+    layout: typing.ClassVar = borsh.CStruct(
+        "authority" / BorshPubkey, "count" / borsh.U64
+    )
+    authority: PublicKey
+    count: int
 
     @classmethod
     async def fetch(
@@ -70,10 +72,8 @@ class Counter:
             )
         dec = Counter.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
         return cls(
-            {
-                "authority": dec.authority,
-                "count": dec.count,
-            }
+            authority=dec.authority,
+            count=dec.count,
         )
 
     def to_json(self) -> CounterJSON:
@@ -85,8 +85,6 @@ class Counter:
     @classmethod
     def from_json(cls, obj: CounterJSON) -> "Counter":
         return cls(
-            {
-                "authority": PublicKey(obj["authority"]),
-                "count": obj["count"],
-            }
+            authority=PublicKey(obj["authority"]),
+            count=obj["count"],
         )

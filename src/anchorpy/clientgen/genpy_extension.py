@@ -192,8 +192,8 @@ class InitMethod(Method):
 
 
 class Dataclass(Class):
-    def __init__(self, name, params: list[TypedParam]) -> None:
-        super().__init__(name, None, params)
+    def __init__(self, name, attributes: list[TypingUnion[TypedParam, Assign, ClassMethod, Method]]) -> None:
+        super().__init__(name, None, attributes)
 
     def generate(self) -> Iterator[str]:
         yield "@dataclass"

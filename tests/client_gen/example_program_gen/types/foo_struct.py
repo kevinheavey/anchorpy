@@ -1,7 +1,7 @@
 from __future__ import annotations
 from . import bar_struct, foo_enum
 import typing
-from construct import Container
+from construct import Container, Construct
 import borsh_construct as borsh
 
 
@@ -28,7 +28,7 @@ class FooStruct:
         "field1" / borsh.U8,
         "field2" / borsh.U16,
         "nested" / bar_struct.BarStruct.layout,
-        "vec_nested" / borsh.Vec(bar_struct.BarStruct.layout),
+        "vec_nested" / borsh.Vec(typing.cast(Construct, bar_struct.BarStruct.layout)),
         "option_nested" / borsh.Option(bar_struct.BarStruct.layout),
         "enum_field" / foo_enum.layout,
     )
@@ -54,9 +54,11 @@ class FooStruct:
                         obj.vec_nested,
                     )
                 ),
-                option_nested=None
-                if obj.option_nested is None
-                else bar_struct.BarStruct.from_decoded(obj.option_nested),
+                option_nested=(
+                    None
+                    if obj.option_nested is None
+                    else bar_struct.BarStruct.from_decoded(obj.option_nested)
+                ),
                 enum_field=foo_enum.from_decoded(obj.enum_field),
             )
         )
@@ -67,9 +69,11 @@ class FooStruct:
             "field2": self.field2,
             "nested": self.nested.to_encodable(),
             "vec_nested": list(map(lambda item: item.to_encodable(), self.vec_nested)),
-            "option_nested": None
-            if self.option_nested is None
-            else self.option_nested.to_encodable(),
+            "option_nested": (
+                None
+                if self.option_nested is None
+                else self.option_nested.to_encodable()
+            ),
             "enum_field": self.enum_field.to_encodable(),
         }
 
@@ -79,9 +83,9 @@ class FooStruct:
             "field2": self.field2,
             "nested": self.nested.to_json(),
             "vec_nested": list(map(lambda item: item.to_json(), self.vec_nested)),
-            "option_nested": None
-            if self.option_nested is None
-            else self.option_nested.to_json(),
+            "option_nested": (
+                None if self.option_nested is None else self.option_nested.to_json()
+            ),
             "enum_field": self.enum_field.to_json(),
         }
 
@@ -98,9 +102,11 @@ class FooStruct:
                         obj["vec_nested"],
                     )
                 ),
-                option_nested=None
-                if obj["option_nested"] is None
-                else bar_struct.BarStruct.from_json(obj["option_nested"]),
+                option_nested=(
+                    None
+                    if obj["option_nested"] is None
+                    else bar_struct.BarStruct.from_json(obj["option_nested"])
+                ),
                 enum_field=foo_enum.from_json(obj["enum_field"]),
             )
         )

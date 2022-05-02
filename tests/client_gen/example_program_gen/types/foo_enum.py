@@ -1,6 +1,7 @@
 from __future__ import annotations
 from . import bar_struct
 import typing
+from construct import Construct
 from anchorpy.borsh_extension import EnumForCodegen
 import borsh_construct as borsh
 
@@ -189,15 +190,15 @@ class OptionStruct:
     def to_json(self) -> OptionStructJSON:
         return OptionStructJSON(
             kind="OptionStruct",
-            value=(None if self.value[0] is None else self.value[0].to_json(),),
+            value=((None if self.value[0] is None else self.value[0].to_json()),),
         )
 
     def to_encodable(self) -> dict:
         return {
             "OptionStruct": {
-                "item_0": None
-                if self.value[0] is None
-                else self.value[0].to_encodable(),
+                "item_0": (
+                    None if self.value[0] is None else self.value[0].to_encodable()
+                ),
             },
         }
 
@@ -285,9 +286,11 @@ def from_decoded(obj: dict) -> FooEnumKind:
         val = obj["OptionStruct"]
         return OptionStruct(
             (
-                None
-                if val["item_0"] is None
-                else bar_struct.BarStruct.from_decoded(val["item_0"]),
+                (
+                    None
+                    if val["item_0"] is None
+                    else bar_struct.BarStruct.from_decoded(val["item_0"])
+                ),
             )
         )
     if "VecStruct" in obj:
@@ -338,9 +341,11 @@ def from_json(obj: FooEnumJSON) -> FooEnumKind:
         option_struct_json_value = typing.cast(OptionStructJSONValue, obj["value"])
         return OptionStruct(
             (
-                None
-                if option_struct_json_value[0] is None
-                else bar_struct.BarStruct.from_json(option_struct_json_value[0]),
+                (
+                    None
+                    if option_struct_json_value[0] is None
+                    else bar_struct.BarStruct.from_json(option_struct_json_value[0])
+                ),
             )
         )
     if obj["kind"] == "VecStruct":
@@ -378,6 +383,9 @@ layout = EnumForCodegen(
     "Struct" / borsh.CStruct("item_0" / bar_struct.BarStruct.layout),
     "OptionStruct"
     / borsh.CStruct("item_0" / borsh.Option(bar_struct.BarStruct.layout)),
-    "VecStruct" / borsh.CStruct("item_0" / borsh.Vec(bar_struct.BarStruct.layout)),
+    "VecStruct"
+    / borsh.CStruct(
+        "item_0" / borsh.Vec(typing.cast(Construct, bar_struct.BarStruct.layout))
+    ),
     "NoFields" / borsh.CStruct(),
 )

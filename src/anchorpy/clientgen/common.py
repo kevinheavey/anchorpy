@@ -149,7 +149,8 @@ def _layout_for_type(
         layout = _layout_for_type(
             idl=idl, ty=ty.vec, types_relative_imports=types_relative_imports
         )
-        inner = f"borsh.Vec({layout})"
+        cast_layout = f"typing.cast(Construct, {layout})"
+        inner = f"borsh.Vec({cast_layout})"
     elif isinstance(ty, _IdlTypeOption):
         layout = _layout_for_type(
             idl=idl, ty=ty.option, types_relative_imports=types_relative_imports
@@ -187,7 +188,7 @@ def _layout_for_type(
 
 
 def _maybe_none(to_check: str, if_not_none: str) -> str:
-    return f"None if {to_check} is None else {if_not_none}"
+    return f"(None if {to_check} is None else {if_not_none})"
 
 
 def _field_to_encodable(

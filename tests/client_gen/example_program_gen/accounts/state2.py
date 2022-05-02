@@ -1,5 +1,7 @@
 import typing
+from dataclasses import dataclass
 from base64 import b64decode
+from construct import Construct
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
@@ -17,12 +19,13 @@ class State2JSON(typing.TypedDict):
     vec_of_option: list[typing.Optional[int]]
 
 
+@dataclass
 class State2:
-    discriminator = b"ja\xff\xa1\xfa\xcd\xb9\xc0"
-    layout = borsh.CStruct("vec_of_option" / borsh.Vec(borsh.Option(borsh.U64)))
-
-    def __init__(self, fields: State2Fields) -> None:
-        self.vec_of_option = fields["vec_of_option"]
+    discriminator: typing.ClassVar = b"ja\xff\xa1\xfa\xcd\xb9\xc0"
+    layout: typing.ClassVar = borsh.CStruct(
+        "vec_of_option" / borsh.Vec(typing.cast(Construct, borsh.Option(borsh.U64)))
+    )
+    vec_of_option: list[typing.Optional[int]]
 
     @classmethod
     async def fetch(
@@ -66,9 +69,7 @@ class State2:
             )
         dec = State2.layout.parse(data[ACCOUNT_DISCRIMINATOR_SIZE:])
         return cls(
-            {
-                "vec_of_option": dec.vec_of_option,
-            }
+            vec_of_option=dec.vec_of_option,
         )
 
     def to_json(self) -> State2JSON:
@@ -79,7 +80,5 @@ class State2:
     @classmethod
     def from_json(cls, obj: State2JSON) -> "State2":
         return cls(
-            {
-                "vec_of_option": obj["vec_of_option"],
-            }
+            vec_of_option=obj["vec_of_option"],
         )
