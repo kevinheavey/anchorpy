@@ -2,7 +2,7 @@
 from dataclasses import make_dataclass, asdict, fields as dc_fields
 from types import MappingProxyType
 from keyword import kwlist
-from typing import Mapping, Optional, cast, Type
+from typing import Mapping, Optional, cast, Type, Any
 from solana.publickey import PublicKey
 
 from construct import Construct
@@ -18,8 +18,10 @@ from borsh_construct import (
     I16,
     U32,
     I32,
+    F32,
     U64,
     I64,
+    F64,
     U128,
     I128,
     Bytes,
@@ -56,8 +58,10 @@ FIELD_TYPE_MAP: Mapping[str, Construct] = MappingProxyType(
         "i16": I16,
         "u32": U32,
         "i32": I32,
+        "f32": F32,
         "u64": U64,
         "i64": I64,
+        "f64": F64,
         "u128": U128,
         "i128": I128,
         "bytes": Bytes,
@@ -66,25 +70,6 @@ FIELD_TYPE_MAP: Mapping[str, Construct] = MappingProxyType(
     },
 )
 
-
-FIELD_PYTHON_TYPE_MAP: Mapping[str, Type] = MappingProxyType(
-    {
-        "bool": bool,
-        "u8": int,
-        "i8": int,
-        "u16": int,
-        "i16": int,
-        "u32": int,
-        "i32": int,
-        "u64": int,
-        "i64": int,
-        "u128": int,
-        "i128": int,
-        "bytes": bytes,
-        "string": str,
-        "publicKey": PublicKey,
-    },
-)
 
 
 _enums_cache: dict[tuple[str, str], Enum] = {}
@@ -137,7 +122,7 @@ def _handle_enum_variants_no_cache(
                 for type_ in unnamed_fields:
                     fields.append(_type_layout(type_, types))
                 tuple_struct = TupleStruct(*fields)
-                tuple_ = _idl_enum_fields_tuple_to_tuple_type(unnamed_fields, types)
+                tuple_ = _idl_enum_fields_tuple_to_tuple_type(unnamed_fields)
                 tuples[variant_name] = tuple_
                 renamed = variant_name / tuple_struct
             variants.append(renamed)  # type: ignore
@@ -155,14 +140,6 @@ def _handle_enum_variants_no_cache(
                 fld_name = constructor_field[0]  # type: ignore
                 dclass_field = [f for f in dclass_fields if f.name == fld_name][0]
                 attrib.type = dclass_field.type  # type: ignore
-    if tuples:
-        for cname_ in enum_without_types.enum._sumtype_constructor_names:
-            try:
-                tup = tuples[cname_]
-            except KeyError:
-                continue
-            constructr = getattr(enum_without_types.enum, cname)
-            constructr._sumtype_attribs[0][1].type = tup  # type: ignore
     return enum_without_types
 
 
@@ -251,72 +228,8 @@ def _field_layout(field: _IdlField, types: _AccountDefsOrTypeDefs) -> Construct:
     field_name = field.name if field.name else ""
     return field_name / _type_layout(field.type, types)
 
-
-def _idl_type_to_python_type(
-    idl_type: _IdlType,
-    types: _AccountDefsOrTypeDefs,
-) -> Type:
-    """Find the Python type corresponding to an IDL type.
-
-    Args:
-        idl_type: The IDL type.
-        types: IDL type definitions.
-
-    Raises:
-        ValueError: If the user-defined types are not provided.
-        ValueError: If the user-defined type is not found.
-
-    Returns:
-        The Python type.
-    """
-    if isinstance(idl_type, str):
-        return FIELD_PYTHON_TYPE_MAP[idl_type]
-    compound_idl_type = cast(
-        _NonLiteralIdlTypes,
-        idl_type,
-    )
-    if isinstance(compound_idl_type, _IdlTypeVec):
-        type_arg = _idl_type_to_python_type(compound_idl_type.vec, types)
-        return list[type_arg]  # type: ignore
-    elif isinstance(compound_idl_type, _IdlTypeOption):
-        return Optional[  # type: ignore
-            _idl_type_to_python_type(compound_idl_type.option, types)
-        ]
-    elif isinstance(compound_idl_type, _IdlTypeArray):
-        array_ty = compound_idl_type.array[0]
-        array_len = compound_idl_type.array[1]
-        return tuple[  # type: ignore
-            (
-                _idl_type_to_python_type(
-                    array_ty,
-                    types,
-                ),
-            )
-            * array_len
-        ]
-    elif isinstance(compound_idl_type, _IdlTypeDefined):
-        defined = compound_idl_type.defined
-        if not types:
-            raise ValueError("User defined types not provided")
-        filtered = [t for t in types if t.name == defined]
-        if len(filtered) != 1:
-            raise ValueError(f"Type not found {defined}")
-        return _idl_typedef_to_python_type(
-            filtered[0],
-            types,
-        )
-    raise ValueError(f"Unrecognised type: {idl_type}")
-
-
-def _datacls_cmp(left, right) -> bool:
-    return (
-        asdict(left) == asdict(right)
-        and left.__class__.__name__ == right.__class__.__name__
-    )
-
-
-def _make_datacls(name: str, fields: list[tuple[str, type]]) -> type:
-    return make_dataclass(name, fields, namespace={"__eq__": _datacls_cmp})
+def _make_datacls(name: str, fields: list[str]) -> type:
+    return make_dataclass(name, fields)
 
 
 _idl_typedef_ty_struct_to_dataclass_type_cache: dict[tuple[str, str], Type] = {}
@@ -358,7 +271,7 @@ def _idl_typedef_ty_struct_to_dataclass_type_no_cache(
         field_name = field.name
         field_name_to_use = f"{field_name}_" if field_name in kwlist else field_name
         dataclass_fields.append(
-            (field_name_to_use, _idl_type_to_python_type(field.type, types)),
+            field_name_to_use,
         )
     return _make_datacls(name, dataclass_fields)
 
@@ -400,14 +313,13 @@ def _idl_enum_fields_named_to_dataclass_type_no_cache(
         field_name = field.name
         field_name_to_use = f"{field_name}_" if field_name in kwlist else field_name
         dataclass_fields.append(
-            (field_name_to_use, _idl_type_to_python_type(field.type, types)),
+            field_name_to_use,
         )
     return _make_datacls(name, dataclass_fields)
 
 
 def _idl_enum_fields_tuple_to_tuple_type(
     fields: _IdlEnumFieldsTuple,
-    types: _AccountDefsOrTypeDefs,
 ) -> Type:
     """Generate a tuple definition from IDL named enum fields.
 
@@ -418,11 +330,7 @@ def _idl_enum_fields_tuple_to_tuple_type(
     Returns:
         Dataclass type definition.
     """
-    tuple_types = []
-    for field in fields:
-        tuple_types.append(_idl_type_to_python_type(field, types))
-    type_str = ",".join(t.__name__ for t in tuple_types)
-    return eval(f"tuple[{type_str}]")  # noqa: WPS421,S307
+    return tuple[[Any] * len(fields)]  # noqa: WPS421,S307
 
 
 def _idl_typedef_to_python_type(

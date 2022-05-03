@@ -25,7 +25,6 @@ def test_jet_enum() -> None:
     program = Program(idl, PublicKey(1))
     expired_err = program.type["CacheInvalidError"].Expired
     assert expired_err(msg="hi").msg == "hi"
-    assert expired_err._sumtype_attribs[0][1].type == str
 
 
 def test_switchboard_tuple() -> None:
