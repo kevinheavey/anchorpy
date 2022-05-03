@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [main]
 env:
-  solana_verion: 1.9.13
+  solana_verion: 1.10.8
 jobs:
   nox:
     runs-on: ubuntu-latest
