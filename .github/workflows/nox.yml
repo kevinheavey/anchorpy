@@ -23,7 +23,7 @@ jobs:
         run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
       - name: Generate local keypair
-        run: yes | solana-keygen new
+        run: solana-keygen new --no-bip39-passphrase
 
       - name: Set up Python
         uses: actions/setup-python@v1

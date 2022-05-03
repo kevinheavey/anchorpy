@@ -75,7 +75,7 @@ jobs:
         run: npm install -g @project-serum/anchor-cli@${{ env.anchor_version }}
 
       - name: Generate local keypair
-        run: yes | solana-keygen new
+        run: solana-keygen new --no-bip39-passphrase
 
       - name: Set up Python
         uses: actions/setup-python@v1
