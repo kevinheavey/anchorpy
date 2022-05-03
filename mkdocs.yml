@@ -7,7 +7,6 @@ theme:
   features:
     - navigation.tabs
     - navigation.top
-    - navigation.instant
   palette:
     - scheme: default
       primary: lime
