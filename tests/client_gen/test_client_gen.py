@@ -241,7 +241,7 @@ async def setup_fetch_multiple(provider: Provider) -> tuple[Keypair, Keypair]:
         ),
     ]
     tx = Transaction().add(*initialize_ixs)
-    await provider.send(tx, [state, another_state, provider.wallet.payer])
+    await provider.send(tx, [state, another_state])
     return state, another_state
 
 
