@@ -1308,7 +1308,7 @@ python-versions = "*"
 
 [[package]]
 name = "solana"
-version = "0.23.3"
+version = "0.23.2"
 description = "Solana Python API"
 category = "main"
 optional = false
@@ -1548,7 +1548,7 @@ cli = ["typer", "ipython", "genpy", "black", "autoflake"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "19d483ad04f6859f05c26babedf721ec96051c5fb3d73639ebe043d7f9146e5d"
+content-hash = "348aaf0e59725978f7097064b0a66ff7fc7e80a431e869884a9ddb31785ca28b"
 
 [metadata.files]
 anyio = [
@@ -2253,8 +2253,8 @@ snowballstemmer = [
     {file = "snowballstemmer-2.2.0.tar.gz", hash = "sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1"},
 ]
 solana = [
-    {file = "solana-0.23.3-py3-none-any.whl", hash = "sha256:1494316d933f8ab26ec5be66babf5dd63c1931077b654db7f8a6481f82137ca6"},
-    {file = "solana-0.23.3.tar.gz", hash = "sha256:4c64af99589044fba4ab2adb9f6c1bc63fdb1e51f1dfde1a95774a6db3c40cdf"},
+    {file = "solana-0.23.2-py3-none-any.whl", hash = "sha256:6c43a6013bc0b5358cafd94a4fa091d30f7917fe578960329a8977b9dd1b21a5"},
+    {file = "solana-0.23.2.tar.gz", hash = "sha256:57c98be97d944440146780a4e175c0dbf50a988d75f05d81b5083620bf4331b0"},
 ]
 stack-data = [
     {file = "stack_data-0.2.0-py3-none-any.whl", hash = "sha256:999762f9c3132308789affa03e9271bbbe947bf78311851f4d485d8402ed858e"},
