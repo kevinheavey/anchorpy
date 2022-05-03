@@ -18,7 +18,7 @@
       ],
       "args": [
         {
-          "name": "zauthority",
+          "name": "authority",
           "type": "publicKey"
         }
       ]
@@ -32,7 +32,7 @@
           "isSigner": false
         },
         {
-          "name": "zauthority",
+          "name": "authority",
           "isMut": false,
           "isSigner": true
         }
@@ -47,7 +47,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "zauthority",
+            "name": "authority",
             "type": "publicKey"
           },
           {

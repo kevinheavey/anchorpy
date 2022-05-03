@@ -1,11 +1,19 @@
 # noqa: D100
 import os
+from typing import Optional
+import json
 from pathlib import Path
 from contextlib import contextmanager
 import typer
 from IPython import embed
 from anchorpy import create_workspace
+from anchorpy.idl import Idl
 from anchorpy.template import INIT_TESTS
+from anchorpy.clientgen.program_id import gen_program_id
+from anchorpy.clientgen.errors import gen_errors
+from anchorpy.clientgen.types import gen_types
+from anchorpy.clientgen.accounts import gen_accounts
+from anchorpy.clientgen.instructions import gen_instructions
 
 app = typer.Typer()
 
@@ -69,7 +77,7 @@ def shell():
 
 @app.command()
 def init(
-    program_name: str = typer.Argument(  # noqa: WPS404,B008
+    program_name: str = typer.Argument(
         ..., help="The name of the Anchor program."
     )  # noqa: DAR101,DAR401
 ):
@@ -86,6 +94,50 @@ def init(
     if file_path.exists():
         raise FileExistsError(file_path)
     file_path.write_text(file_contents)
+
+
+@app.command()
+def client_gen(
+    idl: Path = typer.Argument(..., help="Anchor IDL file path"),
+    out: Path = typer.Argument(..., help="Output directory."),
+    program_id: Optional[str] = typer.Option(
+        None, help="Optional program ID to be included in the code"
+    ),
+):
+    """Generate Python client code from the specified anchor IDL."""
+    with idl.open("r") as f:
+        idl_dict = json.load(f)
+    idl_obj = Idl.from_json(idl_dict)
+    if program_id is None:
+        idl_metadata = idl_obj.metadata
+        if idl_metadata is None:
+            address_from_idl = None
+        else:
+            address_from_idl = idl_metadata.address
+        if address_from_idl is None:
+            typer.echo(
+                "No program ID found in IDL. Use the --program-id "
+                "option to set it manually."
+            )
+            raise typer.Exit(code=1)
+        else:
+            program_id_to_use = address_from_idl
+    else:
+        program_id_to_use = program_id
+
+    typer.echo("generating package...")
+    out.mkdir(exist_ok=True)
+    (out / "__init__.py").touch()
+    typer.echo("generating program_id.py...")
+    gen_program_id(idl_obj, program_id_to_use, out)
+    typer.echo("generating errors.py...")
+    gen_errors(idl_obj, out)
+    typer.echo("generating instructions...")
+    gen_instructions(idl_obj, out)
+    typer.echo("generating types...")
+    gen_types(idl_obj, out)
+    typer.echo("generating accounts...")
+    gen_accounts(idl_obj, out)
 
 
 if __name__ == "__main__":

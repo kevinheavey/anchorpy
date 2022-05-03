@@ -1,11 +1,13 @@
 # Tutorial
 
+
+!!! note
+    It is recommended to use the generated client instead of the dynamic client where possible, as it is easier to
+    work with and comes with proper type hints.
+
 This tutorial takes the JS snippets from the official Anchor tutorial
 and shows how to achieve the same thing using AnchorPy.
 
-!!! note
-    The Python snippets are a bit longer because they contain all the code
-    you need to run them.
 ## [A Minimal Example](https://project-serum.github.io/anchor/tutorials/tutorial-0.html)
 This section covers the `basic-0` tutorial:
 ### [Generating a Client](https://project-serum.github.io/anchor/tutorials/tutorial-0.html#generating-a-client)
@@ -97,7 +99,7 @@ Note the differences between Python and JS:
 
 - Workspace instantiation is explicit: we have to call the `create_workspace` function.
     - Note however that AnchorPy provides the `workspace_fixture` factory for convenience.
-      See the [testing](testing.md) section for more.
+      See the [testing](../testing/index.md) section for more.
 - We have a `close_workspace` function that calls `close_program` on all the programs
 in the workspace.
 - The workspace is called `basic_0` instead of `Basic0`. This is because AnchorPy uses snake case 🐍

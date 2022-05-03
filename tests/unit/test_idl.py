@@ -25,7 +25,6 @@ def test_jet_enum() -> None:
     program = Program(idl, PublicKey(1))
     expired_err = program.type["CacheInvalidError"].Expired
     assert expired_err(msg="hi").msg == "hi"
-    assert expired_err._sumtype_attribs[0][1].type == str
 
 
 def test_switchboard_tuple() -> None:
@@ -34,3 +33,10 @@ def test_switchboard_tuple() -> None:
         data = json.load(f)
     idl = Idl.from_json(data)
     program = Program(idl, PublicKey(1))  # noqa: F841
+
+
+def test_clientgen_example() -> None:
+    path = Path("tests/idls/clientgen_example_program.json")
+    with path.open() as f:
+        data = json.load(f)
+    Idl.from_json(data)

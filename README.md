@@ -7,7 +7,13 @@
 
 [![Discord Chat](https://img.shields.io/discord/889577356681945098?color=blueviolet)](https://discord.gg/sxy4zxBckh)  
 
-AnchorPy is the Python client for [Anchor](https://github.com/project-serum/anchor). It allows you to interact with Anchor programs using Python.
+AnchorPy is the gateway to interacting with [Anchor](https://github.com/project-serum/anchor) programs in Python.
+It provides:
+
+- A static client generator
+- A dynamic client similar to `anchor-ts`
+- A Pytest plugin
+- A CLI with various utilities for Anchor Python development.
 
 Read the [Documentation](https://kevinheavey.github.io/anchorpy/).
 

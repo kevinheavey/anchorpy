@@ -4,16 +4,19 @@
 </div>
 
 ---
+AnchorPy is the gateway to interacting with [Anchor](https://github.com/project-serum/anchor) programs in Python.
+It provides:
 
-AnchorPy is the Python client for [Anchor](https://github.com/project-serum/anchor). It allows you to interact with Anchor programs using Python instead of Typescript/Javascript.
+- A [static client generator](clientgen)
+- A [dynamic client](dynamic_client) similar to `anchor-ts`
+- A [Pytest plugin](testing/#1-pytest-plugin)
+- A [CLI](cli) with various utilities for Anchor Python development.
 
 ## Installation (requires Python >= 3.9)
 
 ```shell
 pip install anchorpy[cli]
 ```
-
-Or, if you're not using the CLI features of AnchorPy you can just run `pip install anchorpy`.
 
 
 !!! note

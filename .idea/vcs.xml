@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/anchor" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/anchor/tests/auction-house" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/anchor/tests/auction-house/deps/metaplex" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/anchor/tests/cfo/deps/serum-dex" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/anchor/tests/cfo/deps/stake" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/anchor/tests/cfo/deps/swap" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/anchor/tests/cfo/deps/swap/deps/serum-dex" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/anchor/tests/swap/deps/serum-dex" vcs="Git" />
+  </component>
+</project>

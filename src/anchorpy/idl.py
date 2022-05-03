@@ -1,6 +1,6 @@
 """Contains code for parsing the IDL file."""
 from dataclasses import dataclass, field
-from typing import List, Union, Optional, Dict, Any, Literal, Tuple, TypedDict
+from typing import List, Union, Optional, Dict, Any, Literal, Tuple, TypedDict, Sequence
 
 from apischema import deserialize, alias
 from apischema.metadata import conversion
@@ -8,7 +8,7 @@ from pyheck import snake, upper_camel
 from borsh_construct import CStruct, Vec, U8
 import solana.publickey  # noqa: WPS301
 
-from anchorpy.borsh_extension import _BorshPubkey
+from anchorpy.borsh_extension import BorshPubkey
 
 _LiteralStrings = Literal[
     "bool",
@@ -18,8 +18,10 @@ _LiteralStrings = Literal[
     "i16",
     "u32",
     "i32",
+    "f32",
     "u64",
     "i64",
+    "f64",
     "u128",
     "i128",
     "bytes",
@@ -172,7 +174,10 @@ class _IdlTypeDef:
 
 
 @dataclass
-class _IdlAccountDef(_IdlTypeDef):
+class _IdlAccountDef:
+    """IDL representation of an account."""
+
+    name: str
     type: _IdlTypeDefTyStruct
 
 
@@ -287,7 +292,7 @@ class IdlProgramAccount(TypedDict):
     data: bytes
 
 
-IDL_ACCOUNT_LAYOUT = CStruct("authority" / _BorshPubkey, "data" / Vec(U8))
+IDL_ACCOUNT_LAYOUT = CStruct("authority" / BorshPubkey, "data" / Vec(U8))
 
 
 def _decode_idl_account(data: bytes) -> IdlProgramAccount:
@@ -300,3 +305,7 @@ def _decode_idl_account(data: bytes) -> IdlProgramAccount:
         Decoded IDL.
     """
     return IDL_ACCOUNT_LAYOUT.parse(data)
+
+
+_AccountDefOrTypeDef = Union[_IdlTypeDef, _IdlAccountDef]
+_AccountDefsOrTypeDefs = Sequence[_AccountDefOrTypeDef]

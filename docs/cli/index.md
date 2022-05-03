@@ -73,4 +73,8 @@ Hint: type `workspace` to see the Anchor workspace object.
 Out[1]: '2q1Z8BcsSBikMLEFoeFGhUukfsNYLJx7y33rMZ57Eh4gAHJxpJ9oP9b9aFyrizh9wcuiVtAAxvmBifCXdqWeNLor'
 ```
 
-<div>
+</div>
+
+### Client-gen
+
+See [Client Generator](../clientgen)
