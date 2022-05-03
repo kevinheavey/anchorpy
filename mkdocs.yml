@@ -4,6 +4,10 @@ theme:
   icon:
     logo: material/anchor
   favicon: img/anchor.svg
+  features:
+    - navigation.tabs
+    - navigation.top
+    - navigation.instant
   palette:
     - scheme: default
       primary: lime
@@ -40,12 +44,17 @@ plugins:
   - search
 nav:
   - index.md
-  - tutorial.md
-  - testing.md
-  - comparison_with_anchor_ts.md
-  - examples.md
-  - cli.md
-  - api_reference.md
+  - Client Generator:
+      - clientgen/index.md
+  - Dynamic Client:
+      - dynamic_client/index.md
+      - dynamic_client/comparison_with_anchor_ts.md
+      - dynamic_client/examples.md
+      - dynamic_client/api_reference.md
+  - Testing:
+      - testing/index.md
+  - CLI Reference:
+      - cli/index.md
 extra_css:
   - css/mkdocstrings.css
   - css/termynal.css
