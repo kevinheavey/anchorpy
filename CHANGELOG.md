@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.0] - 2022-05-03
+
+### Added
+
+- Added `anchorpy client-gen` [(#70)](https://github.com/kevinheavey/anchorpy/pull/70)
+
 ## [0.8.3] - 2022-04-29
 
 ### Changed
