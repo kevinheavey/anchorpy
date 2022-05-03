@@ -204,7 +204,10 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
             [
                 Assign(
                     "infos",
-                    "await get_multiple_accounts(conn, addresses,commitment=commitment)",
+                    (
+                        "await get_multiple_accounts"
+                        "(conn, addresses,commitment=commitment)"
+                    ),
                 ),
                 Assign(f"res: {fetch_multiple_return_type}", "[]"),
                 For(
