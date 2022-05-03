@@ -5,6 +5,7 @@
 ### Added
 
 - Added `anchorpy client-gen` [(#70)](https://github.com/kevinheavey/anchorpy/pull/70)
+- Added floats support to IDL [(#70)](https://github.com/kevinheavey/anchorpy/pull/70)
 
 ## [0.8.3] - 2022-04-29
 
