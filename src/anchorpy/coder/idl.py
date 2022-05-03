@@ -1,9 +1,8 @@
 """IDL coding."""
-from dataclasses import make_dataclass, asdict, fields as dc_fields
+from dataclasses import make_dataclass, fields as dc_fields
 from types import MappingProxyType
 from keyword import kwlist
-from typing import Mapping, Optional, cast, Type, Any
-from solana.publickey import PublicKey
+from typing import Mapping, cast, Type
 
 from construct import Construct
 from borsh_construct import (
@@ -71,7 +70,6 @@ FIELD_TYPE_MAP: Mapping[str, Construct] = MappingProxyType(
 )
 
 
-
 _enums_cache: dict[tuple[str, str], Enum] = {}
 
 
@@ -96,7 +94,6 @@ def _handle_enum_variants_no_cache(
 ) -> Enum:
     variants = []
     dclasses = {}
-    tuples = {}
     for variant in idl_enum.variants:
         variant_name = variant.name
         if variant.fields is None:
@@ -111,7 +108,6 @@ def _handle_enum_variants_no_cache(
                 cstruct = CStruct(*fields)
                 datacls = _idl_enum_fields_named_to_dataclass_type(
                     named_fields,
-                    types,
                     variant_name,
                 )
                 dclasses[variant_name] = datacls
@@ -122,8 +118,6 @@ def _handle_enum_variants_no_cache(
                 for type_ in unnamed_fields:
                     fields.append(_type_layout(type_, types))
                 tuple_struct = TupleStruct(*fields)
-                tuple_ = _idl_enum_fields_tuple_to_tuple_type(unnamed_fields)
-                tuples[variant_name] = tuple_
                 renamed = variant_name / tuple_struct
             variants.append(renamed)  # type: ignore
     enum_without_types = Enum(*variants, enum_name=name)
@@ -152,7 +146,7 @@ def _typedef_layout_without_field_name(
     if isinstance(typedef_type, _IdlTypeDefTyStruct):
         field_layouts = [_field_layout(field, types) for field in typedef_type.fields]
         cstruct = CStruct(*field_layouts)
-        datacls = _idl_typedef_ty_struct_to_dataclass_type(typedef_type, types, name)
+        datacls = _idl_typedef_ty_struct_to_dataclass_type(typedef_type, name)
         return _DataclassStruct(cstruct, datacls=datacls)
     elif isinstance(typedef_type, _IdlTypeDefTyEnum):
         return _handle_enum_variants(typedef_type, types, name)
@@ -228,6 +222,7 @@ def _field_layout(field: _IdlField, types: _AccountDefsOrTypeDefs) -> Construct:
     field_name = field.name if field.name else ""
     return field_name / _type_layout(field.type, types)
 
+
 def _make_datacls(name: str, fields: list[str]) -> type:
     return make_dataclass(name, fields)
 
@@ -237,7 +232,6 @@ _idl_typedef_ty_struct_to_dataclass_type_cache: dict[tuple[str, str], Type] = {}
 
 def _idl_typedef_ty_struct_to_dataclass_type(
     typedef_type: _IdlTypeDefTyStruct,
-    types: _AccountDefsOrTypeDefs,
     name: str,
 ) -> Type:
     dict_key = (name, str(typedef_type))
@@ -245,7 +239,7 @@ def _idl_typedef_ty_struct_to_dataclass_type(
         return _idl_typedef_ty_struct_to_dataclass_type_cache[dict_key]
     except KeyError:
         result = _idl_typedef_ty_struct_to_dataclass_type_no_cache(
-            typedef_type, types, name
+            typedef_type, name
         )
         _idl_typedef_ty_struct_to_dataclass_type_cache[dict_key] = result
         return result
@@ -253,14 +247,12 @@ def _idl_typedef_ty_struct_to_dataclass_type(
 
 def _idl_typedef_ty_struct_to_dataclass_type_no_cache(
     typedef_type: _IdlTypeDefTyStruct,
-    types: _AccountDefsOrTypeDefs,
     name: str,
 ) -> Type:
     """Generate a dataclass definition from an IDL struct.
 
     Args:
         typedef_type: The IDL type.
-        types: IDL type definitions.
         name: The name of the dataclass.
 
     Returns:
@@ -281,28 +273,25 @@ _idl_enum_fields_named_to_dataclass_type_cache: dict[tuple[str, str], Type] = {}
 
 def _idl_enum_fields_named_to_dataclass_type(
     fields: _IdlEnumFieldsNamed,
-    types: _AccountDefsOrTypeDefs,
     name: str,
 ) -> Type:
     dict_key = (name, str(fields))
     try:
         return _idl_enum_fields_named_to_dataclass_type_cache[dict_key]
     except KeyError:
-        result = _idl_enum_fields_named_to_dataclass_type_no_cache(fields, types, name)
+        result = _idl_enum_fields_named_to_dataclass_type_no_cache(fields, name)
         _idl_enum_fields_named_to_dataclass_type_cache[dict_key] = result
         return result
 
 
 def _idl_enum_fields_named_to_dataclass_type_no_cache(
     fields: _IdlEnumFieldsNamed,
-    types: _AccountDefsOrTypeDefs,
     name: str,
 ) -> Type:
     """Generate a dataclass definition from IDL named enum fields.
 
     Args:
         fields: The IDL enum fields.
-        types: IDL type definitions.
         name: The name of the dataclass.
 
     Returns:
@@ -316,21 +305,6 @@ def _idl_enum_fields_named_to_dataclass_type_no_cache(
             field_name_to_use,
         )
     return _make_datacls(name, dataclass_fields)
-
-
-def _idl_enum_fields_tuple_to_tuple_type(
-    fields: _IdlEnumFieldsTuple,
-) -> Type:
-    """Generate a tuple definition from IDL named enum fields.
-
-    Args:
-        fields: The IDL enum fields.
-        types: IDL type definitions.
-
-    Returns:
-        Dataclass type definition.
-    """
-    return tuple[[Any] * len(fields)]  # noqa: WPS421,S307
 
 
 def _idl_typedef_to_python_type(
@@ -353,7 +327,6 @@ def _idl_typedef_to_python_type(
     if isinstance(typedef_type, _IdlTypeDefTyStruct):
         return _idl_typedef_ty_struct_to_dataclass_type(
             typedef_type,
-            types,
             typedef.name,
         )
     elif isinstance(typedef_type, _IdlTypeDefTyEnum):
