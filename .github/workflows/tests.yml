@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 env:
-  solana_verion: 1.9.13
+  solana_verion: 1.10.8
   anchor_version: 0.24.2
 
 jobs:
