@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
+## [0.9.1] - 2022-05-19
 
 ### Fixed
 
 - Fixed edge case where invalid `import` code gets generated [#(71)](https://github.com/kevinheavey/anchorpy/pull/71)
+- Include logs in ProgramError instances [#(72)](https://github.com/kevinheavey/anchorpy/pull/72)
 
 ## [0.9.0] - 2022-05-03
 
