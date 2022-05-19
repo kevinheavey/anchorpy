@@ -110,8 +110,11 @@ def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
     types_module_names = [snake(ty.name) for ty in idl.types]
     for ty in idl.types:
         module_name = snake(ty.name)
-        relative_import = FromImport(
-            ".", [mod for mod in types_module_names if mod != module_name]
+        relative_import_items = [
+            mod for mod in types_module_names if mod != module_name
+        ]
+        relative_import_container = (
+            [FromImport(".", relative_import_items)] if relative_import_items else []
         )
         ty_type = ty.type
         body = (
@@ -119,7 +122,7 @@ def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
             if isinstance(ty_type, _IdlTypeDefTyStruct)
             else gen_enum(idl, ty.name, ty_type.variants)
         )
-        code = str(Collection([ANNOTATIONS_IMPORT, relative_import, body]))
+        code = str(Collection([ANNOTATIONS_IMPORT, *relative_import_container, body]))
         path = (out / module_name).with_suffix(".py")
         res[path] = code
     return res
