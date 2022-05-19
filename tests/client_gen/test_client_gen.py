@@ -5,6 +5,7 @@ import asyncio
 from filecmp import dircmp
 import subprocess
 from pytest import fixture, mark
+from py.path import local
 from pytest_asyncio import fixture as async_fixture
 from construct import ListContainer
 from solana.keypair import Keypair
@@ -17,6 +18,7 @@ from solana.rpc.core import RPCException
 from solana.publickey import PublicKey
 from anchorpy.pytest_plugin import localnet_fixture
 from anchorpy import Provider, Wallet
+from anchorpy.cli import client_gen
 from tests.client_gen.example_program_gen.instructions import (
     initialize,
     initialize_with_values,
@@ -71,6 +73,13 @@ async def provider(localnet, payer: Keypair) -> AsyncGenerator[Provider, None]:
 @fixture(scope="session")
 def project_parent_dir(tmpdir_factory) -> Path:
     return Path(tmpdir_factory.mktemp("temp"))
+
+
+def test_quarry_mine(tmpdir: local) -> None:
+    proj_dir = Path(tmpdir)
+    out_dir = proj_dir / "generated"
+    idl_path = Path("tests/idls/quarry_mine.json")
+    client_gen(idl_path, out_dir, "placeholder")
 
 
 @fixture(scope="session")
