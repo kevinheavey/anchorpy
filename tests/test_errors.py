@@ -29,6 +29,7 @@ async def test_hello_err(program: Program) -> None:
     expected_msg = "This is an error message clients will automatically display"
     assert excinfo.value.msg == expected_msg
     assert expected_msg in str(excinfo)
+    assert excinfo.value.logs
 
 
 @mark.asyncio
@@ -38,6 +39,7 @@ async def test_hello_no_msg_err(program: Program) -> None:
         await program.rpc["hello_no_msg"]()
     assert excinfo.value.msg == "HelloNoMsg"
     assert excinfo.value.code == 6000 + 123
+    assert excinfo.value.logs
 
 
 @mark.asyncio
@@ -47,6 +49,7 @@ async def test_hello_next_err(program: Program) -> None:
         await program.rpc["hello_next"]()
     assert excinfo.value.msg == "HelloNext"
     assert excinfo.value.code == 6000 + 124
+    assert excinfo.value.logs
 
 
 @mark.asyncio
@@ -58,6 +61,7 @@ async def test_mut_err(program: Program) -> None:
         )
     assert excinfo.value.msg == "A mut constraint was violated"
     assert excinfo.value.code == 2000
+    assert excinfo.value.logs
 
 
 @mark.asyncio
@@ -80,6 +84,7 @@ async def test_has_one_err(program: Program) -> None:
         )
     assert excinfo.value.msg == "A has_one constraint was violated"
     assert excinfo.value.code == 2001
+    assert excinfo.value.logs
 
 
 @mark.asyncio
@@ -120,6 +125,7 @@ async def test_raw_custom_err(program: Program) -> None:
         )
     assert excinfo.value.msg == "HelloCustom"
     assert excinfo.value.code == 6000 + 125
+    assert excinfo.value.logs
 
 
 @mark.asyncio
@@ -137,3 +143,4 @@ async def test_account_not_initialised_err(program: Program) -> None:
         == "The program expected this account to be already initialized"
     )
     assert excinfo.value.code == 3012
+    assert excinfo.value.logs
