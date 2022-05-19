@@ -238,9 +238,7 @@ def _idl_typedef_ty_struct_to_dataclass_type(
     try:
         return _idl_typedef_ty_struct_to_dataclass_type_cache[dict_key]
     except KeyError:
-        result = _idl_typedef_ty_struct_to_dataclass_type_no_cache(
-            typedef_type, name
-        )
+        result = _idl_typedef_ty_struct_to_dataclass_type_no_cache(typedef_type, name)
         _idl_typedef_ty_struct_to_dataclass_type_cache[dict_key] = result
         return result
 

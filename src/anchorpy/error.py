@@ -195,15 +195,19 @@ LangErrorMessage = {
 class ProgramError(Exception):
     """An error from a user defined program."""
 
-    def __init__(self, code: int, msg: Optional[str]) -> None:
+    def __init__(
+        self, code: int, msg: Optional[str], logs: Optional[list[str]] = None
+    ) -> None:
         """Init.
 
         Args:
             code: The error code.
             msg: The error message.
+            logs: The transaction simulation logs.
         """
         self.code = code
         self.msg = msg
+        self.logs = logs
         super().__init__(f"{code}: {msg}")
 
     @classmethod
@@ -224,15 +228,16 @@ class ProgramError(Exception):
         try:  # noqa: WPS229
             err_data = cast(_ExtendedRPCError, err_info)["data"]
             custom_err_code = err_data["err"]["InstructionError"][1]["Custom"]
+            logs = cast(Optional[list[str]], err_data.get("logs"))
         except (KeyError, TypeError):
             return None
         # parse user error
         msg = idl_errors.get(custom_err_code)
         if msg is not None:
-            return cls(custom_err_code, msg)
+            return cls(custom_err_code, msg, logs)
         # parse framework internal error
         msg = LangErrorMessage.get(custom_err_code)
         if msg is not None:
-            return cls(custom_err_code, msg)
+            return cls(custom_err_code, msg, logs)
         # Unable to parse the error. Just return the untranslated error.
         return None
