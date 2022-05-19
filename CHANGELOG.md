@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Fixed edge case where invalid `import` code gets generated [#(71)](https://github.com/kevinheavey/anchorpy/pull/71)
+
 ## [0.9.0] - 2022-05-03
 
 ### Added
