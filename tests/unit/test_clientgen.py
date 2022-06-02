@@ -33,7 +33,7 @@ def test_empty_fields() -> None:
     idl = Idl.from_json(data)
     struct = gen_struct(idl, "AggregatorLockParams", [])
     assert str(struct) == (
-        "import typing"
+        'import typing'  # noqa: P103
         '\nfrom dataclasses import dataclass'
         '\nfrom construct import Container, Construct'
         '\nfrom solana.publickey import PublicKey'
