@@ -16,8 +16,11 @@ class Class(BrokenClass):
             bases = []
 
         yield "class {}({}):".format(self.name, ", ".join(bases))
-        for f in self.attributes:
-            yield from ("    " + f_line for f_line in f.generate())
+        if self.attributes:
+            for f in self.attributes:
+                yield from ("    " + f_line for f_line in f.generate())
+        else:
+            yield "    pass"
 
 
 class TypedParam(Generable):
