@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.2] - 2022-06-02
+
+### Fixed
+
+- Handle empty structs in clientgen [#(75)](https://github.com/kevinheavey/anchorpy/pull/75)
+
 ## [0.9.1] - 2022-05-19
 
 ### Fixed
