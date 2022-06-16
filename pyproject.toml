@@ -10,7 +10,7 @@ authors = ["kevinheavey <kevinheavey123@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 construct-typing = "^0.5.1"
-solana = ">=0.23.1,<0.23.3"
+solana = "0.24.0"
 sumtypes = "^0.1a6"
 apischema = "^0.16.6"
 borsh-construct = "^0.1.0"
@@ -37,7 +37,6 @@ cli = ["typer", "ipython", "genpy", "black", "autoflake"]
 anchorpy = "anchorpy.cli:app"
 
 [tool.poetry.dev-dependencies]
-wemake-python-styleguide = "^0.15.3"
 mypy = "^0.910"
 pydocstyle = "^6.1.1"
 isort = "^5.9.3"
@@ -47,6 +46,7 @@ bump2version = "^1.0.1"
 pyserum = "^0.5.0-alpha.0"
 mkdocstrings = "^0.17.0"
 bandit = "1.7.2"
+wemake-python-styleguide = "^0.16.1"
 
 [tool.poetry.plugins.pytest11]
 pytest_anchorpy = "anchorpy.pytest_plugin"
