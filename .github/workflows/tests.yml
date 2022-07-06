@@ -13,6 +13,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         node:
           [
@@ -36,7 +37,7 @@ jobs:
             "test_system_accounts",
             "test_token_proxy",
             "test_zero_copy",
-            "client_gen/test_client_gen"
+            "client_gen/test_client_gen",
           ]
     steps:
       - name: Checkout repo.
