@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.3] - 2022-07-06
+
+### Changed
+
+Use latest `solana-py` [#(78)](https://github.com/kevinheavey/anchorpy/pull/78)
+
 ## [0.9.2] - 2022-06-02
 
 ### Fixed
