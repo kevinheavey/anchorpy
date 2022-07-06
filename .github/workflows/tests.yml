@@ -33,7 +33,7 @@ jobs:
             "test_pyth",
             # "test_swap",
             "test_sysvars",
-            "test_system_accounts",
+            # "test_system_accounts",
             # "test_token_proxy",
             "test_zero_copy",
             "client_gen/test_client_gen",
