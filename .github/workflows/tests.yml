@@ -15,8 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node:
-          [
+        node: [
             "test_basic_0",
             "test_basic_1",
             "test_basic_2",
@@ -27,15 +26,15 @@ jobs:
             "test_cli_init",
             "test_composite",
             "test_errors",
-            "test_escrow",
+            # "test_escrow",
             "test_events",
             "test_misc",
             "test_multisig",
             "test_pyth",
-            "test_swap",
+            # "test_swap",
             "test_sysvars",
             "test_system_accounts",
-            "test_token_proxy",
+            # "test_token_proxy",
             "test_zero_copy",
             "client_gen/test_client_gen",
           ]
