@@ -59,7 +59,7 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
-
+      - uses: Swatinem/rust-cache@v1
       - name: Install Solana
         if: steps.cache-solana.outputs.cache-hit != 'true'
         run: sh -c "$(curl -sSfL https://release.solana.com/v${{ env.solana_verion }}/install)"
