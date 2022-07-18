@@ -18,7 +18,9 @@ class NestedNested(typing.TypedDict):
 
 
 def initialize(
-    accounts: InitializeAccounts, program_id: PublicKey = PROGRAM_ID
+    accounts: InitializeAccounts,
+    program_id: PublicKey = PROGRAM_ID,
+    remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["state"], is_signer=True, is_writable=True),
@@ -33,6 +35,8 @@ def initialize(
             pubkey=accounts["system_program"], is_signer=False, is_writable=False
         ),
     ]
+    if remaining_accounts is not None:
+        keys += remaining_accounts
     identifier = b"\xaf\xafm\x1f\r\x98\x9b\xed"
     encoded_args = b""
     data = identifier + encoded_args

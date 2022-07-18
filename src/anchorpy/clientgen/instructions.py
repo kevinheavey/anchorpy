@@ -10,7 +10,7 @@ from genpy import (
     Suite,
     Collection,
     ImportAs,
-    Return,
+    Return, If, Line,
 )
 from anchorpy.coder.common import _sighash
 from anchorpy.idl import (
@@ -185,7 +185,12 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
         )
         accounts = gen_accounts(accounts_interface_name, ix.accounts)
         keys_assignment = Assign(
-            "keys: list[AccountMeta]", List(recurse_accounts(ix.accounts, []))
+            "keys: list[AccountMeta]",
+            f"{List(recurse_accounts(ix.accounts, []))}"
+        )
+        remaining_accounts_concatenation = If(
+            "remaining_accounts is not None",
+            Line("keys += remaining_accounts")
         )
         identifier_assignment = Assign("identifier", _sighash(ix.name))
         encoded_args_assignment = Assign("encoded_args", encoded_args_val)
@@ -193,12 +198,19 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
         returning = Return("TransactionInstruction(keys, program_id, data)")
         ix_fn = Function(
             ix.name,
-            [*args_container,
-             *accounts_container,
-             TypedParam("program_id", "PublicKey = PROGRAM_ID")],
+            [
+                *args_container,
+                *accounts_container,
+                TypedParam("program_id", "PublicKey = PROGRAM_ID"),
+                TypedParam(
+                    "remaining_accounts",
+                    "typing.Optional[typing.List[AccountMeta]] = None"
+                ),
+            ],
             Suite(
                 [
                     keys_assignment,
+                    remaining_accounts_concatenation,
                     identifier_assignment,
                     encoded_args_assignment,
                     data_assignment,

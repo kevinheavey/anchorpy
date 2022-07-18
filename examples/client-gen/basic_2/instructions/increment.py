@@ -11,12 +11,16 @@ class IncrementAccounts(typing.TypedDict):
 
 
 def increment(
-    accounts: IncrementAccounts, program_id: PublicKey = PROGRAM_ID
+    accounts: IncrementAccounts,
+    program_id: PublicKey = PROGRAM_ID,
+    remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["counter"], is_signer=False, is_writable=True),
         AccountMeta(pubkey=accounts["authority"], is_signer=True, is_writable=False),
     ]
+    if remaining_accounts is not None:
+        keys += remaining_accounts
     identifier = b"\x0b\x12h\th\xae;!"
     encoded_args = b""
     data = identifier + encoded_args
