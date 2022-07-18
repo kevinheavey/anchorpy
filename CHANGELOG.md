@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.4] - 2022-07-18
+
+### Fixed
+
+Add missing BorshPubkey import in generated client types [#(81)](https://github.com/kevinheavey/anchorpy/pull/81)
+
 ## [0.9.3] - 2022-07-06
 
 ### Changed
