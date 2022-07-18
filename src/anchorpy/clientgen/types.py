@@ -134,6 +134,7 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
         FromImport("dataclasses", ["dataclass"]),
         FromImport("construct", ["Container", "Construct"]),
         FromImport("solana.publickey", ["PublicKey"]),
+        FromImport("anchorpy.borsh_extension", ["BorshPubkey"]),
         ImportAs("borsh_construct", "borsh"),
     ]
     json_interface_name = _json_interface_name(name)

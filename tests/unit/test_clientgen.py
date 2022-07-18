@@ -37,6 +37,7 @@ def test_empty_fields() -> None:
         '\nfrom dataclasses import dataclass'
         '\nfrom construct import Container, Construct'
         '\nfrom solana.publickey import PublicKey'
+        '\nfrom anchorpy.borsh_extension import BorshPubkey'
         '\nimport borsh_construct as borsh'
         '\nclass AggregatorLockParamsJSON(typing.TypedDict):'
         '\n    pass'
