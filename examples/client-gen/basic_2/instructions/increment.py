@@ -10,7 +10,9 @@ class IncrementAccounts(typing.TypedDict):
     authority: PublicKey
 
 
-def increment(accounts: IncrementAccounts) -> TransactionInstruction:
+def increment(
+    accounts: IncrementAccounts, program_id: PublicKey = PROGRAM_ID
+) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["counter"], is_signer=False, is_writable=True),
         AccountMeta(pubkey=accounts["authority"], is_signer=True, is_writable=False),
@@ -18,4 +20,4 @@ def increment(accounts: IncrementAccounts) -> TransactionInstruction:
     identifier = b"\x0b\x12h\th\xae;!"
     encoded_args = b""
     data = identifier + encoded_args
-    return TransactionInstruction(keys, PROGRAM_ID, data)
+    return TransactionInstruction(keys, program_id, data)

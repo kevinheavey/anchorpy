@@ -82,7 +82,9 @@ class NestedNested(typing.TypedDict):
 
 
 def initialize_with_values(
-    args: InitializeWithValuesArgs, accounts: InitializeWithValuesAccounts
+    args: InitializeWithValuesArgs,
+    accounts: InitializeWithValuesAccounts,
+    program_id: PublicKey = PROGRAM_ID,
 ) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["state"], is_signer=True, is_writable=True),
@@ -135,4 +137,4 @@ def initialize_with_values(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, PROGRAM_ID, data)
+    return TransactionInstruction(keys, program_id, data)

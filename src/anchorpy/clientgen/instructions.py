@@ -94,7 +94,7 @@ def recurse_accounts(accs: list[_IdlAccountItem], nested_names: list[str]) -> li
 def gen_accounts(
     name,
     idl_accs: list[_IdlAccountItem],
-    extra_typeddicts: Optional[list[TypedDict]] = None,
+    extra_typeddicts: Optional[list[TypedDict]] = None
 ) -> list[TypedDict]:
     extra_typeddicts_to_use = [] if extra_typeddicts is None else extra_typeddicts
     params: list[TypedParam] = []
@@ -190,10 +190,12 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
         identifier_assignment = Assign("identifier", _sighash(ix.name))
         encoded_args_assignment = Assign("encoded_args", encoded_args_val)
         data_assignment = Assign("data", "identifier + encoded_args")
-        returning = Return("TransactionInstruction(keys, PROGRAM_ID, data)")
+        returning = Return("TransactionInstruction(keys, program_id, data)")
         ix_fn = Function(
             ix.name,
-            [*args_container, *accounts_container],
+            [*args_container,
+             *accounts_container,
+             TypedParam("program_id", "PublicKey = PROGRAM_ID")],
             Suite(
                 [
                     keys_assignment,

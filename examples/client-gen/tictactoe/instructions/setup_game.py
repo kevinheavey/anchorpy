@@ -21,7 +21,7 @@ class SetupGameAccounts(typing.TypedDict):
 
 
 def setup_game(
-    args: SetupGameArgs, accounts: SetupGameAccounts
+    args: SetupGameArgs, accounts: SetupGameAccounts, program_id: PublicKey = PROGRAM_ID
 ) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["game"], is_signer=True, is_writable=True),
@@ -37,4 +37,4 @@ def setup_game(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, PROGRAM_ID, data)
+    return TransactionInstruction(keys, program_id, data)

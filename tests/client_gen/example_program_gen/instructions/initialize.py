@@ -17,7 +17,9 @@ class NestedNested(typing.TypedDict):
     rent: PublicKey
 
 
-def initialize(accounts: InitializeAccounts) -> TransactionInstruction:
+def initialize(
+    accounts: InitializeAccounts, program_id: PublicKey = PROGRAM_ID
+) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["state"], is_signer=True, is_writable=True),
         AccountMeta(
@@ -34,4 +36,4 @@ def initialize(accounts: InitializeAccounts) -> TransactionInstruction:
     identifier = b"\xaf\xafm\x1f\r\x98\x9b\xed"
     encoded_args = b""
     data = identifier + encoded_args
-    return TransactionInstruction(keys, PROGRAM_ID, data)
+    return TransactionInstruction(keys, program_id, data)

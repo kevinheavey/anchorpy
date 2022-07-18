@@ -28,6 +28,7 @@ from tests.client_gen.example_program_gen.instructions import (
     cause_error,
 )
 from tests.client_gen.example_program_gen.accounts import State, State2
+from tests.client_gen.example_program_gen.program_id import PROGRAM_ID
 from tests.client_gen.example_program_gen.types import FooStruct, BarStruct
 from tests.client_gen.example_program_gen.types.foo_enum import (
     Named,
@@ -224,6 +225,8 @@ async def test_init_and_account_fetch(
         enum_field4=enum_field4_expected,
     )
     res = await State.fetch(provider.connection, state.public_key)
+    assert res == expected
+    res = await State.fetch(provider.connection, state.public_key, program_id=PROGRAM_ID)
     assert res == expected
 
 

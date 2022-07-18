@@ -19,7 +19,9 @@ class PlayAccounts(typing.TypedDict):
     player: PublicKey
 
 
-def play(args: PlayArgs, accounts: PlayAccounts) -> TransactionInstruction:
+def play(
+    args: PlayArgs, accounts: PlayAccounts, program_id: PublicKey = PROGRAM_ID
+) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["game"], is_signer=False, is_writable=True),
         AccountMeta(pubkey=accounts["player"], is_signer=True, is_writable=False),
@@ -31,4 +33,4 @@ def play(args: PlayArgs, accounts: PlayAccounts) -> TransactionInstruction:
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, PROGRAM_ID, data)
+    return TransactionInstruction(keys, program_id, data)
