@@ -169,6 +169,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
             TypedParam("conn", "AsyncClient"),
             TypedParam("address", "PublicKey"),
             TypedParam("commitment", "typing.Optional[Commitment] = None"),
+            TypedParam("program_id", "PublicKey = PROGRAM_ID"),
         ],
         Suite(
             [
@@ -179,7 +180,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                 Assign("info", 'resp["result"]["value"]'),
                 If("info is None", Return("None")),
                 If(
-                    'info["owner"] != str(PROGRAM_ID)',
+                    'info["owner"] != str(program_id)',
                     Raise('ValueError("Account does not belong to this program")'),
                 ),
                 Assign("bytes_data", 'b64decode(info["data"][0])'),
@@ -199,6 +200,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
             TypedParam("conn", "AsyncClient"),
             TypedParam("addresses", "list[PublicKey]"),
             TypedParam("commitment", "typing.Optional[Commitment] = None"),
+            TypedParam("program_id", "PublicKey = PROGRAM_ID"),
         ],
         Suite(
             [
@@ -220,7 +222,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                                 Suite([Statement("res.append(None)"), Continue()]),
                             ),
                             If(
-                                "info.account.owner != PROGRAM_ID",
+                                "info.account.owner != program_id",
                                 account_does_not_belong_raise,
                             ),
                             Statement("res.append(cls.decode(info.account.data))"),

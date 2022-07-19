@@ -23,7 +23,10 @@ class InitializeWithValues2Accounts(typing.TypedDict):
 
 
 def initialize_with_values2(
-    args: InitializeWithValues2Args, accounts: InitializeWithValues2Accounts
+    args: InitializeWithValues2Args,
+    accounts: InitializeWithValues2Accounts,
+    program_id: PublicKey = PROGRAM_ID,
+    remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["state"], is_signer=True, is_writable=True),
@@ -32,6 +35,8 @@ def initialize_with_values2(
             pubkey=accounts["system_program"], is_signer=False, is_writable=False
         ),
     ]
+    if remaining_accounts is not None:
+        keys += remaining_accounts
     identifier = b"\xf8\xbe\x15a\xef\x94'\xb5"
     encoded_args = layout.build(
         {
@@ -39,4 +44,4 @@ def initialize_with_values2(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, PROGRAM_ID, data)
+    return TransactionInstruction(keys, program_id, data)

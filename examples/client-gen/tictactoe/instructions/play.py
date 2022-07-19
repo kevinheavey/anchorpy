@@ -19,11 +19,18 @@ class PlayAccounts(typing.TypedDict):
     player: PublicKey
 
 
-def play(args: PlayArgs, accounts: PlayAccounts) -> TransactionInstruction:
+def play(
+    args: PlayArgs,
+    accounts: PlayAccounts,
+    program_id: PublicKey = PROGRAM_ID,
+    remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
+) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["game"], is_signer=False, is_writable=True),
         AccountMeta(pubkey=accounts["player"], is_signer=True, is_writable=False),
     ]
+    if remaining_accounts is not None:
+        keys += remaining_accounts
     identifier = b"\xd5\x9d\xc1\x8e\xe48\xf8\x96"
     encoded_args = layout.build(
         {
@@ -31,4 +38,4 @@ def play(args: PlayArgs, accounts: PlayAccounts) -> TransactionInstruction:
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, PROGRAM_ID, data)
+    return TransactionInstruction(keys, program_id, data)

@@ -82,7 +82,10 @@ class NestedNested(typing.TypedDict):
 
 
 def initialize_with_values(
-    args: InitializeWithValuesArgs, accounts: InitializeWithValuesAccounts
+    args: InitializeWithValuesArgs,
+    accounts: InitializeWithValuesAccounts,
+    program_id: PublicKey = PROGRAM_ID,
+    remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
 ) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["state"], is_signer=True, is_writable=True),
@@ -97,6 +100,8 @@ def initialize_with_values(
             pubkey=accounts["system_program"], is_signer=False, is_writable=False
         ),
     ]
+    if remaining_accounts is not None:
+        keys += remaining_accounts
     identifier = b"\xdcI\x08\xd5\xb2E\xb5\x8d"
     encoded_args = layout.build(
         {
@@ -135,4 +140,4 @@ def initialize_with_values(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, PROGRAM_ID, data)
+    return TransactionInstruction(keys, program_id, data)
