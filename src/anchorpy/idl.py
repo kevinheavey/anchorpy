@@ -88,6 +88,7 @@ class _IdlField:
 
     name: str = field(metadata=snake_case_conversion)
     type: _IdlType
+    docs: List[str] = field(default_factory=list)
 
 
 _IdlSeed = Any
@@ -106,6 +107,7 @@ class _IdlAccount:
     name: str = field(metadata=snake_case_conversion)
     is_mut: bool = field(metadata=alias("isMut"))
     is_signer: bool = field(metadata=alias("isSigner"))
+    docs: List[str] = field(default_factory=list)
     pda: Optional[_IdlPda] = None
 
 
@@ -115,6 +117,7 @@ class _IdlAccounts:
 
     name: str = field(metadata=snake_case_conversion)
     accounts: List["_IdlAccountItem"]
+    docs: List[str] = field(default_factory=list)
 
 
 _IdlAccountItem = Union[_IdlAccounts, _IdlAccount]
@@ -128,6 +131,7 @@ class _IdlInstruction:
     accounts: List[_IdlAccountItem]
     args: List[_IdlField]
     returns: Optional[_IdlType] = None
+    docs: List[str] = field(default_factory=list)
 
 
 _IdlEnumFieldsNamed = List[_IdlField]
@@ -171,6 +175,7 @@ class _IdlTypeDef:
 
     name: str
     type: _IdlTypeDefTy
+    docs: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -179,6 +184,7 @@ class _IdlAccountDef:
 
     name: str
     type: _IdlTypeDefTyStruct
+    docs: List[str] = field(default_factory=list)
 
 
 _IdlStateMethod = _IdlInstruction
@@ -258,6 +264,7 @@ class Idl:
     errors: List[_IdlErrorCode] = field(default_factory=list)
     constants: List[_IdlConstant] = field(default_factory=list)
     metadata: Optional[_Metadata] = None
+    docs: List[str] = field(default_factory=list)
 
     @classmethod
     def from_json(cls, idl: Dict[str, Any]) -> "Idl":
