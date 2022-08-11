@@ -134,7 +134,6 @@ class _IdlInstruction:
     docs: List[str] = field(default_factory=list)
 
 
-
 _IdlEnumFieldsNamed = List[_IdlField]
 _IdlEnumFieldsTuple = List[_IdlType]
 _IdlEnumFields = Union[_IdlEnumFieldsNamed, _IdlEnumFieldsTuple]
@@ -266,7 +265,6 @@ class Idl:
     constants: List[_IdlConstant] = field(default_factory=list)
     metadata: Optional[_Metadata] = None
     docs: List[str] = field(default_factory=list)
-
 
     @classmethod
     def from_json(cls, idl: Dict[str, Any]) -> "Idl":
