@@ -82,6 +82,12 @@ def test_quarry_mine(tmpdir: local) -> None:
     idl_path = Path("tests/idls/quarry_mine.json")
     client_gen(idl_path, out_dir, "placeholder")
 
+def test_merkle_distributor(tmpdir: local) -> None:
+    proj_dir = Path(tmpdir)
+    out_dir = proj_dir / "generated"
+    idl_path = Path("tests/idls/merkle_distributor.json")
+    client_gen(idl_path, out_dir, "placeholder")
+
 
 @fixture(scope="session")
 def project_dir(project_parent_dir: Path) -> Path:
