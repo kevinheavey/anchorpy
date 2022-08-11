@@ -25,6 +25,7 @@ from anchorpy.clientgen.genpy_extension import (
     IntDict,
     IntDictEntry,
 )
+from anchorpy.clientgen.common import _sanitize
 
 
 def gen_from_code_fn(has_custom_errors: bool) -> Function:
@@ -106,7 +107,7 @@ def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
     error_map_entries: list[IntDictEntry] = []
     for error in errors:
         code = error.code
-        name = error.name
+        name = _sanitize(error.name)
         maybe_msg = error.msg
         msg = None if maybe_msg is None else f'"{maybe_msg}"'
         init_body = Statement(f"super().__init__({code}, {msg})")
@@ -161,7 +162,7 @@ def gen_anchor_errors_code() -> str:
     classes: list[Class] = []
     error_map_entries: list[IntDictEntry] = []
     for variant in _LangErrorCode:
-        name = variant.name
+        name = _sanitize(variant.name)
         code = variant.value
         maybe_msg = LangErrorMessage.get(variant)
         msg = None if maybe_msg is None else f'"{maybe_msg}"'
