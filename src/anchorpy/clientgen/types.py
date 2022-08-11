@@ -529,7 +529,10 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
                 Suite(
                     [
                         val_line_for_from_decoded,
-                        Return(f"{_sanitize(variant.name)}({init_arg_for_from_decoded})"),
+                        Return(
+                            f"{_sanitize(variant.name)}"
+                            f"({init_arg_for_from_decoded})"
+                        ),
                     ]
                 )
             )

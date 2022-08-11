@@ -36,6 +36,7 @@ def _kind_interface_name(type_name: str) -> str:
 def _json_interface_name(type_name: str) -> str:
     return f"{type_name}JSON"
 
+
 def _sanitize(name: str) -> str:
     return f"{name}_" if keyword.iskeyword(name) else name
 
@@ -340,7 +341,7 @@ def _struct_field_initializer(
     field_type = field.type
     field_name = _sanitize(field.name)
     if isinstance(field_type, _IdlTypeDefined):
-        defined = _santitize(field_type.defined)
+        defined = _sanitize(field_type.defined)
         filtered = [t for t in idl.types if _sanitize(t.name) == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
