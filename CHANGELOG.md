@@ -2,6 +2,12 @@
 
 ## [0.10.0] - Unreleased
 
+### Added
+
+- Added support for docs in IDLs [#(88)](https://github.com/kevinheavey/anchorpy/pull/88)
+- Add first-class support for `remaining_accounts` [#(83)](https://github.com/kevinheavey/anchorpy/pull/83)
+- Allow dynamically overriding `program_id` [#(83)](https://github.com/kevinheavey/anchorpy/pull/83)
+
 ### Fixed
 
 - Fix identifiers clashing with Python keywords [#(87)](https://github.com/kevinheavey/anchorpy/pull/87)
