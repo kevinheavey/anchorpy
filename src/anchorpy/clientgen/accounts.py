@@ -40,6 +40,7 @@ from anchorpy.clientgen.common import (
     _field_from_decoded,
     _field_to_json,
     _field_from_json,
+    _sanitize
 )
 
 
@@ -66,18 +67,20 @@ def gen_index_file(idl: Idl, accounts_dir: Path) -> None:
 def gen_index_code(idl: Idl) -> str:
     imports: list[FromImport] = []
     for acc in idl.accounts:
+        acc_name = _sanitize(acc.name)
         members = [
-            acc.name,
-            _json_interface_name(acc.name),
+            acc_name,
+            _json_interface_name(acc_name),
         ]
-        imports.append(FromImport(f".{snake(acc.name)}", members))
+        module_name = _sanitize(snake(acc.name))
+        imports.append(FromImport(f".{module_name}", members))
     return str(Collection(imports))
 
 
 def gen_accounts_code(idl: Idl, accounts_dir: Path) -> dict[Path, str]:
     res = {}
     for acc in idl.accounts:
-        filename = f"{snake(acc.name)}.py"
+        filename = f"{_sanitize(snake(acc.name))}.py"
         path = accounts_dir / filename
         code = gen_account_code(acc, idl)
         res[path] = code
@@ -106,7 +109,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     fields_interface_params: list[TypedParam] = []
     json_interface_params: list[TypedParam] = []
     fields = acc.type.fields
-    name = acc.name
+    name = _sanitize(acc.name)
     json_interface_name = _json_interface_name(name)
     layout_items: list[str] = []
     init_body_assignments: list[Assign] = []
@@ -114,9 +117,10 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     to_json_entries: list[StrDictEntry] = []
     from_json_entries: list[NamedArg] = []
     for field in fields:
+        field_name = _sanitize(field.name)
         fields_interface_params.append(
             TypedParam(
-                field.name,
+                field_name,
                 _py_type_from_idl(
                     idl=idl,
                     ty=field.type,
@@ -127,32 +131,32 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         )
         json_interface_params.append(
             TypedParam(
-                field.name,
+                field_name,
                 _idl_type_to_json_type(ty=field.type, types_relative_imports=False),
             )
         )
         layout_items.append(
             _layout_for_type(
-                idl=idl, ty=field.type, name=field.name, types_relative_imports=False
+                idl=idl, ty=field.type, name=field_name, types_relative_imports=False
             )
         )
         init_body_assignments.append(
-            Assign(f"self.{field.name}", f'fields["{field.name}"]')
+            Assign(f"self.{field_name}", f'fields["{field_name}"]')
         )
         decode_body_entries.append(
             NamedArg(
-                field.name,
+                field_name,
                 _field_from_decoded(
                     idl=idl, ty=field, types_relative_imports=False, val_prefix="dec."
                 ),
             )
         )
         to_json_entries.append(
-            StrDictEntry(field.name, _field_to_json(idl, field, "self."))
+            StrDictEntry(field_name, _field_to_json(idl, field, "self."))
         )
         from_json_entries.append(
             NamedArg(
-                field.name,
+                field_name,
                 _field_from_json(idl=idl, ty=field, types_relative_imports=False),
             )
         )

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.0] - Unreleased
+
+### Fixed
+
+- Fix identifiers clashing with Python keywords [#(87)](https://github.com/kevinheavey/anchorpy/pull/87)
+
 ## [0.9.4] - 2022-07-18
 
 ### Fixed

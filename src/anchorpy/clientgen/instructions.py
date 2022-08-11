@@ -31,6 +31,7 @@ from anchorpy.clientgen.common import (
     _py_type_from_idl,
     _layout_for_type,
     _field_to_encodable,
+    _sanitize
 )
 
 
@@ -55,13 +56,14 @@ def gen_index_file(idl: Idl, instructions_dir: Path) -> None:
 def gen_index_code(idl: Idl) -> str:
     imports: list[FromImport] = []
     for ix in idl.instructions:
-        import_members: list[str] = [ix.name]
+        ix_name = _sanitize(ix.name)
+        import_members: list[str] = [ix_name]
         if ix.args:
             import_members.append(_args_interface_name(ix.name))
         if ix.accounts:
             import_members.append(_accounts_interface_name(ix.name))
         if import_members:
-            imports.append(FromImport(f".{ix.name}", import_members))
+            imports.append(FromImport(f".{ix_name}", import_members))
     return str(Collection(imports))
 
 
@@ -76,7 +78,7 @@ def _accounts_interface_name(ix_name: str) -> str:
 def recurse_accounts(accs: list[_IdlAccountItem], nested_names: list[str]) -> list[str]:
     elements: list[str] = []
     for acc in accs:
-        names = [*nested_names, acc.name]
+        names = [*nested_names, _sanitize(acc.name)]
         if isinstance(acc, _IdlAccounts):
             nested_accs = cast(_IdlAccounts, acc)
             elements.extend(recurse_accounts(nested_accs.accounts, names))
@@ -99,10 +101,11 @@ def gen_accounts(
     extra_typeddicts_to_use = [] if extra_typeddicts is None else extra_typeddicts
     params: list[TypedParam] = []
     for acc in idl_accs:
+        acc_name = _sanitize(acc.name)
         if isinstance(acc, _IdlAccounts):
             nested_accs = cast(_IdlAccounts, acc)
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
-            params.append(TypedParam(acc.name, f"{nested_acc_name}"))
+            params.append(TypedParam(acc_name, f"{nested_acc_name}"))
             extra_typeddicts_to_use = extra_typeddicts_to_use + (
                 gen_accounts(
                     nested_acc_name,
@@ -111,7 +114,7 @@ def gen_accounts(
                 )
             )
         else:
-            params.append(TypedParam(acc.name, "PublicKey"))
+            params.append(TypedParam(acc_name, "PublicKey"))
     maybe_typed_dict_container = [TypedDict(name, params)] if params else []
     return maybe_typed_dict_container + extra_typeddicts_to_use
 
@@ -131,15 +134,17 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
     ]
     result = {}
     for ix in idl.instructions:
-        filename = (out / ix.name).with_suffix(".py")
+        ix_name = _sanitize(ix.name)
+        filename = (out / ix_name).with_suffix(".py")
         args_interface_params: list[TypedParam] = []
         layout_items: list[str] = []
         encoded_args_entries: list[StrDictEntry] = []
         accounts_interface_name = _accounts_interface_name(ix.name)
         for arg in ix.args:
+            arg_name = _sanitize(arg.name)
             args_interface_params.append(
                 TypedParam(
-                    arg.name,
+                    arg_name,
                     _py_type_from_idl(
                         idl=idl,
                         ty=arg.type,
@@ -150,12 +155,12 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
             )
             layout_items.append(
                 _layout_for_type(
-                    idl=idl, ty=arg.type, name=arg.name, types_relative_imports=False
+                    idl=idl, ty=arg.type, name=arg_name, types_relative_imports=False
                 )
             )
             encoded_args_entries.append(
                 StrDictEntry(
-                    arg.name,
+                    arg_name,
                     _field_to_encodable(
                         idl=idl,
                         ty=arg,
@@ -166,7 +171,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
                 )
             )
         if ix.args:
-            args_interface_name = _args_interface_name(ix.name)
+            args_interface_name = _args_interface_name(ix_name)
             args_interface_container = [
                 TypedDict(args_interface_name, args_interface_params)
             ]
@@ -197,7 +202,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
         data_assignment = Assign("data", "identifier + encoded_args")
         returning = Return("TransactionInstruction(keys, program_id, data)")
         ix_fn = Function(
-            ix.name,
+            ix_name,
             [
                 *args_container,
                 *accounts_container,

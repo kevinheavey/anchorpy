@@ -52,6 +52,7 @@ from anchorpy.clientgen.common import (
     _field_to_encodable,
     _field_to_json,
     _field_from_json,
+    _sanitize
 )
 
 
@@ -76,11 +77,11 @@ def gen_index_code(idl: Idl) -> str:
     imports: list[TypingUnion[Import, FromImport]] = [Import("typing")]
     for ty in idl.types:
         ty_type = ty.type
-        module_name = snake(ty.name)
+        module_name = _sanitize(snake(ty.name))
         imports.append(FromImport(".", [module_name]))
         if isinstance(ty_type, _IdlTypeDefTyStruct):
             import_members = [
-                ty.name,
+                _sanitize(ty.name),
                 _json_interface_name(ty.name),
             ]
         else:
@@ -107,9 +108,10 @@ def gen_type_files(idl: Idl, types_dir: Path) -> None:
 
 def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
     res = {}
-    types_module_names = [snake(ty.name) for ty in idl.types]
+    types_module_names = [_sanitize(snake(ty.name)) for ty in idl.types]
     for ty in idl.types:
-        module_name = snake(ty.name)
+        ty_name = _sanitize(ty.name)
+        module_name = _sanitize(snake(ty.name))
         relative_import_items = [
             mod for mod in types_module_names if mod != module_name
         ]
@@ -118,9 +120,9 @@ def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
         )
         ty_type = ty.type
         body = (
-            gen_struct(idl, ty.name, ty_type.fields)
+            gen_struct(idl, ty_name, ty_type.fields)
             if isinstance(ty_type, _IdlTypeDefTyStruct)
-            else gen_enum(idl, ty.name, ty_type.variants)
+            else gen_enum(idl, ty_name, ty_type.variants)
         )
         code = str(Collection([ANNOTATIONS_IMPORT, *relative_import_container, body]))
         path = (out / module_name).with_suffix(".py")
@@ -146,9 +148,10 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
     to_json_items: list[str] = []
     from_json_items: list[str] = []
     for field in fields:
+        field_name = _sanitize(field.name)
         field_params.append(
             TypedParam(
-                field.name,
+                field_name,
                 _py_type_from_idl(
                     idl=idl,
                     ty=field.type,
@@ -159,19 +162,19 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
         )
         json_interface_params.append(
             TypedParam(
-                field.name,
+                field_name,
                 _idl_type_to_json_type(ty=field.type, types_relative_imports=True),
             )
         )
         layout_items.append(
             _layout_for_type(
-                idl=idl, ty=field.type, name=field.name, types_relative_imports=True
+                idl=idl, ty=field.type, name=field_name, types_relative_imports=True
             )
         )
         from_decoded_item_val = _field_from_decoded(
             idl=idl, ty=field, val_prefix="obj.", types_relative_imports=True
         )
-        from_decoded_items.append(f"{field.name}={from_decoded_item_val}")
+        from_decoded_items.append(f"{field_name}={from_decoded_item_val}")
         as_encodable = _field_to_encodable(
             idl=idl,
             ty=field,
@@ -179,12 +182,12 @@ def gen_struct(idl: Idl, name: str, fields: list[_IdlField]) -> Collection:
             val_suffix="",
             types_relative_imports=True,
         )
-        to_encodable_items.append(f'"{field.name}": {as_encodable}')
-        to_json_items.append(f'"{field.name}": {_field_to_json(idl, field, "self.")}')
+        to_encodable_items.append(f'"{field_name}": {as_encodable}')
+        to_json_items.append(f'"{field_name}": {_field_to_json(idl, field, "self.")}')
         field_from_json = _field_from_json(
             idl=idl, ty=field, types_relative_imports=True
         )
-        from_json_items.append(f"{field.name}={field_from_json}")
+        from_json_items.append(f"{field_name}={field_from_json}")
     json_interface = TypedDict(json_interface_name, json_interface_params)
     layout = f"borsh.CStruct({','.join(layout_items)})"
     args_for_from_decoded = ",".join(from_decoded_items)
@@ -239,9 +242,10 @@ class _NamedFieldRecord:
 def _make_named_field_record(
     named_field: _IdlField, idl: Idl, cast_obj_var_name: str
 ) -> _NamedFieldRecord:
+    named_field_name = _sanitize(named_field.name)
     return _NamedFieldRecord(
         field_type_alias_entry=TypedParam(
-            named_field.name,
+            named_field_name,
             _py_type_from_idl(
                 idl=idl,
                 ty=named_field.type,
@@ -250,7 +254,7 @@ def _make_named_field_record(
             ),
         ),
         value_type_alias_entry=TypedParam(
-            named_field.name,
+            named_field_name,
             _py_type_from_idl(
                 idl=idl,
                 ty=named_field.type,
@@ -259,15 +263,15 @@ def _make_named_field_record(
             ),
         ),
         json_interface_value_type_entry=TypedParam(
-            named_field.name,
+            named_field_name,
             _idl_type_to_json_type(ty=named_field.type, types_relative_imports=True),
         ),
         json_value_item=StrDictEntry(
-            named_field.name,
+            named_field_name,
             _field_to_json(idl, named_field, 'self.value["', val_suffix='"]'),
         ),
         encodable_value_item=StrDictEntry(
-            named_field.name,
+            named_field_name,
             _field_to_encodable(
                 idl=idl,
                 ty=named_field,
@@ -277,16 +281,16 @@ def _make_named_field_record(
             ),
         ),
         init_entry_for_from_decoded=NamedArg(
-            named_field.name,
+            named_field_name,
             _field_from_decoded(
                 idl=idl,
-                ty=_IdlField(f'val["{named_field.name}"]', named_field.type),
+                ty=_IdlField(f'val["{named_field_name}"]', named_field.type),
                 types_relative_imports=True,
                 val_prefix="",
             ),
         ),
         init_entry_for_from_json=NamedArg(
-            named_field.name,
+            named_field_name,
             _field_from_json(
                 idl=idl,
                 ty=named_field,
@@ -378,6 +382,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
     for idx, variant in enumerate(variants):
         discriminator = idx
         fields = variant.fields
+        variant_name = _sanitize(variant.name)
         value_interface_name = _value_interface_name(variant.name)
         json_interface_name = _json_interface_name(variant.name)
         json_interface_value_type_name = f"{json_interface_name}Value"
@@ -388,7 +393,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
         json_interface_kind_field = TypedParam(
             "kind", f'typing.Literal["{variant.name}"]'
         )
-        type_variants_members.append(variant.name)
+        type_variants_members.append(variant_name)
         json_variants_members.append(_json_interface_name(variant.name))
 
         def make_variant_name_in_obj_check(then: Generable) -> Generable:
@@ -524,12 +529,15 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
                 Suite(
                     [
                         val_line_for_from_decoded,
-                        Return(f"{variant.name}({init_arg_for_from_decoded})"),
+                        Return(
+                            f"{_sanitize(variant.name)}"
+                            f"({init_arg_for_from_decoded})"
+                        ),
                     ]
                 )
             )
             obj_kind_check = make_obj_kind_check(
-                f"{variant.name}({init_arg_for_from_json})",
+                f"{_sanitize(variant.name)}({init_arg_for_from_json})",
             )
         else:
             to_json_method = ClassMethod(
@@ -547,9 +555,9 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
             value_field_container = []
             json_interface_params = [json_interface_kind_field]
             variant_name_in_obj_check = make_variant_name_in_obj_check(
-                Return(f"{variant.name}()")
+                Return(f"{_sanitize(variant.name)}()")
             )
-            obj_kind_check = make_obj_kind_check(f"{variant.name}()")
+            obj_kind_check = make_obj_kind_check(f"{_sanitize(variant.name)}()")
         json_interfaces.append(TypedDict(json_interface_name, json_interface_params))
         class_common_attrs = [
             Assign("discriminator: typing.ClassVar", discriminator),
@@ -562,7 +570,7 @@ def gen_enum(idl: Idl, name: str, variants: list[_IdlEnumVariant]) -> Collection
             to_json_method,
             to_encodable_method,
         ]
-        classes.append(Dataclass(variant.name, attrs))
+        classes.append(Dataclass(_sanitize(variant.name), attrs))
         variant_name_in_obj_checks.append(variant_name_in_obj_check)
         obj_kind_checks.append(obj_kind_check)
         cstructs.append(f'"{variant.name}" / {_make_cstruct(cstruct_fields)}')
