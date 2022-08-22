@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.1] - Unreleased
+
+### Fixed
+
+- Remove vestigial sumtypes dep
+
 ## [0.10.0] - 2022-08-11
 
 ### Added
