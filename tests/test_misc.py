@@ -228,11 +228,13 @@ async def test_can_close_account(
     open_account = await program.provider.connection.get_account_info(
         initialized_keypair.public_key,
     )
-    assert open_account["result"]["value"] is not None
+    assert open_account.value is not None
     before_balance_raw = await program.provider.connection.get_account_info(
         program.provider.wallet.public_key,
     )
-    before_balance = before_balance_raw["result"]["value"]["lamports"]
+    before_balance_res = before_balance_raw.value
+    assert before_balance_res is not None
+    before_balance = before_balance_res.lamports
     await program.rpc["test_close"](
         ctx=Context(
             accounts={
@@ -244,12 +246,14 @@ async def test_can_close_account(
     after_balance_raw = await program.provider.connection.get_account_info(
         program.provider.wallet.public_key,
     )
-    after_balance = after_balance_raw["result"]["value"]["lamports"]
+    after_balance_res = after_balance_raw.value
+    assert after_balance_res is not None
+    after_balance = after_balance_res.lamports
     assert after_balance > before_balance
     closed_account = await program.provider.connection.get_account_info(
         initialized_keypair.public_key,
     )
-    assert closed_account["result"]["value"] is None
+    assert closed_account.value is None
 
 
 @mark.asyncio
@@ -680,7 +684,7 @@ async def test_can_fetch_all_accounts_of_a_given_type(
         another_program.provider.wallet.public_key,
         lamports_per_sol,
     )
-    signature = tx_res["result"]
+    signature = tx_res.value
     await program.provider.connection.confirm_transaction(signature)
     # Create all the accounts.
     tasks = [
@@ -737,7 +741,7 @@ async def test_can_fetch_all_accounts_of_a_given_type(
     all_accounts_filtered_by_program_filters1 = await program.account[
         "DataWithFilter"
     ].all(
-        memcmp_opts=[
+        filters=[
             MemcmpOpts(offset=8, bytes=str(program.provider.wallet.public_key)),
             MemcmpOpts(offset=40, bytes=str(filterable1)),
         ],
@@ -745,7 +749,7 @@ async def test_can_fetch_all_accounts_of_a_given_type(
     all_accounts_filtered_by_program_filters2 = await program.account[
         "DataWithFilter"
     ].all(
-        memcmp_opts=[
+        filters=[
             MemcmpOpts(offset=8, bytes=str(program.provider.wallet.public_key)),
             MemcmpOpts(offset=40, bytes=str(filterable2)),
         ],

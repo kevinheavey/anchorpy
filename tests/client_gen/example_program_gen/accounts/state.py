@@ -111,12 +111,12 @@ class State:
         program_id: PublicKey = PROGRAM_ID,
     ) -> typing.Optional["State"]:
         resp = await conn.get_account_info(address, commitment=commitment)
-        info = resp["result"]["value"]
+        info = resp.value
         if info is None:
             return None
-        if info["owner"] != str(program_id):
+        if info.owner != program_id.to_solders():
             raise ValueError("Account does not belong to this program")
-        bytes_data = b64decode(info["data"][0])
+        bytes_data = info.data
         return cls.decode(bytes_data)
 
     @classmethod

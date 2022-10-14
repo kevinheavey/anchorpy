@@ -38,7 +38,7 @@ async def create_mint_instructions(
     provider: Provider, authority: PublicKey, mint: PublicKey
 ) -> tuple[TransactionInstruction, TransactionInstruction]:
     mbre_resp = await provider.connection.get_minimum_balance_for_rent_exemption(82)
-    lamports = mbre_resp["result"]
+    lamports = mbre_resp.value
     return (
         create_account(
             CreateAccountParams(

@@ -9,6 +9,7 @@ from more_itertools import unique_everseen
 from construct import Int64ul
 from pyserum.instructions import InitializeMarketParams
 from solana.keypair import Keypair
+from solana.blockhash import Blockhash
 from solana.publickey import PublicKey
 from solana.transaction import AccountMeta, Transaction, TransactionInstruction
 from solana.rpc.async_api import AsyncClient
@@ -160,11 +161,11 @@ async def sign_transactions(
     wallet: Wallet,
     client: AsyncClient,
 ) -> list[Transaction]:
-    blockhash_resp = await client.get_recent_blockhash(Finalized)
-    recent_blockhash = blockhash_resp["result"]["value"]["blockhash"]
+    blockhash_resp = await client.get_latest_blockhash(Finalized)
+    recent_blockhash = blockhash_resp.value.blockhash
     txs = []
     for transaction, signers in transactions_and_signers:
-        transaction.recent_blockhash = recent_blockhash
+        transaction.recent_blockhash = Blockhash(str(recent_blockhash))
         all_signers = list(unique_everseen([wallet.payer] + signers))
         transaction.sign(*all_signers)
         txs.append(transaction)
@@ -234,7 +235,7 @@ async def list_market(
         CreateAccountParams(
             from_pubkey=wallet.public_key,
             new_account_pubkey=base_vault.public_key,
-            lamports=base_vault_mbre_resp["result"],
+            lamports=base_vault_mbre_resp.value,
             space=base_vault_space,
             program_id=TOKEN_PROGRAM_ID,
         ),
@@ -243,7 +244,7 @@ async def list_market(
         CreateAccountParams(
             from_pubkey=wallet.public_key,
             new_account_pubkey=quote_vault.public_key,
-            lamports=base_vault_mbre_resp["result"],
+            lamports=base_vault_mbre_resp.value,
             space=base_vault_space,
             program_id=TOKEN_PROGRAM_ID,
         ),
@@ -277,7 +278,7 @@ async def list_market(
         CreateAccountParams(
             from_pubkey=wallet.public_key,
             new_account_pubkey=market.public_key,
-            lamports=market_mbre_resp["result"],
+            lamports=market_mbre_resp.value,
             space=market_space,
             program_id=DEX_PID,
         ),
@@ -290,7 +291,7 @@ async def list_market(
         CreateAccountParams(
             from_pubkey=wallet.public_key,
             new_account_pubkey=request_queue.public_key,
-            lamports=request_queue_mbre_resp["result"],
+            lamports=request_queue_mbre_resp.value,
             space=request_queue_space,
             program_id=DEX_PID,
         ),
@@ -303,7 +304,7 @@ async def list_market(
         CreateAccountParams(
             from_pubkey=wallet.public_key,
             new_account_pubkey=event_queue.public_key,
-            lamports=event_queue_mbre_resp["result"],
+            lamports=event_queue_mbre_resp.value,
             space=event_queue_space,
             program_id=DEX_PID,
         ),
@@ -316,7 +317,7 @@ async def list_market(
         CreateAccountParams(
             from_pubkey=wallet.public_key,
             new_account_pubkey=bids.public_key,
-            lamports=bids_mbre_resp["result"],
+            lamports=bids_mbre_resp.value,
             space=bids_space,
             program_id=DEX_PID,
         ),
@@ -325,7 +326,7 @@ async def list_market(
         CreateAccountParams(
             from_pubkey=wallet.public_key,
             new_account_pubkey=asks.public_key,
-            lamports=bids_mbre_resp["result"],
+            lamports=bids_mbre_resp.value,
             space=bids_space,
             program_id=DEX_PID,
         ),
@@ -612,12 +613,12 @@ async def swap_usdc_to_a_and_init_open_orders(
     amount_to_spend = expected_resultant_amount * best_offer_price
     swap_amount = int((amount_to_spend / (1 - TAKER_FEE)) * ONE_MILLION)
     side = program.type["Side"]
-    mbfre_resp = (
+    mbre_resp = (
         await program.provider.connection.get_minimum_balance_for_rent_exemption(
             OPEN_ORDERS_LAYOUT.sizeof()
         )
     )
-    balance_needed = mbfre_resp["result"]
+    balance_needed = mbre_resp.value
     instructions = [
         make_create_account_instruction(
             owner_address=program.provider.wallet.public_key,
