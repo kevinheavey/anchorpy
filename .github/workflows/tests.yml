@@ -7,7 +7,7 @@ on:
 
 env:
   solana_verion: 1.10.8
-  anchor_version: 0.24.2
+  anchor_version: 0.25.0
 
 jobs:
   tests:
