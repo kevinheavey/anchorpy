@@ -1,8 +1,8 @@
 """This module contains code for generating RPC functions."""
 from typing import Any, Awaitable, Dict, Protocol
 from solana.rpc.core import RPCException
+from solders.signature import Signature
 
-from solana.transaction import TransactionSignature
 from anchorpy.error import ProgramError
 
 from anchorpy.program.context import EMPTY_CONTEXT, Context, _check_args_length
@@ -18,7 +18,7 @@ class _RpcFn(Protocol):
         self,
         *args: Any,
         ctx: Context = EMPTY_CONTEXT,
-    ) -> Awaitable[TransactionSignature]:
+    ) -> Awaitable[Signature]:
         """Call the function (this is just a protocol declaration).
 
         Args:
@@ -47,7 +47,7 @@ def _build_rpc_item(  # ts: RpcFactory
         The RPC function.
     """
 
-    async def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> TransactionSignature:
+    async def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> Signature:
         tx = tx_fn(*args, ctx=ctx)
         _check_args_length(idl_ix, args)
         try:

@@ -5,6 +5,7 @@ from asyncio import gather
 from typing import Any, Optional, NamedTuple
 from solana.rpc.core import RPCException
 from toolz import partition_all, concat
+from solders.signature import Signature
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
@@ -12,7 +13,6 @@ from solana.transaction import (
     AccountMeta,
     Transaction,
     TransactionInstruction,
-    TransactionSignature,
 )
 import zstandard
 import jsonrpcclient
@@ -46,7 +46,7 @@ async def invoke(
     provider: Provider,
     accounts: Optional[list[AccountMeta]] = None,
     data: Optional[bytes] = None,
-) -> TransactionSignature:
+) -> Signature:
     """Send a transaction to a program with the given accounts and instruction data.
 
     Args:

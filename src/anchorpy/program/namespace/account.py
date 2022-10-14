@@ -2,7 +2,7 @@
 import base64
 from dataclasses import dataclass
 from based58 import b58encode
-from typing import Any, Optional, Dict, List
+from typing import Any, Optional, Dict, List, Union, Sequence
 
 from construct import Container
 from solana.keypair import Keypair
@@ -101,9 +101,9 @@ class AccountClient(object):
             encoding="base64",
             commitment=commitment,
         )
-        if not account_info["result"]["value"]:
+        if not account_info.value:
             raise AccountDoesNotExistError(f"Account {address} does not exist")
-        data = base64.b64decode(account_info["result"]["value"]["data"][0])
+        data = account_info.value.data
         discriminator = _account_discriminator(self._idl_account.name)
         if discriminator != data[:ACCOUNT_DISCRIMINATOR_SIZE]:
             msg = f"Account {address} has an invalid discriminator"
@@ -168,7 +168,7 @@ class AccountClient(object):
                 from_pubkey=self._provider.wallet.public_key,
                 new_account_pubkey=signer.public_key,
                 space=space,
-                lamports=mbre_resp["result"],
+                lamports=mbre_resp.value,
                 program_id=self._program_id,
             )
         )
@@ -176,8 +176,7 @@ class AccountClient(object):
     async def all(
         self,
         buffer: Optional[bytes] = None,
-        memcmp_opts: Optional[list[MemcmpOpts]] = None,
-        data_size: Optional[int] = None,
+        filters: Optional[Sequence[Union[int, MemcmpOpts]]] = None,
     ) -> list[ProgramAccount]:
         """Return all instances of this account type for the program.
 
@@ -185,8 +184,8 @@ class AccountClient(object):
             buffer: bytes filter to append to the discriminator.
             memcmp_opts: Options to compare a provided series of bytes with program
                 account data at a particular offset.
-            data_size: Option to compare the program account data length with the
-                provided data size.
+            filters: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
+                Note: an int entry is converted to a `dataSize` filter.
         """
         all_accounts = []
         discriminator = _account_discriminator(self._idl_account.name)
@@ -196,21 +195,18 @@ class AccountClient(object):
             offset=0,
             bytes=bytes_arg,
         )
-        extra_memcmpm_opts = [] if memcmp_opts is None else memcmp_opts
-        full_memcmp_opts = [base_memcmp_opt] + extra_memcmpm_opts
+        filters_to_use = [base_memcmp_opt] + [] if filters is None else filters
         resp = await self._provider.connection.get_program_accounts(
             self._program_id,
             encoding="base64",
             commitment=self.provider.connection._commitment,  # noqa: WPS437
-            data_size=data_size,
-            memcmp_opts=full_memcmp_opts,
+            filters=filters_to_use,
         )
-        for r in resp["result"]:
-            account_data = r["account"]["data"][0]
-            account_data = base64.b64decode(account_data)
+        for r in resp.value:
+            account_data = r.account.data
             all_accounts.append(
                 ProgramAccount(
-                    public_key=PublicKey(r["pubkey"]),
+                    public_key=PublicKey.from_solders(r.pubkey),
                     account=self._coder.accounts.decode(account_data),
                 ),
             )

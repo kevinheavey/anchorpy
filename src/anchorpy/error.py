@@ -2,14 +2,9 @@
 from __future__ import annotations
 from typing import Union, Optional, cast
 from enum import IntEnum
-from solana.rpc.types import RPCError
-
-
-class _ExtendedRPCError(RPCError):
-    """RPCError with extra fields."""
-
-    data: dict
-    logs: list[str]
+from solders.rpc.responses import RPCError
+from solders.transaction_status import TransactionErrorInstructionError, InstructionErrorCustom
+from solders.rpc.errors import SendTransactionPreflightFailureMessage, NodeUnhealthyMessage, MinContextSlotNotReachedMessage
 
 
 class AccountDoesNotExistError(Exception):
@@ -213,7 +208,7 @@ class ProgramError(Exception):
     @classmethod
     def parse(
         cls,
-        err_info: Union[RPCError, _ExtendedRPCError],
+        err_info: RPCError,
         idl_errors: dict[int, str],
     ) -> Optional[ProgramError]:
         """Convert an RPC error into a ProgramError, if possible.
@@ -225,19 +220,19 @@ class ProgramError(Exception):
         Returns:
             A ProgramError or None.
         """
-        try:  # noqa: WPS229
-            err_data = cast(_ExtendedRPCError, err_info)["data"]
-            custom_err_code = err_data["err"]["InstructionError"][1]["Custom"]
-            logs = cast(Optional[list[str]], err_data.get("logs"))
-        except (KeyError, TypeError):
-            return None
-        # parse user error
-        msg = idl_errors.get(custom_err_code)
-        if msg is not None:
-            return cls(custom_err_code, msg, logs)
-        # parse framework internal error
-        msg = LangErrorMessage.get(custom_err_code)
-        if msg is not None:
-            return cls(custom_err_code, msg, logs)
-        # Unable to parse the error. Just return the untranslated error.
+        if isinstance(err_info, SendTransactionPreflightFailureMessage):
+            err_data = err_info.data
+            err_data_err = err_data.err
+            logs = err_data.logs
+            if isinstance(err_data_err, InstructionErrorCustom):
+                custom_err_code = err_data_err.code
+                # parse user error
+                msg = idl_errors.get(custom_err_code)
+                if msg is not None:
+                    return cls(custom_err_code, msg, logs)
+                # parse framework internal error
+                msg = LangErrorMessage.get(custom_err_code)
+                if msg is not None:
+                    return cls(custom_err_code, msg, logs)
+        # Unable to parse the error.
         return None
