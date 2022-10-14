@@ -74,6 +74,9 @@ jobs:
       - name: install Anchor CLI
         run: npm install -g @project-serum/anchor-cli@${{ env.anchor_version }}
 
+      - name: check CLI Anchor installation
+        run: anchor -V
+
       - name: Generate local keypair
         run: solana-keygen new --no-bip39-passphrase
 
