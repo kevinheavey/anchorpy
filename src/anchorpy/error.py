@@ -1,9 +1,12 @@
 """This module handles AnchorPy errors."""
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Dict
 from enum import IntEnum
 from solders.rpc.responses import RPCError
-from solders.transaction_status import InstructionErrorCustom, TransactionErrorInstructionError
+from solders.transaction_status import (
+    InstructionErrorCustom,
+    TransactionErrorInstructionError
+)
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 
 
@@ -87,7 +90,7 @@ class _LangErrorCode(IntEnum):
     Deprecated = 5000
 
 
-LangErrorMessage = {
+LangErrorMessage: Dict[int, str] = {
     # Instructions.
     _LangErrorCode.InstructionMissing: "8 byte instruction identifier not provided",
     _LangErrorCode.InstructionFallbackNotFound: "Fallback functions are not supported",
@@ -231,10 +234,10 @@ class ProgramError(Exception):
                     # parse user error
                     msg = idl_errors.get(custom_err_code)
                     if msg is not None:
-                        return cls(custom_err_code, msg, logs)
+                        return cls(custom_err_code, msg, logs)  # noqa: WPS220
                     # parse framework internal error
                     msg = LangErrorMessage.get(custom_err_code)
                     if msg is not None:
-                        return cls(custom_err_code, msg, logs)
+                        return cls(custom_err_code, msg, logs)  # noqa: WPS220
         # Unable to parse the error.
         return None
