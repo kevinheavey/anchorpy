@@ -68,7 +68,7 @@ jobs:
         run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
       - name: install Anchor CLI
-        run: cargo install anchor-cli --version ${{ env.anchor_version }}
+        run: cargo install anchor-cli --version ${{ env.anchor_version }} && cargo update -p proc-macro2 --precise 1.0.43
 
       - name: check CLI Anchor installation
         run: anchor -V
