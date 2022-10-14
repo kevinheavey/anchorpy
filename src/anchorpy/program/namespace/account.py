@@ -1,5 +1,4 @@
 """Provides the `AccountClient` class."""
-import base64
 from dataclasses import dataclass
 from based58 import b58encode
 from typing import Any, Optional, Dict, List, Union, Sequence
@@ -182,9 +181,8 @@ class AccountClient(object):
 
         Args:
             buffer: bytes filter to append to the discriminator.
-            memcmp_opts: Options to compare a provided series of bytes with program
-                account data at a particular offset.
-            filters: (optional) Options to compare a provided series of bytes with program account data at a particular offset.
+            filters: (optional) Options to compare a provided series of bytes with
+                program account data at a particular offset.
                 Note: an int entry is converted to a `dataSize` filter.
         """
         all_accounts = []

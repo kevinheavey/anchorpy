@@ -7,14 +7,14 @@ import json
 from types import MappingProxyType
 from typing import List, Optional, Union, NamedTuple
 
-from solders.rpc.responses import SimulateTransactionResp, SendTransactionResp
+from solders.rpc.responses import SimulateTransactionResp
 from solders.signature import Signature
 from more_itertools import unique_everseen
 from solana.keypair import Keypair
 from solana.rpc import types
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized, Processed, Confirmed
-from solana.transaction import Transaction, TransactionSignature
+from solana.transaction import Transaction
 from solana.publickey import PublicKey
 from solana.blockhash import Blockhash
 

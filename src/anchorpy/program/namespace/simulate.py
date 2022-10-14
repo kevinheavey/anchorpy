@@ -1,7 +1,7 @@
 """This module contains code for creating simulate functions."""
-from typing import Dict, Any, NamedTuple, Union, cast, Protocol, Awaitable
+from typing import Dict, Any, NamedTuple, Protocol, Awaitable
 
-from solders.rpc.responses import RPCError, SimulateTransactionResp
+from solders.rpc.responses import SimulateTransactionResp
 
 
 from anchorpy.coder.coder import Coder

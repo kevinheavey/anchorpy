@@ -1,6 +1,5 @@
 """Mimics anchor/tests/misc/tests/misc.js."""
 from dataclasses import dataclass
-from base64 import b64decode
 from pytest import mark, fixture
 from construct import Int32sl, Int64ul
 from anchorpy import Program, Context
