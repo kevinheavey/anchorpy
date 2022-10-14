@@ -1,6 +1,5 @@
 import typing
 from dataclasses import dataclass
-from base64 import b64decode
 from construct import Construct
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
