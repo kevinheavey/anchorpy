@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional
 from enum import IntEnum
 from solders.rpc.responses import RPCError
-from solders.transaction_status import InstructionErrorCustom
+from solders.transaction_status import InstructionErrorCustom, TransactionErrorInstructionError
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 
 
@@ -224,15 +224,17 @@ class ProgramError(Exception):
             err_data = err_info.data
             err_data_err = err_data.err
             logs = err_data.logs
-            if isinstance(err_data_err, InstructionErrorCustom):
-                custom_err_code = err_data_err.code
-                # parse user error
-                msg = idl_errors.get(custom_err_code)
-                if msg is not None:
-                    return cls(custom_err_code, msg, logs)
-                # parse framework internal error
-                msg = LangErrorMessage.get(custom_err_code)
-                if msg is not None:
-                    return cls(custom_err_code, msg, logs)
+            if isinstance(err_data_err, TransactionErrorInstructionError):
+                instruction_err = err_data_err.err
+                if isinstance(instruction_err, InstructionErrorCustom):
+                    custom_err_code = instruction_err.code
+                    # parse user error
+                    msg = idl_errors.get(custom_err_code)
+                    if msg is not None:
+                        return cls(custom_err_code, msg, logs)
+                    # parse framework internal error
+                    msg = LangErrorMessage.get(custom_err_code)
+                    if msg is not None:
+                        return cls(custom_err_code, msg, logs)
         # Unable to parse the error.
         return None

@@ -54,7 +54,9 @@ def _build_rpc_item(  # ts: RpcFactory
             return await provider.send(tx, ctx.signers, ctx.options)
         except RPCException as e:
             err_info = e.args[0]
+            print(f"err_info: {err_info}")
             translated_err = ProgramError.parse(err_info, idl_errors)
+            print(f"translated_err: {translated_err}")
             if translated_err is not None:
                 raise translated_err from e
             raise
