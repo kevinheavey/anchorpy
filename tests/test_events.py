@@ -32,11 +32,11 @@ async def test_initialize(program: Program) -> None:
         await websocket.recv()
         await program.rpc["initialize"]()
         received = await websocket.recv()
-        assert isinstance(received, LogsNotification)
-        logs = cast(list[str], received.result.value.logs)
+        first = received[0]
+        assert isinstance(first, LogsNotification)
+        logs = first.result.value.logs
         parser = EventParser(program.program_id, program.coder)
         parsed = []
-        print(logs)
         parser.parse_logs(logs, lambda evt: parsed.append(evt))
         event = parsed[0]
         assert event.data.data == 5
