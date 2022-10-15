@@ -8,7 +8,6 @@ from genpy import (
     Return,
     Assign,
     If,
-    For,
     Import,
     Function as UntypedFunction,
     Statement,
@@ -18,7 +17,6 @@ from anchorpy.error import _LangErrorCode, LangErrorMessage
 from anchorpy.clientgen.genpy_extension import (
     Function,
     TypedParam,
-    Try,
     Union,
     InitMethod,
     Class,
@@ -49,8 +47,10 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
 
 def gen_from_tx_error_fn(has_custom_errors: bool) -> Function:
     err_info_assign = Assign("err_info", "error.args[0]")
-    err_code_assign = Assign("error_code", "extract_error_code(err_info, PROGRAM_ID)")
-    null_code_check = If('error_code is None', Return(None))
+    err_code_assign = Assign(
+        "error_code", "extract_code_and_logs(err_info, PROGRAM_ID)"
+    )
+    null_code_check = If("error_code is None", Return(None))
     final_return = Return("from_code(error_code)")
     fn_body = Suite(
         [
@@ -75,7 +75,9 @@ def gen_from_tx_error_fn(has_custom_errors: bool) -> Function:
 
 def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
     typing_import = Import("typing")
-    error_import = FromImport("anchorpy.error", ["ProgramError", "extract_error_code"])
+    error_import = FromImport(
+        "anchorpy.error", ["ProgramError", "extract_code_and_logs"]
+    )
     error_names: list[str] = []
     classes: list[Class] = []
     error_map_entries: list[IntDictEntry] = []
@@ -186,9 +188,16 @@ def gen_index_code(idl: Idl) -> str:
     has_custom_errors = bool(idl.errors)
     typing_import = Import("typing")
     rpc_exception_import = FromImport("solana.rpc.core", ["RPCException"])
-    tx_status_import = FromImport("solders.transaction_status", ["InstructionErrorCustom", "TransactionErrorInstructionError"])
-    preflight_error_import = FromImport("solders.rpc.errors", ["SendTransactionPreflightFailureMessage"])
-    extract_error_code_import = FromImport("anchorpy.error", ["extract_error_code"])
+    tx_status_import = FromImport(
+        "solders.transaction_status",
+        ["InstructionErrorCustom", "TransactionErrorInstructionError"],
+    )
+    preflight_error_import = FromImport(
+        "solders.rpc.errors", ["SendTransactionPreflightFailureMessage"]
+    )
+    extract_code_and_logs_import = FromImport(
+        "anchorpy.error", ["extract_code_and_logs"]
+    )
     program_id_import = FromImport("..program_id", ["PROGRAM_ID"])
     anchor_import = FromImport(".", ["anchor"])
     re_import = Import("re")
@@ -198,7 +207,7 @@ def gen_index_code(idl: Idl) -> str:
         tx_status_import,
         rpc_exception_import,
         preflight_error_import,
-        extract_error_code_import,
+        extract_code_and_logs_import,
         program_id_import,
         anchor_import,
     ]

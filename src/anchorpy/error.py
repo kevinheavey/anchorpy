@@ -1,14 +1,15 @@
 """This module handles AnchorPy errors."""
 from __future__ import annotations
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple, List
 import re
 from enum import IntEnum
 from solders.rpc.responses import RPCError
 from solders.transaction_status import (
     InstructionErrorCustom,
-    TransactionErrorInstructionError
+    TransactionErrorInstructionError,
 )
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
+from solana.publickey import PublicKey
 
 
 class AccountDoesNotExistError(Exception):
@@ -226,9 +227,10 @@ class ProgramError(Exception):
         Returns:
             A ProgramError or None.
         """
-        code = extract_error_code(err_info, program_id)
-        if code is None:
+        extracted = extract_code_and_logs(err_info, program_id)
+        if extracted is None:
             return None
+        code, logs = extracted
         msg = idl_errors.get(code)
         if msg is not None:
             return cls(code, msg, logs)
@@ -239,18 +241,23 @@ class ProgramError(Exception):
         # Unable to parse the error.
         return None
 
+
 error_re = re.compile(r"Program (\w+) failed: custom program error: (\w+)")
 
-def _find_first_match(logs: list[str]) -> typing.Optional[re.Match]:
+
+def _find_first_match(logs: list[str]) -> Optional[re.Match]:
     for logline in logs:
         first_match = error_re.match(logline)
         if first_match is not None:
             return first_match
     return None
 
-def extract_error_code(err_info: RPCError, program_id: PublicKey) -> Optional[int]:
+
+def extract_code_and_logs(
+    err_info: RPCError, program_id: PublicKey
+) -> Optional[Tuple[int, List[str]]]:
     """Extract the custom instruction error code from an RPC response.
-    
+
     Args:
         err_info: The RPC error.
         program_id: The ID of the program we expect the error to come from.
