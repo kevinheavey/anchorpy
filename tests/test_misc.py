@@ -370,7 +370,7 @@ async def test_can_create_a_token_account_from_seeds_pda(program: Program) -> No
 async def test_can_execute_fallback_function(program: Program) -> None:
     with raises(RPCException) as excinfo:
         await invoke(program.program_id, program.provider)
-    assert "custom program error: 0x4d2" in excinfo.value.args[0]["message"]
+    assert "custom program error: 0x4d2" in excinfo.value.args[0].message
 
 
 @mark.asyncio
