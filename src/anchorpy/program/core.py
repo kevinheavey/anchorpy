@@ -1,7 +1,6 @@
 """This module defines the Program class."""
 from __future__ import annotations
 from typing import Any, Optional
-from base64 import b64decode
 import zlib
 import json
 
@@ -200,7 +199,7 @@ class Program(object):
         if account_info_val is None:
             raise IdlNotFoundError(f"IDL not found for program: {address}")
         idl_account = _decode_idl_account(
-            b64decode(account_info_val.data)[ACCOUNT_DISCRIMINATOR_SIZE:]
+            account_info_val.data[ACCOUNT_DISCRIMINATOR_SIZE:]
         )
         inflated_idl = _pako_inflate(bytes(idl_account["data"])).decode()
         return json.loads(inflated_idl)
