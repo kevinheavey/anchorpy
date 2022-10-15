@@ -1,8 +1,9 @@
 """This module contains code for generating RPC functions."""
 from typing import Any, Awaitable, Dict, Protocol
 from solana.rpc.core import RPCException
+from solders.signature import Signature
+from solana.publickey import PublicKey
 
-from solana.transaction import TransactionSignature
 from anchorpy.error import ProgramError
 
 from anchorpy.program.context import EMPTY_CONTEXT, Context, _check_args_length
@@ -18,7 +19,7 @@ class _RpcFn(Protocol):
         self,
         *args: Any,
         ctx: Context = EMPTY_CONTEXT,
-    ) -> Awaitable[TransactionSignature]:
+    ) -> Awaitable[Signature]:
         """Call the function (this is just a protocol declaration).
 
         Args:
@@ -34,6 +35,7 @@ def _build_rpc_item(  # ts: RpcFactory
     tx_fn: _TransactionFn,
     idl_errors: Dict[int, str],
     provider: Provider,
+    program_id: PublicKey,
 ) -> _RpcFn:
     """Build the function that sends transactions for the given method.
 
@@ -42,19 +44,20 @@ def _build_rpc_item(  # ts: RpcFactory
         tx_fn: The function that generates the `Transaction` to send.
         idl_errors: Mapping of error code to error message.
         provider: Anchor Provider instance.
+        program_id: The ID of the Anchor program.
 
     Returns:
         The RPC function.
     """
 
-    async def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> TransactionSignature:
+    async def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> Signature:
         tx = tx_fn(*args, ctx=ctx)
         _check_args_length(idl_ix, args)
         try:
             return await provider.send(tx, ctx.signers, ctx.options)
         except RPCException as e:
             err_info = e.args[0]
-            translated_err = ProgramError.parse(err_info, idl_errors)
+            translated_err = ProgramError.parse(err_info, idl_errors, program_id)
             if translated_err is not None:
                 raise translated_err from e
             raise

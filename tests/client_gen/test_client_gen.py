@@ -8,6 +8,8 @@ from pytest import fixture, mark
 from py.path import local
 from pytest_asyncio import fixture as async_fixture
 from construct import ListContainer
+from solders.rpc.errors import SendTransactionPreflightFailureMessage
+from solders.rpc.responses import SimulateTransactionResp
 from solana.keypair import Keypair
 from solana.rpc.async_api import AsyncClient
 from solana.transaction import Transaction
@@ -233,7 +235,9 @@ async def test_init_and_account_fetch(
     )
     res = await State.fetch(provider.connection, state.public_key)
     assert res == expected
-    res = await State.fetch(provider.connection, state.public_key, program_id=PROGRAM_ID)
+    res = await State.fetch(
+        provider.connection, state.public_key, program_id=PROGRAM_ID
+    )
     assert res == expected
 
 
@@ -437,9 +441,13 @@ async def test_cause_error(provider: Provider) -> None:
 
 
 def test_null_err_when_cpi_fails() -> None:
-    err_mock = RPCException(
-        {
+    to_dump = {
+        "jsonrpc": "2.0",
+        "error": {
+            "code": -32002,
+            "message": "",
             "data": {
+                "err": {"InstructionError": [0, {"Custom": 3}]},
                 "logs": [
                     "Program 3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8 invoke [1]",
                     "Program log: Instruction: CauseError",
@@ -448,17 +456,25 @@ def test_null_err_when_cpi_fails() -> None:
                     "Program 11111111111111111111111111111111 failed: custom program error: 0x3",
                     "Program 3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8 consumed 7958 of 1400000 compute units",
                     "Program 3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8 failed: custom program error: 0x3",
-                ]
-            }
-        }
-    )
+                ],
+            },
+        },
+    }
+    raw = json.dumps(to_dump)
+    parsed = SimulateTransactionResp.from_json(raw)
+    assert isinstance(parsed, SendTransactionPreflightFailureMessage)
+    err_mock = RPCException(parsed)
     assert from_tx_error(err_mock) is None
 
 
 def test_parses_anchor_error() -> None:
-    err_mock = RPCException(
-        {
+    to_dump = {
+        "jsonrpc": "2.0",
+        "error": {
+            "code": -32002,
+            "message": "",
             "data": {
+                "err": {"InstructionError": [0, {"Custom": 3008}]},
                 "logs": [
                     "Program 3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8 invoke [1]",
                     "Program log: Instruction: CauseError",
@@ -469,10 +485,14 @@ def test_parses_anchor_error() -> None:
                     "Program log: 11111111111111111111111111111111",
                     "Program 3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8 consumed 5043 of 1400000 compute units",
                     "Program 3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8 failed: custom program error: 0xbc0",
-                ]
-            }
-        }
-    )
+                ],
+            },
+        },
+    }
+    raw = json.dumps(to_dump)
+    parsed = SimulateTransactionResp.from_json(raw)
+    assert isinstance(parsed, SendTransactionPreflightFailureMessage)
+    err_mock = RPCException(parsed)
     assert isinstance(from_tx_error(err_mock), InvalidProgramId)
 
 

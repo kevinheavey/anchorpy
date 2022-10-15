@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "anchorpy"
-version = "0.10.0"
+version = "0.11.0"
 description = "The Python Anchor client."
 readme = "README.md"
 repository = "https://github.com/kevinheavey/anchorpy"
@@ -10,7 +10,7 @@ authors = ["kevinheavey <kevinheavey123@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 construct-typing = "^0.5.1"
-solana = "^0.25.0"
+solana = "^0.27.2"
 apischema = "^0.17.5"
 borsh-construct = "^0.1.0"
 websockets = "^10.0"
@@ -27,6 +27,7 @@ ipython = { version = "^8.0.1", optional = true }
 genpy = {version = "^2021.1", optional = true }
 black = {version = "^22.3.0", optional = true }
 autoflake = { version = "^1.4", optional = true }
+based58 = "^0.1.1"
 
 [tool.poetry.extras]
 cli = ["typer", "ipython", "genpy", "black", "autoflake"]

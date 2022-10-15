@@ -1,11 +1,11 @@
 """This module contains code for creating simulate functions."""
-from typing import Dict, Any, NamedTuple, Union, cast, Protocol, Awaitable
+from typing import Dict, Any, NamedTuple, Protocol, Awaitable
 
-from solana.rpc.types import RPCError
+from solders.rpc.responses import SimulateTransactionResp
 
 
 from anchorpy.coder.coder import Coder
-from anchorpy.error import _ExtendedRPCError, ProgramError
+from anchorpy.error import ProgramError
 from anchorpy.idl import _IdlInstruction, Idl
 from anchorpy.program.event import EventParser, Event
 from anchorpy.program.namespace.transaction import _TransactionFn
@@ -73,15 +73,15 @@ def _build_simulate_item(
         tx = tx_fn(*args, ctx=ctx)
         _check_args_length(idl_ix, args)
         resp = await provider.simulate(tx, ctx.signers, ctx.options)
-        try:
-            ok_res = resp["result"]
-        except KeyError:
-            err_res = cast(Union[_ExtendedRPCError, RPCError], resp["error"])
+        if isinstance(resp, SimulateTransactionResp):
+            ok_res = resp.value
+        else:
+            err_res = resp.error
             translated_err = ProgramError.parse(err_res, idl_errors)
             if translated_err is not None:
                 raise translated_err
             raise RPCException(err_res)
-        logs = ok_res["value"]["logs"]
+        logs = ok_res.logs or []
         events = []
         if idl.events is not None:
             parser = EventParser(program_id, coder)

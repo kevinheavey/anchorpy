@@ -7,13 +7,16 @@ import json
 from types import MappingProxyType
 from typing import List, Optional, Union, NamedTuple
 
+from solders.rpc.responses import SimulateTransactionResp
+from solders.signature import Signature
 from more_itertools import unique_everseen
 from solana.keypair import Keypair
 from solana.rpc import types
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Finalized, Processed, Confirmed
-from solana.transaction import Transaction, TransactionSignature
+from solana.transaction import Transaction
 from solana.publickey import PublicKey
+from solana.blockhash import Blockhash
 
 
 class SendTxRequest(NamedTuple):
@@ -94,7 +97,7 @@ class Provider:
         tx: Transaction,
         signers: Optional[list[Keypair]] = None,
         opts: types.TxOpts = None,
-    ) -> types.RPCResponse:
+    ) -> SimulateTransactionResp:
         """Simulate the given transaction, returning emitted logs from execution.
 
         Args:
@@ -110,10 +113,10 @@ class Provider:
             signers = []
         if opts is None:
             opts = self.opts
-        recent_blockhash_resp = await self.connection.get_recent_blockhash(
+        recent_blockhash_resp = await self.connection.get_latest_blockhash(
             Finalized,
         )
-        tx.recent_blockhash = recent_blockhash_resp["result"]["value"]["blockhash"]
+        tx.recent_blockhash = Blockhash(str(recent_blockhash_resp.value.blockhash))
         tx.fee_payer = self.wallet.public_key
         all_signers = list(unique_everseen([self.wallet.payer, *signers]))
         tx.sign(*all_signers)
@@ -126,7 +129,7 @@ class Provider:
         tx: Transaction,
         signers: Optional[list[Keypair]] = None,
         opts: types.TxOpts = None,
-    ) -> TransactionSignature:
+    ) -> Signature:
         """Send the given transaction, paid for and signed by the provider's wallet.
 
         Args:
@@ -145,13 +148,13 @@ class Provider:
         tx.fee_payer = self.wallet.public_key
         all_signers = list(unique_everseen([self.wallet.payer, *signers]))
         resp = await self.connection.send_transaction(tx, *all_signers, opts=opts)
-        return resp["result"]
+        return resp.value
 
     async def send_all(
         self,
         reqs: list[Union[Transaction, SendTxRequest]],
         opts: Optional[types.TxOpts] = None,
-    ) -> list[TransactionSignature]:
+    ) -> list[Signature]:
         """Similar to `send`, but for an array of transactions and signers.
 
         Args:
@@ -178,7 +181,7 @@ class Provider:
             resp = await self.connection.send_raw_transaction(
                 signed.serialize(), opts=opts
             )
-            sigs.append(resp["result"])
+            sigs.append(resp.value)
         return sigs
 
     async def __aenter__(self) -> Provider:

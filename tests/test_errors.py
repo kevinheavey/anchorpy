@@ -107,7 +107,7 @@ async def test_signer_err(program: Program) -> None:
     with raises(RPCException) as excinfo:
         await program.provider.send(tx)
     assert (
-        excinfo.value.args[0]["message"]
+        excinfo.value.args[0].message
         == "Transaction simulation failed: Error processing "
         "Instruction 0: custom program error: 0xbc2"
     )

@@ -1,6 +1,5 @@
 import typing
 from dataclasses import dataclass
-from base64 import b64decode
 from construct import Construct
 from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
@@ -33,12 +32,12 @@ class State2:
         program_id: PublicKey = PROGRAM_ID,
     ) -> typing.Optional["State2"]:
         resp = await conn.get_account_info(address, commitment=commitment)
-        info = resp["result"]["value"]
+        info = resp.value
         if info is None:
             return None
-        if info["owner"] != str(program_id):
+        if info.owner != program_id.to_solders():
             raise ValueError("Account does not belong to this program")
-        bytes_data = b64decode(info["data"][0])
+        bytes_data = info.data
         return cls.decode(bytes_data)
 
     @classmethod

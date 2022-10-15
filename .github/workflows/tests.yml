@@ -6,8 +6,8 @@ on:
     branches: [main]
 
 env:
-  solana_verion: 1.10.8
-  anchor_version: 0.24.2
+  solana_verion: 1.14.3
+  anchor_version: 0.25.0
 
 jobs:
   tests:
@@ -67,12 +67,11 @@ jobs:
       - name: Add Solana to path
         run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "17"
-
       - name: install Anchor CLI
-        run: npm install -g @project-serum/anchor-cli@${{ env.anchor_version }}
+        run: cargo install anchor-cli --version ${{ env.anchor_version }}
+
+      - name: check CLI Anchor installation
+        run: anchor -V
 
       - name: Generate local keypair
         run: solana-keygen new --no-bip39-passphrase

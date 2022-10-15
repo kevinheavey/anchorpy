@@ -91,7 +91,6 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     base_imports = [
         Import("typing"),
         FromImport("dataclasses", ["dataclass"]),
-        FromImport("base64", ["b64decode"]),
         FromImport("construct", ["Construct"]),
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("solana.rpc.async_api", ["AsyncClient"]),
@@ -181,13 +180,13 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                     "resp",
                     "await conn.get_account_info(address, commitment=commitment)",
                 ),
-                Assign("info", 'resp["result"]["value"]'),
+                Assign("info", 'resp.value'),
                 If("info is None", Return("None")),
                 If(
-                    'info["owner"] != str(program_id)',
+                    'info.owner != program_id.to_solders()',
                     Raise('ValueError("Account does not belong to this program")'),
                 ),
-                Assign("bytes_data", 'b64decode(info["data"][0])'),
+                Assign("bytes_data", 'info.data'),
                 Return("cls.decode(bytes_data)"),
             ]
         ),

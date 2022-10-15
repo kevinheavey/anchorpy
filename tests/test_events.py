@@ -4,9 +4,9 @@ Note: this is unfinished.
 """
 from typing import cast
 from pytest import mark, fixture
+from solders.rpc.config import RpcTransactionLogsFilter
+from solders.rpc.responses import LogsNotification
 from solana.rpc.websocket_api import connect, SolanaWsClientProtocol
-from solana.rpc.request_builder import LogsSubscribeFilter
-from solana.rpc.responses import LogsNotification
 from anchorpy import (
     Program,
     EventParser,
@@ -28,15 +28,15 @@ def program(workspace: WorkspaceType) -> Program:
 @mark.asyncio
 async def test_initialize(program: Program) -> None:
     async with cast(SolanaWsClientProtocol, connect()) as websocket:  # type: ignore
-        await websocket.logs_subscribe(LogsSubscribeFilter.ALL)
+        await websocket.logs_subscribe(RpcTransactionLogsFilter.All)
         await websocket.recv()
         await program.rpc["initialize"]()
         received = await websocket.recv()
-        notification = cast(LogsNotification, received)
-        logs = cast(list[str], notification.result.value.logs)
+        first = received[0]
+        assert isinstance(first, LogsNotification)
+        logs = first.result.value.logs
         parser = EventParser(program.program_id, program.coder)
         parsed = []
-        print(logs)
         parser.parse_logs(logs, lambda evt: parsed.append(evt))
         event = parsed[0]
         assert event.data.data == 5

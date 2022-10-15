@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from typer.testing import CliRunner
+from solders.signature import Signature
 from solana.rpc.api import Client
 from solana.rpc.commitment import Processed
 
@@ -22,6 +23,6 @@ def test_shell(localnet, monkeypatch) -> None:
     result = runner.invoke(app, ["shell"], input=cli_input)
     assert result.exit_code == 0
     assert "Hint: type `workspace`" in result.stdout
-    tx_sig = result.stdout.split("Out[1]: '")[1].split("'")[0]
+    tx_sig = Signature.from_string(result.stdout.split("Out[1]: \n")[1].split("\n    ")[1].split(",")[0])
     client = Client()
     client.confirm_transaction(tx_sig, commitment=Processed)

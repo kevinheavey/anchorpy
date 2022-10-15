@@ -1,15 +1,15 @@
 """This module handles AnchorPy errors."""
 from __future__ import annotations
-from typing import Union, Optional, cast
+from typing import Optional, Dict, Tuple, List
+import re
 from enum import IntEnum
-from solana.rpc.types import RPCError
-
-
-class _ExtendedRPCError(RPCError):
-    """RPCError with extra fields."""
-
-    data: dict
-    logs: list[str]
+from solders.rpc.responses import RPCError
+from solders.transaction_status import (
+    InstructionErrorCustom,
+    TransactionErrorInstructionError,
+)
+from solders.rpc.errors import SendTransactionPreflightFailureMessage
+from solana.publickey import PublicKey
 
 
 class AccountDoesNotExistError(Exception):
@@ -92,7 +92,7 @@ class _LangErrorCode(IntEnum):
     Deprecated = 5000
 
 
-LangErrorMessage = {
+LangErrorMessage: Dict[int, str] = {
     # Instructions.
     _LangErrorCode.InstructionMissing: "8 byte instruction identifier not provided",
     _LangErrorCode.InstructionFallbackNotFound: "Fallback functions are not supported",
@@ -213,31 +213,70 @@ class ProgramError(Exception):
     @classmethod
     def parse(
         cls,
-        err_info: Union[RPCError, _ExtendedRPCError],
+        err_info: RPCError,
         idl_errors: dict[int, str],
+        program_id: PublicKey,
     ) -> Optional[ProgramError]:
         """Convert an RPC error into a ProgramError, if possible.
 
         Args:
-            err_info: The plain RPC error.
+            err_info: The RPC error.
             idl_errors: Errors from the IDL file.
+            program_id: The ID of the program we expect the error to come from.
 
         Returns:
             A ProgramError or None.
         """
-        try:  # noqa: WPS229
-            err_data = cast(_ExtendedRPCError, err_info)["data"]
-            custom_err_code = err_data["err"]["InstructionError"][1]["Custom"]
-            logs = cast(Optional[list[str]], err_data.get("logs"))
-        except (KeyError, TypeError):
+        extracted = extract_code_and_logs(err_info, program_id)
+        if extracted is None:
             return None
-        # parse user error
-        msg = idl_errors.get(custom_err_code)
+        code, logs = extracted
+        msg = idl_errors.get(code)
         if msg is not None:
-            return cls(custom_err_code, msg, logs)
+            return cls(code, msg, logs)
         # parse framework internal error
-        msg = LangErrorMessage.get(custom_err_code)
+        msg = LangErrorMessage.get(code)
         if msg is not None:
-            return cls(custom_err_code, msg, logs)
-        # Unable to parse the error. Just return the untranslated error.
+            return cls(code, msg, logs)
+        # Unable to parse the error.
         return None
+
+
+error_re = re.compile(r"Program (\w+) failed: custom program error: (\w+)")
+
+
+def _find_first_match(logs: list[str]) -> Optional[re.Match]:
+    for logline in logs:
+        first_match = error_re.match(logline)
+        if first_match is not None:
+            return first_match
+    return None
+
+
+def extract_code_and_logs(
+    err_info: RPCError, program_id: PublicKey
+) -> Optional[Tuple[int, List[str]]]:
+    """Extract the custom instruction error code from an RPC response.
+
+    Args:
+        err_info: The RPC error.
+        program_id: The ID of the program we expect the error to come from.
+    """
+    if isinstance(err_info, SendTransactionPreflightFailureMessage):
+        err_data = err_info.data
+        err_data_err = err_data.err
+        logs = err_data.logs
+        if logs is None:
+            return None
+        if isinstance(err_data_err, TransactionErrorInstructionError):
+            instruction_err = err_data_err.err
+            if isinstance(instruction_err, InstructionErrorCustom):
+                code = instruction_err.code
+                first_match = _find_first_match(logs)
+                if first_match is None:
+                    return None
+                program_id_raw, _ = first_match.groups()
+                if program_id_raw != str(program_id):
+                    return None
+                return code, logs
+    return None

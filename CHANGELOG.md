@@ -1,10 +1,14 @@
 # Changelog
 
-## [0.10.1] - Unreleased
+## [0.11.0] - 2022-10-15
+
+### Changed
+
+- Use latest solana-py [#(92)](https://github.com/kevinheavey/anchorpy/pull/92)
 
 ### Fixed
 
-- Remove vestigial sumtypes dep
+- Remove vestigial sumtypes dep [#(91)](https://github.com/kevinheavey/anchorpy/pull/91)
 
 ## [0.10.0] - 2022-08-11
 

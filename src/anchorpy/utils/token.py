@@ -1,11 +1,10 @@
 """This module contains utilities for the SPL Token Program."""
 from typing import Optional
+from solders.rpc.responses import GetAccountInfoResp
 from solana.publickey import PublicKey
 from solana.keypair import Keypair
-from solana.rpc.types import RPCResponse
 from solana.transaction import Transaction, TransactionInstruction
 from solana.system_program import create_account, CreateAccountParams
-from solana.utils.helpers import decode_byte_string
 from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.instructions import (
     initialize_mint,
@@ -58,7 +57,7 @@ async def create_token_account_instrs(
         Transaction instructions to create the new account.
     """
     mbre_resp = await provider.connection.get_minimum_balance_for_rent_exemption(165)
-    lamports = mbre_resp["result"]
+    lamports = mbre_resp.value
     return (
         create_account(
             CreateAccountParams(
@@ -105,7 +104,7 @@ async def create_mint_and_vault(
     create_mint_mbre_resp = (
         await provider.connection.get_minimum_balance_for_rent_exemption(mint_space)
     )
-    create_mint_mbre = create_mint_mbre_resp["result"]
+    create_mint_mbre = create_mint_mbre_resp.value
     create_mint_account_params = CreateAccountParams(
         from_pubkey=provider.wallet.public_key,
         new_account_pubkey=mint.public_key,
@@ -128,7 +127,7 @@ async def create_mint_and_vault(
     create_vault_mbre_resp = (
         await provider.connection.get_minimum_balance_for_rent_exemption(vault_space)
     )
-    create_vault_mbre = create_vault_mbre_resp["result"]
+    create_vault_mbre = create_vault_mbre_resp.value
     create_vault_account_instruction = create_account(
         CreateAccountParams(
             from_pubkey=provider.wallet.public_key,
@@ -166,7 +165,7 @@ async def create_mint_and_vault(
     return mint.public_key, vault.public_key
 
 
-def parse_token_account(info: RPCResponse) -> AccountInfo:
+def parse_token_account(info: GetAccountInfoResp) -> AccountInfo:
     """Parse `AccountInfo` from RPC response.
 
     Args:
@@ -179,13 +178,14 @@ def parse_token_account(info: RPCResponse) -> AccountInfo:
     Returns:
         The parsed `AccountInfo`.
     """
-    if not info:
+    val = info.value
+    if not val:
         raise ValueError("Invalid account owner")
 
-    if info["result"]["value"]["owner"] != str(TOKEN_PROGRAM_ID):
+    if val.owner != TOKEN_PROGRAM_ID.to_solders():
         raise AttributeError("Invalid account owner")
 
-    bytes_data = decode_byte_string(info["result"]["value"]["data"][0])
+    bytes_data = val.data
     if len(bytes_data) != ACCOUNT_LAYOUT.sizeof():
         raise ValueError("Invalid account size")
 
@@ -262,7 +262,7 @@ async def get_mint_info(
     return parse_mint_account(depositor_acc_info_raw)
 
 
-def parse_mint_account(info: RPCResponse) -> MintInfo:
+def parse_mint_account(info: GetAccountInfoResp) -> MintInfo:
     """Parse raw RPC response into `MintInfo`.
 
     Args:
@@ -275,11 +275,14 @@ def parse_mint_account(info: RPCResponse) -> MintInfo:
     Returns:
         The parsed `MintInfo`.
     """
-    owner = info["result"]["value"]["owner"]
-    if owner != str(TOKEN_PROGRAM_ID):
+    val = info.value
+    if val is None:
+        raise ValueError("Account does not exist.")
+    owner = val.owner
+    if owner != TOKEN_PROGRAM_ID.to_solders():
         raise AttributeError(f"Invalid mint owner: {owner}")
 
-    bytes_data = decode_byte_string(info["result"]["value"]["data"][0])
+    bytes_data = val.data
     if len(bytes_data) != MINT_LAYOUT.sizeof():
         raise ValueError("Invalid mint size")
 

@@ -1,6 +1,5 @@
 """Mimics anchor/tests/misc/tests/misc.js."""
 from dataclasses import dataclass
-from base64 import b64decode
 from pytest import mark, fixture
 from construct import Int32sl, Int64ul
 from anchorpy import Program, Context
@@ -50,7 +49,7 @@ async def create_price_feed(
                         from_pubkey=oracle_program.provider.wallet.public_key,
                         new_account_pubkey=collateral_token_feed.public_key,
                         space=3312,
-                        lamports=mbre_resp["result"],
+                        lamports=mbre_resp.value,
                         program_id=oracle_program.program_id,
                     ),
                 ),
@@ -93,7 +92,10 @@ async def get_feed_data(
         price_feed,
         encoding="base64",
     )
-    return parse_price_data(b64decode(info["result"]["value"]["data"][0]))
+    val = info.value
+    if val is None:
+        raise ValueError("Account does not exist.")
+    return parse_price_data(val.data)
 
 
 @mark.asyncio
