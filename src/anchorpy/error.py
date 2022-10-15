@@ -1,6 +1,7 @@
 """This module handles AnchorPy errors."""
 from __future__ import annotations
 from typing import Optional, Dict
+import re
 from enum import IntEnum
 from solders.rpc.responses import RPCError
 from solders.transaction_status import (
@@ -213,31 +214,60 @@ class ProgramError(Exception):
         cls,
         err_info: RPCError,
         idl_errors: dict[int, str],
+        program_id: PublicKey,
     ) -> Optional[ProgramError]:
         """Convert an RPC error into a ProgramError, if possible.
 
         Args:
-            err_info: The plain RPC error.
+            err_info: The RPC error.
             idl_errors: Errors from the IDL file.
+            program_id: The ID of the program we expect the error to come from.
 
         Returns:
             A ProgramError or None.
         """
-        if isinstance(err_info, SendTransactionPreflightFailureMessage):
-            err_data = err_info.data
-            err_data_err = err_data.err
-            logs = err_data.logs
-            if isinstance(err_data_err, TransactionErrorInstructionError):
-                instruction_err = err_data_err.err
-                if isinstance(instruction_err, InstructionErrorCustom):
-                    custom_err_code = instruction_err.code
-                    # parse user error
-                    msg = idl_errors.get(custom_err_code)
-                    if msg is not None:
-                        return cls(custom_err_code, msg, logs)  # noqa: WPS220
-                    # parse framework internal error
-                    msg = LangErrorMessage.get(custom_err_code)
-                    if msg is not None:
-                        return cls(custom_err_code, msg, logs)  # noqa: WPS220
+        code = extract_error_code(err_info, program_id)
+        if code is None:
+            return None
+        msg = idl_errors.get(code)
+        if msg is not None:
+            return cls(code, msg, logs)
+        # parse framework internal error
+        msg = LangErrorMessage.get(code)
+        if msg is not None:
+            return cls(code, msg, logs)
         # Unable to parse the error.
         return None
+
+error_re = re.compile(r"Program (\w+) failed: custom program error: (\w+)")
+
+def _find_first_match(logs: list[str]) -> typing.Optional[re.Match]:
+    for logline in logs:
+        first_match = error_re.match(logline)
+        if first_match is not None:
+            return first_match
+    return None
+
+def extract_error_code(err_info: RPCError, program_id: PublicKey) -> Optional[int]:
+    """Extract the custom instruction error code from an RPC response.
+    
+    Args:
+        err_info: The RPC error.
+        program_id: The ID of the program we expect the error to come from.
+    """
+    if isinstance(err_info, SendTransactionPreflightFailureMessage):
+        err_data = err_info.data
+        err_data_err = err_data.err
+        logs = err_data.logs
+        if isinstance(err_data_err, TransactionErrorInstructionError):
+            instruction_err = err_data_err.err
+            if isinstance(instruction_err, InstructionErrorCustom):
+                code = instruction_err.code
+                first_match = _find_first_match(logs)
+                if first_match is None:
+                    return None
+                program_id_raw, _ = first_match.groups()
+                if program_id_raw != str(program_id):
+                    return None
+                return code
+    return None

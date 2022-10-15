@@ -47,42 +47,16 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
     )
 
 
-def gen_find_first_match_fn() -> Function:
-    regex_match = Assign("first_match", "error_re.match(logline)")
-    return_if_match = If("first_match is not None", Return("first_match"))
-    loop_body = Suite([regex_match, return_if_match])
-    for_loop = For("logline", "logs", loop_body)
-    return Function(
-        "_find_first_match",
-        [TypedParam("logs", "list[str]")],
-        Suite([for_loop, Return("None")]),
-        "typing.Optional[re.Match]",
-    )
-
-
 def gen_from_tx_error_fn(has_custom_errors: bool) -> Function:
     err_info_assign = Assign("err_info", "error.args[0]")
-    has_data_block = If('"data" not in err_info', Return(None))
-    has_logs_block = If('"logs" not in err_info["data"]', Return(None))
-    no_match = If("first_match is None", Return("None"))
-    assign_program_id_and_code = Assign(
-        "program_id_raw, code_raw", "first_match.groups()"
-    )
-    program_id_check = If("program_id_raw != str(PROGRAM_ID)", Return("None"))
-    parse_error_code = Try(
-        Assign("error_code", "int(code_raw, 16)"), "ValueError", Return("None")
-    )
+    err_code_assign = Assign("error_code", "extract_error_code(err_info, PROGRAM_ID)")
+    null_code_check = If('error_code is None', Return(None))
     final_return = Return("from_code(error_code)")
     fn_body = Suite(
         [
             err_info_assign,
-            has_data_block,
-            has_logs_block,
-            Assign("first_match", '_find_first_match(err_info["data"]["logs"])'),
-            no_match,
-            assign_program_id_and_code,
-            program_id_check,
-            parse_error_code,
+            err_code_assign,
+            null_code_check,
             final_return,
         ]
     )
@@ -101,7 +75,7 @@ def gen_from_tx_error_fn(has_custom_errors: bool) -> Function:
 
 def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
     typing_import = Import("typing")
-    error_import = FromImport("anchorpy.error", ["ProgramError"])
+    error_import = FromImport("anchorpy.error", ["ProgramError", "extract_error_code"])
     error_names: list[str] = []
     classes: list[Class] = []
     error_map_entries: list[IntDictEntry] = []
@@ -212,13 +186,17 @@ def gen_index_code(idl: Idl) -> str:
     has_custom_errors = bool(idl.errors)
     typing_import = Import("typing")
     rpc_exception_import = FromImport("solana.rpc.core", ["RPCException"])
+    tx_status_import = FromImport("solders.transaction_status", ["InstructionErrorCustom", "TransactionErrorInstructionError"])
+    preflight_error_import = FromImport("solders.rpc.errors", ["SendTransactionPreflightFailureMessage"])
     program_id_import = FromImport("..program_id", ["PROGRAM_ID"])
     anchor_import = FromImport(".", ["anchor"])
     re_import = Import("re")
     base_import_lines = [
         typing_import,
         re_import,
+        tx_status_import,
         rpc_exception_import,
+        preflight_error_import,
         program_id_import,
         anchor_import,
     ]
@@ -235,7 +213,6 @@ def gen_index_code(idl: Idl) -> str:
                 *import_lines,
                 from_code_fn,
                 error_re_line,
-                gen_find_first_match_fn(),
                 from_tx_error_fn,
             ]
         )

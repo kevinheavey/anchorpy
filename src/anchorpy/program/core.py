@@ -81,7 +81,7 @@ def _build_namespace(  # noqa: WPS320
 
         ix_item = _InstructionFn(idl_ix, coder.instruction.build, program_id)
         tx_item = _build_transaction_fn(idl_ix, ix_item)
-        rpc_item = _build_rpc_item(idl_ix, tx_item, idl_errors, provider)
+        rpc_item = _build_rpc_item(idl_ix, tx_item, idl_errors, provider, program_id)
         simulate_item = _build_simulate_item(
             idl_ix,
             tx_item,
