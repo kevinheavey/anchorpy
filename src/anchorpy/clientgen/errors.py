@@ -188,6 +188,7 @@ def gen_index_code(idl: Idl) -> str:
     rpc_exception_import = FromImport("solana.rpc.core", ["RPCException"])
     tx_status_import = FromImport("solders.transaction_status", ["InstructionErrorCustom", "TransactionErrorInstructionError"])
     preflight_error_import = FromImport("solders.rpc.errors", ["SendTransactionPreflightFailureMessage"])
+    extract_error_code_import = FromImport("anchorpy.error", ["extract_error_code"])
     program_id_import = FromImport("..program_id", ["PROGRAM_ID"])
     anchor_import = FromImport(".", ["anchor"])
     re_import = Import("re")
@@ -197,6 +198,7 @@ def gen_index_code(idl: Idl) -> str:
         tx_status_import,
         rpc_exception_import,
         preflight_error_import,
+        extract_error_code_import,
         program_id_import,
         anchor_import,
     ]
