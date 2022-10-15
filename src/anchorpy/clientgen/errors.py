@@ -48,10 +48,10 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
 def gen_from_tx_error_fn(has_custom_errors: bool) -> Function:
     err_info_assign = Assign("err_info", "error.args[0]")
     err_code_assign = Assign(
-        "error_code", "extract_code_and_logs(err_info, PROGRAM_ID)"
+        "extracted", "extract_code_and_logs(err_info, PROGRAM_ID)"
     )
-    null_code_check = If("error_code is None", Return(None))
-    final_return = Return("from_code(error_code)")
+    null_code_check = If("extracted is None", Return(None))
+    final_return = Return("from_code(extracted[0])")
     fn_body = Suite(
         [
             err_info_assign,

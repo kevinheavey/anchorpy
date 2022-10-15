@@ -266,6 +266,8 @@ def extract_code_and_logs(
         err_data = err_info.data
         err_data_err = err_data.err
         logs = err_data.logs
+        if logs is None:
+            return None
         if isinstance(err_data_err, TransactionErrorInstructionError):
             instruction_err = err_data_err.err
             if isinstance(instruction_err, InstructionErrorCustom):
@@ -276,5 +278,5 @@ def extract_code_and_logs(
                 program_id_raw, _ = first_match.groups()
                 if program_id_raw != str(program_id):
                     return None
-                return code
+                return code, logs
     return None
