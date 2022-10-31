@@ -16,7 +16,7 @@ from genpy import (
     Raise,
     Statement,
 )
-from anchorpy_core.idl import Idl, IdlAccountItem, IdlTypeDefinition, IdlTypeDefinitionTyStruct
+from anchorpy_core.idl import Idl, IdlAccountItem, IdlTypeDefinition, IdlTypeDefinitionTyStruct, IdlField
 from anchorpy.coder.accounts import _account_discriminator
 from anchorpy.clientgen.genpy_extension import (
     Dataclass,
@@ -145,7 +145,7 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
             NamedArg(
                 field_name,
                 _field_from_decoded(
-                    idl=idl, ty=field, types_relative_imports=False, val_prefix="dec."
+                    idl=idl, ty=IdlField(name=snake(field.name), docs=None, ty=field.ty), types_relative_imports=False, val_prefix="dec."
                 ),
             )
         )
