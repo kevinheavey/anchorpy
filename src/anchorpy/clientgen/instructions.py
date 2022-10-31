@@ -79,7 +79,7 @@ def _accounts_interface_name(ix_name: str) -> str:
 def recurse_accounts(accs: list[IdlAccountItem], nested_names: list[str]) -> list[str]:
     elements: list[str] = []
     for acc in accs:
-        names = [*nested_names, _sanitize(acc.name)]
+        names = [*nested_names, _sanitize(snake(acc.name))]
         if isinstance(acc, IdlAccounts):
             nested_accs = cast(IdlAccounts, acc)
             elements.extend(recurse_accounts(nested_accs.accounts, names))
