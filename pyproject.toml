@@ -11,7 +11,6 @@ authors = ["kevinheavey <kevinheavey123@gmail.com>"]
 python = "^3.9"
 construct-typing = "^0.5.1"
 solana = "^0.27.2"
-apischema = "^0.17.5"
 borsh-construct = "^0.1.0"
 websockets = "^10.0"
 toolz = "^0.11.2"
