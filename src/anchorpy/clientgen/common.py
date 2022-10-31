@@ -87,12 +87,11 @@ def _py_type_from_idl(
         return "int"
     if ty in FLOAT_TYPES:
         return "float"
-    if ty == "string":
+    if ty == IdlTypeSimple.String:
         return "str"
-    if ty == "publicKey":
+    if ty == IdlTypeSimple.PublicKey:
         return "PublicKey"
     raise ValueError(f"Unrecognized type: {ty}")
-
 
 def _layout_for_type(
     idl: Idl,
@@ -100,38 +99,10 @@ def _layout_for_type(
     types_relative_imports: bool,
     name: Optional[str] = None,
 ) -> str:
-    if ty == "bool":
-        inner = "borsh.Bool"
-    elif ty == "u8":
-        inner = "borsh.U8"
-    elif ty == "i8":
-        inner = "borsh.I8"
-    elif ty == "u16":
-        inner = "borsh.U16"
-    elif ty == "i16":
-        inner = "borsh.I16"
-    elif ty == "u32":
-        inner = "borsh.U32"
-    elif ty == "f32":
-        inner = "borsh.F32"
-    elif ty == "i32":
-        inner = "borsh.I32"
-    elif ty == "u64":
-        inner = "borsh.U64"
-    elif ty == "i64":
-        inner = "borsh.I64"
-    elif ty == "f64":
-        inner = "borsh.F64"
-    elif ty == "u128":
-        inner = "borsh.U128"
-    elif ty == "i128":
-        inner = "borsh.I128"
-    elif ty == "bytes":
-        inner = "borsh.Bytes"
-    elif ty == "string":
-        inner = "borsh.String"
-    elif ty == "publicKey":
+    if ty == IdlTypeSimple.PublicKey:
         inner = "BorshPubkey"
+    elif isinstance(ty, IdlTypeSimple):
+        inner = str(ty).replace("IdlTypeSimple", "Borsh")
     elif isinstance(ty, IdlTypeVec):
         layout = _layout_for_type(
             idl=idl, ty=ty.vec, types_relative_imports=types_relative_imports
@@ -228,11 +199,11 @@ def _field_to_encodable(
             return f"{val_prefix}{ty_name}{val_suffix}"
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty_name}{val_suffix}))"
     if ty_type in {
-        "bool",
+        IdlTypeSimple.Bool,
         *NUMBER_TYPES,
-        "string",
-        "publicKey",
-        "bytes",
+        IdlTypeSimple.String,
+        IdlTypeSimple.PublicKey,
+        IdlTypeSimple.Bytes,
     }:
         return f"{val_prefix}{ty_name}{val_suffix}"
     raise ValueError(f"Unrecognized type: {ty_type}")
@@ -294,11 +265,11 @@ def _field_from_decoded(
             return f"{val_prefix}{ty_name}"
         return f"list(map(lambda item: {map_body}, {val_prefix}{ty_name}))"
     if ty_type in {
-        "bool",
+        IdlTypeSimple.Bool,
         *NUMBER_TYPES,
-        "string",
-        "publicKey",
-        "bytes",
+        IdlTypeSimple.String,
+        IdlTypeSimple.PublicKey,
+        IdlTypeSimple.Bytes,
     }:
         return f"{val_prefix}{ty_name}"
     raise ValueError(f"Unrecognized type: {ty_type}")
@@ -364,11 +335,11 @@ def _struct_field_initializer(
             return f"{prefix}{field_name}{suffix}"
         return f"list(map(lambda item: {map_body}, {prefix}{field_name}{suffix}))"
     if field_type in {
-        "bool",
+        IdlTypeSimple.Bool,
         *NUMBER_TYPES,
-        "string",
-        "publicKey",
-        "bytes",
+        IdlTypeSimple.String,
+        IdlTypeSimple.PublicKey,
+        IdlTypeSimple.Bytes,
     }:
         return f"{prefix}{field_name}{suffix}"
     raise ValueError(f"Unrecognized type: {field_type}")
@@ -379,7 +350,7 @@ def _field_to_json(
 ) -> str:
     ty_type = ty.ty
     var_name = f"{val_prefix}{snake(ty.name)}{val_suffix}"
-    if ty_type == "publicKey":
+    if ty_type == IdlTypeSimple.PublicKey:
         return f"str({var_name})"
     if isinstance(ty_type, IdlTypeVec):
         map_body = _field_to_json(idl, IdlField("item", docs=None, ty=ty_type.vec))
@@ -407,12 +378,12 @@ def _field_to_json(
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
         return f"{var_name}.to_json()"
-    if ty_type == "bytes":
+    if ty_type == IdlTypeSimple.Bytes:
         return f"list({var_name})"
     if ty_type in {
-        "bool",
+        IdlTypeSimple.Bool,
         *NUMBER_TYPES,
-        "string",
+        IdlTypeSimple.String,
     }:
         return var_name
     raise ValueError(f"Unrecognized type: {ty_type}")
@@ -440,15 +411,15 @@ def _idl_type_to_json_type(ty: IdlType, types_relative_imports: bool) -> str:
         )
         module = _sanitize(snake(ty.defined))
         return f"{defined_types_prefix}{module}.{_json_interface_name(ty.defined)}"
-    if ty == "bool":
+    if ty == IdlTypeSimple.Bool:
         return "bool"
     if ty in INT_TYPES:
         return "int"
     if ty in FLOAT_TYPES:
         return "float"
-    if ty == "bytes":
+    if ty == IdlTypeSimple.Bytes:
         return "list[int]"
-    if ty in {"string", "publicKey"}:
+    if ty in {IdlTypeSimple.String, IdlTypeSimple.PublicKey}:
         return "str"
     raise ValueError(f"Unrecognized type: {ty}")
 
@@ -464,7 +435,7 @@ def _field_from_json(
     ty_name_snake_unsanitized = snake(ty.name)
     ty_name = _sanitize(ty_name_snake_unsanitized)
     var_name = f"{param_prefix}{ty_name_snake_unsanitized}{param_suffix}"
-    if ty_type == "publicKey":
+    if ty_type == IdlTypeSimple.PublicKey:
         return f"PublicKey({var_name})"
     if isinstance(ty_type, IdlTypeVec):
         map_body = _field_from_json(
@@ -518,12 +489,12 @@ def _field_from_json(
         )
         full_func_path = f"{defined_types_prefix}{from_json_func_path}"
         return f"{full_func_path}.from_json({from_json_arg})"
-    if ty_type == "bytes":
+    if ty_type == IdlTypeSimple.Bytes:
         return f"bytes({var_name})"
     if ty_type in {
-        "bool",
+        IdlTypeSimple.Bool,
         *NUMBER_TYPES,
-        "string",
+        IdlTypeSimple.String,
     }:
         return var_name
     raise ValueError(f"Unrecognized type: {ty_type}")
