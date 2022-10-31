@@ -82,7 +82,7 @@ def _py_type_from_idl(
         )
         return f"list[{inner_type}]"
     if ty in {IdlTypeSimple.Bool, IdlTypeSimple.Bytes}:
-        return str(ty).lower()
+        return str(ty).replace("IdlTypeSimple.", "").lower()
     if ty in INT_TYPES:
         return "int"
     if ty in FLOAT_TYPES:
