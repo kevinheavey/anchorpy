@@ -102,7 +102,7 @@ def _layout_for_type(
     if ty == IdlTypeSimple.PublicKey:
         inner = "BorshPubkey"
     elif isinstance(ty, IdlTypeSimple):
-        inner = str(ty).replace("IdlTypeSimple", "Borsh")
+        inner = str(ty).replace("IdlTypeSimple", "borsh")
     elif isinstance(ty, IdlTypeVec):
         layout = _layout_for_type(
             idl=idl, ty=ty.vec, types_relative_imports=types_relative_imports
