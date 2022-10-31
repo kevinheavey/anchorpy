@@ -4,7 +4,7 @@ from typing import Any, Protocol
 from solana.transaction import Transaction
 
 from anchorpy.program.context import EMPTY_CONTEXT, Context, _check_args_length
-from anchorpy.idl import _IdlInstruction
+from anchorpy_core.idl import IdlInstruction
 from anchorpy.program.namespace.instruction import _InstructionFn
 
 
@@ -25,7 +25,7 @@ class _TransactionFn(Protocol):
 
 # ts TransactionNamespaceFactory.build
 def _build_transaction_fn(
-    idl_ix: _IdlInstruction, ix_fn: _InstructionFn
+    idl_ix: IdlInstruction, ix_fn: _InstructionFn
 ) -> _TransactionFn:
     """Build the function that generates Transaction objects.
 

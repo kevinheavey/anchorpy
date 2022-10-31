@@ -18,7 +18,7 @@ from anchorpy.provider import Provider, Wallet
 from anchorpy.utils.rpc import invoke
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
-from anchorpy.idl import _IdlConstant
+from anchorpy_core.idl import IdlConst, IdlTypeSimple
 
 PATH = Path("anchor/tests/misc/")
 workspace = workspace_fixture(PATH, build_cmd="anchor build --skip-lint")
@@ -844,8 +844,8 @@ async def test_can_init_if_needed_a_previously_created_account(
 async def test_idl_constants(program: Program) -> None:
     idl_constants = program.idl.constants
     assert idl_constants == [
-        _IdlConstant(name="BASE", type="u128", value="1_000_000"),
-        _IdlConstant(name="DECIMALS", type="u8", value="6"),
+        IdlConst(name="BASE", ty=IdlTypeSimple.U128, value="1_000_000"),
+        IdlConst(name="DECIMALS", ty=IdlTypeSimple.U8, value="6"),
     ]
 
 

@@ -8,7 +8,8 @@ from construct import Construct, Adapter, Switch, Container
 from anchorpy.coder.common import _sighash
 from anchorpy.program.common import Instruction
 from anchorpy.coder.idl import _field_layout
-from anchorpy.idl import Idl, _AccountDefsOrTypeDefs
+from anchorpy.idl import TypeDefs
+from anchorpy_core.idl import Idl
 
 
 class _Sighash(Adapter):
@@ -87,7 +88,7 @@ def _parse_ix_layout(idl: Idl) -> Dict[str, Construct]:
     for ix in idl.instructions:
         typedefs = cast(_SupportsAdd, idl.accounts) + cast(_SupportsAdd, idl.types)
         field_layouts = [
-            _field_layout(arg, cast(_AccountDefsOrTypeDefs, typedefs))
+            _field_layout(arg, cast(TypeDefs, typedefs))
             for arg in ix.args
         ]
         ix_layout[ix.name] = ix.name / CStruct(*field_layouts)

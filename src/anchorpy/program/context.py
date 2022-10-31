@@ -7,7 +7,7 @@ from solana.rpc.types import TxOpts
 from solana.transaction import AccountMeta
 from solana.transaction import TransactionInstruction
 
-from anchorpy.idl import _IdlInstruction
+from anchorpy_core.idl import IdlInstruction
 from anchorpy.error import ArgsError
 
 
@@ -46,7 +46,7 @@ class Context:
 
 
 def _check_args_length(
-    idl_ix: _IdlInstruction,
+    idl_ix: IdlInstruction,
     args: Tuple,
 ) -> None:
     """Check that the correct number of args is passed to the RPC function.

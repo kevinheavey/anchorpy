@@ -4,7 +4,7 @@ from typing import Tuple, Any
 from construct import Adapter, Sequence, Bytes, Switch, Container
 
 from anchorpy.coder.idl import _typedef_layout
-from anchorpy.idl import Idl
+from anchorpy_core.idl import Idl
 from anchorpy.program.common import Instruction as AccountToSerialize
 
 ACCOUNT_DISCRIMINATOR_SIZE = 8  # bytes

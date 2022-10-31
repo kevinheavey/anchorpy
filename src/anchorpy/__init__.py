@@ -1,7 +1,8 @@
 """The Python Anchor client."""
+from anchorpy_core.idl import Idl
 from anchorpy.provider import Provider, Wallet, SendTxRequest
 from anchorpy.coder.coder import Coder, InstructionCoder, EventCoder, AccountsCoder
-from anchorpy.idl import Idl, IdlProgramAccount
+from anchorpy.idl import IdlProgramAccount
 from anchorpy.workspace import create_workspace, close_workspace, WorkspaceType
 from anchorpy.program.core import Program
 from anchorpy.program.common import (

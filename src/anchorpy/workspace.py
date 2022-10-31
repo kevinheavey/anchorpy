@@ -3,9 +3,9 @@ from typing import Optional, Union, cast, Dict
 import json
 from pathlib import Path
 from solana.publickey import PublicKey
+from anchorpy_core.idl import Idl
 from anchorpy.program.core import Program
 from anchorpy.provider import Provider
-from anchorpy.idl import Idl, _Metadata
 
 WorkspaceType = Dict[str, Program]
 
@@ -30,8 +30,8 @@ def create_workspace(
         with file.open() as f:
             idl_dict = json.load(f)
         idl = Idl.from_json(idl_dict)
-        metadata = cast(_Metadata, idl.metadata)
-        program = Program(idl, PublicKey(metadata.address), Provider.local(url))
+        metadata = cast(Dict[str, str], idl.metadata)
+        program = Program(idl, PublicKey(metadata["address"]), Provider.local(url))
         result[idl.name] = program
     return result
 

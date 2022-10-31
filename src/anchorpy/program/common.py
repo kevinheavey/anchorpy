@@ -4,10 +4,10 @@ from typing import Dict, Any, Union, Tuple, NamedTuple
 from construct import Container
 
 from solana.publickey import PublicKey
-from anchorpy.idl import (
-    _IdlAccounts,
-    _IdlInstruction,
-    _IdlAccountItem,
+from anchorpy_core.idl import (
+    IdlAccounts,
+    IdlInstruction,
+    IdlAccountItem,
 )
 from anchorpy.program.context import Accounts
 
@@ -34,7 +34,7 @@ class Instruction:
     name: str
 
 
-def _to_instruction(idl_ix: _IdlInstruction, args: Tuple) -> Instruction:
+def _to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
     """Convert an IDL instruction and arguments to an Instruction object.
 
     Args:
@@ -55,7 +55,7 @@ def _to_instruction(idl_ix: _IdlInstruction, args: Tuple) -> Instruction:
     return Instruction(data=ix, name=idl_ix.name)
 
 
-def validate_accounts(ix_accounts: list[_IdlAccountItem], accounts: Accounts):
+def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
     """Check that accounts passed in `ctx` match the IDL.
 
     Args:
@@ -66,7 +66,7 @@ def validate_accounts(ix_accounts: list[_IdlAccountItem], accounts: Accounts):
         ValueError: If `ctx` accounts don't match the IDL.
     """
     for acc in ix_accounts:
-        if isinstance(acc, _IdlAccounts):
+        if isinstance(acc, IdlAccounts):
             validate_accounts(acc.accounts, accounts[acc.name])
         elif acc.name not in accounts:
             raise ValueError(f"Invalid arguments: {acc.name} not provided")

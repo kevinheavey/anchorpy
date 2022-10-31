@@ -1,3 +1,4 @@
+from typing import cast
 from pathlib import Path
 from black import format_str, FileMode
 from autoflake import fix_code
@@ -15,11 +16,8 @@ from genpy import (
     Raise,
     Statement,
 )
+from anchorpy_core.idl import Idl, IdlAccountItem, IdlTypeDefinition, IdlTypeDefinitionTyStruct
 from anchorpy.coder.accounts import _account_discriminator
-from anchorpy.idl import (
-    Idl,
-    _IdlAccountDef,
-)
 from anchorpy.clientgen.genpy_extension import (
     Dataclass,
     Method,
@@ -87,7 +85,7 @@ def gen_accounts_code(idl: Idl, accounts_dir: Path) -> dict[Path, str]:
     return res
 
 
-def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
+def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
     base_imports = [
         Import("typing"),
         FromImport("dataclasses", ["dataclass"]),
@@ -107,7 +105,8 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
     )
     fields_interface_params: list[TypedParam] = []
     json_interface_params: list[TypedParam] = []
-    fields = acc.type.fields
+    ty = cast(IdlTypeDefinitionTyStruct, acc.ty)
+    fields = ty.fields
     name = _sanitize(acc.name)
     json_interface_name = _json_interface_name(name)
     layout_items: list[str] = []
@@ -122,7 +121,7 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
                 field_name,
                 _py_type_from_idl(
                     idl=idl,
-                    ty=field.type,
+                    ty=field.ty,
                     types_relative_imports=False,
                     use_fields_interface_for_struct=False,
                 ),
@@ -131,12 +130,12 @@ def gen_account_code(acc: _IdlAccountDef, idl: Idl) -> str:
         json_interface_params.append(
             TypedParam(
                 field_name,
-                _idl_type_to_json_type(ty=field.type, types_relative_imports=False),
+                _idl_type_to_json_type(ty=field.ty, types_relative_imports=False),
             )
         )
         layout_items.append(
             _layout_for_type(
-                idl=idl, ty=field.type, name=field_name, types_relative_imports=False
+                idl=idl, ty=field.ty, name=field_name, types_relative_imports=False
             )
         )
         init_body_assignments.append(

@@ -10,6 +10,7 @@ from solana.transaction import TransactionInstruction
 from solana.publickey import PublicKey
 from solana.rpc.types import MemcmpOpts
 from solana.rpc.commitment import Commitment
+from anchorpy_core.idl import Idl, IdlTypeDefinition
 
 from anchorpy.coder.common import _account_size
 from anchorpy.coder.accounts import (
@@ -18,7 +19,6 @@ from anchorpy.coder.accounts import (
 )
 from anchorpy.coder.coder import Coder
 from anchorpy.error import AccountDoesNotExistError, AccountInvalidDiscriminator
-from anchorpy.idl import Idl, _IdlAccountDef
 from anchorpy.provider import Provider
 from anchorpy.utils.rpc import get_multiple_accounts
 
@@ -61,7 +61,7 @@ class AccountClient(object):
     def __init__(
         self,
         idl: Idl,
-        idl_account: _IdlAccountDef,
+        idl_account: IdlTypeDefinition,
         coder: Coder,
         program_id: PublicKey,
         provider: Provider,

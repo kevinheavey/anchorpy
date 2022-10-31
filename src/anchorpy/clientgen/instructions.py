@@ -13,10 +13,10 @@ from genpy import (
     Return, If, Line,
 )
 from anchorpy.coder.common import _sighash
-from anchorpy.idl import (
+from anchorpy_core.idl import (
     Idl,
-    _IdlAccounts,
-    _IdlAccountItem,
+    IdlAccounts,
+    IdlAccountItem,
 )
 from anchorpy.clientgen.genpy_extension import (
     TypedParam,
@@ -75,12 +75,12 @@ def _accounts_interface_name(ix_name: str) -> str:
     return f"{upper_camel(ix_name)}Accounts"
 
 
-def recurse_accounts(accs: list[_IdlAccountItem], nested_names: list[str]) -> list[str]:
+def recurse_accounts(accs: list[IdlAccountItem], nested_names: list[str]) -> list[str]:
     elements: list[str] = []
     for acc in accs:
         names = [*nested_names, _sanitize(acc.name)]
-        if isinstance(acc, _IdlAccounts):
-            nested_accs = cast(_IdlAccounts, acc)
+        if isinstance(acc, IdlAccounts):
+            nested_accs = cast(IdlAccounts, acc)
             elements.extend(recurse_accounts(nested_accs.accounts, names))
         else:
             nested_keys = [f'["{key}"]' for key in names]
@@ -95,15 +95,15 @@ def recurse_accounts(accs: list[_IdlAccountItem], nested_names: list[str]) -> li
 
 def gen_accounts(
     name,
-    idl_accs: list[_IdlAccountItem],
+    idl_accs: list[IdlAccountItem],
     extra_typeddicts: Optional[list[TypedDict]] = None
 ) -> list[TypedDict]:
     extra_typeddicts_to_use = [] if extra_typeddicts is None else extra_typeddicts
     params: list[TypedParam] = []
     for acc in idl_accs:
         acc_name = _sanitize(acc.name)
-        if isinstance(acc, _IdlAccounts):
-            nested_accs = cast(_IdlAccounts, acc)
+        if isinstance(acc, IdlAccounts):
+            nested_accs = cast(IdlAccounts, acc)
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
             params.append(TypedParam(acc_name, f"{nested_acc_name}"))
             extra_typeddicts_to_use = extra_typeddicts_to_use + (
@@ -147,7 +147,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
                     arg_name,
                     _py_type_from_idl(
                         idl=idl,
-                        ty=arg.type,
+                        ty=arg.ty,
                         types_relative_imports=False,
                         use_fields_interface_for_struct=False,
                     ),
@@ -155,7 +155,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
             )
             layout_items.append(
                 _layout_for_type(
-                    idl=idl, ty=arg.type, name=arg_name, types_relative_imports=False
+                    idl=idl, ty=arg.ty, name=arg_name, types_relative_imports=False
                 )
             )
             encoded_args_entries.append(

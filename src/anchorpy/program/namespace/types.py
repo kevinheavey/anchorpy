@@ -1,7 +1,7 @@
 """This module contains code for handling user-defined types."""
 from typing import Type, Any
 from anchorpy.coder.idl import _idl_typedef_to_python_type
-from anchorpy.idl import Idl
+from anchorpy_core.idl import Idl
 
 
 def _build_types(
