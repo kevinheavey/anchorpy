@@ -37,9 +37,9 @@ def idl() -> Idl:
             {
                 "name": "initialize",
                 "accounts": [],
-                "args": [],
-            },
-        ],
+                "args": []
+            }
+        ]
     }"""
     return Idl.from_json(raw)
 

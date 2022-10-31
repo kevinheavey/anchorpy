@@ -133,7 +133,7 @@ def _handle_enum_variants_no_cache(
                 attrib = constructor_field[1]  # type: ignore
                 fld_name = constructor_field[0]  # type: ignore
                 dclass_field = [f for f in dclass_fields if f.name == fld_name][0]
-                attrib.ty = dclass_field.ty  # type: ignore
+                attrib.type = dclass_field.type  # type: ignore
     return enum_without_types
 
 

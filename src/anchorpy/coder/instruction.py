@@ -93,5 +93,6 @@ def _parse_ix_layout(idl: Idl) -> Dict[str, Construct]:
             _field_layout(arg, cast(TypeDefs, typedefs))
             for arg in ix.args
         ]
-        ix_layout[ix.name] = ix.name / CStruct(*field_layouts)
+        ix_name = snake(ix.name)
+        ix_layout[ix_name] = ix_name / CStruct(*field_layouts)
     return ix_layout
