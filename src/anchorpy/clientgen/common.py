@@ -213,7 +213,7 @@ def _field_from_decoded(
     idl: Idl, ty: IdlField, types_relative_imports: bool, val_prefix: str = ""
 ) -> str:
     ty_type = ty.ty
-    ty_name = _sanitize(snake(ty.name))
+    ty_name = _sanitize(ty.name)
     if isinstance(ty_type, IdlTypeVec):
         map_body = _field_from_decoded(
             idl=idl,
