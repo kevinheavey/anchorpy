@@ -181,7 +181,7 @@ def _field_to_encodable(
     val_suffix: str = "",
 ) -> str:
     ty_type = ty.ty
-    ty_name = _sanitize(ty.name)
+    ty_name = _sanitize(snake(ty.name))
     if isinstance(ty_type, IdlTypeVec):
         map_body = _field_to_encodable(
             idl=idl,
@@ -242,7 +242,7 @@ def _field_from_decoded(
     idl: Idl, ty: IdlField, types_relative_imports: bool, val_prefix: str = ""
 ) -> str:
     ty_type = ty.ty
-    ty_name = _sanitize(ty.name)
+    ty_name = _sanitize(snake(ty.name))
     if isinstance(ty_type, IdlTypeVec):
         map_body = _field_from_decoded(
             idl=idl,
@@ -312,7 +312,7 @@ def _struct_field_initializer(
     suffix: str = '"]',
 ) -> str:
     field_type = field.ty
-    field_name = _sanitize(field.name)
+    field_name = _sanitize(snake(field.name))
     if isinstance(field_type, IdlTypeDefined):
         defined = _sanitize(field_type.defined)
         filtered = [t for t in idl.types if _sanitize(t.name) == defined]
@@ -378,7 +378,7 @@ def _field_to_json(
     idl: Idl, ty: IdlField, val_prefix: str = "", val_suffix: str = ""
 ) -> str:
     ty_type = ty.ty
-    var_name = f"{val_prefix}{ty.name}{val_suffix}"
+    var_name = f"{val_prefix}{snake(ty.name)}{val_suffix}"
     if ty_type == "publicKey":
         return f"str({var_name})"
     if isinstance(ty_type, IdlTypeVec):
@@ -461,8 +461,9 @@ def _field_from_json(
     param_suffix: str = '"]',
 ) -> str:
     ty_type = ty.ty
-    ty_name = _sanitize(ty.name)
-    var_name = f"{param_prefix}{ty.name}{param_suffix}"
+    ty_name_snake_unsanitized = snake(ty.name)
+    ty_name = _sanitize(ty_name_snake_unsanitized)
+    var_name = f"{param_prefix}{ty_name_snake_unsanitized}{param_suffix}"
     if ty_type == "publicKey":
         return f"PublicKey({var_name})"
     if isinstance(ty_type, IdlTypeVec):

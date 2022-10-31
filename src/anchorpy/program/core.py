@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Optional
 import zlib
 import json
+from pyheck import snake
 from anchorpy_core.idl import Idl
 
 from anchorpy.coder.coder import Coder
@@ -95,7 +96,7 @@ def _build_namespace(  # noqa: WPS320
             idl,
         )
 
-        name = idl_ix.name
+        name = snake(idl_ix.name)
         instruction[name] = ix_item
         transaction[name] = tx_item
         rpc[name] = rpc_item

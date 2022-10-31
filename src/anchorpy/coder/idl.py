@@ -5,6 +5,7 @@ from keyword import kwlist
 from typing import Mapping, cast, Type
 
 from construct import Construct
+from pyheck import snake
 from borsh_construct import (
     CStruct,
     TupleStruct,
@@ -212,7 +213,7 @@ def _field_layout(field: IdlField, types: TypeDefs) -> Construct:
     Returns:
         `Construct` object from `borsh-construct`.
     """  # noqa: DAR402
-    field_name = field.name if field.name else ""
+    field_name = snake(field.name) if field.name else ""
     return field_name / _type_layout(field.ty, types)
 
 
@@ -251,7 +252,7 @@ def _idl_typedef_ty_struct_to_dataclass_type_no_cache(
     """
     dataclass_fields = []
     for field in typedef_type.fields:
-        field_name = field.name
+        field_name = snake(field.name)
         field_name_to_use = f"{field_name}_" if field_name in kwlist else field_name
         dataclass_fields.append(
             field_name_to_use,
@@ -290,7 +291,7 @@ def _idl_enum_fields_named_to_dataclass_type_no_cache(
     """
     dataclass_fields = []
     for field in fields:
-        field_name = field.name
+        field_name = snake(field.name)
         field_name_to_use = f"{field_name}_" if field_name in kwlist else field_name
         dataclass_fields.append(
             field_name_to_use,

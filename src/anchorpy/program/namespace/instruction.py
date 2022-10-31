@@ -3,6 +3,7 @@ from typing import Callable, Any, Sequence, cast, Tuple
 
 from solana.transaction import TransactionInstruction, AccountMeta
 from solana.publickey import PublicKey
+from pyheck import snake
 
 from anchorpy.program.common import (  # noqa: WPS347
     _to_instruction,
@@ -42,7 +43,7 @@ class _InstructionFn:
         Raises:
             ValueError: [description]
         """
-        if idl_ix.name == "_inner":
+        if snake(idl_ix.name) == "_inner":
             raise ValueError("_inner name is reserved")
         self.idl_ix = idl_ix
         self.encode_fn = encode_fn
@@ -101,14 +102,14 @@ def _accounts_array(
     accounts_ret: list[AccountMeta] = []
     for acc in accounts:
         if isinstance(acc, IdlAccounts):
-            rpc_accs = cast(Accounts, ctx[acc.name])
+            rpc_accs = cast(Accounts, ctx[snake(acc.name)])
             acc_arr = _accounts_array(rpc_accs, acc.accounts)
             accounts_ret.extend(acc_arr)
         else:
             account: IdlAccount = acc
             accounts_ret.append(
                 AccountMeta(
-                    pubkey=translate_address(ctx[account.name]),
+                    pubkey=translate_address(ctx[snake(account.name)]),
                     is_writable=account.is_mut,
                     is_signer=account.is_signer,
                 ),

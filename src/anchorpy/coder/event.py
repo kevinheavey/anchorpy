@@ -3,6 +3,7 @@ from hashlib import sha256
 from typing import Dict, Tuple, Any, Optional
 
 from construct import Adapter, Construct, Sequence, Bytes, Switch
+from pyheck import snake
 from anchorpy_core.idl import Idl, IdlEvent, IdlField, IdlTypeDefinition, IdlTypeDefinitionTyStruct
 
 from anchorpy.program.common import Event
@@ -26,7 +27,7 @@ def _event_layout(event: IdlEvent, idl: Idl) -> Construct:
         name=event.name,
         docs=None,
         ty=IdlTypeDefinitionTyStruct(
-            fields=[IdlField(name=f.name, docs=None, ty=f.ty) for f in event.fields],
+            fields=[IdlField(name=snake(f.name), docs=None, ty=f.ty) for f in event.fields],
         ),
     )
     return _typedef_layout(event_type_def, idl.types, event.name)

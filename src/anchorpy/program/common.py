@@ -9,6 +9,7 @@ from anchorpy_core.idl import (
     IdlInstruction,
     IdlAccountItem,
 )
+from pyheck import snake
 from anchorpy.program.context import Accounts
 
 AddressType = Union[PublicKey, str]
@@ -51,8 +52,8 @@ def _to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
         raise ValueError("Invalid argument length")
     ix: Dict[str, Any] = {}
     for idx, ix_arg in enumerate(idl_ix.args):
-        ix[ix_arg.name] = args[idx]
-    return Instruction(data=ix, name=idl_ix.name)
+        ix[snake(ix_arg.name)] = args[idx]
+    return Instruction(data=ix, name=snake(idl_ix.name))
 
 
 def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
@@ -66,10 +67,11 @@ def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
         ValueError: If `ctx` accounts don't match the IDL.
     """
     for acc in ix_accounts:
+        acc_name = snake(acc.name)
         if isinstance(acc, IdlAccounts):
-            validate_accounts(acc.accounts, accounts[acc.name])
-        elif acc.name not in accounts:
-            raise ValueError(f"Invalid arguments: {acc.name} not provided")
+            validate_accounts(acc.accounts, accounts[acc_name])
+        elif acc_name not in accounts:
+            raise ValueError(f"Invalid arguments: {acc_name} not provided")
 
 
 def translate_address(address: AddressType) -> PublicKey:

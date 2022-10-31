@@ -1,6 +1,6 @@
 [[package]]
 name = "anchorpy-core"
-version = "0.1.0"
+version = "0.1.2"
 description = "Python bindings for Anchor Rust code"
 category = "main"
 optional = false
@@ -486,7 +486,7 @@ python-versions = "*"
 python-dateutil = ">=2.8.1"
 
 [package.extras]
-dev = ["wheel", "flake8", "markdown", "twine"]
+dev = ["twine", "markdown", "flake8", "wheel"]
 
 [[package]]
 name = "gitdb"
@@ -753,8 +753,8 @@ pyyaml-env-tag = ">=0.1"
 watchdog = ">=2.0"
 
 [package.extras]
-min-versions = ["watchdog (==2.0)", "typing-extensions (==3.10)", "pyyaml (==5.1)", "pyyaml-env-tag (==0.1)", "packaging (==20.5)", "mergedeep (==1.3.4)", "markupsafe (==2.0.1)", "markdown (==3.2.1)", "jinja2 (==2.11.1)", "importlib-metadata (==4.3)", "ghp-import (==1.0)", "colorama (==0.4)", "click (==7.0)", "babel (==2.9.0)"]
 i18n = ["babel (>=2.9.0)"]
+min-versions = ["babel (==2.9.0)", "click (==7.0)", "colorama (==0.4)", "ghp-import (==1.0)", "importlib-metadata (==4.3)", "jinja2 (==2.11.1)", "markdown (==3.2.1)", "markupsafe (==2.0.1)", "mergedeep (==1.3.4)", "packaging (==20.5)", "pyyaml-env-tag (==0.1)", "pyyaml (==5.1)", "typing-extensions (==3.10)", "watchdog (==2.0)"]
 
 [[package]]
 name = "mkdocs-autorefs"
@@ -943,8 +943,8 @@ optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-testing = ["pytest-benchmark", "pytest"]
-dev = ["tox", "pre-commit"]
+dev = ["pre-commit", "tox"]
+testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "prompt-toolkit"
@@ -1380,10 +1380,10 @@ python-versions = ">=3.6"
 click = ">=7.1.1,<9.0.0"
 
 [package.extras]
-test = ["isort (>=5.0.6,<6.0.0)", "black (>=22.3.0,<23.0.0)", "mypy (==0.910)", "pytest-sugar (>=0.9.4,<0.10.0)", "pytest-xdist (>=1.32.0,<2.0.0)", "coverage (>=5.2,<6.0)", "pytest-cov (>=2.10.0,<3.0.0)", "pytest (>=4.4.0,<5.4.0)", "shellingham (>=1.3.0,<2.0.0)"]
-doc = ["mdx-include (>=1.4.1,<2.0.0)", "mkdocs-material (>=8.1.4,<9.0.0)", "mkdocs (>=1.1.2,<2.0.0)"]
-dev = ["flake8 (>=3.8.3,<4.0.0)", "autoflake (>=1.3.1,<2.0.0)"]
-all = ["shellingham (>=1.3.0,<2.0.0)", "colorama (>=0.4.3,<0.5.0)"]
+all = ["colorama (>=0.4.3,<0.5.0)", "shellingham (>=1.3.0,<2.0.0)"]
+dev = ["autoflake (>=1.3.1,<2.0.0)", "flake8 (>=3.8.3,<4.0.0)"]
+doc = ["mkdocs (>=1.1.2,<2.0.0)", "mkdocs-material (>=8.1.4,<9.0.0)", "mdx-include (>=1.4.1,<2.0.0)"]
+test = ["shellingham (>=1.3.0,<2.0.0)", "pytest (>=4.4.0,<5.4.0)", "pytest-cov (>=2.10.0,<3.0.0)", "coverage (>=5.2,<6.0)", "pytest-xdist (>=1.32.0,<2.0.0)", "pytest-sugar (>=0.9.4,<0.10.0)", "mypy (==0.910)", "black (>=22.3.0,<23.0.0)", "isort (>=5.0.6,<6.0.0)"]
 
 [[package]]
 name = "types-cachetools"
@@ -1502,21 +1502,21 @@ cli = ["typer", "ipython", "genpy", "black", "autoflake"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "514749b2d5b73639ca5d4b3699eec11fcc9b65290ace18288920a6b81394fe91"
+content-hash = "81b7f42d62e5c6fca8a43e174762dafed8031da8ad426a616f14322ffc882a4f"
 
 [metadata.files]
 anchorpy-core = [
-    {file = "anchorpy_core-0.1.0-cp37-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:f76ea7c1781b96f7990ea9c76f0976278496bdce2035054fa705787302a49bec"},
-    {file = "anchorpy_core-0.1.0-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e0e993d1f916300a65b517d1d93578a027fcb8d9fc22420832f3e547709f3605"},
-    {file = "anchorpy_core-0.1.0-cp37-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:e0d9fddc5b2f13fc9d281de81decf3786a0275fdb27d9b6a5e0c82c833ca2df2"},
-    {file = "anchorpy_core-0.1.0-cp37-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:050b3cb635be50117170de3be3a48f03312b91781af7d818953f51462c5221af"},
-    {file = "anchorpy_core-0.1.0-cp37-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:d740adb77a2403b63d5a373810cbc6bdb1c4b01c1850065ea3ae9454b453d6b6"},
-    {file = "anchorpy_core-0.1.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f43a691a6ca6ac28f529ee756e0241b1e117d474a4c62b35274a8bd5b0454915"},
-    {file = "anchorpy_core-0.1.0-cp37-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:23fd440a1e4c665390266a9ea373034760250210758fbc5d5ded9940053fa447"},
-    {file = "anchorpy_core-0.1.0-cp37-abi3-musllinux_1_2_i686.whl", hash = "sha256:dbb7d6f39a0084d9da693c4e8e18ae0c6259ab403cd480fa4c11e35ce4306309"},
-    {file = "anchorpy_core-0.1.0-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:65219e0ae172c0f582f7f55402a0c04cb67bcff50878cacce5835d2c05bb0ef0"},
-    {file = "anchorpy_core-0.1.0-cp37-abi3-win_amd64.whl", hash = "sha256:00593db89d8c5d3320dc2950e45d65cc75d58cbcf21d2cda1480b8ea386d5213"},
-    {file = "anchorpy_core-0.1.0.tar.gz", hash = "sha256:848a22cec351cf1f104f74ccd3700676ccf37f91639f7ec9993b0515dc44d906"},
+    {file = "anchorpy_core-0.1.2-cp37-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:edb34d06c94286b2e4c4cf62e014915e2d29d18d4233902df4da781121c429c0"},
+    {file = "anchorpy_core-0.1.2-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:30ec4c762e9de1ac9447372306e45fd09816a5c453d55d928986a10ecbd1b90d"},
+    {file = "anchorpy_core-0.1.2-cp37-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:0dd8d0011f00759274549aadeec00fabd1271ad1264f0fa0f65ad53b7cf46a3b"},
+    {file = "anchorpy_core-0.1.2-cp37-abi3-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:550be97e24702d55a2900d02e9ce7a1875486edc8c7bfbddeb2718f7d6e7670a"},
+    {file = "anchorpy_core-0.1.2-cp37-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:867eaa17058ae87d76dcfdd7df752ef4ec035542a0db3376de6dc3b19552e97a"},
+    {file = "anchorpy_core-0.1.2-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f26036381e944a165696f5e4df8f6f866ef0c2981a230c9db8c8ff7fa9febdfa"},
+    {file = "anchorpy_core-0.1.2-cp37-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:d2e6e3e028669316d5ef01593a505cb49f76b759fb820ba1f52f7723d95ee108"},
+    {file = "anchorpy_core-0.1.2-cp37-abi3-musllinux_1_2_i686.whl", hash = "sha256:4014eb71945623665436922aadc901c9d649ffd6f8e978bfe507b3a702940338"},
+    {file = "anchorpy_core-0.1.2-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:bf5ee0d6f26ba7b8d792061da045a62333a705d3a03eea1ff3df3d9f783ffb47"},
+    {file = "anchorpy_core-0.1.2-cp37-abi3-win_amd64.whl", hash = "sha256:c0e773d4f06527e31056173d4c1171f919f5b814e05d299998dd492a85a4fb90"},
+    {file = "anchorpy_core-0.1.2.tar.gz", hash = "sha256:74453e175bf41c457b01ea77118e82d1aaf850c10e4d60be823561b8a8ceee22"},
 ]
 anyio = [
     {file = "anyio-3.6.2-py3-none-any.whl", hash = "sha256:fbbe32bd270d2a2ef3ed1c5d45041250284e31fc0a4df4a5a6071842051a51e3"},

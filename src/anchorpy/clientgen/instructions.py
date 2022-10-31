@@ -2,7 +2,7 @@ from typing import cast, Optional
 from black import format_str, FileMode
 from autoflake import fix_code
 from pathlib import Path
-from pyheck import upper_camel
+from pyheck import upper_camel, snake
 from genpy import (
     Import,
     FromImport,
@@ -56,12 +56,13 @@ def gen_index_file(idl: Idl, instructions_dir: Path) -> None:
 def gen_index_code(idl: Idl) -> str:
     imports: list[FromImport] = []
     for ix in idl.instructions:
-        ix_name = _sanitize(ix.name)
+        ix_name_snake_unsanitized = snake(ix.name)
+        ix_name = _sanitize(ix_name_snake_unsanitized)
         import_members: list[str] = [ix_name]
         if ix.args:
-            import_members.append(_args_interface_name(ix.name))
+            import_members.append(_args_interface_name(ix_name_snake_unsanitized))
         if ix.accounts:
-            import_members.append(_accounts_interface_name(ix.name))
+            import_members.append(_accounts_interface_name(ix_name_snake_unsanitized))
         if import_members:
             imports.append(FromImport(f".{ix_name}", import_members))
     return str(Collection(imports))
@@ -101,7 +102,7 @@ def gen_accounts(
     extra_typeddicts_to_use = [] if extra_typeddicts is None else extra_typeddicts
     params: list[TypedParam] = []
     for acc in idl_accs:
-        acc_name = _sanitize(acc.name)
+        acc_name = _sanitize(snake(acc.name))
         if isinstance(acc, IdlAccounts):
             nested_accs = cast(IdlAccounts, acc)
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
@@ -134,14 +135,15 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
     ]
     result = {}
     for ix in idl.instructions:
-        ix_name = _sanitize(ix.name)
+        ix_name_snake_unsanitized = snake(ix.name)
+        ix_name = _sanitize(ix_name_snake_unsanitized)
         filename = (out / ix_name).with_suffix(".py")
         args_interface_params: list[TypedParam] = []
         layout_items: list[str] = []
         encoded_args_entries: list[StrDictEntry] = []
-        accounts_interface_name = _accounts_interface_name(ix.name)
+        accounts_interface_name = _accounts_interface_name(ix_name_snake_unsanitized)
         for arg in ix.args:
-            arg_name = _sanitize(arg.name)
+            arg_name = _sanitize(snake(arg.name))
             args_interface_params.append(
                 TypedParam(
                     arg_name,
@@ -197,7 +199,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
             "remaining_accounts is not None",
             Line("keys += remaining_accounts")
         )
-        identifier_assignment = Assign("identifier", _sighash(ix.name))
+        identifier_assignment = Assign("identifier", _sighash(ix_name_snake_unsanitized))
         encoded_args_assignment = Assign("encoded_args", encoded_args_val)
         data_assignment = Assign("data", "identifier + encoded_args")
         returning = Return("TransactionInstruction(keys, program_id, data)")

@@ -115,7 +115,7 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
     to_json_entries: list[StrDictEntry] = []
     from_json_entries: list[NamedArg] = []
     for field in fields:
-        field_name = _sanitize(field.name)
+        field_name = _sanitize(snake(field.name))
         fields_interface_params.append(
             TypedParam(
                 field_name,

@@ -145,7 +145,7 @@ def gen_struct(idl: Idl, name: str, fields: list[IdlField]) -> Collection:
     to_json_items: list[str] = []
     from_json_items: list[str] = []
     for field in fields:
-        field_name = _sanitize(field.name)
+        field_name = _sanitize(snake(field.name))
         field_params.append(
             TypedParam(
                 field_name,
@@ -239,7 +239,7 @@ class _NamedFieldRecord:
 def _make_named_field_record(
     named_field: IdlField, idl: Idl, cast_obj_var_name: str
 ) -> _NamedFieldRecord:
-    named_field_name = _sanitize(named_field.name)
+    named_field_name = _sanitize(snake(named_field.name))
     return _NamedFieldRecord(
         field_type_alias_entry=TypedParam(
             named_field_name,
@@ -437,7 +437,7 @@ def gen_enum(idl: Idl, name: str, variants: list[IdlEnumVariant]) -> Collection:
                     )
                     init_entries_for_from_json.append(rec.init_entry_for_from_json)
 
-                    cstruct_fields[named_field.name] = _layout_for_type(
+                    cstruct_fields[snake(named_field.name)] = _layout_for_type(
                         idl=idl, ty=named_field.ty, types_relative_imports=True
                     )
                 value_type_aliases.append(
