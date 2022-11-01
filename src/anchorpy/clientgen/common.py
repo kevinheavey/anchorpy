@@ -150,9 +150,11 @@ def _field_to_encodable(
     types_relative_imports: bool,
     val_prefix: str = "",
     val_suffix: str = "",
+    convert_case: bool = True,
 ) -> str:
     ty_type = ty.ty
-    ty_name = _sanitize(snake(ty.name))
+    maybe_converted = snake(ty.name) if convert_case else ty.name
+    ty_name = _sanitize(maybe_converted)
     if isinstance(ty_type, IdlTypeVec):
         map_body = _field_to_encodable(
             idl=idl,
@@ -172,6 +174,7 @@ def _field_to_encodable(
             val_prefix=val_prefix,
             types_relative_imports=types_relative_imports,
             val_suffix=val_suffix,
+            convert_case=convert_case
         )
         if encodable == f"{val_prefix}{ty_name}{val_suffix}":
             return encodable
@@ -346,7 +349,7 @@ def _struct_field_initializer(
 
 
 def _field_to_json(
-    idl: Idl, ty: IdlField, val_prefix: str = "", val_suffix: str = "", convert_case=True,
+    idl: Idl, ty: IdlField, val_prefix: str = "", val_suffix: str = "", convert_case: bool = True,
 ) -> str:
     ty_type = ty.ty
     maybe_converted = snake(ty.name) if convert_case else ty.name
@@ -367,7 +370,7 @@ def _field_to_json(
         return f"list(map(lambda item: {map_body}, {var_name}))"
     if isinstance(ty_type, IdlTypeOption):
         value = _field_to_json(
-            idl, IdlField(ty.name, docs=None, ty=ty_type.option), val_prefix, val_suffix
+            idl, IdlField(ty.name, docs=None, ty=ty_type.option), val_prefix, val_suffix, convert_case=convert_case
         )
         # skip coercion when not needed
         if value == var_name:

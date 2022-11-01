@@ -319,6 +319,7 @@ def _make_unnamed_field_record(
         ty=IdlField(f"[{index}]", docs=None, ty=unnamed_field),
         val_prefix="self.value",
         types_relative_imports=True,
+        convert_case=False
     )
     return _UnnamedFieldRecord(
         field_type_alias_element=_py_type_from_idl(
