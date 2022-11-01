@@ -169,7 +169,7 @@ def gen_struct(idl: Idl, name: str, fields: list[IdlField]) -> Collection:
             )
         )
         from_decoded_item_val = _field_from_decoded(
-            idl=idl, ty=field, val_prefix="obj.", types_relative_imports=True
+            idl=idl, ty=IdlField(name=snake(field.name), docs=None, ty=field.ty), val_prefix="obj.", types_relative_imports=True
         )
         from_decoded_items.append(f"{field_name}={from_decoded_item_val}")
         as_encodable = _field_to_encodable(
