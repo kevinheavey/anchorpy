@@ -14,7 +14,7 @@ from anchorpy_core.idl import (
     IdlTypeVec,
     IdlTypeDefinition,
     IdlTypeCompound,
-    IdlTypeSimple
+    IdlTypeSimple,
 )
 
 

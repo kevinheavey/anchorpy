@@ -16,12 +16,13 @@ from genpy import (
     Raise,
     Generable,
 )
-from anchorpy_core.idl import (Idl,     IdlTypeDefinitionTyStruct,
+from anchorpy_core.idl import (
+    Idl,
+    IdlTypeDefinitionTyStruct,
     IdlField,
     IdlType,
     IdlEnumVariant,
-    EnumFieldsTuple,
-    EnumFieldsNamed,)
+)
 from anchorpy.clientgen.genpy_extension import (
     Union,
     Tuple,
@@ -49,7 +50,7 @@ from anchorpy.clientgen.common import (
     _field_to_encodable,
     _field_to_json,
     _field_from_json,
-    _sanitize
+    _sanitize,
 )
 
 
@@ -169,7 +170,10 @@ def gen_struct(idl: Idl, name: str, fields: list[IdlField]) -> Collection:
             )
         )
         from_decoded_item_val = _field_from_decoded(
-            idl=idl, ty=IdlField(name=snake(field.name), docs=None, ty=field.ty), val_prefix="obj.", types_relative_imports=True
+            idl=idl,
+            ty=IdlField(name=snake(field.name), docs=None, ty=field.ty),
+            val_prefix="obj.",
+            types_relative_imports=True,
         )
         from_decoded_items.append(f"{field_name}={from_decoded_item_val}")
         as_encodable = _field_to_encodable(
@@ -319,7 +323,7 @@ def _make_unnamed_field_record(
         ty=IdlField(f"[{index}]", docs=None, ty=unnamed_field),
         val_prefix="self.value",
         types_relative_imports=True,
-        convert_case=False
+        convert_case=False,
     )
     return _UnnamedFieldRecord(
         field_type_alias_element=_py_type_from_idl(
@@ -338,7 +342,10 @@ def _make_unnamed_field_record(
             ty=unnamed_field, types_relative_imports=True
         ),
         json_value_element=_field_to_json(
-            idl, IdlField(elem_name, docs=None, ty=unnamed_field), "self.", convert_case=False
+            idl,
+            IdlField(elem_name, docs=None, ty=unnamed_field),
+            "self.",
+            convert_case=False,
         ),
         encodable_value_item=StrDictEntry(f"item_{index}", encodable),
         init_element_for_from_decoded=_field_from_decoded(

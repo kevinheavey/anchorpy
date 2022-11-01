@@ -10,7 +10,9 @@ from genpy import (
     Suite,
     Collection,
     ImportAs,
-    Return, If, Line,
+    Return,
+    If,
+    Line,
 )
 from anchorpy.coder.common import _sighash
 from anchorpy_core.idl import (
@@ -31,7 +33,7 @@ from anchorpy.clientgen.common import (
     _py_type_from_idl,
     _layout_for_type,
     _field_to_encodable,
-    _sanitize
+    _sanitize,
 )
 
 
@@ -97,7 +99,7 @@ def recurse_accounts(accs: list[IdlAccountItem], nested_names: list[str]) -> lis
 def gen_accounts(
     name,
     idl_accs: list[IdlAccountItem],
-    extra_typeddicts: Optional[list[TypedDict]] = None
+    extra_typeddicts: Optional[list[TypedDict]] = None,
 ) -> list[TypedDict]:
     extra_typeddicts_to_use = [] if extra_typeddicts is None else extra_typeddicts
     params: list[TypedParam] = []
@@ -192,14 +194,14 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
         )
         accounts = gen_accounts(accounts_interface_name, ix.accounts)
         keys_assignment = Assign(
-            "keys: list[AccountMeta]",
-            f"{List(recurse_accounts(ix.accounts, []))}"
+            "keys: list[AccountMeta]", f"{List(recurse_accounts(ix.accounts, []))}"
         )
         remaining_accounts_concatenation = If(
-            "remaining_accounts is not None",
-            Line("keys += remaining_accounts")
+            "remaining_accounts is not None", Line("keys += remaining_accounts")
         )
-        identifier_assignment = Assign("identifier", _sighash(ix_name_snake_unsanitized))
+        identifier_assignment = Assign(
+            "identifier", _sighash(ix_name_snake_unsanitized)
+        )
         encoded_args_assignment = Assign("encoded_args", encoded_args_val)
         data_assignment = Assign("data", "identifier + encoded_args")
         returning = Return("TransactionInstruction(keys, program_id, data)")
@@ -211,7 +213,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
                 TypedParam("program_id", "PublicKey = PROGRAM_ID"),
                 TypedParam(
                     "remaining_accounts",
-                    "typing.Optional[typing.List[AccountMeta]] = None"
+                    "typing.Optional[typing.List[AccountMeta]] = None",
                 ),
             ],
             Suite(

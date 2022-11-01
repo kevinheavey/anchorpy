@@ -29,11 +29,9 @@ from borsh_construct import (
     Option,
 )
 
-from anchorpy.borsh_extension import BorshPubkey, _DataclassStruct, COption
+from anchorpy.borsh_extension import BorshPubkey, _DataclassStruct
 from anchorpy.idl import TypeDefs
 from anchorpy_core.idl import (
-    EnumFieldsNamed,
-    EnumFieldsTuple,
     IdlField,
     IdlType,
     IdlTypeArray,
@@ -43,7 +41,7 @@ from anchorpy_core.idl import (
     IdlTypeDefined,
     IdlTypeOption,
     IdlTypeVec,
-    IdlTypeSimple
+    IdlTypeSimple,
 )
 
 

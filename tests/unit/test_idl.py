@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from anchorpy import Idl, Program
 from solana.publickey import PublicKey

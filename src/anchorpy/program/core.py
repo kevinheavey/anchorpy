@@ -2,7 +2,6 @@
 from __future__ import annotations
 from typing import Any, Optional
 import zlib
-import json
 from pyheck import snake
 from anchorpy_core.idl import Idl
 
@@ -193,7 +192,7 @@ class Program(object):
             IdlNotFoundError: If the requested IDL account does not exist.
 
         Returns:
-            Idl: The raw IDL.
+            str: The raw IDL.
         """
         program_id = translate_address(address)
         actual_provider = provider if provider is not None else Provider.local()

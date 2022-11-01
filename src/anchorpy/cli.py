@@ -1,7 +1,6 @@
 # noqa: D100
 import os
 from typing import Optional, cast
-import json
 from pathlib import Path
 from contextlib import contextmanager
 import typer
@@ -108,10 +107,9 @@ def client_gen(
     idl_obj = Idl.from_json(idl.read_text())
     if program_id is None:
         idl_metadata = idl_obj.metadata
-        if not isinstance(idl_metadata, dict):
-            address_from_idl = None
-        else:
-            address_from_idl = idl_metadata["address"]
+        address_from_idl = (
+            idl_metadata["address"] if isinstance(idl_metadata, dict) else None
+        )
         if address_from_idl is None:
             typer.echo(
                 "No program ID found in IDL. Use the --program-id "

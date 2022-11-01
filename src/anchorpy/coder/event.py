@@ -4,7 +4,13 @@ from typing import Dict, Tuple, Any, Optional
 
 from construct import Adapter, Construct, Sequence, Bytes, Switch
 from pyheck import snake
-from anchorpy_core.idl import Idl, IdlEvent, IdlField, IdlTypeDefinition, IdlTypeDefinitionTyStruct
+from anchorpy_core.idl import (
+    Idl,
+    IdlEvent,
+    IdlField,
+    IdlTypeDefinition,
+    IdlTypeDefinitionTyStruct,
+)
 
 from anchorpy.program.common import Event
 from anchorpy.coder.idl import _typedef_layout
@@ -27,7 +33,9 @@ def _event_layout(event: IdlEvent, idl: Idl) -> Construct:
         name=event.name,
         docs=None,
         ty=IdlTypeDefinitionTyStruct(
-            fields=[IdlField(name=snake(f.name), docs=None, ty=f.ty) for f in event.fields],
+            fields=[
+                IdlField(name=snake(f.name), docs=None, ty=f.ty) for f in event.fields
+            ],
         ),
     )
     return _typedef_layout(event_type_def, idl.types, event.name)
@@ -50,9 +58,11 @@ class EventCoder(Adapter):
         else:
             layouts = {}
         self.layouts = layouts
-        self.discriminators: Dict[bytes, str] = {} if idl_events is None else {
-            _event_discriminator(event.name): event.name for event in idl_events
-        }
+        self.discriminators: Dict[bytes, str] = (
+            {}
+            if idl_events is None
+            else {_event_discriminator(event.name): event.name for event in idl_events}
+        )
         self.discriminator_to_layout = {
             disc: self.layouts[event_name]
             for disc, event_name in self.discriminators.items()

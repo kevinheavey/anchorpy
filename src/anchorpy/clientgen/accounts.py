@@ -16,7 +16,12 @@ from genpy import (
     Raise,
     Statement,
 )
-from anchorpy_core.idl import Idl, IdlAccountItem, IdlTypeDefinition, IdlTypeDefinitionTyStruct, IdlField
+from anchorpy_core.idl import (
+    Idl,
+    IdlTypeDefinition,
+    IdlTypeDefinitionTyStruct,
+    IdlField,
+)
 from anchorpy.coder.accounts import _account_discriminator
 from anchorpy.clientgen.genpy_extension import (
     Dataclass,
@@ -38,7 +43,7 @@ from anchorpy.clientgen.common import (
     _field_from_decoded,
     _field_to_json,
     _field_from_json,
-    _sanitize
+    _sanitize,
 )
 
 
@@ -145,7 +150,10 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
             NamedArg(
                 field_name,
                 _field_from_decoded(
-                    idl=idl, ty=IdlField(name=snake(field.name), docs=None, ty=field.ty), types_relative_imports=False, val_prefix="dec."
+                    idl=idl,
+                    ty=IdlField(name=snake(field.name), docs=None, ty=field.ty),
+                    types_relative_imports=False,
+                    val_prefix="dec.",
                 ),
             )
         )
@@ -179,13 +187,13 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
                     "resp",
                     "await conn.get_account_info(address, commitment=commitment)",
                 ),
-                Assign("info", 'resp.value'),
+                Assign("info", "resp.value"),
                 If("info is None", Return("None")),
                 If(
-                    'info.owner != program_id.to_solders()',
+                    "info.owner != program_id.to_solders()",
                     Raise('ValueError("Account does not belong to this program")'),
                 ),
-                Assign("bytes_data", 'info.data'),
+                Assign("bytes_data", "info.data"),
                 Return("cls.decode(bytes_data)"),
             ]
         ),

@@ -1,4 +1,3 @@
-import json
 from pytest import mark
 from pathlib import Path
 

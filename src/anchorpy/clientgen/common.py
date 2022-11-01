@@ -2,11 +2,32 @@
 from typing import Optional
 import keyword
 from pyheck import snake
-from anchorpy_core.idl import Idl, IdlType, IdlTypeVec, IdlTypeOption, IdlTypeDefined, IdlTypeDefinitionTyStruct, IdlTypeArray, IdlField, IdlTypeSimple
+from anchorpy_core.idl import (
+    Idl,
+    IdlType,
+    IdlTypeVec,
+    IdlTypeOption,
+    IdlTypeDefined,
+    IdlTypeDefinitionTyStruct,
+    IdlTypeArray,
+    IdlField,
+    IdlTypeSimple,
+)
 
 _DEFAULT_DEFINED_TYPES_PREFIX = "types."
 
-INT_TYPES = {IdlTypeSimple.U8, IdlTypeSimple.I8, IdlTypeSimple.U16, IdlTypeSimple.I16, IdlTypeSimple.U32, IdlTypeSimple.I32, IdlTypeSimple.U64, IdlTypeSimple.I64, IdlTypeSimple.U128, IdlTypeSimple.I128}
+INT_TYPES = {
+    IdlTypeSimple.U8,
+    IdlTypeSimple.I8,
+    IdlTypeSimple.U16,
+    IdlTypeSimple.I16,
+    IdlTypeSimple.U32,
+    IdlTypeSimple.I32,
+    IdlTypeSimple.U64,
+    IdlTypeSimple.I64,
+    IdlTypeSimple.U128,
+    IdlTypeSimple.I128,
+}
 FLOAT_TYPES = {IdlTypeSimple.F32, IdlTypeSimple.F64}
 NUMBER_TYPES = INT_TYPES | FLOAT_TYPES
 
@@ -93,6 +114,7 @@ def _py_type_from_idl(
         return "PublicKey"
     raise ValueError(f"Unrecognized type: {ty}")
 
+
 def _layout_for_type(
     idl: Idl,
     ty: IdlType,
@@ -174,7 +196,7 @@ def _field_to_encodable(
             val_prefix=val_prefix,
             types_relative_imports=types_relative_imports,
             val_suffix=val_suffix,
-            convert_case=convert_case
+            convert_case=convert_case,
         )
         if encodable == f"{val_prefix}{ty_name}{val_suffix}":
             return encodable
@@ -349,7 +371,11 @@ def _struct_field_initializer(
 
 
 def _field_to_json(
-    idl: Idl, ty: IdlField, val_prefix: str = "", val_suffix: str = "", convert_case: bool = True,
+    idl: Idl,
+    ty: IdlField,
+    val_prefix: str = "",
+    val_suffix: str = "",
+    convert_case: bool = True,
 ) -> str:
     ty_type = ty.ty
     maybe_converted = snake(ty.name) if convert_case else ty.name
@@ -370,7 +396,11 @@ def _field_to_json(
         return f"list(map(lambda item: {map_body}, {var_name}))"
     if isinstance(ty_type, IdlTypeOption):
         value = _field_to_json(
-            idl, IdlField(ty.name, docs=None, ty=ty_type.option), val_prefix, val_suffix, convert_case=convert_case
+            idl,
+            IdlField(ty.name, docs=None, ty=ty_type.option),
+            val_prefix,
+            val_suffix,
+            convert_case=convert_case,
         )
         # skip coercion when not needed
         if value == var_name:

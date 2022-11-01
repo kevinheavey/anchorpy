@@ -1,6 +1,5 @@
 """This module contains code for creating the Anchor workspace."""
 from typing import Optional, Union, cast, Dict
-import json
 from pathlib import Path
 from solana.publickey import PublicKey
 from anchorpy_core.idl import Idl

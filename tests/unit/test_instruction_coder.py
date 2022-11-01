@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from pytest import mark
 from anchorpy import Idl, InstructionCoder
