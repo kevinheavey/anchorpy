@@ -4,11 +4,12 @@ from typing import Dict, Any, Union, Tuple, NamedTuple
 from construct import Container
 
 from solana.publickey import PublicKey
-from anchorpy.idl import (
-    _IdlAccounts,
-    _IdlInstruction,
-    _IdlAccountItem,
+from anchorpy_core.idl import (
+    IdlAccounts,
+    IdlInstruction,
+    IdlAccountItem,
 )
+from pyheck import snake
 from anchorpy.program.context import Accounts
 
 AddressType = Union[PublicKey, str]
@@ -34,7 +35,7 @@ class Instruction:
     name: str
 
 
-def _to_instruction(idl_ix: _IdlInstruction, args: Tuple) -> Instruction:
+def _to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
     """Convert an IDL instruction and arguments to an Instruction object.
 
     Args:
@@ -51,11 +52,11 @@ def _to_instruction(idl_ix: _IdlInstruction, args: Tuple) -> Instruction:
         raise ValueError("Invalid argument length")
     ix: Dict[str, Any] = {}
     for idx, ix_arg in enumerate(idl_ix.args):
-        ix[ix_arg.name] = args[idx]
-    return Instruction(data=ix, name=idl_ix.name)
+        ix[snake(ix_arg.name)] = args[idx]
+    return Instruction(data=ix, name=snake(idl_ix.name))
 
 
-def validate_accounts(ix_accounts: list[_IdlAccountItem], accounts: Accounts):
+def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
     """Check that accounts passed in `ctx` match the IDL.
 
     Args:
@@ -66,10 +67,11 @@ def validate_accounts(ix_accounts: list[_IdlAccountItem], accounts: Accounts):
         ValueError: If `ctx` accounts don't match the IDL.
     """
     for acc in ix_accounts:
-        if isinstance(acc, _IdlAccounts):
-            validate_accounts(acc.accounts, accounts[acc.name])
-        elif acc.name not in accounts:
-            raise ValueError(f"Invalid arguments: {acc.name} not provided")
+        acc_name = snake(acc.name)
+        if isinstance(acc, IdlAccounts):
+            validate_accounts(acc.accounts, accounts[acc_name])
+        elif acc_name not in accounts:
+            raise ValueError(f"Invalid arguments: {acc_name} not provided")
 
 
 def translate_address(address: AddressType) -> PublicKey:

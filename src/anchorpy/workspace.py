@@ -1,11 +1,10 @@
 """This module contains code for creating the Anchor workspace."""
 from typing import Optional, Union, cast, Dict
-import json
 from pathlib import Path
 from solana.publickey import PublicKey
+from anchorpy_core.idl import Idl
 from anchorpy.program.core import Program
 from anchorpy.provider import Provider
-from anchorpy.idl import Idl, _Metadata
 
 WorkspaceType = Dict[str, Program]
 
@@ -27,11 +26,10 @@ def create_workspace(
     project_root = Path.cwd() if path is None else Path(path)
     idl_folder = project_root / "target/idl"
     for file in idl_folder.iterdir():
-        with file.open() as f:
-            idl_dict = json.load(f)
-        idl = Idl.from_json(idl_dict)
-        metadata = cast(_Metadata, idl.metadata)
-        program = Program(idl, PublicKey(metadata.address), Provider.local(url))
+        raw = file.read_text()
+        idl = Idl.from_json(raw)
+        metadata = cast(Dict[str, str], idl.metadata)
+        program = Program(idl, PublicKey(metadata["address"]), Provider.local(url))
         result[idl.name] = program
     return result
 

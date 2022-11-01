@@ -4,11 +4,13 @@ from typing import Dict, Any, Tuple, cast, TypeVar, Protocol
 from borsh_construct import CStruct
 from construct import Sequence, Bytes
 from construct import Construct, Adapter, Switch, Container
+from pyheck import snake
 
 from anchorpy.coder.common import _sighash
 from anchorpy.program.common import Instruction
 from anchorpy.coder.idl import _field_layout
-from anchorpy.idl import Idl, _AccountDefsOrTypeDefs
+from anchorpy.idl import TypeDefs
+from anchorpy_core.idl import Idl
 
 
 class _Sighash(Adapter):
@@ -40,10 +42,11 @@ class InstructionCoder(Adapter):
         sighashes: Dict[str, bytes] = {}
         sighash_to_name: Dict[bytes, str] = {}
         for ix in idl.instructions:
-            sh = sighasher.build(ix.name)
-            sighashes[ix.name] = sh
-            sighash_layouts[sh] = self.ix_layout[ix.name]
-            sighash_to_name[sh] = ix.name
+            ix_name = snake(ix.name)
+            sh = sighasher.build(ix_name)
+            sighashes[ix_name] = sh
+            sighash_layouts[sh] = self.ix_layout[ix_name]
+            sighash_to_name[sh] = ix_name
         self.sighash_layouts = sighash_layouts
         self.sighashes = sighashes
         self.sighash_to_name = sighash_to_name
@@ -87,8 +90,8 @@ def _parse_ix_layout(idl: Idl) -> Dict[str, Construct]:
     for ix in idl.instructions:
         typedefs = cast(_SupportsAdd, idl.accounts) + cast(_SupportsAdd, idl.types)
         field_layouts = [
-            _field_layout(arg, cast(_AccountDefsOrTypeDefs, typedefs))
-            for arg in ix.args
+            _field_layout(arg, cast(TypeDefs, typedefs)) for arg in ix.args
         ]
-        ix_layout[ix.name] = ix.name / CStruct(*field_layouts)
+        ix_name = snake(ix.name)
+        ix_layout[ix_name] = ix_name / CStruct(*field_layouts)
     return ix_layout

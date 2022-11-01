@@ -1,14 +1,12 @@
 from pathlib import Path
-import json
 from anchorpy import EventParser, Idl, Program, Event
 from solana.publickey import PublicKey
 
 
 def test_event_parser() -> None:
     path = Path("tests/idls/events.json")
-    with path.open() as f:
-        data = json.load(f)
-    idl = Idl.from_json(data)
+    raw = path.read_text()
+    idl = Idl.from_json(raw)
     program = Program(idl, PublicKey("2dhGsWUzy5YKUsjZdLHLmkNpUDAXkNa9MYWsPc4Ziqzy"))
     logs = [
         "Program 2dhGsWUzy5YKUsjZdLHLmkNpUDAXkNa9MYWsPc4Ziqzy invoke [1]",

@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from genpy import Suite
 from anchorpy import Idl
@@ -8,9 +7,8 @@ from anchorpy.clientgen.types import gen_struct
 
 def test_gen_accounts() -> None:
     path = Path("tests/idls/composite.json")
-    with path.open() as f:
-        data = json.load(f)
-    idl = Idl.from_json(data)
+    raw = path.read_text()
+    idl = Idl.from_json(raw)
     accs = gen_accounts("CompositeUpdateAccounts", idl.instructions[1].accounts)
     suite = Suite(accs)
     assert str(suite) == (
@@ -28,9 +26,8 @@ def test_gen_accounts() -> None:
 
 def test_empty_fields() -> None:
     path = Path("tests/idls/switchboard_v2.mainnet.06022022.json")
-    with path.open() as f:
-        data = json.load(f)
-    idl = Idl.from_json(data)
+    raw = path.read_text()
+    idl = Idl.from_json(raw)
     struct = gen_struct(idl, "AggregatorLockParams", [])
     assert str(struct) == (
         'import typing'  # noqa: P103

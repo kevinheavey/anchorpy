@@ -2,12 +2,13 @@
 from __future__ import annotations
 from typing import Any, Optional
 import zlib
-import json
+from pyheck import snake
+from anchorpy_core.idl import Idl
 
 from anchorpy.coder.coder import Coder
 from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE
 from anchorpy.program.common import AddressType, translate_address
-from anchorpy.idl import Idl, _decode_idl_account, _idl_address
+from anchorpy.idl import _decode_idl_account, _idl_address
 from solana.publickey import PublicKey
 from anchorpy.provider import Provider
 from anchorpy.program.namespace.rpc import (
@@ -40,9 +41,11 @@ def _parse_idl_errors(idl: Idl) -> dict[int, str]:
 
     """
     errors = {}
-    for e in idl.errors:
-        msg = e.msg if e.msg else e.name
-        errors[e.code] = msg
+    idl_errors = idl.errors
+    if idl_errors is not None:
+        for e in idl_errors:
+            msg = e.msg if e.msg else e.name
+            errors[e.code] = msg
     return errors
 
 
@@ -92,7 +95,7 @@ def _build_namespace(  # noqa: WPS320
             idl,
         )
 
-        name = idl_ix.name
+        name = snake(idl_ix.name)
         instruction[name] = ix_item
         transaction[name] = tx_item
         rpc[name] = rpc_item
@@ -178,7 +181,7 @@ class Program(object):
     async def fetch_raw_idl(  # noqa: WPS602
         address: AddressType,
         provider: Provider,
-    ) -> dict[str, Any]:
+    ) -> str:
         """Fetch an idl from the blockchain as a raw JSON dictionary.
 
         Args:
@@ -189,7 +192,7 @@ class Program(object):
             IdlNotFoundError: If the requested IDL account does not exist.
 
         Returns:
-            Idl: The raw IDL.
+            str: The raw IDL.
         """
         program_id = translate_address(address)
         actual_provider = provider if provider is not None else Provider.local()
@@ -201,8 +204,7 @@ class Program(object):
         idl_account = _decode_idl_account(
             account_info_val.data[ACCOUNT_DISCRIMINATOR_SIZE:]
         )
-        inflated_idl = _pako_inflate(bytes(idl_account["data"])).decode()
-        return json.loads(inflated_idl)
+        return _pako_inflate(bytes(idl_account["data"])).decode()
 
     @classmethod
     async def fetch_idl(

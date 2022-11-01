@@ -3,6 +3,7 @@ from typing import Callable, Any, Sequence, cast, Tuple
 
 from solana.transaction import TransactionInstruction, AccountMeta
 from solana.publickey import PublicKey
+from pyheck import snake
 
 from anchorpy.program.common import (  # noqa: WPS347
     _to_instruction,
@@ -16,7 +17,7 @@ from anchorpy.program.context import (
     _check_args_length,
     Accounts,
 )
-from anchorpy.idl import _IdlInstruction, _IdlAccountItem, _IdlAccounts, _IdlAccount
+from anchorpy_core.idl import IdlInstruction, IdlAccountItem, IdlAccounts, IdlAccount
 
 
 class _InstructionFn:
@@ -28,7 +29,7 @@ class _InstructionFn:
 
     def __init__(
         self,
-        idl_ix: _IdlInstruction,
+        idl_ix: IdlInstruction,
         encode_fn: Callable[[Instruction], bytes],
         program_id: PublicKey,
     ) -> None:
@@ -42,7 +43,7 @@ class _InstructionFn:
         Raises:
             ValueError: [description]
         """
-        if idl_ix.name == "_inner":
+        if snake(idl_ix.name) == "_inner":
             raise ValueError("_inner name is reserved")
         self.idl_ix = idl_ix
         self.encode_fn = encode_fn
@@ -87,7 +88,7 @@ class _InstructionFn:
 
 def _accounts_array(
     ctx: Accounts,
-    accounts: Sequence[_IdlAccountItem],
+    accounts: Sequence[IdlAccountItem],
 ) -> list[AccountMeta]:
     """Create a list of AccountMeta from a (possibly nested) dict of accounts.
 
@@ -100,15 +101,15 @@ def _accounts_array(
     """
     accounts_ret: list[AccountMeta] = []
     for acc in accounts:
-        if isinstance(acc, _IdlAccounts):
-            rpc_accs = cast(Accounts, ctx[acc.name])
+        if isinstance(acc, IdlAccounts):
+            rpc_accs = cast(Accounts, ctx[snake(acc.name)])
             acc_arr = _accounts_array(rpc_accs, acc.accounts)
             accounts_ret.extend(acc_arr)
         else:
-            account: _IdlAccount = acc
+            account: IdlAccount = acc
             accounts_ret.append(
                 AccountMeta(
-                    pubkey=translate_address(ctx[account.name]),
+                    pubkey=translate_address(ctx[snake(account.name)]),
                     is_writable=account.is_mut,
                     is_signer=account.is_signer,
                 ),
@@ -116,7 +117,7 @@ def _accounts_array(
     return accounts_ret
 
 
-def _validate_instruction(ix: _IdlInstruction, args: Tuple):
+def _validate_instruction(ix: IdlInstruction, args: Tuple):
     """Throws error if any argument required for the `ix` is not given.
 
     Args:

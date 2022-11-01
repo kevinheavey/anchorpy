@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.12.0] - 2022-11-01
+
+### Changed
+
+- Use Rust (via [anchorpy-core](https://github.com/kevinheavey/anchorpy-core)) to parse IDLs.
+This removes the `anchorpy.idl.Idl` class and replaces it with `anchorpy_core.idl.Idl`,
+which uses some different types and supports newer IDL features.
+This change only affects code that used the Idl class directly; normal AnchorPy behaviour is unchanged. 
+
 ## [0.11.0] - 2022-10-15
 
 ### Changed

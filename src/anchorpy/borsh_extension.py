@@ -102,7 +102,7 @@ class _DataclassStruct(Adapter):
         super().__init__(cstruct)  # type: ignore
         self.datacls = datacls
 
-    def _decode(self, obj: Container, context, path) -> T:
+    def _decode(self, obj: Container, context, path) -> T:  # type: ignore
         kwargs = {}
         for key, value in obj.items():
             if key[0] != "_":

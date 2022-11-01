@@ -1,7 +1,6 @@
 from anchorpy import Idl
 from pathlib import Path
 from pytest import mark
-import json
 from solana.keypair import Keypair
 from solana.transaction import AccountMeta
 
@@ -11,9 +10,8 @@ from anchorpy.program.namespace.instruction import _accounts_array
 @mark.unit
 def test_accounts_array() -> None:
     """Test accounts_array returns expected."""
-    with Path("tests/idls/composite.json").open() as f:
-        idl_json = json.load(f)
-    idl = Idl.from_json(idl_json)
+    raw = Path("tests/idls/composite.json").read_text()
+    idl = Idl.from_json(raw)
     dummy_a = Keypair.generate()
     dummy_b = Keypair.generate()
     comp_accounts = {

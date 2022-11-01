@@ -1,7 +1,7 @@
 from pathlib import Path
 from black import format_str, FileMode
 from genpy import Assign, FromImport, Collection
-from anchorpy.idl import Idl
+from anchorpy_core.idl import Idl
 
 
 def gen_program_id_code(idl: Idl, program_id: str) -> str:

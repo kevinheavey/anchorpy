@@ -12,7 +12,7 @@ from genpy import (
     Function as UntypedFunction,
     Statement,
 )
-from anchorpy.idl import Idl, _IdlErrorCode
+from anchorpy_core.idl import Idl, IdlErrorCode
 from anchorpy.error import _LangErrorCode, LangErrorMessage
 from anchorpy.clientgen.genpy_extension import (
     Function,
@@ -47,9 +47,7 @@ def gen_from_code_fn(has_custom_errors: bool) -> Function:
 
 def gen_from_tx_error_fn(has_custom_errors: bool) -> Function:
     err_info_assign = Assign("err_info", "error.args[0]")
-    err_code_assign = Assign(
-        "extracted", "extract_code_and_logs(err_info, PROGRAM_ID)"
-    )
+    err_code_assign = Assign("extracted", "extract_code_and_logs(err_info, PROGRAM_ID)")
     null_code_check = If("extracted is None", Return(None))
     final_return = Return("from_code(extracted[0])")
     fn_body = Suite(
@@ -73,7 +71,7 @@ def gen_from_tx_error_fn(has_custom_errors: bool) -> Function:
     )
 
 
-def gen_custom_errors_code(errors: list[_IdlErrorCode]) -> str:
+def gen_custom_errors_code(errors: list[IdlErrorCode]) -> str:
     typing_import = Import("typing")
     error_import = FromImport(
         "anchorpy.error", ["ProgramError", "extract_code_and_logs"]

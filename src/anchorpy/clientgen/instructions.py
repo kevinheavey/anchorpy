@@ -2,7 +2,7 @@ from typing import cast, Optional
 from black import format_str, FileMode
 from autoflake import fix_code
 from pathlib import Path
-from pyheck import upper_camel
+from pyheck import upper_camel, snake
 from genpy import (
     Import,
     FromImport,
@@ -10,13 +10,15 @@ from genpy import (
     Suite,
     Collection,
     ImportAs,
-    Return, If, Line,
+    Return,
+    If,
+    Line,
 )
 from anchorpy.coder.common import _sighash
-from anchorpy.idl import (
+from anchorpy_core.idl import (
     Idl,
-    _IdlAccounts,
-    _IdlAccountItem,
+    IdlAccounts,
+    IdlAccountItem,
 )
 from anchorpy.clientgen.genpy_extension import (
     TypedParam,
@@ -31,7 +33,7 @@ from anchorpy.clientgen.common import (
     _py_type_from_idl,
     _layout_for_type,
     _field_to_encodable,
-    _sanitize
+    _sanitize,
 )
 
 
@@ -56,12 +58,13 @@ def gen_index_file(idl: Idl, instructions_dir: Path) -> None:
 def gen_index_code(idl: Idl) -> str:
     imports: list[FromImport] = []
     for ix in idl.instructions:
-        ix_name = _sanitize(ix.name)
+        ix_name_snake_unsanitized = snake(ix.name)
+        ix_name = _sanitize(ix_name_snake_unsanitized)
         import_members: list[str] = [ix_name]
         if ix.args:
-            import_members.append(_args_interface_name(ix.name))
+            import_members.append(_args_interface_name(ix_name_snake_unsanitized))
         if ix.accounts:
-            import_members.append(_accounts_interface_name(ix.name))
+            import_members.append(_accounts_interface_name(ix_name_snake_unsanitized))
         if import_members:
             imports.append(FromImport(f".{ix_name}", import_members))
     return str(Collection(imports))
@@ -75,12 +78,12 @@ def _accounts_interface_name(ix_name: str) -> str:
     return f"{upper_camel(ix_name)}Accounts"
 
 
-def recurse_accounts(accs: list[_IdlAccountItem], nested_names: list[str]) -> list[str]:
+def recurse_accounts(accs: list[IdlAccountItem], nested_names: list[str]) -> list[str]:
     elements: list[str] = []
     for acc in accs:
-        names = [*nested_names, _sanitize(acc.name)]
-        if isinstance(acc, _IdlAccounts):
-            nested_accs = cast(_IdlAccounts, acc)
+        names = [*nested_names, _sanitize(snake(acc.name))]
+        if isinstance(acc, IdlAccounts):
+            nested_accs = cast(IdlAccounts, acc)
             elements.extend(recurse_accounts(nested_accs.accounts, names))
         else:
             nested_keys = [f'["{key}"]' for key in names]
@@ -95,15 +98,15 @@ def recurse_accounts(accs: list[_IdlAccountItem], nested_names: list[str]) -> li
 
 def gen_accounts(
     name,
-    idl_accs: list[_IdlAccountItem],
-    extra_typeddicts: Optional[list[TypedDict]] = None
+    idl_accs: list[IdlAccountItem],
+    extra_typeddicts: Optional[list[TypedDict]] = None,
 ) -> list[TypedDict]:
     extra_typeddicts_to_use = [] if extra_typeddicts is None else extra_typeddicts
     params: list[TypedParam] = []
     for acc in idl_accs:
-        acc_name = _sanitize(acc.name)
-        if isinstance(acc, _IdlAccounts):
-            nested_accs = cast(_IdlAccounts, acc)
+        acc_name = _sanitize(snake(acc.name))
+        if isinstance(acc, IdlAccounts):
+            nested_accs = cast(IdlAccounts, acc)
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
             params.append(TypedParam(acc_name, f"{nested_acc_name}"))
             extra_typeddicts_to_use = extra_typeddicts_to_use + (
@@ -134,20 +137,21 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
     ]
     result = {}
     for ix in idl.instructions:
-        ix_name = _sanitize(ix.name)
+        ix_name_snake_unsanitized = snake(ix.name)
+        ix_name = _sanitize(ix_name_snake_unsanitized)
         filename = (out / ix_name).with_suffix(".py")
         args_interface_params: list[TypedParam] = []
         layout_items: list[str] = []
         encoded_args_entries: list[StrDictEntry] = []
-        accounts_interface_name = _accounts_interface_name(ix.name)
+        accounts_interface_name = _accounts_interface_name(ix_name_snake_unsanitized)
         for arg in ix.args:
-            arg_name = _sanitize(arg.name)
+            arg_name = _sanitize(snake(arg.name))
             args_interface_params.append(
                 TypedParam(
                     arg_name,
                     _py_type_from_idl(
                         idl=idl,
-                        ty=arg.type,
+                        ty=arg.ty,
                         types_relative_imports=False,
                         use_fields_interface_for_struct=False,
                     ),
@@ -155,7 +159,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
             )
             layout_items.append(
                 _layout_for_type(
-                    idl=idl, ty=arg.type, name=arg_name, types_relative_imports=False
+                    idl=idl, ty=arg.ty, name=arg_name, types_relative_imports=False
                 )
             )
             encoded_args_entries.append(
@@ -190,14 +194,14 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
         )
         accounts = gen_accounts(accounts_interface_name, ix.accounts)
         keys_assignment = Assign(
-            "keys: list[AccountMeta]",
-            f"{List(recurse_accounts(ix.accounts, []))}"
+            "keys: list[AccountMeta]", f"{List(recurse_accounts(ix.accounts, []))}"
         )
         remaining_accounts_concatenation = If(
-            "remaining_accounts is not None",
-            Line("keys += remaining_accounts")
+            "remaining_accounts is not None", Line("keys += remaining_accounts")
         )
-        identifier_assignment = Assign("identifier", _sighash(ix.name))
+        identifier_assignment = Assign(
+            "identifier", _sighash(ix_name_snake_unsanitized)
+        )
         encoded_args_assignment = Assign("encoded_args", encoded_args_val)
         data_assignment = Assign("data", "identifier + encoded_args")
         returning = Return("TransactionInstruction(keys, program_id, data)")
@@ -209,7 +213,7 @@ def gen_instructions_code(idl: Idl, out: Path) -> dict[Path, str]:
                 TypedParam("program_id", "PublicKey = PROGRAM_ID"),
                 TypedParam(
                     "remaining_accounts",
-                    "typing.Optional[typing.List[AccountMeta]] = None"
+                    "typing.Optional[typing.List[AccountMeta]] = None",
                 ),
             ],
             Suite(

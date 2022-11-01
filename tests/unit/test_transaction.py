@@ -30,17 +30,17 @@ def post_ix() -> TransactionInstruction:
 
 @fixture
 def idl() -> Idl:
-    raw = {
+    raw = """{
         "version": "0.0.0",
         "name": "basic_0",
         "instructions": [
             {
                 "name": "initialize",
                 "accounts": [],
-                "args": [],
-            },
-        ],
-    }
+                "args": []
+            }
+        ]
+    }"""
     return Idl.from_json(raw)
 
 

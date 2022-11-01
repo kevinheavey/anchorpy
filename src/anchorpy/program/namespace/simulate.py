@@ -6,7 +6,7 @@ from solders.rpc.responses import SimulateTransactionResp
 
 from anchorpy.coder.coder import Coder
 from anchorpy.error import ProgramError
-from anchorpy.idl import _IdlInstruction, Idl
+from anchorpy_core.idl import IdlInstruction, Idl
 from anchorpy.program.event import EventParser, Event
 from anchorpy.program.namespace.transaction import _TransactionFn
 from anchorpy.provider import Provider
@@ -46,7 +46,7 @@ class _SimulateFn(Protocol):
 
 
 def _build_simulate_item(
-    idl_ix: _IdlInstruction,
+    idl_ix: IdlInstruction,
     tx_fn: _TransactionFn,
     idl_errors: Dict[int, str],
     provider: Provider,

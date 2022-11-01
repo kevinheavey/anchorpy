@@ -1,13 +1,12 @@
 # noqa: D100
 import os
-from typing import Optional
-import json
+from typing import Optional, cast
 from pathlib import Path
 from contextlib import contextmanager
 import typer
 from IPython import embed
+from anchorpy_core.idl import Idl
 from anchorpy import create_workspace
-from anchorpy.idl import Idl
 from anchorpy.template import INIT_TESTS
 from anchorpy.clientgen.program_id import gen_program_id
 from anchorpy.clientgen.errors import gen_errors
@@ -105,15 +104,12 @@ def client_gen(
     ),
 ):
     """Generate Python client code from the specified anchor IDL."""
-    with idl.open("r") as f:
-        idl_dict = json.load(f)
-    idl_obj = Idl.from_json(idl_dict)
+    idl_obj = Idl.from_json(idl.read_text())
     if program_id is None:
         idl_metadata = idl_obj.metadata
-        if idl_metadata is None:
-            address_from_idl = None
-        else:
-            address_from_idl = idl_metadata.address
+        address_from_idl = (
+            idl_metadata["address"] if isinstance(idl_metadata, dict) else None
+        )
         if address_from_idl is None:
             typer.echo(
                 "No program ID found in IDL. Use the --program-id "
@@ -121,7 +117,7 @@ def client_gen(
             )
             raise typer.Exit(code=1)
         else:
-            program_id_to_use = address_from_idl
+            program_id_to_use = cast(str, address_from_idl)
     else:
         program_id_to_use = program_id
 
