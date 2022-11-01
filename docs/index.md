@@ -20,4 +20,4 @@ pip install anchorpy[cli]
 
 
 !!! note
-    These docs will assume you've read the [Anchor documentation](https://project-serum.github.io/anchor/tutorials/tutorial-0.html) first.
+    These docs will assume you've read the [Anchor documentation](https://www.anchor-lang.com/) first.
