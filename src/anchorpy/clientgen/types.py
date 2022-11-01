@@ -337,7 +337,7 @@ def _make_unnamed_field_record(
             ty=unnamed_field, types_relative_imports=True
         ),
         json_value_element=_field_to_json(
-            idl, IdlField(elem_name, docs=None, ty=unnamed_field), "self."
+            idl, IdlField(elem_name, docs=None, ty=unnamed_field), "self.", convert_case=False
         ),
         encodable_value_item=StrDictEntry(f"item_{index}", encodable),
         init_element_for_from_decoded=_field_from_decoded(

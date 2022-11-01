@@ -346,10 +346,11 @@ def _struct_field_initializer(
 
 
 def _field_to_json(
-    idl: Idl, ty: IdlField, val_prefix: str = "", val_suffix: str = ""
+    idl: Idl, ty: IdlField, val_prefix: str = "", val_suffix: str = "", convert_case=True,
 ) -> str:
     ty_type = ty.ty
-    var_name = f"{val_prefix}{snake(ty.name)}{val_suffix}"
+    maybe_converted = snake(ty.name) if convert_case else ty.name
+    var_name = f"{val_prefix}{maybe_converted}{val_suffix}"
     if ty_type == IdlTypeSimple.PublicKey:
         return f"str({var_name})"
     if isinstance(ty_type, IdlTypeVec):
