@@ -1,0 +1,9 @@
+[programs.localnet]
+example_program = "3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"

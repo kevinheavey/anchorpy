@@ -43,7 +43,7 @@ from tests.client_gen.example_program_gen.errors import from_tx_error  # noqa: W
 from tests.client_gen.example_program_gen.errors.custom import SomeError
 from tests.client_gen.example_program_gen.errors.anchor import InvalidProgramId
 
-EXAMPLE_PROGRAM_DIR = Path("ts-reference/tests/example-program")
+EXAMPLE_PROGRAM_DIR = Path("tests/client_gen/example-program")
 
 
 @fixture(scope="session")
@@ -96,7 +96,7 @@ def test_merkle_distributor(tmpdir: local) -> None:
 def project_dir(project_parent_dir: Path) -> Path:
     proj_dir = project_parent_dir / "tmp"
     subprocess.run(
-        f"anchorpy client-gen ts-reference/tests/example-program-gen/idl.json {proj_dir} --program-id 3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8",
+        f"anchorpy client-gen tests/idls/clientgen_example_program.json {proj_dir} --program-id 3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8",
         shell=True,
         check=True,
     )
