@@ -1,7 +1,0 @@
-name: "Git diff"
-description: "Check git changes "
-runs:
-  using: "composite"
-  steps:
-    - run: git diff --exit-code
-      shell: bash
