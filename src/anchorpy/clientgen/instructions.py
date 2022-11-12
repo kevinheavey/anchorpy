@@ -130,7 +130,6 @@ def gen_accounts(
     gen_pdas: bool,
     accum: Optional[GenAccountsRes] = None,
 ) -> GenAccountsRes:
-    print(f"accs name: {name}")
     if accum is None:
         extra_typeddicts_to_use = []
         accum_const_pdas = []
@@ -155,10 +154,8 @@ def gen_accounts(
             extra_typeddicts_to_use = extra_typeddicts_to_use + nested_res[0]
             accum_const_pdas = accum_const_pdas + nested_res[1]
             const_acc_indices = const_acc_indices | nested_res[2]
-            print("updating acc_count from nested_res")
             acc_count = nested_res[3] + 1
         else:
-            print("updating acc_count from non-nested")
             acc_count += 1
             pda_generated = False
             if gen_pdas:
@@ -175,7 +172,6 @@ def gen_accounts(
                         pda_generated = True
             if not pda_generated:
                 params.append(TypedParam(acc_name, "PublicKey"))
-        print(f"acc_count: {acc_count}")
     maybe_typed_dict_container = [TypedDict(name, params)] if params else []
     accounts = maybe_typed_dict_container + extra_typeddicts_to_use
     return accounts, accum_const_pdas + const_pdas, const_acc_indices, acc_count
@@ -252,7 +248,6 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
             [TypedParam("accounts", accounts_interface_name)] if ix.accounts else []
         )
         accounts, const_pdas, const_acc_indices, _ = gen_accounts(accounts_interface_name, ix.accounts, gen_pdas)
-        print(f"const_acc_indices: {const_acc_indices}")
         recursed = recurse_accounts(ix.accounts, [], const_acc_indices)[0]
         keys_assignment = Assign(
             "keys: list[AccountMeta]", f"{List(recursed)}"
