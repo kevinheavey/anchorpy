@@ -19,6 +19,8 @@ from anchorpy_core.idl import (
     Idl,
     IdlAccounts,
     IdlAccountItem,
+    IdlType,
+    IdlTypeSimple
 )
 from anchorpy.clientgen.genpy_extension import (
     TypedParam,
@@ -28,6 +30,8 @@ from anchorpy.clientgen.genpy_extension import (
     List,
     Function,
     ANNOTATIONS_IMPORT,
+    Call,
+    NamedArg
 )
 from anchorpy.clientgen.common import (
     _py_type_from_idl,
@@ -96,13 +100,28 @@ def recurse_accounts(accs: list[IdlAccountItem], nested_names: list[str]) -> lis
     return elements
 
 
+def to_buffer_value(ty: IdlType, value: Union[str, int, list[int]]) -> bytes:
+    if not isinstance(type, IdlTypeSimple):
+        raise ValueError("Compound types not expected here.")
+    if isinstance(value, int):
+        encoder = FIELD_TYPE_MAP[ty]
+        return encoder.build(value)
+    if isinstance(value, str):
+        return value.encode()
+    if isinstance(value, list):
+        return bytes(value)
+    raise ValueError(f"Unexpected type. ty: {ty}; value: {value}")
+
+
 def gen_accounts(
     name,
     idl_accs: list[IdlAccountItem],
+    gen_pdas: bool,
     extra_typeddicts: Optional[list[TypedDict]] = None,
-) -> list[TypedDict]:
+) -> tuple[list[TypedDict], Assign]:
     extra_typeddicts_to_use = [] if extra_typeddicts is None else extra_typeddicts
     params: list[TypedParam] = []
+    const_pdas: list[Assign] = []
     for acc in idl_accs:
         acc_name = _sanitize(snake(acc.name))
         if isinstance(acc, IdlAccounts):
@@ -114,9 +133,17 @@ def gen_accounts(
                     nested_acc_name,
                     nested_accs.accounts,
                     extra_typeddicts_to_use,
-                )
+                )[0]
             )
         else:
+            if gen_pdas:
+                maybe_pda = acc.pda
+                if maybe_pda is not None:
+                    if all(isinstance(seed, IdlSeedConst) for seed in maybe_pda.seeds):
+                        const_pda_name = shouty_snake(f"{name}_{acc_name}")
+                        const_pda_body_args = [to_buffer_value(seed.ty, seed.value)]
+                        const_pda_body = Call("PublicKey.find_program_address", const_pda_body_args)
+                        const_pdas.append(Assign(const_pda_name, ))
             params.append(TypedParam(acc_name, "PublicKey"))
     maybe_typed_dict_container = [TypedDict(name, params)] if params else []
     return maybe_typed_dict_container + extra_typeddicts_to_use
