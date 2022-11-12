@@ -11,6 +11,18 @@ class InitMyAccountArgs(typing.TypedDict):
 
 
 layout = borsh.CStruct("seed_a" / borsh.U8)
+NESTED_NESTED_ACCOUNT_NESTED = PublicKey.find_program_address(
+    seeds=[
+        b"nested-seed",
+        b"test",
+        b"hi",
+        b"hi",
+        b"\x01",
+        b"\x02\x00\x00\x00",
+        b"\x03\x00\x00\x00\x00\x00\x00\x00",
+    ],
+    program_id=PROGRAM_ID,
+)[0]
 INIT_MY_ACCOUNT_ACCOUNTS_ACCOUNT = PublicKey.find_program_address(
     seeds=[
         b"another-seed",
@@ -32,10 +44,6 @@ class InitMyAccountAccounts(typing.TypedDict):
     system_program: PublicKey
 
 
-class NestedNested(typing.TypedDict):
-    account_nested: PublicKey
-
-
 def init_my_account(
     args: InitMyAccountArgs,
     accounts: InitMyAccountAccounts,
@@ -45,11 +53,11 @@ def init_my_account(
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["base"], is_signer=False, is_writable=False),
         AccountMeta(pubkey=accounts["base2"], is_signer=False, is_writable=False),
-        AccountMeta(pubkey=accounts["account"], is_signer=False, is_writable=False),
         AccountMeta(
-            pubkey=accounts["nested"]["account_nested"],
-            is_signer=False,
-            is_writable=False,
+            pubkey=INIT_MY_ACCOUNT_ACCOUNTS_ACCOUNT, is_signer=False, is_writable=False
+        ),
+        AccountMeta(
+            pubkey=NESTED_NESTED_ACCOUNT_NESTED, is_signer=False, is_writable=False
         ),
         AccountMeta(
             pubkey=accounts["system_program"], is_signer=False, is_writable=False

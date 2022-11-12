@@ -85,22 +85,28 @@ def _accounts_interface_name(ix_name: str) -> str:
     return f"{upper_camel(ix_name)}Accounts"
 
 
-def recurse_accounts(accs: list[IdlAccountItem], nested_names: list[str]) -> list[str]:
+def recurse_accounts(accs: list[IdlAccountItem], nested_names: list[str], const_accs: dict[int, str], acc_idx: int = 0) -> tuple[list[str], int]:
     elements: list[str] = []
     for acc in accs:
         names = [*nested_names, _sanitize(snake(acc.name))]
         if isinstance(acc, IdlAccounts):
             nested_accs = cast(IdlAccounts, acc)
-            elements.extend(recurse_accounts(nested_accs.accounts, names))
+            new_elements, acc_idx = recurse_accounts(nested_accs.accounts, names, const_accs, acc_idx)
+            elements.extend(new_elements)
         else:
-            nested_keys = [f'["{key}"]' for key in names]
-            dict_accessor = "".join(nested_keys)
+            acc_idx += 1
+            try:
+                pubkey_var = const_accs[acc_idx]
+            except KeyError:
+                nested_keys = [f'["{key}"]' for key in names]
+                dict_accessor = "".join(nested_keys)
+                pubkey_var = f"accounts{dict_accessor}"
             elements.append(
-                f"AccountMeta(pubkey=accounts{dict_accessor}, "
+                f"AccountMeta(pubkey={pubkey_var}, "
                 f"is_signer={acc.is_signer}, "
                 f"is_writable={acc.is_mut})"
             )
-    return elements
+    return elements, acc_idx
 
 
 def to_buffer_value(ty: IdlType, value: Union[str, int, list[int]]) -> bytes:
@@ -116,7 +122,7 @@ def to_buffer_value(ty: IdlType, value: Union[str, int, list[int]]) -> bytes:
     raise ValueError(f"Unexpected type. ty: {ty}; value: {value}")
 
 
-GenAccountsRes = tuple[list[TypedDict], list[Assign]]
+GenAccountsRes = tuple[list[TypedDict], list[Assign], dict[str, int], int]
 
 def gen_accounts(
     name,
@@ -124,8 +130,14 @@ def gen_accounts(
     gen_pdas: bool,
     accum: Optional[GenAccountsRes] = None,
 ) -> GenAccountsRes:
-    extra_typeddicts_to_use = [] if accum is None else accum[0]
-    accum_const_pdas = [] if accum is None else accum[1]
+    print(f"accs name: {name}")
+    if accum is None:
+        extra_typeddicts_to_use = []
+        accum_const_pdas = []
+        const_acc_indices = {}
+        acc_count = 0
+    else:
+        extra_typeddicts_to_use, accum_const_pdas, const_acc_indices, acc_count = accum
     params: list[TypedParam] = []
     const_pdas: list[Assign] = []
     for acc in idl_accs:
@@ -137,11 +149,17 @@ def gen_accounts(
             nested_res = gen_accounts(
                     nested_acc_name,
                     nested_accs.accounts,
-                    extra_typeddicts_to_use,
+                    gen_pdas,
+                    (extra_typeddicts_to_use, accum_const_pdas, const_acc_indices, acc_count),
             )
             extra_typeddicts_to_use = extra_typeddicts_to_use + nested_res[0]
             accum_const_pdas = accum_const_pdas + nested_res[1]
+            const_acc_indices = const_acc_indices | nested_res[2]
+            print("updating acc_count from nested_res")
+            acc_count = nested_res[3] + 1
         else:
+            print("updating acc_count from non-nested")
+            acc_count += 1
             pda_generated = False
             if gen_pdas:
                 maybe_pda = acc.pda
@@ -153,12 +171,14 @@ def gen_accounts(
                         seeds_named_arg = NamedArg("seeds", seeds_arg)
                         const_pda_body = Call("PublicKey.find_program_address", [seeds_named_arg, NamedArg("program_id", "PROGRAM_ID")])
                         const_pdas.append(Assign(const_pda_name, f"{const_pda_body}[0]"))
+                        const_acc_indices = {**const_acc_indices, acc_count: const_pda_name}
                         pda_generated = True
             if not pda_generated:
                 params.append(TypedParam(acc_name, "PublicKey"))
+        print(f"acc_count: {acc_count}")
     maybe_typed_dict_container = [TypedDict(name, params)] if params else []
     accounts = maybe_typed_dict_container + extra_typeddicts_to_use
-    return accounts, accum_const_pdas + const_pdas
+    return accounts, accum_const_pdas + const_pdas, const_acc_indices, acc_count
 
 
 def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str]:
@@ -231,9 +251,11 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
         accounts_container = (
             [TypedParam("accounts", accounts_interface_name)] if ix.accounts else []
         )
-        accounts, const_pdas = gen_accounts(accounts_interface_name, ix.accounts, gen_pdas)
+        accounts, const_pdas, const_acc_indices, _ = gen_accounts(accounts_interface_name, ix.accounts, gen_pdas)
+        print(f"const_acc_indices: {const_acc_indices}")
+        recursed = recurse_accounts(ix.accounts, [], const_acc_indices)[0]
         keys_assignment = Assign(
-            "keys: list[AccountMeta]", f"{List(recurse_accounts(ix.accounts, []))}"
+            "keys: list[AccountMeta]", f"{List(recursed)}"
         )
         remaining_accounts_concatenation = If(
             "remaining_accounts is not None", Line("keys += remaining_accounts")
