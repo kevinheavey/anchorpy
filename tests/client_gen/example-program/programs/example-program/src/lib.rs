@@ -4,6 +4,12 @@ use anchor_lang::prelude::*;
 
 declare_id!("3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8");
 
+pub const MY_SEED: [u8; 2] = *b"hi";
+pub const MY_SEED_STR: &str = "hi";
+pub const MY_SEED_U8: u8 = 1;
+pub const MY_SEED_U32: u32 = 2;
+pub const MY_SEED_U64: u64 = 3;
+
 #[program]
 pub mod example_program {
     use super::*;
@@ -87,6 +93,62 @@ pub mod example_program {
     pub fn cause_error(_ctx: Context<CauseError>) -> Result<()> {
         return Err(error!(ErrorCode::SomeError));
     }
+
+    pub fn init_my_account(ctx: Context<InitMyAccount>, _seed_a: u8) -> Result<()> {
+        ctx.accounts.account.data = 1337;
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+pub struct InitMyAccount<'info> {
+    base: Account<'info, BaseAccount>,
+    /// CHECK: shut up
+    base2: AccountInfo<'info>,
+    #[account(
+        seeds = [
+            "another-seed".as_bytes(),
+            b"test".as_ref(),
+            MY_SEED.as_ref(),
+            MY_SEED_STR.as_bytes(),
+            MY_SEED_U8.to_le_bytes().as_ref(),
+            &MY_SEED_U32.to_le_bytes(),
+            &MY_SEED_U64.to_le_bytes(),
+        ],
+        bump,
+    )]
+    account: Account<'info, MyAccount>,
+    nested: Nested<'info>,
+    system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct Nested<'info> {
+    #[account(
+        seeds = [
+            "nested-seed".as_bytes(),
+            b"test".as_ref(),
+            MY_SEED.as_ref(),
+            MY_SEED_STR.as_bytes(),
+            MY_SEED_U8.to_le_bytes().as_ref(),
+            &MY_SEED_U32.to_le_bytes(),
+            &MY_SEED_U64.to_le_bytes(),
+        ],
+        bump,
+    )]
+    /// CHECK: Not needed
+    account_nested: AccountInfo<'info>,
+}
+
+#[account]
+pub struct MyAccount {
+    data: u64,
+}
+
+#[account]
+pub struct BaseAccount {
+    base_data: u64,
+    base_data_key: Pubkey,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]

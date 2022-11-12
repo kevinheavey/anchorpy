@@ -10,3 +10,4 @@ from .initialize_with_values2 import (
     InitializeWithValues2Accounts,
 )
 from .cause_error import cause_error
+from .init_my_account import init_my_account, InitMyAccountArgs, InitMyAccountAccounts

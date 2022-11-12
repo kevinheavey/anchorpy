@@ -102,6 +102,7 @@ def client_gen(
     program_id: Optional[str] = typer.Option(
         None, help="Optional program ID to be included in the code"
     ),
+    pdas: Optional[bool] = False,
 ):
     """Generate Python client code from the specified anchor IDL."""
     idl_obj = Idl.from_json(idl.read_text())
@@ -129,7 +130,7 @@ def client_gen(
     typer.echo("generating errors.py...")
     gen_errors(idl_obj, out)
     typer.echo("generating instructions...")
-    gen_instructions(idl_obj, out)
+    gen_instructions(idl_obj, out, pdas)
     typer.echo("generating types...")
     gen_types(idl_obj, out)
     typer.echo("generating accounts...")
