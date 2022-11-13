@@ -221,13 +221,19 @@ def _field_to_encodable(
         if len(maybe_coption_split) == 2:
             inner_type = maybe_coption_split[1][:-1]
             encodable = _field_to_encodable(
-            idl=idl,
-            ty=IdlField(ty_name, docs=None, ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[inner_type]),
-            val_prefix=val_prefix,
-            types_relative_imports=types_relative_imports,
-            val_suffix=val_suffix,
-            convert_case=convert_case,
-        )
+                idl=idl,
+                ty=IdlField(
+                    ty_name,
+                    docs=None,
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                        inner_type
+                    ],
+                ),
+                val_prefix=val_prefix,
+                types_relative_imports=types_relative_imports,
+                val_suffix=val_suffix,
+                convert_case=convert_case,
+            )
             if encodable == f"{val_prefix}{ty_name}{val_suffix}":
                 return encodable
             return _maybe_none(f"{val_prefix}{ty_name}{val_suffix}", encodable)
@@ -298,10 +304,17 @@ def _field_from_decoded(
         if len(maybe_coption_split) == 2:
             inner_type = maybe_coption_split[1][:-1]
             decoded = _field_from_decoded(
-            idl=idl,
-            ty=IdlField(ty_name, docs=None, ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[inner_type]),
-            types_relative_imports=types_relative_imports,
-            val_prefix=val_prefix)
+                idl=idl,
+                ty=IdlField(
+                    ty_name,
+                    docs=None,
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                        inner_type
+                    ],
+                ),
+                types_relative_imports=types_relative_imports,
+                val_prefix=val_prefix,
+            )
             # skip coercion when not needed
             if decoded == f"{val_prefix}{ty_name}":
                 return decoded
@@ -456,12 +469,18 @@ def _field_to_json(
         if len(maybe_coption_split) == 2:
             inner_type = maybe_coption_split[1][:-1]
             value = _field_to_json(
-            idl,
-            IdlField(ty.name, docs=None, ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[inner_type]),
-            val_prefix,
-            val_suffix,
-            convert_case=convert_case,
-        )
+                idl,
+                IdlField(
+                    ty.name,
+                    docs=None,
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                        inner_type
+                    ],
+                ),
+                val_prefix,
+                val_suffix,
+                convert_case=convert_case,
+            )
             # skip coercion when not needed
             if value == var_name:
                 return value
@@ -571,12 +590,18 @@ def _field_from_json(
         if len(maybe_coption_split) == 2:
             inner_type = maybe_coption_split[1][:-1]
             inner = _field_from_json(
-            idl=idl,
-            ty=IdlField(ty_name, docs=None, ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[inner_type]),
-            param_prefix=param_prefix,
-            param_suffix=param_suffix,
-            types_relative_imports=types_relative_imports,
-        )
+                idl=idl,
+                ty=IdlField(
+                    ty_name,
+                    docs=None,
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                        inner_type
+                    ],
+                ),
+                param_prefix=param_prefix,
+                param_suffix=param_suffix,
+                types_relative_imports=types_relative_imports,
+            )
             # skip coercion when not needed
             if inner == var_name:
                 return inner
