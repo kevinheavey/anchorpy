@@ -77,6 +77,14 @@ def _py_type_from_idl(
     if isinstance(ty, IdlTypeDefined):
         defined = _sanitize(ty.defined)
         filtered = [t for t in idl.types if _sanitize(t.name) == defined]
+        maybe_coption_split = defined.split("COption<")
+        if len(maybe_coption_split) == 2:
+            inner_type = {"u64": "int", "Pubkey": "PublicKey"}[
+                maybe_coption_split[1][:-1]
+            ]
+            return f"typing.Optional[{inner_type}]"
+        if defined == "&'astr":
+            return "str"
         defined_types_prefix = (
             "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
         )
@@ -138,17 +146,25 @@ def _layout_for_type(
         inner = f"borsh.Option({layout})"
     elif isinstance(ty, IdlTypeDefined):
         defined = _sanitize(ty.defined)
-        filtered = [t for t in idl.types if _sanitize(t.name) == defined]
-        typedef_type = filtered[0].ty
-        defined_types_prefix = (
-            "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
-        )
-        module = snake(defined)
-        inner = (
-            f"{defined_types_prefix}{module}.{defined}.layout"
-            if isinstance(typedef_type, IdlTypeDefinitionTyStruct)
-            else f"{defined_types_prefix}{module}.layout"
-        )
+        maybe_coption_split = defined.split("COption<")
+        if len(maybe_coption_split) == 2:
+            layout_str = maybe_coption_split[1][:-1]
+            layout = {"u64": "borsh.U64", "Pubkey": "BorshPubkey"}[layout_str]
+            inner = f"COption({layout})"
+        elif defined == "&'astr":
+            return "borsh.String"
+        else:
+            filtered = [t for t in idl.types if _sanitize(t.name) == defined]
+            typedef_type = filtered[0].ty
+            defined_types_prefix = (
+                "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
+            )
+            module = snake(defined)
+            inner = (
+                f"{defined_types_prefix}{module}.{defined}.layout"
+                if isinstance(typedef_type, IdlTypeDefinitionTyStruct)
+                else f"{defined_types_prefix}{module}.layout"
+            )
     elif isinstance(ty, IdlTypeArray):
         layout = _layout_for_type(
             idl=idl, ty=ty.array[0], types_relative_imports=types_relative_imports
@@ -203,7 +219,30 @@ def _field_to_encodable(
         return _maybe_none(f"{val_prefix}{ty_name}{val_suffix}", encodable)
     if isinstance(ty_type, IdlTypeDefined):
         defined = _sanitize(ty_type.defined)
+        maybe_coption_split = defined.split("COption<")
+        if len(maybe_coption_split) == 2:
+            inner_type = maybe_coption_split[1][:-1]
+            encodable = _field_to_encodable(
+                idl=idl,
+                ty=IdlField(
+                    ty_name,
+                    docs=None,
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                        inner_type
+                    ],
+                ),
+                val_prefix=val_prefix,
+                types_relative_imports=types_relative_imports,
+                val_suffix=val_suffix,
+                convert_case=convert_case,
+            )
+            if encodable == f"{val_prefix}{ty_name}{val_suffix}":
+                return encodable
+            return _maybe_none(f"{val_prefix}{ty_name}{val_suffix}", encodable)
+        elif defined == "&'astr":
+            return f"{val_prefix}{ty_name}{val_suffix}"
         filtered = [t for t in idl.types if _sanitize(t.name) == defined]
+
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
         typedef_type = filtered[0].ty
@@ -263,6 +302,25 @@ def _field_from_decoded(
         return _maybe_none(f"{val_prefix}{ty_name}", decoded)
     if isinstance(ty_type, IdlTypeDefined):
         defined = _sanitize(ty_type.defined)
+        maybe_coption_split = defined.split("COption<")
+        if len(maybe_coption_split) == 2:
+            inner_type = maybe_coption_split[1][:-1]
+            decoded = _field_from_decoded(
+                idl=idl,
+                ty=IdlField(
+                    ty_name,
+                    docs=None,
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                        inner_type
+                    ],
+                ),
+                types_relative_imports=types_relative_imports,
+                val_prefix=val_prefix,
+            )
+            # skip coercion when not needed
+            if decoded == f"{val_prefix}{ty_name}":
+                return decoded
+            return _maybe_none(f"{val_prefix}{ty_name}", decoded)
         filtered = [t for t in idl.types if _sanitize(t.name) == defined]
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
@@ -409,6 +467,26 @@ def _field_to_json(
     if isinstance(ty_type, IdlTypeDefined):
         defined = ty_type.defined
         filtered = [t for t in idl.types if t.name == defined]
+        maybe_coption_split = defined.split("COption<")
+        if len(maybe_coption_split) == 2:
+            inner_type = maybe_coption_split[1][:-1]
+            value = _field_to_json(
+                idl,
+                IdlField(
+                    ty.name,
+                    docs=None,
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                        inner_type
+                    ],
+                ),
+                val_prefix,
+                val_suffix,
+                convert_case=convert_case,
+            )
+            # skip coercion when not needed
+            if value == var_name:
+                return value
+            return _maybe_none(var_name, value)
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
         return f"{var_name}.to_json()"
@@ -440,11 +518,16 @@ def _idl_type_to_json_type(ty: IdlType, types_relative_imports: bool) -> str:
         )
         return f"typing.Optional[{inner}]"
     if isinstance(ty, IdlTypeDefined):
+        defined = ty.defined
+        maybe_coption_split = defined.split("COption<")
+        if len(maybe_coption_split) == 2:
+            inner_type = {"u64": "int", "Pubkey": "str"}[maybe_coption_split[1][:-1]]
+            return f"typing.Optional[{inner_type}]"
         defined_types_prefix = (
             "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
         )
-        module = _sanitize(snake(ty.defined))
-        return f"{defined_types_prefix}{module}.{_json_interface_name(ty.defined)}"
+        module = _sanitize(snake(defined))
+        return f"{defined_types_prefix}{module}.{_json_interface_name(defined)}"
     if ty == IdlTypeSimple.Bool:
         return "bool"
     if ty in INT_TYPES:
@@ -510,6 +593,26 @@ def _field_from_json(
     if isinstance(ty_type, IdlTypeDefined):
         from_json_arg = var_name
         defined = _sanitize(ty_type.defined)
+        maybe_coption_split = defined.split("COption<")
+        if len(maybe_coption_split) == 2:
+            inner_type = maybe_coption_split[1][:-1]
+            inner = _field_from_json(
+                idl=idl,
+                ty=IdlField(
+                    ty_name,
+                    docs=None,
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                        inner_type
+                    ],
+                ),
+                param_prefix=param_prefix,
+                param_suffix=param_suffix,
+                types_relative_imports=types_relative_imports,
+            )
+            # skip coercion when not needed
+            if inner == var_name:
+                return inner
+            return _maybe_none(var_name, inner)
         defined_snake = _sanitize(snake(ty_type.defined))
         filtered = [t for t in idl.types if _sanitize(t.name) == defined]
         typedef_type = filtered[0].ty
