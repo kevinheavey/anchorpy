@@ -3,6 +3,7 @@ from black import format_str, FileMode
 from autoflake import fix_code
 from pathlib import Path
 from pyheck import upper_camel, snake, shouty_snake
+from solana.system_program import SYS_PROGRAM_ID
 from genpy import (
     Import,
     FromImport,
@@ -42,6 +43,14 @@ from anchorpy.clientgen.common import (
     _field_to_encodable,
     _sanitize,
 )
+
+CONST_ACCOUNTS = {
+    "associated_token_program": "ASSOCIATED_TOKEN_PROGRAM_ID",
+    "rent": "SYSVAR_RENT_PUBKEY",
+    "system_program": "SYS_PROGRAM_ID",
+    "token_program": "TOKEN_PROGRAM_ID",
+    "clock": "SYSVAR_CLOCK_PUBKEY",
+}
 
 
 def gen_instructions(idl: Idl, root: Path, gen_pdas: bool) -> None:
@@ -98,9 +107,12 @@ def recurse_accounts(accs: list[IdlAccountItem], nested_names: list[str], const_
             try:
                 pubkey_var = const_accs[acc_idx]
             except KeyError:
-                nested_keys = [f'["{key}"]' for key in names]
-                dict_accessor = "".join(nested_keys)
-                pubkey_var = f"accounts{dict_accessor}"
+                try:
+                    pubkey_var = CONST_ACCOUNTS[names[-1]]
+                except KeyError:
+                    nested_keys = [f'["{key}"]' for key in names]
+                    dict_accessor = "".join(nested_keys)
+                    pubkey_var = f"accounts{dict_accessor}"
             elements.append(
                 f"AccountMeta(pubkey={pubkey_var}, "
                 f"is_signer={acc.is_signer}, "
@@ -171,7 +183,10 @@ def gen_accounts(
                         const_acc_indices = {**const_acc_indices, acc_count: const_pda_name}
                         pda_generated = True
             if not pda_generated:
-                params.append(TypedParam(acc_name, "PublicKey"))
+                try:
+                    CONST_ACCOUNTS[acc_name]
+                except KeyError:
+                    params.append(TypedParam(acc_name, "PublicKey"))
     maybe_typed_dict_container = [TypedDict(name, params)] if params else []
     accounts = maybe_typed_dict_container + extra_typeddicts_to_use
     return accounts, accum_const_pdas + const_pdas, const_acc_indices, acc_count
@@ -183,6 +198,9 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
         ANNOTATIONS_IMPORT,
         Import("typing"),
         FromImport("solana.publickey", ["PublicKey"]),
+        FromImport("solana.system_program", ["SYS_PROGRAM_ID"]),
+        FromImport("solana.sysvar", ["SYSVAR_RENT_PUBKEY", "SYSVAR_CLOCK_PUBKEY"]),
+        FromImport("spl.token.constants", ["TOKEN_PROGRAM_ID", "ASSOCIATED_TOKEN_PROGRAM_ID"]),
         FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
         FromImport("anchorpy.borsh_extension", ["EnumForCodegen", "BorshPubkey"]),
         FromImport("construct", ["Pass", "Construct"]),

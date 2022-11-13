@@ -1,6 +1,7 @@
 from __future__ import annotations
 import typing
 from solana.publickey import PublicKey
+from solana.system_program import SYS_PROGRAM_ID
 from solana.transaction import TransactionInstruction, AccountMeta
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
@@ -41,7 +42,6 @@ class InitMyAccountAccounts(typing.TypedDict):
     base: PublicKey
     base2: PublicKey
     nested: NestedNested
-    system_program: PublicKey
 
 
 def init_my_account(
@@ -59,9 +59,7 @@ def init_my_account(
         AccountMeta(
             pubkey=NESTED_NESTED_ACCOUNT_NESTED, is_signer=False, is_writable=False
         ),
-        AccountMeta(
-            pubkey=accounts["system_program"], is_signer=False, is_writable=False
-        ),
+        AccountMeta(pubkey=SYS_PROGRAM_ID, is_signer=False, is_writable=False),
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts

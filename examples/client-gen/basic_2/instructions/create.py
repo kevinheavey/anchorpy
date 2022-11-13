@@ -1,6 +1,7 @@
 from __future__ import annotations
 import typing
 from solana.publickey import PublicKey
+from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import TransactionInstruction, AccountMeta
 from anchorpy.borsh_extension import BorshPubkey
 import borsh_construct as borsh
@@ -16,7 +17,6 @@ layout = borsh.CStruct("authority" / BorshPubkey)
 
 class CreateAccounts(typing.TypedDict):
     counter: PublicKey
-    rent: PublicKey
 
 
 def create(
@@ -27,7 +27,7 @@ def create(
 ) -> TransactionInstruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["counter"], is_signer=False, is_writable=True),
-        AccountMeta(pubkey=accounts["rent"], is_signer=False, is_writable=False),
+        AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
