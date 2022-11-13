@@ -2,7 +2,7 @@
 
 ## [0.13.0] - Unreleased
 
-- Add PDA resolution and common pubkeys to client-gen
+- Add PDA resolution and common pubkeys to client-gen [#(98)](https://github.com/kevinheavey/anchorpy/pull/98)
 
 ## [0.12.0] - 2022-11-01
 
