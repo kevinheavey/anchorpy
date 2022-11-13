@@ -102,7 +102,9 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
         FromImport("anchorpy.coder.accounts", ["ACCOUNT_DISCRIMINATOR_SIZE"]),
         FromImport("anchorpy.error", ["AccountInvalidDiscriminator"]),
         FromImport("anchorpy.utils.rpc", ["get_multiple_accounts"]),
-        FromImport("anchorpy.borsh_extension", ["BorshPubkey", "EnumForCodegen"]),
+        FromImport(
+            "anchorpy.borsh_extension", ["BorshPubkey", "EnumForCodegen", "COption"]
+        ),
         FromImport("..program_id", ["PROGRAM_ID"]),
     ]
     imports = (

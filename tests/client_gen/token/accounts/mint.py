@@ -7,34 +7,33 @@ import borsh_construct as borsh
 from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE
 from anchorpy.error import AccountInvalidDiscriminator
 from anchorpy.utils.rpc import get_multiple_accounts
-from anchorpy.borsh_extension import BorshPubkey
+from anchorpy.borsh_extension import BorshPubkey, COption
 from ..program_id import PROGRAM_ID
-from .. import types
 
 
 class MintJSON(typing.TypedDict):
-    mint_authority: types.c_option_pubkey.COption < Pubkey > JSON
+    mint_authority: typing.Optional[str]
     supply: int
     decimals: int
     is_initialized: bool
-    freeze_authority: types.c_option_pubkey.COption < Pubkey > JSON
+    freeze_authority: typing.Optional[str]
 
 
 @dataclass
 class Mint:
     discriminator: typing.ClassVar = b"P\xbc\xf5\x14_\x8a9\x9c"
     layout: typing.ClassVar = borsh.CStruct(
-        "mint_authority" / borsh.COption(BorshPubkey),
+        "mint_authority" / COption(BorshPubkey),
         "supply" / borsh.U64,
         "decimals" / borsh.U8,
         "is_initialized" / borsh.Bool,
-        "freeze_authority" / borsh.COption(BorshPubkey),
+        "freeze_authority" / COption(BorshPubkey),
     )
-    mint_authority: typing.Optional[Pubkey]
+    mint_authority: typing.Optional[PublicKey]
     supply: int
     decimals: int
     is_initialized: bool
-    freeze_authority: typing.Optional[Pubkey]
+    freeze_authority: typing.Optional[PublicKey]
 
     @classmethod
     async def fetch(

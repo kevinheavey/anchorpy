@@ -7,7 +7,7 @@ import borsh_construct as borsh
 from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE
 from anchorpy.error import AccountInvalidDiscriminator
 from anchorpy.utils.rpc import get_multiple_accounts
-from anchorpy.borsh_extension import BorshPubkey
+from anchorpy.borsh_extension import BorshPubkey, COption
 from ..program_id import PROGRAM_ID
 from .. import types
 
@@ -16,11 +16,11 @@ class AccountJSON(typing.TypedDict):
     mint: str
     owner: str
     amount: int
-    delegate: types.c_option_pubkey.COption < Pubkey > JSON
+    delegate: typing.Optional[str]
     state: types.account_state.AccountStateJSON
-    is_native: types.c_option_u64.COption < u64 > JSON
+    is_native: typing.Optional[int]
     delegated_amount: int
-    close_authority: types.c_option_pubkey.COption < Pubkey > JSON
+    close_authority: typing.Optional[str]
 
 
 @dataclass
@@ -30,20 +30,20 @@ class Account:
         "mint" / BorshPubkey,
         "owner" / BorshPubkey,
         "amount" / borsh.U64,
-        "delegate" / borsh.COption(BorshPubkey),
+        "delegate" / COption(BorshPubkey),
         "state" / types.account_state.layout,
-        "is_native" / borsh.COption(borsh.U64),
+        "is_native" / COption(borsh.U64),
         "delegated_amount" / borsh.U64,
-        "close_authority" / borsh.COption(BorshPubkey),
+        "close_authority" / COption(BorshPubkey),
     )
     mint: PublicKey
     owner: PublicKey
     amount: int
-    delegate: typing.Optional[Pubkey]
+    delegate: typing.Optional[PublicKey]
     state: types.account_state.AccountStateKind
-    is_native: typing.Optional[u64]
+    is_native: typing.Optional[int]
     delegated_amount: int
-    close_authority: typing.Optional[Pubkey]
+    close_authority: typing.Optional[PublicKey]
 
     @classmethod
     async def fetch(

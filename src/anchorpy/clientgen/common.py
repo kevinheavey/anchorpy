@@ -79,7 +79,9 @@ def _py_type_from_idl(
         filtered = [t for t in idl.types if _sanitize(t.name) == defined]
         maybe_coption_split = defined.split("COption<")
         if len(maybe_coption_split) == 2:
-            inner_type = maybe_coption_split[1][:-1]
+            inner_type = {"u64": "int", "Pubkey": "PublicKey"}[
+                maybe_coption_split[1][:-1]
+            ]
             return f"typing.Optional[{inner_type}]"
         if defined == "&'astr":
             return "str"
@@ -148,7 +150,7 @@ def _layout_for_type(
         if len(maybe_coption_split) == 2:
             layout_str = maybe_coption_split[1][:-1]
             layout = {"u64": "borsh.U64", "Pubkey": "BorshPubkey"}[layout_str]
-            inner = f"borsh.COption({layout})"
+            inner = f"COption({layout})"
         elif defined == "&'astr":
             return "borsh.String"
         else:
@@ -516,11 +518,16 @@ def _idl_type_to_json_type(ty: IdlType, types_relative_imports: bool) -> str:
         )
         return f"typing.Optional[{inner}]"
     if isinstance(ty, IdlTypeDefined):
+        defined = ty.defined
+        maybe_coption_split = defined.split("COption<")
+        if len(maybe_coption_split) == 2:
+            inner_type = {"u64": "int", "Pubkey": "str"}[maybe_coption_split[1][:-1]]
+            return f"typing.Optional[{inner_type}]"
         defined_types_prefix = (
             "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
         )
-        module = _sanitize(snake(ty.defined))
-        return f"{defined_types_prefix}{module}.{_json_interface_name(ty.defined)}"
+        module = _sanitize(snake(defined))
+        return f"{defined_types_prefix}{module}.{_json_interface_name(defined)}"
     if ty == IdlTypeSimple.Bool:
         return "bool"
     if ty in INT_TYPES:

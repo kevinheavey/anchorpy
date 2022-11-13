@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing
 from solana.publickey import PublicKey
 from solana.transaction import TransactionInstruction, AccountMeta
-from anchorpy.borsh_extension import BorshPubkey
+from anchorpy.borsh_extension import BorshPubkey, COption
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
@@ -10,13 +10,13 @@ from ..program_id import PROGRAM_ID
 class InitializeMint2Args(typing.TypedDict):
     decimals: int
     mint_authority: PublicKey
-    freeze_authority: typing.Optional[Pubkey]
+    freeze_authority: typing.Optional[PublicKey]
 
 
 layout = borsh.CStruct(
     "decimals" / borsh.U8,
     "mint_authority" / BorshPubkey,
-    "freeze_authority" / borsh.COption(BorshPubkey),
+    "freeze_authority" / COption(BorshPubkey),
 )
 
 

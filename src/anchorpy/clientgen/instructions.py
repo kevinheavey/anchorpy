@@ -233,7 +233,9 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
             "spl.token.constants", ["TOKEN_PROGRAM_ID", "ASSOCIATED_TOKEN_PROGRAM_ID"]
         ),
         FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
-        FromImport("anchorpy.borsh_extension", ["EnumForCodegen", "BorshPubkey"]),
+        FromImport(
+            "anchorpy.borsh_extension", ["BorshPubkey", "EnumForCodegen", "COption"]
+        ),
         FromImport("construct", ["Pass", "Construct"]),
         ImportAs("borsh_construct", "borsh"),
         *types_import,
