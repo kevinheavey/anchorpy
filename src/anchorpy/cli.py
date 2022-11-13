@@ -102,7 +102,7 @@ def client_gen(
     program_id: Optional[str] = typer.Option(
         None, help="Optional program ID to be included in the code"
     ),
-    pdas: Optional[bool] = False,
+    pdas: bool = typer.Option(False, "--pdas", help="Auto-generate PDAs where possible."),
 ):
     """Generate Python client code from the specified anchor IDL."""
     idl_obj = Idl.from_json(idl.read_text())
