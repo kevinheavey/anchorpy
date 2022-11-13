@@ -1,6 +1,7 @@
 from __future__ import annotations
 import typing
 from solana.publickey import PublicKey
+from solana.system_program import SYS_PROGRAM_ID
 from solana.transaction import TransactionInstruction, AccountMeta
 from construct import Construct
 import borsh_construct as borsh
@@ -19,7 +20,6 @@ layout = borsh.CStruct(
 class InitializeWithValues2Accounts(typing.TypedDict):
     state: PublicKey
     payer: PublicKey
-    system_program: PublicKey
 
 
 def initialize_with_values2(
@@ -31,9 +31,7 @@ def initialize_with_values2(
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["state"], is_signer=True, is_writable=True),
         AccountMeta(pubkey=accounts["payer"], is_signer=True, is_writable=True),
-        AccountMeta(
-            pubkey=accounts["system_program"], is_signer=False, is_writable=False
-        ),
+        AccountMeta(pubkey=SYS_PROGRAM_ID, is_signer=False, is_writable=False),
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts

@@ -240,9 +240,172 @@
       "name": "causeError",
       "accounts": [],
       "args": []
+    },
+    {
+      "name": "initMyAccount",
+      "accounts": [
+        {
+          "name": "base",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "base2",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "account",
+          "isMut": false,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "another-seed"
+              },
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "test"
+              },
+              {
+                "kind": "const",
+                "type": {
+                  "array": [
+                    "u8",
+                    2
+                  ]
+                },
+                "value": [
+                  104,
+                  105
+                ]
+              },
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "hi"
+              },
+              {
+                "kind": "const",
+                "type": "u8",
+                "value": 1
+              },
+              {
+                "kind": "const",
+                "type": "u32",
+                "value": 2
+              },
+              {
+                "kind": "const",
+                "type": "u64",
+                "value": 3
+              }
+            ]
+          }
+        },
+        {
+          "name": "nested",
+          "accounts": [
+            {
+              "name": "accountNested",
+              "isMut": false,
+              "isSigner": false,
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "type": "string",
+                    "value": "nested-seed"
+                  },
+                  {
+                    "kind": "const",
+                    "type": "string",
+                    "value": "test"
+                  },
+                  {
+                    "kind": "const",
+                    "type": {
+                      "array": [
+                        "u8",
+                        2
+                      ]
+                    },
+                    "value": [
+                      104,
+                      105
+                    ]
+                  },
+                  {
+                    "kind": "const",
+                    "type": "string",
+                    "value": "hi"
+                  },
+                  {
+                    "kind": "const",
+                    "type": "u8",
+                    "value": 1
+                  },
+                  {
+                    "kind": "const",
+                    "type": "u32",
+                    "value": 2
+                  },
+                  {
+                    "kind": "const",
+                    "type": "u64",
+                    "value": 3
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "seedA",
+          "type": "u8"
+        }
+      ]
     }
   ],
   "accounts": [
+    {
+      "name": "MyAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "data",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BaseAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "baseData",
+            "type": "u64"
+          },
+          {
+            "name": "baseDataKey",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
     {
       "name": "State",
       "type": {
