@@ -3,7 +3,6 @@ from black import format_str, FileMode
 from autoflake import fix_code
 from pathlib import Path
 from pyheck import upper_camel, snake, shouty_snake
-from solana.system_program import SYS_PROGRAM_ID
 from genpy import (
     Import,
     FromImport,
@@ -114,7 +113,7 @@ def recurse_accounts(
             try:
                 pubkey_var = const_accs[acc_idx]
             except KeyError:
-                try:
+                try:  # noqa: WPS505
                     pubkey_var = CONST_ACCOUNTS[names[-1]]
                 except KeyError:
                     nested_keys = [f'["{key}"]' for key in names]
@@ -165,7 +164,7 @@ def gen_accounts(
             nested_accs = cast(IdlAccounts, acc)
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
             params.append(TypedParam(acc_name, f"{nested_acc_name}"))
-            nested_res = gen_accounts(
+            nested_res = gen_accounts(  # noqa: WPS317
                 nested_acc_name,
                 nested_accs.accounts,
                 gen_pdas,

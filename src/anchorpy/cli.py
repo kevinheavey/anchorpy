@@ -103,7 +103,7 @@ def client_gen(
         None, help="Optional program ID to be included in the code"
     ),
     pdas: bool = typer.Option(
-        False, "--pdas", help="Auto-generate PDAs where possible."
+        False, "--pdas", help="Auto-generate PDAs where possible."  # noqa: WPS425
     ),
 ):
     """Generate Python client code from the specified anchor IDL."""
