@@ -13,8 +13,6 @@ from solders.rpc.responses import SimulateTransactionResp
 from solana.keypair import Keypair
 from solana.rpc.async_api import AsyncClient
 from solana.transaction import Transaction
-from solana.sysvar import SYSVAR_RENT_PUBKEY, SYSVAR_CLOCK_PUBKEY
-from solana.system_program import SYS_PROGRAM_ID
 from solana.rpc.commitment import Processed
 from solana.rpc.core import RPCException
 from solana.publickey import PublicKey
@@ -122,8 +120,6 @@ async def init_and_account_fetch(provider: Provider) -> Keypair:
         {
             "state": state.public_key,
             "payer": provider.wallet.public_key,
-            "nested": {"clock": SYSVAR_CLOCK_PUBKEY, "rent": SYSVAR_RENT_PUBKEY},
-            "system_program": SYS_PROGRAM_ID,
         }
     )
     tx = Transaction().add(initialize_ix)
@@ -250,16 +246,12 @@ async def setup_fetch_multiple(provider: Provider) -> tuple[Keypair, Keypair]:
             {
                 "state": state.public_key,
                 "payer": provider.wallet.public_key,
-                "nested": {"clock": SYSVAR_CLOCK_PUBKEY, "rent": SYSVAR_RENT_PUBKEY},
-                "system_program": SYS_PROGRAM_ID,
             }
         ),
         initialize(
             {
                 "state": another_state.public_key,
                 "payer": provider.wallet.public_key,
-                "nested": {"clock": SYSVAR_CLOCK_PUBKEY, "rent": SYSVAR_RENT_PUBKEY},
-                "system_program": SYS_PROGRAM_ID,
             }
         ),
     ]
@@ -344,9 +336,7 @@ async def send_instructions_with_args(provider: Provider) -> tuple[Keypair, Keyp
     )
     initialize_with_values_accounts = InitializeWithValuesAccounts(
         state=state.public_key,
-        nested={"clock": SYSVAR_CLOCK_PUBKEY, "rent": SYSVAR_RENT_PUBKEY},
         payer=provider.wallet.public_key,
-        system_program=SYS_PROGRAM_ID,
     )
     ix1 = initialize_with_values(
         initialize_with_values_args, initialize_with_values_accounts
@@ -356,7 +346,6 @@ async def send_instructions_with_args(provider: Provider) -> tuple[Keypair, Keyp
         {
             "state": state2.public_key,
             "payer": provider.wallet.public_key,
-            "system_program": SYS_PROGRAM_ID,
         },
     )
     tx = Transaction().add(ix1, ix2)

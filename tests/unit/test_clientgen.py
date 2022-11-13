@@ -9,7 +9,7 @@ def test_gen_accounts() -> None:
     path = Path("tests/idls/composite.json")
     raw = path.read_text()
     idl = Idl.from_json(raw)
-    accs = gen_accounts("CompositeUpdateAccounts", idl.instructions[1].accounts)
+    accs = gen_accounts("CompositeUpdateAccounts", idl.instructions[1].accounts, gen_pdas=True)
     suite = Suite(accs)
     assert str(suite) == (
         "    class CompositeUpdateAccounts(typing.TypedDict):"

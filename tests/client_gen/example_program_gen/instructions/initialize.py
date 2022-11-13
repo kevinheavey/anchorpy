@@ -9,7 +9,6 @@ from ..program_id import PROGRAM_ID
 
 class InitializeAccounts(typing.TypedDict):
     state: PublicKey
-    nested: NestedNested
     payer: PublicKey
 
 

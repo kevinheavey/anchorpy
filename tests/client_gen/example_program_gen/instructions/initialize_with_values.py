@@ -73,7 +73,6 @@ layout = borsh.CStruct(
 
 class InitializeWithValuesAccounts(typing.TypedDict):
     state: PublicKey
-    nested: NestedNested
     payer: PublicKey
 
 

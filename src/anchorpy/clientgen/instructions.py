@@ -127,7 +127,7 @@ def recurse_accounts(
 
 
 def to_buffer_value(
-    ty: IdlTypeSimple | IdlTypeArray, value: Union[str, int, list[int]]
+    ty: Union[IdlTypeSimple, IdlTypeArray], value: Union[str, int, list[int]]
 ) -> bytes:
     if isinstance(value, int):
         encoder = FIELD_TYPE_MAP[cast(IdlTypeSimple, ty)]
@@ -139,7 +139,7 @@ def to_buffer_value(
     raise ValueError(f"Unexpected type. ty: {ty}; value: {value}")
 
 
-GenAccountsRes = tuple[list[TypedDict], list[Assign], dict[str, int], int]
+GenAccountsRes = tuple[list[TypedDict], list[Assign], dict[int, str], int]
 
 
 def gen_accounts(
@@ -151,7 +151,7 @@ def gen_accounts(
     if accum is None:
         extra_typeddicts_to_use: list[TypedDict] = []
         accum_const_pdas: list[Assign] = []
-        const_acc_indices: dict[str, int] = {}
+        const_acc_indices: dict[int, str] = {}
         acc_count = 0
     else:
         extra_typeddicts_to_use, accum_const_pdas, const_acc_indices, acc_count = accum
@@ -189,7 +189,13 @@ def gen_accounts(
                         seeds = cast(list[IdlSeedConst], maybe_pda.seeds)
                         const_pda_name = shouty_snake(f"{name}_{acc_name}")
                         const_pda_body_items = [
-                            str(to_buffer_value(seed.ty, seed.value)) for seed in seeds
+                            str(
+                                to_buffer_value(
+                                    cast(Union[IdlTypeSimple, IdlTypeArray], seed.ty),
+                                    cast(Union[str, int, list[int]], seed.value),
+                                )
+                            )
+                            for seed in seeds
                         ]
                         seeds_arg = List(const_pda_body_items)
                         seeds_named_arg = NamedArg("seeds", seeds_arg)

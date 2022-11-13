@@ -41,7 +41,6 @@ INIT_MY_ACCOUNT_ACCOUNTS_ACCOUNT = PublicKey.find_program_address(
 class InitMyAccountAccounts(typing.TypedDict):
     base: PublicKey
     base2: PublicKey
-    nested: NestedNested
 
 
 def init_my_account(
