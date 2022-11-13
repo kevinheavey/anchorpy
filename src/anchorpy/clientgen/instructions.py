@@ -20,7 +20,6 @@ from anchorpy_core.idl import (
     Idl,
     IdlAccounts,
     IdlAccountItem,
-    IdlType,
     IdlTypeSimple,
     IdlSeedConst,
     IdlTypeArray,
@@ -127,11 +126,11 @@ def recurse_accounts(
     return elements, acc_idx
 
 
-def to_buffer_value(ty: IdlType, value: Union[str, int, list[int]]) -> bytes:
-    if not isinstance(ty, (IdlTypeSimple, IdlTypeArray)):
-        raise ValueError(f"Compound types not expected here. type: {ty}")
+def to_buffer_value(
+    ty: IdlTypeSimple | IdlTypeArray, value: Union[str, int, list[int]]
+) -> bytes:
     if isinstance(value, int):
-        encoder = FIELD_TYPE_MAP[ty]
+        encoder = FIELD_TYPE_MAP[cast(IdlTypeSimple, ty)]
         return encoder.build(value)
     if isinstance(value, str):
         return value.encode()
@@ -150,9 +149,9 @@ def gen_accounts(
     accum: Optional[GenAccountsRes] = None,
 ) -> GenAccountsRes:
     if accum is None:
-        extra_typeddicts_to_use = []
-        accum_const_pdas = []
-        const_acc_indices = {}
+        extra_typeddicts_to_use: list[TypedDict] = []
+        accum_const_pdas: list[Assign] = []
+        const_acc_indices: dict[str, int] = {}
         acc_count = 0
     else:
         extra_typeddicts_to_use, accum_const_pdas, const_acc_indices, acc_count = accum
@@ -163,7 +162,6 @@ def gen_accounts(
         if isinstance(acc, IdlAccounts):
             nested_accs = cast(IdlAccounts, acc)
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
-            params.append(TypedParam(acc_name, f"{nested_acc_name}"))
             nested_res = gen_accounts(  # noqa: WPS317
                 nested_acc_name,
                 nested_accs.accounts,
@@ -175,6 +173,8 @@ def gen_accounts(
                     acc_count,
                 ),
             )
+            if nested_res[0]:
+                params.append(TypedParam(acc_name, f"{nested_acc_name}"))
             extra_typeddicts_to_use = extra_typeddicts_to_use + nested_res[0]
             accum_const_pdas = accum_const_pdas + nested_res[1]
             const_acc_indices = const_acc_indices | nested_res[2]
@@ -186,10 +186,10 @@ def gen_accounts(
                 maybe_pda = acc.pda
                 if maybe_pda is not None:
                     if all(isinstance(seed, IdlSeedConst) for seed in maybe_pda.seeds):
+                        seeds = cast(list[IdlSeedConst], maybe_pda.seeds)
                         const_pda_name = shouty_snake(f"{name}_{acc_name}")
                         const_pda_body_items = [
-                            str(to_buffer_value(seed.ty, seed.value))
-                            for seed in maybe_pda.seeds
+                            str(to_buffer_value(seed.ty, seed.value)) for seed in seeds
                         ]
                         seeds_arg = List(const_pda_body_items)
                         seeds_named_arg = NamedArg("seeds", seeds_arg)
