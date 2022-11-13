@@ -24,7 +24,7 @@ from anchorpy_core.idl import (
     IdlType,
     IdlTypeSimple,
     IdlSeedConst,
-    IdlTypeArray
+    IdlTypeArray,
 )
 from anchorpy.clientgen.genpy_extension import (
     TypedParam,
@@ -35,7 +35,7 @@ from anchorpy.clientgen.genpy_extension import (
     Function,
     ANNOTATIONS_IMPORT,
     Call,
-    NamedArg
+    NamedArg,
 )
 from anchorpy.clientgen.common import (
     _py_type_from_idl,
@@ -94,13 +94,20 @@ def _accounts_interface_name(ix_name: str) -> str:
     return f"{upper_camel(ix_name)}Accounts"
 
 
-def recurse_accounts(accs: list[IdlAccountItem], nested_names: list[str], const_accs: dict[int, str], acc_idx: int = 0) -> tuple[list[str], int]:
+def recurse_accounts(
+    accs: list[IdlAccountItem],
+    nested_names: list[str],
+    const_accs: dict[int, str],
+    acc_idx: int = 0,
+) -> tuple[list[str], int]:
     elements: list[str] = []
     for acc in accs:
         names = [*nested_names, _sanitize(snake(acc.name))]
         if isinstance(acc, IdlAccounts):
             nested_accs = cast(IdlAccounts, acc)
-            new_elements, acc_idx = recurse_accounts(nested_accs.accounts, names, const_accs, acc_idx)
+            new_elements, acc_idx = recurse_accounts(
+                nested_accs.accounts, names, const_accs, acc_idx
+            )
             elements.extend(new_elements)
         else:
             acc_idx += 1
@@ -136,6 +143,7 @@ def to_buffer_value(ty: IdlType, value: Union[str, int, list[int]]) -> bytes:
 
 GenAccountsRes = tuple[list[TypedDict], list[Assign], dict[str, int], int]
 
+
 def gen_accounts(
     name,
     idl_accs: list[IdlAccountItem],
@@ -158,10 +166,15 @@ def gen_accounts(
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
             params.append(TypedParam(acc_name, f"{nested_acc_name}"))
             nested_res = gen_accounts(
-                    nested_acc_name,
-                    nested_accs.accounts,
-                    gen_pdas,
-                    (extra_typeddicts_to_use, accum_const_pdas, const_acc_indices, acc_count),
+                nested_acc_name,
+                nested_accs.accounts,
+                gen_pdas,
+                (
+                    extra_typeddicts_to_use,
+                    accum_const_pdas,
+                    const_acc_indices,
+                    acc_count,
+                ),
             )
             extra_typeddicts_to_use = extra_typeddicts_to_use + nested_res[0]
             accum_const_pdas = accum_const_pdas + nested_res[1]
@@ -175,12 +188,23 @@ def gen_accounts(
                 if maybe_pda is not None:
                     if all(isinstance(seed, IdlSeedConst) for seed in maybe_pda.seeds):
                         const_pda_name = shouty_snake(f"{name}_{acc_name}")
-                        const_pda_body_items = [str(to_buffer_value(seed.ty, seed.value)) for seed in maybe_pda.seeds]
+                        const_pda_body_items = [
+                            str(to_buffer_value(seed.ty, seed.value))
+                            for seed in maybe_pda.seeds
+                        ]
                         seeds_arg = List(const_pda_body_items)
                         seeds_named_arg = NamedArg("seeds", seeds_arg)
-                        const_pda_body = Call("PublicKey.find_program_address", [seeds_named_arg, NamedArg("program_id", "PROGRAM_ID")])
-                        const_pdas.append(Assign(const_pda_name, f"{const_pda_body}[0]"))
-                        const_acc_indices = {**const_acc_indices, acc_count: const_pda_name}
+                        const_pda_body = Call(
+                            "PublicKey.find_program_address",
+                            [seeds_named_arg, NamedArg("program_id", "PROGRAM_ID")],
+                        )
+                        const_pdas.append(
+                            Assign(const_pda_name, f"{const_pda_body}[0]")
+                        )
+                        const_acc_indices = {
+                            **const_acc_indices,
+                            acc_count: const_pda_name,
+                        }
                         pda_generated = True
             if not pda_generated:
                 try:
@@ -200,7 +224,9 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
         FromImport("solana.publickey", ["PublicKey"]),
         FromImport("solana.system_program", ["SYS_PROGRAM_ID"]),
         FromImport("solana.sysvar", ["SYSVAR_RENT_PUBKEY", "SYSVAR_CLOCK_PUBKEY"]),
-        FromImport("spl.token.constants", ["TOKEN_PROGRAM_ID", "ASSOCIATED_TOKEN_PROGRAM_ID"]),
+        FromImport(
+            "spl.token.constants", ["TOKEN_PROGRAM_ID", "ASSOCIATED_TOKEN_PROGRAM_ID"]
+        ),
         FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
         FromImport("anchorpy.borsh_extension", ["EnumForCodegen", "BorshPubkey"]),
         FromImport("construct", ["Pass", "Construct"]),
@@ -265,11 +291,11 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
         accounts_container = (
             [TypedParam("accounts", accounts_interface_name)] if ix.accounts else []
         )
-        accounts, const_pdas, const_acc_indices, _ = gen_accounts(accounts_interface_name, ix.accounts, gen_pdas)
-        recursed = recurse_accounts(ix.accounts, [], const_acc_indices)[0]
-        keys_assignment = Assign(
-            "keys: list[AccountMeta]", f"{List(recursed)}"
+        accounts, const_pdas, const_acc_indices, _ = gen_accounts(
+            accounts_interface_name, ix.accounts, gen_pdas
         )
+        recursed = recurse_accounts(ix.accounts, [], const_acc_indices)[0]
+        keys_assignment = Assign("keys: list[AccountMeta]", f"{List(recursed)}")
         remaining_accounts_concatenation = If(
             "remaining_accounts is not None", Line("keys += remaining_accounts")
         )
