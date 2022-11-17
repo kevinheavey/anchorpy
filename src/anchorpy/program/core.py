@@ -61,6 +61,7 @@ def _build_namespace(  # noqa: WPS320
     dict[str, AccountClient],
     dict[str, _SimulateFn],
     dict[str, Any],
+    dict[str, MethodsBuilder]
 ]:
     """Generate all namespaces for a given program.
 
@@ -79,6 +80,7 @@ def _build_namespace(  # noqa: WPS320
     instruction = {}
     transaction = {}
     simulate = {}
+    methods = {}
 
     for idl_ix in idl.instructions:
 
@@ -94,16 +96,18 @@ def _build_namespace(  # noqa: WPS320
             program_id,
             idl,
         )
+        methods_item = _build_methods_item(idl_ix, ix_item, tx_item, rpc_item, program_id)
 
         name = snake(idl_ix.name)
         instruction[name] = ix_item
         transaction[name] = tx_item
         rpc[name] = rpc_item
         simulate[name] = simulate_item
+        methods[name] = methods_item
 
     account = _build_account(idl, coder, program_id, provider) if idl.accounts else {}
     types = _build_types(idl)
-    return rpc, instruction, transaction, account, simulate, types
+    return rpc, instruction, transaction, account, simulate, types, methods
 
 
 def _pako_inflate(data):
