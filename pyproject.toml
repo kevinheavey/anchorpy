@@ -16,9 +16,9 @@ websockets = "^10.0"
 toolz = "^0.11.2"
 jsonrpcclient = "^4.0.1"
 zstandard = "^0.17.0"
-pytest = "^6.2.5"
+pytest = "^7.2.0"
 pytest-xprocess = "^0.18.1"
-pytest-asyncio = "^0.17.2"
+pytest-asyncio = "^0.20.0"
 more-itertools = "^8.11.0"
 pyheck = "^0.1.4"
 typer = { version = "0.4.1", optional = true }
@@ -28,6 +28,7 @@ black = {version = "^22.3.0", optional = true }
 autoflake = { version = "^1.4", optional = true }
 based58 = "^0.1.1"
 anchorpy-core = "^0.1.2"
+py = "^1.11.0"
 
 [tool.poetry.extras]
 cli = ["typer", "ipython", "genpy", "black", "autoflake"]

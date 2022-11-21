@@ -96,7 +96,7 @@ class Provider:
         self,
         tx: Transaction,
         signers: Optional[list[Keypair]] = None,
-        opts: types.TxOpts = None,
+        opts: Optional[types.TxOpts] = None,
     ) -> SimulateTransactionResp:
         """Simulate the given transaction, returning emitted logs from execution.
 
@@ -128,7 +128,7 @@ class Provider:
         self,
         tx: Transaction,
         signers: Optional[list[Keypair]] = None,
-        opts: types.TxOpts = None,
+        opts: Optional[types.TxOpts] = None,
     ) -> Signature:
         """Send the given transaction, paid for and signed by the provider's wallet.
 

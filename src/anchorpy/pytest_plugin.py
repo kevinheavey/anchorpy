@@ -1,14 +1,16 @@
 """This module provides the `localnet_fixture` fixture factory."""
-from typing import AsyncGenerator, Callable, Literal, Optional, Union
-import subprocess
-import signal
 import os
+import signal
+import subprocess
 from pathlib import Path
+from typing import AsyncGenerator, Callable, Literal, Optional, Union
+
 from pytest import fixture
 from pytest_asyncio import fixture as async_fixture
-from xprocess import XProcessInfo, XProcess, ProcessStarter
 from pytest_xprocess import getrootdir
-from anchorpy import create_workspace, close_workspace
+from xprocess import ProcessStarter, XProcess, XProcessInfo
+
+from anchorpy import close_workspace, create_workspace
 from anchorpy.program.core import Program
 
 _Scope = Literal["session", "package", "module", "class", "function"]
