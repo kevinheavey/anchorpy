@@ -1,8 +1,9 @@
 """This module contains code handling the Context object."""
 from dataclasses import dataclass, field
-from typing import Any, Tuple, Optional, Dict, List
+from typing import Any, Tuple, Optional, Dict, List, Union
 
 from solana.keypair import Keypair
+from solana.publickey import PublicKey
 from solana.rpc.types import TxOpts
 from solana.transaction import AccountMeta
 from solana.transaction import TransactionInstruction
@@ -12,9 +13,7 @@ from anchorpy_core.idl import IdlInstruction
 from anchorpy.error import ArgsError
 
 
-# should be Dict[str, Union[PublicKey, Accounts]]
-# but mypy doesn't support recursive types
-Accounts = Dict[str, Any]
+Accounts = Dict[str, Union[PublicKey, Accounts]]
 
 
 @dataclass
