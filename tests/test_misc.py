@@ -220,6 +220,28 @@ async def test_fail_to_close_account_when_sending_lamports_to_itself(
     assert excinfo.value.msg == "A close constraint was violated"
 
 
+def test_methods(program: Program, initialized_keypair: Keypair) -> None:
+    ix_from_methods = (
+        program.methods["test_close"]
+        .accounts(
+            {
+                "data": initialized_keypair.public_key,
+                "sol_dest": initialized_keypair.public_key,
+            }
+        )
+        .instruction()
+    )
+    ix_legacy = program.instruction["test_close"](
+        ctx=Context(
+            accounts={
+                "data": initialized_keypair.public_key,
+                "sol_dest": initialized_keypair.public_key,
+            },
+        )
+    )
+    assert ix_from_methods == ix_legacy
+
+
 @mark.asyncio
 async def test_can_close_account(
     program: Program,

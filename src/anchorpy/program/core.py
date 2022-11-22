@@ -28,6 +28,11 @@ from anchorpy.program.namespace.simulate import (
     _build_simulate_item,
 )
 from anchorpy.program.namespace.types import _build_types
+from anchorpy.program.namespace.methods import (
+    _build_methods_item,
+    MethodsBuilder,
+    IdlFuncs,
+)
 from anchorpy.error import IdlNotFoundError
 
 
@@ -61,6 +66,7 @@ def _build_namespace(  # noqa: WPS320
     dict[str, AccountClient],
     dict[str, _SimulateFn],
     dict[str, Any],
+    dict[str, MethodsBuilder],
 ]:
     """Generate all namespaces for a given program.
 
@@ -79,6 +85,7 @@ def _build_namespace(  # noqa: WPS320
     instruction = {}
     transaction = {}
     simulate = {}
+    methods = {}
 
     for idl_ix in idl.instructions:
 
@@ -94,16 +101,21 @@ def _build_namespace(  # noqa: WPS320
             program_id,
             idl,
         )
+        idl_funcs = IdlFuncs(
+            ix_fn=ix_item, tx_fn=tx_item, rpc_fn=rpc_item, simulate_fn=simulate_item
+        )
+        methods_item = _build_methods_item(idl_funcs)
 
         name = snake(idl_ix.name)
         instruction[name] = ix_item
         transaction[name] = tx_item
         rpc[name] = rpc_item
         simulate[name] = simulate_item
+        methods[name] = methods_item
 
     account = _build_account(idl, coder, program_id, provider) if idl.accounts else {}
     types = _build_types(idl)
-    return rpc, instruction, transaction, account, simulate, types
+    return rpc, instruction, transaction, account, simulate, types, methods
 
 
 def _pako_inflate(data):
@@ -150,6 +162,7 @@ class Program(object):
             account,
             simulate,
             types,
+            methods,
         ) = _build_namespace(
             idl,
             self.coder,
@@ -163,6 +176,7 @@ class Program(object):
         self.account = account
         self.simulate = simulate
         self.type = types
+        self.methods = methods
 
     async def __aenter__(self) -> Program:
         """Use as a context manager."""

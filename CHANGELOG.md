@@ -2,8 +2,9 @@
 
 ## [0.13.0] - Unreleased
 
-- Add PDA resolution and common pubkeys to client-gen [#(98)](https://github.com/kevinheavey/anchorpy/pull/98)
-- Add support for non-Anchor clients, starting with SPL Token [(#99)](https://github.com/kevinheavey/anchorpy/pull/98)
+- Add PDA resolution and common pubkeys to client-gen [#(97)](https://github.com/kevinheavey/anchorpy/pull/97)
+- Add support for non-Anchor clients, starting with SPL Token [(#98)](https://github.com/kevinheavey/anchorpy/pull/98)
+- Add methods builder [(#99)](https://github.com/kevinheavey/anchorpy/pull/99)
 
 ## [0.12.0] - 2022-11-01
 
