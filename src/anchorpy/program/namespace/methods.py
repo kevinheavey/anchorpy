@@ -53,9 +53,7 @@ class MethodsBuilder:
         ctx = self._build_context(opts)
         return await self._idl_funcs.rpc_fn(self, *self._args, ctx=ctx)
 
-    async def simulate(
-        self, opts: Optional[types.TxOpts] = None
-    ) -> SimulateResponse:
+    async def simulate(self, opts: Optional[types.TxOpts] = None) -> SimulateResponse:
         ctx = self._build_context(opts)
         return await self._idl_funcs.simulate_fn(self, *self._args, ctx=ctx)
 
@@ -143,15 +141,7 @@ class MethodsBuilder:
         )
 
 
-def _build_methods_item(
-    ix_fn: _InstructionFn,
-    tx_fn: _TransactionFn,
-    rpc_fn: _RpcFn,
-    simulate_fn: _SimulateFn,
-) -> MethodsBuilder:
-    idl_funcs = IdlFuncs(
-        ix_fn=ix_fn, tx_fn=tx_fn, rpc_fn=rpc_fn, simulate_fn=simulate_fn
-    )
+def _build_methods_item(idl_funcs: IdlFuncs) -> MethodsBuilder:
     return MethodsBuilder(
         idl_funcs=idl_funcs,
         accounts={},

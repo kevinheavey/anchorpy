@@ -13,7 +13,7 @@ from anchorpy_core.idl import IdlInstruction
 from anchorpy.error import ArgsError
 
 
-Accounts = Dict[str, Union[PublicKey, Accounts]]
+Accounts = Dict[str, Union[PublicKey, "Accounts"]]
 
 
 @dataclass

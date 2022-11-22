@@ -28,7 +28,11 @@ from anchorpy.program.namespace.simulate import (
     _build_simulate_item,
 )
 from anchorpy.program.namespace.types import _build_types
-from anchorpy.program.namespace.methods import _build_methods_item, MethodsBuilder, IdlFuncs
+from anchorpy.program.namespace.methods import (
+    _build_methods_item,
+    MethodsBuilder,
+    IdlFuncs,
+)
 from anchorpy.error import IdlNotFoundError
 
 
@@ -97,10 +101,10 @@ def _build_namespace(  # noqa: WPS320
             program_id,
             idl,
         )
-        idl_funcs = IdlFuncs()
-        methods_item = _build_methods_item(
+        idl_funcs = IdlFuncs(
             ix_fn=ix_item, tx_fn=tx_item, rpc_fn=rpc_item, simulate_fn=simulate_item
         )
+        methods_item = _build_methods_item(idl_funcs)
 
         name = snake(idl_ix.name)
         instruction[name] = ix_item
