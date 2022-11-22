@@ -107,9 +107,10 @@ def _accounts_array(
             accounts_ret.extend(acc_arr)
         else:
             account: IdlAccount = acc
+            single_account = cast(PublicKey, ctx[snake(account.name)])
             accounts_ret.append(
                 AccountMeta(
-                    pubkey=translate_address(ctx[snake(account.name)]),
+                    pubkey=single_account,
                     is_writable=account.is_mut,
                     is_signer=account.is_signer,
                 ),

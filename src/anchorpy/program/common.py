@@ -1,6 +1,6 @@
 """Common utilities."""
 from dataclasses import dataclass
-from typing import Dict, Any, Union, Tuple, NamedTuple
+from typing import Dict, Any, Union, Tuple, NamedTuple, cast
 from construct import Container
 
 from solana.publickey import PublicKey
@@ -69,7 +69,8 @@ def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
     for acc in ix_accounts:
         acc_name = snake(acc.name)
         if isinstance(acc, IdlAccounts):
-            validate_accounts(acc.accounts, accounts[acc_name])
+            nested = cast(Accounts, accounts[acc_name])
+            validate_accounts(acc.accounts, nested)
         elif acc_name not in accounts:
             raise ValueError(f"Invalid arguments: {acc_name} not provided")
 

@@ -28,6 +28,7 @@ from anchorpy.program.namespace.simulate import (
     _build_simulate_item,
 )
 from anchorpy.program.namespace.types import _build_types
+from anchorpy.program.namespace.methods import _build_methods_item, MethodsBuilder, IdlFuncs
 from anchorpy.error import IdlNotFoundError
 
 
@@ -61,7 +62,7 @@ def _build_namespace(  # noqa: WPS320
     dict[str, AccountClient],
     dict[str, _SimulateFn],
     dict[str, Any],
-    dict[str, MethodsBuilder]
+    dict[str, MethodsBuilder],
 ]:
     """Generate all namespaces for a given program.
 
@@ -96,7 +97,10 @@ def _build_namespace(  # noqa: WPS320
             program_id,
             idl,
         )
-        methods_item = _build_methods_item(idl_ix, ix_item, tx_item, rpc_item, program_id)
+        idl_funcs = IdlFuncs()
+        methods_item = _build_methods_item(
+            ix_fn=ix_item, tx_fn=tx_item, rpc_fn=rpc_item, simulate_fn=simulate_item
+        )
 
         name = snake(idl_ix.name)
         instruction[name] = ix_item
@@ -154,6 +158,7 @@ class Program(object):
             account,
             simulate,
             types,
+            methods,
         ) = _build_namespace(
             idl,
             self.coder,
