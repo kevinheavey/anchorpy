@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.13.0] - Unreleased
+## [0.13.0] - 2022-11-22
 
 - Add PDA resolution and common pubkeys to client-gen [#(97)](https://github.com/kevinheavey/anchorpy/pull/97)
 - Add support for non-Anchor clients, starting with SPL Token [(#98)](https://github.com/kevinheavey/anchorpy/pull/98)
