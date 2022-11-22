@@ -1,9 +1,8 @@
 """This module contains code handling the Context object."""
 from dataclasses import dataclass, field
-from typing import Tuple, Optional, Dict, List, Union
+from typing import Tuple, Optional, Dict, List, Any
 
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
 from solana.rpc.types import TxOpts
 from solana.transaction import AccountMeta
 from solana.transaction import TransactionInstruction

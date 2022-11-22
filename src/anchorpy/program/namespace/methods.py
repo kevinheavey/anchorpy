@@ -39,16 +39,6 @@ class MethodsBuilder:
         self._post_instructions = post_instructions
         self._args = args
 
-    def _build_context(self, opts: Optional[types.TxOpts]) -> Context:
-        return Context(
-            accounts=self._accounts,
-            remaining_accounts=self._remaining_accounts,
-            signers=self._signers,
-            pre_instructions=self._pre_instructions,
-            post_instructions=self._post_instructions,
-            options=opts,
-        )
-
     async def rpc(self, opts: Optional[types.TxOpts] = None) -> Signature:
         ctx = self._build_context(opts)
         return await self._idl_funcs.rpc_fn(*self._args, ctx=ctx)
@@ -138,6 +128,16 @@ class MethodsBuilder:
             pre_instructions=self._pre_instructions,
             post_instructions=self._post_instructions + ixs,
             args=self._args,
+        )
+
+    def _build_context(self, opts: Optional[types.TxOpts]) -> Context:
+        return Context(
+            accounts=self._accounts,
+            remaining_accounts=self._remaining_accounts,
+            signers=self._signers,
+            pre_instructions=self._pre_instructions,
+            post_instructions=self._post_instructions,
+            options=opts,
         )
 
 

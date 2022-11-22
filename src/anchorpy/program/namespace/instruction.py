@@ -8,7 +8,6 @@ from pyheck import snake
 from anchorpy.program.common import (  # noqa: WPS347
     _to_instruction,
     validate_accounts,
-    translate_address,
     Instruction,
 )
 from anchorpy.program.context import (
