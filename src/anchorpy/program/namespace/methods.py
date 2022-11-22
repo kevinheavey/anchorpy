@@ -51,24 +51,24 @@ class MethodsBuilder:
 
     async def rpc(self, opts: Optional[types.TxOpts] = None) -> Signature:
         ctx = self._build_context(opts)
-        return await self._idl_funcs.rpc_fn(self, *self._args, ctx=ctx)
+        return await self._idl_funcs.rpc_fn(*self._args, ctx=ctx)
 
     async def simulate(self, opts: Optional[types.TxOpts] = None) -> SimulateResponse:
         ctx = self._build_context(opts)
-        return await self._idl_funcs.simulate_fn(self, *self._args, ctx=ctx)
+        return await self._idl_funcs.simulate_fn(*self._args, ctx=ctx)
 
     def instruction(self) -> TransactionInstruction:
         ctx = self._build_context(opts=None)
-        return self._idl_funcs.ix_fn(self, *self._args, ctx=ctx)
+        return self._idl_funcs.ix_fn(*self._args, ctx=ctx)
 
     def transaction(self) -> Transaction:
         ctx = self._build_context(opts=None)
-        return self._idl_funcs.tx_fn(self, *self._args, ctx=ctx)
+        return self._idl_funcs.tx_fn(*self._args, ctx=ctx)
 
     def pubkeys(self) -> Accounts:
         return self._accounts
 
-    def args(self, arguments: List[Any]) -> MethodsBuilder:
+    def args(self, arguments: List[Any]) -> "MethodsBuilder":
         idl_funcs = self._idl_funcs
         return MethodsBuilder(
             idl_funcs=idl_funcs,
@@ -80,7 +80,7 @@ class MethodsBuilder:
             args=arguments,
         )
 
-    def accounts(self, accs: Accounts) -> MethodsBuilder:
+    def accounts(self, accs: Accounts) -> "MethodsBuilder":
         idl_funcs = self._idl_funcs
         return MethodsBuilder(
             idl_funcs=idl_funcs,
@@ -92,7 +92,7 @@ class MethodsBuilder:
             args=self._args,
         )
 
-    def signers(self, signers: List[Keypair]) -> MethodsBuilder:
+    def signers(self, signers: List[Keypair]) -> "MethodsBuilder":
         idl_funcs = self._idl_funcs
         return MethodsBuilder(
             idl_funcs=idl_funcs,
@@ -104,7 +104,7 @@ class MethodsBuilder:
             args=self._args,
         )
 
-    def remaining_accounts(self, accounts: List[AccountMeta]) -> MethodsBuilder:
+    def remaining_accounts(self, accounts: List[AccountMeta]) -> "MethodsBuilder":
         idl_funcs = self._idl_funcs
         return MethodsBuilder(
             idl_funcs=idl_funcs,
@@ -116,7 +116,7 @@ class MethodsBuilder:
             args=self._args,
         )
 
-    def pre_instructions(self, ixs: List[TransactionInstruction]) -> MethodsBuilder:
+    def pre_instructions(self, ixs: List[TransactionInstruction]) -> "MethodsBuilder":
         idl_funcs = self._idl_funcs
         return MethodsBuilder(
             idl_funcs=idl_funcs,
@@ -128,7 +128,7 @@ class MethodsBuilder:
             args=self._args,
         )
 
-    def post_instructions(self, ixs: List[TransactionInstruction]) -> MethodsBuilder:
+    def post_instructions(self, ixs: List[TransactionInstruction]) -> "MethodsBuilder":
         idl_funcs = self._idl_funcs
         return MethodsBuilder(
             idl_funcs=idl_funcs,

@@ -176,6 +176,7 @@ class Program(object):
         self.account = account
         self.simulate = simulate
         self.type = types
+        self.methods = methods
 
     async def __aenter__(self) -> Program:
         """Use as a context manager."""
