@@ -31,7 +31,6 @@ jobs:
             "test_misc",
             "test_multisig",
             "test_pyth",
-            # "test_swap",
             "test_sysvars",
             # "test_system_accounts",
             # "test_token_proxy",
