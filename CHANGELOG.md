@@ -1,6 +1,14 @@
 # Changelog
 
+## [0.13.1] - 2022-11-23
+
+### Changed
+
+- Update pytest dependencies [#(101)](https://github.com/kevinheavey/anchorpy/pull/101)
+
 ## [0.13.0] - 2022-11-22
+
+### Added
 
 - Add PDA resolution and common pubkeys to client-gen [#(97)](https://github.com/kevinheavey/anchorpy/pull/97)
 - Add support for non-Anchor clients, starting with SPL Token [(#98)](https://github.com/kevinheavey/anchorpy/pull/98)
