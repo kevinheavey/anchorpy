@@ -148,7 +148,7 @@ As in the main Anchor tutorial, we will use `anchor/tutorial/examples/basic-1`:
     const program = anchor.workspace.Basic1;
 
     // The Account to create.
-    const myAccount = anchor.web3.Keypair.generate();
+    const myAccount = anchor.web3.Keypair();
 
     // Create the new account and initialize it with the program.
     await program.rpc.initialize(new anchor.BN(1234), {

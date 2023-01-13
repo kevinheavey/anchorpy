@@ -685,16 +685,16 @@ async def test_can_fetch_all_accounts_of_a_given_type(
     program: Program, event_loop
 ) -> None:
     # Initialize the accounts.
-    data1 = Keypair.generate()
-    data2 = Keypair.generate()
-    data3 = Keypair.generate()
-    data4 = Keypair.generate()
+    data1 = Keypair()
+    data2 = Keypair()
+    data3 = Keypair()
+    data4 = Keypair()
     # Initialize filterable data.
-    filterable1 = Keypair.generate().pubkey()
-    filterable2 = Keypair.generate().pubkey()
+    filterable1 = Keypair().pubkey()
+    filterable2 = Keypair().pubkey()
     provider = Provider(
         program.provider.connection,
-        Wallet(Keypair.generate()),
+        Wallet(Keypair()),
         program.provider.opts,
     )
     another_program = Program(program.idl, program.program_id, provider)

@@ -7,7 +7,7 @@ from anchorpy.workspace import WorkspaceType
 from pytest import mark
 from pytest_asyncio import fixture as async_fixture
 from solders.keypair import Keypair
-from solders.system_program import SYS_PROGRAM_ID
+from solders.system_program import ID as SYS_PROGRAM_ID
 
 workspace = workspace_fixture("anchor/examples/tutorial/basic-3")
 

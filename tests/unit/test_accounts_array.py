@@ -12,8 +12,8 @@ def test_accounts_array() -> None:
     """Test accounts_array returns expected."""
     raw = Path("tests/idls/composite.json").read_text()
     idl = Idl.from_json(raw)
-    dummy_a = Keypair.generate()
-    dummy_b = Keypair.generate()
+    dummy_a = Keypair()
+    dummy_b = Keypair()
     comp_accounts = {
         "foo": {
             "dummy_a": dummy_a.public_key,
