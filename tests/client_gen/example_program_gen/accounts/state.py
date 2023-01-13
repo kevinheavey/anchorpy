@@ -1,7 +1,7 @@
 import typing
 from dataclasses import dataclass
 from construct import Construct
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 import borsh_construct as borsh
@@ -89,7 +89,7 @@ class State:
     i128_field: int
     bytes_field: bytes
     string_field: str
-    pubkey_field: PublicKey
+    pubkey_field: Pubkey
     vec_field: list[int]
     vec_struct_field: list[types.foo_struct.FooStruct]
     option_field: typing.Optional[bool]
@@ -105,15 +105,15 @@ class State:
     async def fetch(
         cls,
         conn: AsyncClient,
-        address: PublicKey,
+        address: Pubkey,
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.Optional["State"]:
         resp = await conn.get_account_info(address, commitment=commitment)
         info = resp.value
         if info is None:
             return None
-        if info.owner != program_id.to_solders():
+        if info.owner != program_id:
             raise ValueError("Account does not belong to this program")
         bytes_data = info.data
         return cls.decode(bytes_data)
@@ -122,9 +122,9 @@ class State:
     async def fetch_multiple(
         cls,
         conn: AsyncClient,
-        addresses: list[PublicKey],
+        addresses: list[Pubkey],
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.List[typing.Optional["State"]]:
         infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
         res: typing.List[typing.Optional["State"]] = []
@@ -236,7 +236,7 @@ class State:
             i128_field=obj["i128_field"],
             bytes_field=bytes(obj["bytes_field"]),
             string_field=obj["string_field"],
-            pubkey_field=PublicKey(obj["pubkey_field"]),
+            pubkey_field=Pubkey(obj["pubkey_field"]),
             vec_field=obj["vec_field"],
             vec_struct_field=list(
                 map(

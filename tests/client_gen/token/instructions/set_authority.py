@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.instruction import Instruction, AccountMeta
 from anchorpy.borsh_extension import BorshPubkey, COption
 import borsh_construct as borsh
 from .. import types
@@ -10,7 +10,7 @@ from ..program_id import PROGRAM_ID
 
 class SetAuthorityArgs(typing.TypedDict):
     authority_type: types.authority_type.AuthorityTypeKind
-    new_authority: typing.Optional[PublicKey]
+    new_authority: typing.Optional[Pubkey]
 
 
 layout = borsh.CStruct(
@@ -20,17 +20,17 @@ layout = borsh.CStruct(
 
 
 class SetAuthorityAccounts(typing.TypedDict):
-    owned: PublicKey
-    owner: PublicKey
-    signer: PublicKey
+    owned: Pubkey
+    owner: Pubkey
+    signer: Pubkey
 
 
 def set_authority(
     args: SetAuthorityArgs,
     accounts: SetAuthorityAccounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["owned"], is_signer=False, is_writable=True),
         AccountMeta(pubkey=accounts["owner"], is_signer=True, is_writable=False),
@@ -46,4 +46,4 @@ def set_authority(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(keys, program_id, data)

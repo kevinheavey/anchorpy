@@ -1,6 +1,6 @@
 import typing
 from dataclasses import dataclass
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 import borsh_construct as borsh
@@ -36,28 +36,28 @@ class Account:
         "delegated_amount" / borsh.U64,
         "close_authority" / COption(BorshPubkey),
     )
-    mint: PublicKey
-    owner: PublicKey
+    mint: Pubkey
+    owner: Pubkey
     amount: int
-    delegate: typing.Optional[PublicKey]
+    delegate: typing.Optional[Pubkey]
     state: types.account_state.AccountStateKind
     is_native: typing.Optional[int]
     delegated_amount: int
-    close_authority: typing.Optional[PublicKey]
+    close_authority: typing.Optional[Pubkey]
 
     @classmethod
     async def fetch(
         cls,
         conn: AsyncClient,
-        address: PublicKey,
+        address: Pubkey,
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.Optional["Account"]:
         resp = await conn.get_account_info(address, commitment=commitment)
         info = resp.value
         if info is None:
             return None
-        if info.owner != program_id.to_solders():
+        if info.owner != program_id:
             raise ValueError("Account does not belong to this program")
         bytes_data = info.data
         return cls.decode(bytes_data)
@@ -66,9 +66,9 @@ class Account:
     async def fetch_multiple(
         cls,
         conn: AsyncClient,
-        addresses: list[PublicKey],
+        addresses: list[Pubkey],
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.List[typing.Optional["Account"]]:
         infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
         res: typing.List[typing.Optional["Account"]] = []
@@ -116,16 +116,16 @@ class Account:
     @classmethod
     def from_json(cls, obj: AccountJSON) -> "Account":
         return cls(
-            mint=PublicKey(obj["mint"]),
-            owner=PublicKey(obj["owner"]),
+            mint=Pubkey(obj["mint"]),
+            owner=Pubkey(obj["owner"]),
             amount=obj["amount"],
-            delegate=(None if obj["delegate"] is None else PublicKey(obj["delegate"])),
+            delegate=(None if obj["delegate"] is None else Pubkey(obj["delegate"])),
             state=types.account_state.from_json(obj["state"]),
             is_native=obj["is_native"],
             delegated_amount=obj["delegated_amount"],
             close_authority=(
                 None
                 if obj["close_authority"] is None
-                else PublicKey(obj["close_authority"])
+                else Pubkey(obj["close_authority"])
             ),
         )

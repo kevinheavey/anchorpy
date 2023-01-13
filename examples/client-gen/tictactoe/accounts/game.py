@@ -1,6 +1,6 @@
 import typing
 from dataclasses import dataclass
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 import borsh_construct as borsh
@@ -28,7 +28,7 @@ class Game:
         "board" / borsh.Option(types.sign.layout)[3][3],
         "state" / types.game_state.layout,
     )
-    players: list[PublicKey]
+    players: list[Pubkey]
     turn: int
     board: list[list[typing.Optional[types.sign.SignKind]]]
     state: types.game_state.GameStateKind
@@ -37,15 +37,15 @@ class Game:
     async def fetch(
         cls,
         conn: AsyncClient,
-        address: PublicKey,
+        address: Pubkey,
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.Optional["Game"]:
         resp = await conn.get_account_info(address, commitment=commitment)
         info = resp.value
         if info is None:
             return None
-        if info.owner != program_id.to_solders():
+        if info.owner != program_id:
             raise ValueError("Account does not belong to this program")
         bytes_data = info.data
         return cls.decode(bytes_data)
@@ -54,9 +54,9 @@ class Game:
     async def fetch_multiple(
         cls,
         conn: AsyncClient,
-        addresses: list[PublicKey],
+        addresses: list[Pubkey],
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.List[typing.Optional["Game"]]:
         infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
         res: typing.List[typing.Optional["Game"]] = []
@@ -116,7 +116,7 @@ class Game:
     @classmethod
     def from_json(cls, obj: GameJSON) -> "Game":
         return cls(
-            players=list(map(lambda item: PublicKey(item), obj["players"])),
+            players=list(map(lambda item: Pubkey(item), obj["players"])),
             turn=obj["turn"],
             board=list(
                 map(

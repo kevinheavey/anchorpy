@@ -1,6 +1,6 @@
 import typing
 from dataclasses import dataclass
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 import borsh_construct as borsh
@@ -23,21 +23,21 @@ class BaseAccount:
         "base_data" / borsh.U64, "base_data_key" / BorshPubkey
     )
     base_data: int
-    base_data_key: PublicKey
+    base_data_key: Pubkey
 
     @classmethod
     async def fetch(
         cls,
         conn: AsyncClient,
-        address: PublicKey,
+        address: Pubkey,
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.Optional["BaseAccount"]:
         resp = await conn.get_account_info(address, commitment=commitment)
         info = resp.value
         if info is None:
             return None
-        if info.owner != program_id.to_solders():
+        if info.owner != program_id:
             raise ValueError("Account does not belong to this program")
         bytes_data = info.data
         return cls.decode(bytes_data)
@@ -46,9 +46,9 @@ class BaseAccount:
     async def fetch_multiple(
         cls,
         conn: AsyncClient,
-        addresses: list[PublicKey],
+        addresses: list[Pubkey],
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.List[typing.Optional["BaseAccount"]]:
         infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
         res: typing.List[typing.Optional["BaseAccount"]] = []
@@ -83,5 +83,5 @@ class BaseAccount:
     def from_json(cls, obj: BaseAccountJSON) -> "BaseAccount":
         return cls(
             base_data=obj["base_data"],
-            base_data_key=PublicKey(obj["base_data_key"]),
+            base_data_key=Pubkey(obj["base_data_key"]),
         )

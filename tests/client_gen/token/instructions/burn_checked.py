@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.instruction import Instruction, AccountMeta
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
@@ -15,17 +15,17 @@ layout = borsh.CStruct("amount" / borsh.U64, "decimals" / borsh.U8)
 
 
 class BurnCheckedAccounts(typing.TypedDict):
-    account: PublicKey
-    mint: PublicKey
-    authority: PublicKey
+    account: Pubkey
+    mint: Pubkey
+    authority: Pubkey
 
 
 def burn_checked(
     args: BurnCheckedArgs,
     accounts: BurnCheckedAccounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["account"], is_signer=False, is_writable=True),
         AccountMeta(pubkey=accounts["mint"], is_signer=False, is_writable=True),
@@ -41,4 +41,4 @@ def burn_checked(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(keys, program_id, data)

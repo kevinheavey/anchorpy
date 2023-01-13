@@ -3,10 +3,10 @@ from anchorpy.program.context import Context
 from anchorpy.program.namespace.instruction import _InstructionFn
 from anchorpy.program.namespace.transaction import _build_transaction_fn
 from pytest import fixture
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.transaction import TransactionInstruction
 
-DEFAULT_PUBKEY = PublicKey("11111111111111111111111111111111")
+DEFAULT_PUBKEY = Pubkey.default()
 
 
 def _make_ix(data: bytes) -> TransactionInstruction:

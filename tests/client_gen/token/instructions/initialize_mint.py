@@ -1,8 +1,8 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.sysvar import SYSVAR_RENT_PUBKEY
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.sysvar import RENT
+from solders.instruction import Instruction, AccountMeta
 from anchorpy.borsh_extension import BorshPubkey, COption
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
@@ -10,8 +10,8 @@ from ..program_id import PROGRAM_ID
 
 class InitializeMintArgs(typing.TypedDict):
     decimals: int
-    mint_authority: PublicKey
-    freeze_authority: typing.Optional[PublicKey]
+    mint_authority: Pubkey
+    freeze_authority: typing.Optional[Pubkey]
 
 
 layout = borsh.CStruct(
@@ -22,18 +22,18 @@ layout = borsh.CStruct(
 
 
 class InitializeMintAccounts(typing.TypedDict):
-    mint: PublicKey
+    mint: Pubkey
 
 
 def initialize_mint(
     args: InitializeMintArgs,
     accounts: InitializeMintAccounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["mint"], is_signer=False, is_writable=True),
-        AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
@@ -46,4 +46,4 @@ def initialize_mint(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(keys, program_id, data)

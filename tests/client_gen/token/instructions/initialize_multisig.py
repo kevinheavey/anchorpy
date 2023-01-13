@@ -1,8 +1,8 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.sysvar import SYSVAR_RENT_PUBKEY
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.sysvar import RENT
+from solders.instruction import Instruction, AccountMeta
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
@@ -15,18 +15,18 @@ layout = borsh.CStruct("m" / borsh.U8)
 
 
 class InitializeMultisigAccounts(typing.TypedDict):
-    multisig: PublicKey
+    multisig: Pubkey
 
 
 def initialize_multisig(
     args: InitializeMultisigArgs,
     accounts: InitializeMultisigAccounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["multisig"], is_signer=False, is_writable=True),
-        AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
@@ -37,4 +37,4 @@ def initialize_multisig(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(keys, program_id, data)

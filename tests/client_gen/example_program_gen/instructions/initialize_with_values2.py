@@ -1,8 +1,8 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.system_program import SYS_PROGRAM_ID
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.system_program import SYS_PROGRAM_ID
+from solders.instruction import Instruction, AccountMeta
 from construct import Construct
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
@@ -18,16 +18,16 @@ layout = borsh.CStruct(
 
 
 class InitializeWithValues2Accounts(typing.TypedDict):
-    state: PublicKey
-    payer: PublicKey
+    state: Pubkey
+    payer: Pubkey
 
 
 def initialize_with_values2(
     args: InitializeWithValues2Args,
     accounts: InitializeWithValues2Accounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["state"], is_signer=True, is_writable=True),
         AccountMeta(pubkey=accounts["payer"], is_signer=True, is_writable=True),
@@ -42,4 +42,4 @@ def initialize_with_values2(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(keys, program_id, data)

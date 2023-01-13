@@ -1,6 +1,6 @@
 import typing
 from dataclasses import dataclass
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 import borsh_construct as borsh
@@ -22,22 +22,22 @@ class Counter:
     layout: typing.ClassVar = borsh.CStruct(
         "authority" / BorshPubkey, "count" / borsh.U64
     )
-    authority: PublicKey
+    authority: Pubkey
     count: int
 
     @classmethod
     async def fetch(
         cls,
         conn: AsyncClient,
-        address: PublicKey,
+        address: Pubkey,
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.Optional["Counter"]:
         resp = await conn.get_account_info(address, commitment=commitment)
         info = resp.value
         if info is None:
             return None
-        if info.owner != program_id.to_solders():
+        if info.owner != program_id:
             raise ValueError("Account does not belong to this program")
         bytes_data = info.data
         return cls.decode(bytes_data)
@@ -46,9 +46,9 @@ class Counter:
     async def fetch_multiple(
         cls,
         conn: AsyncClient,
-        addresses: list[PublicKey],
+        addresses: list[Pubkey],
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.List[typing.Optional["Counter"]]:
         infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
         res: typing.List[typing.Optional["Counter"]] = []
@@ -82,6 +82,6 @@ class Counter:
     @classmethod
     def from_json(cls, obj: CounterJSON) -> "Counter":
         return cls(
-            authority=PublicKey(obj["authority"]),
+            authority=Pubkey(obj["authority"]),
             count=obj["count"],
         )

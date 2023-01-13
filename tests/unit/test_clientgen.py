@@ -19,11 +19,11 @@ def test_gen_accounts() -> None:
         "\n        foo: FooNested"
         "\n        bar: BarNested"
         "\n    class FooNested(typing.TypedDict):"
-        "\n        dummy_a: PublicKey"
+        "\n        dummy_a: Pubkey"
         "\n    class BarNested(typing.TypedDict):"
-        "\n        dummy_b: PublicKey"
+        "\n        dummy_b: Pubkey"
         "\n    class FooNested(typing.TypedDict):"
-        "\n        dummy_a: PublicKey"
+        "\n        dummy_a: Pubkey"
     )
 
 
@@ -36,7 +36,7 @@ def test_empty_fields() -> None:
         "import typing"
         "\nfrom dataclasses import dataclass"
         "\nfrom construct import Container, Construct"
-        "\nfrom solana.publickey import PublicKey"
+        "\nfrom solders.pubkey import Pubkey"
         "\nfrom anchorpy.borsh_extension import BorshPubkey"
         "\nimport borsh_construct as borsh"
         "\nclass AggregatorLockParamsJSON(typing.TypedDict):"

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing
 from dataclasses import dataclass
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from anchorpy.borsh_extension import EnumForCodegen, BorshPubkey
 import borsh_construct as borsh
 
@@ -11,7 +11,7 @@ class WonJSONValue(typing.TypedDict):
 
 
 class WonValue(typing.TypedDict):
-    winner: PublicKey
+    winner: Pubkey
 
 
 class ActiveJSON(typing.TypedDict):
@@ -115,7 +115,7 @@ def from_json(obj: GameStateJSON) -> GameStateKind:
         won_json_value = typing.cast(WonJSONValue, obj["value"])
         return Won(
             WonValue(
-                winner=PublicKey(won_json_value["winner"]),
+                winner=Pubkey(won_json_value["winner"]),
             )
         )
     kind = obj["kind"]

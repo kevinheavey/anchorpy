@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from anchorpy import Idl, Program
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 
 def test_idls() -> None:
@@ -12,7 +12,7 @@ def test_idls() -> None:
         idl = Idl.from_json(raw)
         idls.append(idl)
         if "spl_token" not in str(path):
-            program = Program(idl, PublicKey(1))
+            program = Program(idl, Pubkey.default())
             programs.append(program)
     assert idls
 
@@ -21,7 +21,7 @@ def test_jet_enum() -> None:
     path = Path("tests/idls/jet.json")
     raw = path.read_text()
     idl = Idl.from_json(raw)
-    program = Program(idl, PublicKey(1))
+    program = Program(idl, Pubkey.default())
     expired_err = program.type["CacheInvalidError"].Expired
     assert expired_err(msg="hi").msg == "hi"
 
@@ -30,7 +30,7 @@ def test_switchboard_tuple() -> None:
     path = Path("tests/idls/switchboard.json")
     raw = path.read_text()
     idl = Idl.from_json(raw)
-    program = Program(idl, PublicKey(1))  # noqa: F841
+    program = Program(idl, Pubkey.default())  # noqa: F841
 
 
 def test_clientgen_example() -> None:

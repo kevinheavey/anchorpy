@@ -1,9 +1,9 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.system_program import SYS_PROGRAM_ID
-from solana.sysvar import SYSVAR_RENT_PUBKEY, SYSVAR_CLOCK_PUBKEY
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.system_program import SYS_PROGRAM_ID
+from solders.sysvar import RENT, CLOCK
+from solders.instruction import Instruction, AccountMeta
 from anchorpy.borsh_extension import BorshPubkey
 from construct import Construct
 import borsh_construct as borsh
@@ -27,7 +27,7 @@ class InitializeWithValuesArgs(typing.TypedDict):
     i128_field: int
     bytes_field: bytes
     string_field: str
-    pubkey_field: PublicKey
+    pubkey_field: Pubkey
     vec_field: list[int]
     vec_struct_field: list[types.foo_struct.FooStruct]
     option_field: typing.Optional[bool]
@@ -72,20 +72,20 @@ layout = borsh.CStruct(
 
 
 class InitializeWithValuesAccounts(typing.TypedDict):
-    state: PublicKey
-    payer: PublicKey
+    state: Pubkey
+    payer: Pubkey
 
 
 def initialize_with_values(
     args: InitializeWithValuesArgs,
     accounts: InitializeWithValuesAccounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["state"], is_signer=True, is_writable=True),
-        AccountMeta(pubkey=SYSVAR_CLOCK_PUBKEY, is_signer=False, is_writable=False),
-        AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=CLOCK, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
         AccountMeta(pubkey=accounts["payer"], is_signer=True, is_writable=True),
         AccountMeta(pubkey=SYS_PROGRAM_ID, is_signer=False, is_writable=False),
     ]
@@ -129,4 +129,4 @@ def initialize_with_values(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(keys, program_id, data)

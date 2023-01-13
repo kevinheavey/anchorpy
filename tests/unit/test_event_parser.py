@@ -1,14 +1,16 @@
 from pathlib import Path
 
 from anchorpy import Event, EventParser, Idl, Program
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 
 def test_event_parser() -> None:
     path = Path("tests/idls/events.json")
     raw = path.read_text()
     idl = Idl.from_json(raw)
-    program = Program(idl, PublicKey("2dhGsWUzy5YKUsjZdLHLmkNpUDAXkNa9MYWsPc4Ziqzy"))
+    program = Program(
+        idl, Pubkey.from_string("2dhGsWUzy5YKUsjZdLHLmkNpUDAXkNa9MYWsPc4Ziqzy")
+    )
     logs = [
         "Program 2dhGsWUzy5YKUsjZdLHLmkNpUDAXkNa9MYWsPc4Ziqzy invoke [1]",
         "Program log: Instruction: Initialize",
