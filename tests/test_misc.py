@@ -12,11 +12,12 @@ from anchorpy.workspace import WorkspaceType
 from anchorpy_core.idl import IdlConst, IdlTypeSimple
 from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
-from solders.keypair import Keypair
-from solders.pubkey import Pubkey
 from solana.rpc.core import RPCException
 from solana.rpc.types import MemcmpOpts
-from solders.system_program import SYS_PROGRAM_ID, TransferParams, transfer
+from solders.keypair import Keypair
+from solders.pubkey import Pubkey
+from solders.system_program import ID as SYS_PROGRAM_ID
+from solders.system_program import TransferParams, transfer
 from solders.sysvar import RENT
 from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID

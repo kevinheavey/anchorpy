@@ -82,6 +82,6 @@ class Counter:
     @classmethod
     def from_json(cls, obj: CounterJSON) -> "Counter":
         return cls(
-            authority=Pubkey(obj["authority"]),
+            authority=Pubkey.from_string(obj["authority"]),
             count=obj["count"],
         )

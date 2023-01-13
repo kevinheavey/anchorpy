@@ -103,7 +103,9 @@ class Mint:
     def from_json(cls, obj: MintJSON) -> "Mint":
         return cls(
             mint_authority=(
-                None if obj["mint_authority"] is None else Pubkey(obj["mint_authority"])
+                None
+                if obj["mint_authority"] is None
+                else Pubkey.from_string(obj["mint_authority"])
             ),
             supply=obj["supply"],
             decimals=obj["decimals"],
@@ -111,6 +113,6 @@ class Mint:
             freeze_authority=(
                 None
                 if obj["freeze_authority"] is None
-                else Pubkey(obj["freeze_authority"])
+                else Pubkey.from_string(obj["freeze_authority"])
             ),
         )

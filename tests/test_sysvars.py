@@ -8,7 +8,7 @@ from pytest import mark
 from solders.sysvar import (
     CLOCK,
     RENT,
-    SYSVAR_STAKE_HISTORY_PUBKEY,
+    STAKE_HISTORY,
 )
 
 PATH = Path("anchor/tests/sysvars")
@@ -28,7 +28,7 @@ async def test_init(workspace: WorkspaceType) -> None:
             accounts={
                 "clock": CLOCK,
                 "rent": RENT,
-                "stake_history": SYSVAR_STAKE_HISTORY_PUBKEY,
+                "stake_history": STAKE_HISTORY,
             }
         )
     )

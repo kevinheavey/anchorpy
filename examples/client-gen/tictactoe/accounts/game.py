@@ -116,7 +116,7 @@ class Game:
     @classmethod
     def from_json(cls, obj: GameJSON) -> "Game":
         return cls(
-            players=list(map(lambda item: Pubkey(item), obj["players"])),
+            players=list(map(lambda item: Pubkey.from_string(item), obj["players"])),
             turn=obj["turn"],
             board=list(
                 map(

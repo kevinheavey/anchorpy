@@ -26,4 +26,4 @@ def freeze_account(
     identifier = b"\xfdKR\x85\xa7\xee+\x82"
     encoded_args = b""
     data = identifier + encoded_args
-    return Instruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

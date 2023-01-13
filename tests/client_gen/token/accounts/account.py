@@ -116,16 +116,18 @@ class Account:
     @classmethod
     def from_json(cls, obj: AccountJSON) -> "Account":
         return cls(
-            mint=Pubkey(obj["mint"]),
-            owner=Pubkey(obj["owner"]),
+            mint=Pubkey.from_string(obj["mint"]),
+            owner=Pubkey.from_string(obj["owner"]),
             amount=obj["amount"],
-            delegate=(None if obj["delegate"] is None else Pubkey(obj["delegate"])),
+            delegate=(
+                None if obj["delegate"] is None else Pubkey.from_string(obj["delegate"])
+            ),
             state=types.account_state.from_json(obj["state"]),
             is_native=obj["is_native"],
             delegated_amount=obj["delegated_amount"],
             close_authority=(
                 None
                 if obj["close_authority"] is None
-                else Pubkey(obj["close_authority"])
+                else Pubkey.from_string(obj["close_authority"])
             ),
         )

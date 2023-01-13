@@ -96,5 +96,5 @@ class Multisig:
             m=obj["m"],
             n=obj["n"],
             is_initialized=obj["is_initialized"],
-            signers=list(map(lambda item: Pubkey(item), obj["signers"])),
+            signers=list(map(lambda item: Pubkey.from_string(item), obj["signers"])),
         )

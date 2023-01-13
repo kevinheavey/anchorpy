@@ -26,4 +26,4 @@ def close_account(
     identifier = b'}\xff\x95\x0en"H\x18'
     encoded_args = b""
     data = identifier + encoded_args
-    return Instruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

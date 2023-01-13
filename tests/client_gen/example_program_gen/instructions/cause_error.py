@@ -15,4 +15,4 @@ def cause_error(
     identifier = b"Ch%\x11\x02\x9bD\x11"
     encoded_args = b""
     data = identifier + encoded_args
-    return Instruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

@@ -22,4 +22,4 @@ def initialize_immutable_owner(
     identifier = b'\x8d2\x0f,\xc3\xf7"<'
     encoded_args = b""
     data = identifier + encoded_args
-    return Instruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

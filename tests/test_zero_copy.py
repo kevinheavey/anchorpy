@@ -10,10 +10,10 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
+from solana.rpc.core import RPCException
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
-from solana.rpc.core import RPCException
-from solders.system_program import SYS_PROGRAM_ID
+from solders.system_program import ID as SYS_PROGRAM_ID
 from solders.sysvar import RENT
 
 PATH = Path("anchor/tests/zero-copy")

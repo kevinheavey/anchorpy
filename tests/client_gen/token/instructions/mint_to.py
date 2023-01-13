@@ -39,4 +39,4 @@ def mint_to(
         }
     )
     data = identifier + encoded_args
-    return Instruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

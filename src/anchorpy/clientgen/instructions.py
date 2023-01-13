@@ -228,7 +228,7 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
         ANNOTATIONS_IMPORT,
         Import("typing"),
         FromImport("solders.pubkey", ["Pubkey"]),
-        FromImport("solders.system_program", ["SYS_PROGRAM_ID"]),
+        FromImport("solders.system_program", ["ID as SYS_PROGRAM_ID"]),
         FromImport("solders.sysvar", ["RENT", "CLOCK"]),
         FromImport(
             "spl.token.constants", ["TOKEN_PROGRAM_ID", "ASSOCIATED_TOKEN_PROGRAM_ID"]
@@ -312,7 +312,7 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
         )
         encoded_args_assignment = Assign("encoded_args", encoded_args_val)
         data_assignment = Assign("data", "identifier + encoded_args")
-        returning = Return("Instruction(keys, program_id, data)")
+        returning = Return("Instruction(program_id, data, keys)")
         ix_fn = Function(
             ix_name,
             [

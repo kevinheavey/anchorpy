@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing
 from solders.pubkey import Pubkey
-from solders.system_program import SYS_PROGRAM_ID
+from solders.system_program import ID as SYS_PROGRAM_ID
 from solders.sysvar import RENT, CLOCK
 from solders.instruction import Instruction, AccountMeta
 from ..program_id import PROGRAM_ID
@@ -29,4 +29,4 @@ def initialize(
     identifier = b"\xaf\xafm\x1f\r\x98\x9b\xed"
     encoded_args = b""
     data = identifier + encoded_args
-    return Instruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

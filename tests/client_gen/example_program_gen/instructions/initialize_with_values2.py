@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing
 from solders.pubkey import Pubkey
-from solders.system_program import SYS_PROGRAM_ID
+from solders.system_program import ID as SYS_PROGRAM_ID
 from solders.instruction import Instruction, AccountMeta
 from construct import Construct
 import borsh_construct as borsh
@@ -42,4 +42,4 @@ def initialize_with_values2(
         }
     )
     data = identifier + encoded_args
-    return Instruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

@@ -47,10 +47,10 @@ async def create_price_feed(
                 create_account(
                     CreateAccountParams(
                         from_pubkey=oracle_program.provider.wallet.public_key,
-                        new_account_pubkey=collateral_token_feed.pubkey(),
+                        to_pubkey=collateral_token_feed.pubkey(),
                         space=3312,
                         lamports=mbre_resp.value,
-                        program_id=oracle_program.program_id,
+                        owner=oracle_program.program_id,
                     ),
                 ),
             ],

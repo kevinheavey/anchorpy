@@ -26,4 +26,4 @@ def thaw_account(
     identifier = b"s\x98O\xd5\xd5\xa9\xb8#"
     encoded_args = b""
     data = identifier + encoded_args
-    return Instruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

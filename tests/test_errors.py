@@ -4,11 +4,11 @@ from anchorpy.error import ProgramError
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark, raises
-from solders.keypair import Keypair
 from solana.rpc.core import RPCException
-from solders.sysvar import RENT
-from solders.instruction import AccountMeta, Instruction
 from solana.transaction import Transaction
+from solders.instruction import AccountMeta, Instruction
+from solders.keypair import Keypair
+from solders.sysvar import RENT
 
 workspace = workspace_fixture(
     "anchor/tests/errors/", build_cmd="anchor build --skip-lint"
@@ -91,7 +91,7 @@ async def test_signer_err(program: Program) -> None:
     tx = Transaction()
     tx.add(
         Instruction(
-            keys=[
+            accounts=[
                 AccountMeta(
                     pubkey=RENT,
                     is_writable=False,

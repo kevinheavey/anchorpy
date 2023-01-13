@@ -552,7 +552,7 @@ def _field_from_json(
     ty_name = _sanitize(ty_name_snake_unsanitized)
     var_name = f"{param_prefix}{ty_name_snake_unsanitized}{param_suffix}"
     if ty_type == IdlTypeSimple.PublicKey:
-        return f"Pubkey({var_name})"
+        return f"Pubkey.from_string({var_name})"
     if isinstance(ty_type, IdlTypeVec):
         map_body = _field_from_json(
             idl=idl,

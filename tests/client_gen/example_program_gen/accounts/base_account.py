@@ -83,5 +83,5 @@ class BaseAccount:
     def from_json(cls, obj: BaseAccountJSON) -> "BaseAccount":
         return cls(
             base_data=obj["base_data"],
-            base_data_key=Pubkey(obj["base_data_key"]),
+            base_data_key=Pubkey.from_string(obj["base_data_key"]),
         )

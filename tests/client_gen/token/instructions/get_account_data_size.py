@@ -22,4 +22,4 @@ def get_account_data_size(
     identifier = b"\x10\xb1\xd2\x80\x15-o\x1f"
     encoded_args = b""
     data = identifier + encoded_args
-    return Instruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

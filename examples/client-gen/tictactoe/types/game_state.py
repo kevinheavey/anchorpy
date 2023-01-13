@@ -115,7 +115,7 @@ def from_json(obj: GameStateJSON) -> GameStateKind:
         won_json_value = typing.cast(WonJSONValue, obj["value"])
         return Won(
             WonValue(
-                winner=Pubkey(won_json_value["winner"]),
+                winner=Pubkey.from_string(won_json_value["winner"]),
             )
         )
     kind = obj["kind"]

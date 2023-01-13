@@ -28,4 +28,4 @@ def initialize_account(
     identifier = b"Jsc]\xc5Eg\x07"
     encoded_args = b""
     data = identifier + encoded_args
-    return Instruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

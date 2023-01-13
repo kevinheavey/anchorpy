@@ -236,7 +236,7 @@ class State:
             i128_field=obj["i128_field"],
             bytes_field=bytes(obj["bytes_field"]),
             string_field=obj["string_field"],
-            pubkey_field=Pubkey(obj["pubkey_field"]),
+            pubkey_field=Pubkey.from_string(obj["pubkey_field"]),
             vec_field=obj["vec_field"],
             vec_struct_field=list(
                 map(
