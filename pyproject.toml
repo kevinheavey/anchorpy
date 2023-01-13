@@ -91,7 +91,9 @@ convention = "google"
 [tool.ruff.per-file-ignores]
 "src/anchorpy/coder/*.py" = ["ARG002"]
 "src/anchorpy/borsh_extension.py" = ["ARG002"]
-"tests/**/*.py" = ["ARG001"]
+"tests/**/*.py" = ["ARG001", "E501"]
+"tests/client_gen/example_program_gen/**/*.py" = ["C417"]
+"tests/client_gen/token/**/*.py" = ["C417"]
 "src/anchorpy/cli.py" = ["B008"]
 
 [tool.pyright]
