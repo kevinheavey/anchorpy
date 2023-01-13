@@ -14,7 +14,7 @@
 :::anchorpy.InstructionCoder
 :::anchorpy.EventCoder
 :::anchorpy.AccountsCoder
-:::anchorpy.Instruction
+:::anchorpy.NamedInstruction
 :::anchorpy.IdlProgramAccount
 :::anchorpy.Event
 :::anchorpy.translate_address
