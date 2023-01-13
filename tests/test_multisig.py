@@ -7,14 +7,12 @@ from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta
 
-CreatedMultisig = tuple[Keypair, int, list[PublicKey], int, PublicKey, Keypair, Keypair]
-CreatedTransaction = tuple[
-    Keypair, list[dict], bytes, Keypair, PublicKey, list[PublicKey]
-]
+CreatedMultisig = tuple[Keypair, int, list[Pubkey], int, Pubkey, Keypair, Keypair]
+CreatedTransaction = tuple[Keypair, list[dict], bytes, Keypair, Pubkey, list[Pubkey]]
 
 workspace = workspace_fixture(
     "anchor/tests/multisig/", build_cmd="anchor build --skip-lint"
@@ -37,7 +35,7 @@ def provider(program: Program) -> Provider:
 async def created_multisig(program: Program) -> CreatedMultisig:
     """Run the create_multisig RPC function."""
     multisig = Keypair()
-    multisig_signer, nonce = PublicKey.find_program_address(
+    multisig_signer, nonce = Pubkey.find_program_address(
         [bytes(multisig.public_key)], program.program_id
     )
     multisig_size = 200

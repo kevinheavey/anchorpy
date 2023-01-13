@@ -8,7 +8,7 @@ from borsh_construct import U8, CStruct, Vec
 from anchorpy.borsh_extension import BorshPubkey
 
 
-def _idl_address(program_id: solana.publickey.PublicKey) -> solana.publickey.PublicKey:
+def _idl_address(program_id: solders.pubkey.Pubkey) -> solders.pubkey.Pubkey:
     """Deterministic IDL address as a function of the program id.
 
     Args:
@@ -17,14 +17,14 @@ def _idl_address(program_id: solana.publickey.PublicKey) -> solana.publickey.Pub
     Returns:
         The public key of the IDL.
     """
-    base = solana.publickey.PublicKey.find_program_address([], program_id)[0]
-    return solana.publickey.PublicKey.create_with_seed(base, "anchor:idl", program_id)
+    base = solders.pubkey.Pubkey.find_program_address([], program_id)[0]
+    return solders.pubkey.Pubkey.create_with_seed(base, "anchor:idl", program_id)
 
 
 class IdlProgramAccount(TypedDict):
     """The on-chain account of the IDL."""
 
-    authority: solana.publickey.PublicKey
+    authority: solders.pubkey.Pubkey
     data: bytes
 
 

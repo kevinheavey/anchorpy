@@ -11,13 +11,13 @@ from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.core import RPCException
 from solana.system_program import SYS_PROGRAM_ID
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 
 PATH = Path("anchor/tests/zero-copy")
-DEFAULT_PUBKEY = PublicKey("11111111111111111111111111111111")
+DEFAULT_PUBKEY = Pubkey.from_string("11111111111111111111111111111111")
 
 workspace = workspace_fixture(
     "anchor/tests/zero-copy", build_cmd="anchor build --skip-lint"
@@ -120,8 +120,8 @@ async def test_update_foo_second(
 @async_fixture(scope="module")
 async def bar(
     program: Program, provider: Provider, foo: Keypair, update_foo_second: None
-) -> PublicKey:
-    bar_pubkey = PublicKey.find_program_address(
+) -> Pubkey:
+    bar_pubkey = Pubkey.find_program_address(
         [bytes(provider.wallet.public_key), bytes(foo.public_key)], program.program_id
     )[0]
     await program.rpc["create_bar"](
@@ -138,7 +138,7 @@ async def bar(
 
 
 @mark.asyncio
-async def test_create_bar(provider: Provider, program: Program, bar: PublicKey) -> None:
+async def test_create_bar(provider: Provider, program: Program, bar: Pubkey) -> None:
     account = await program.account["Bar"].fetch(bar)
     assert account.authority == provider.wallet.public_key
     assert account.data == 0
@@ -149,7 +149,7 @@ async def update_associated_zero_copy_account(
     program: Program,
     provider: Provider,
     foo: Keypair,
-    bar: PublicKey,
+    bar: Pubkey,
 ) -> None:
     await program.rpc["update_bar"](
         99,
@@ -167,7 +167,7 @@ async def update_associated_zero_copy_account(
 async def test_update_associated_zero_copy_account(
     provider: Provider,
     program: Program,
-    bar: PublicKey,
+    bar: Pubkey,
     update_associated_zero_copy_account: None,
 ) -> None:
     account = await program.account["Bar"].fetch(bar)
@@ -181,7 +181,7 @@ async def check_cpi(
     program: Program,
     provider: Provider,
     foo: Keypair,
-    bar: PublicKey,
+    bar: Pubkey,
     update_associated_zero_copy_account: None,
 ) -> None:
     await program_cpi.rpc["check_cpi"](
@@ -201,7 +201,7 @@ async def check_cpi(
 async def test_check_cpi(
     provider: Provider,
     program: Program,
-    bar: PublicKey,
+    bar: Pubkey,
     check_cpi: None,
 ) -> None:
     account = await program.account["Bar"].fetch(bar)

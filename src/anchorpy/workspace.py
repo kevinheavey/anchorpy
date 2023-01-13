@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, Optional, Union, cast
 
 from anchorpy_core.idl import Idl
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 from anchorpy.program.core import Program
 from anchorpy.provider import Provider
@@ -31,7 +31,9 @@ def create_workspace(
         raw = file.read_text()
         idl = Idl.from_json(raw)
         metadata = cast(Dict[str, str], idl.metadata)
-        program = Program(idl, PublicKey(metadata["address"]), Provider.local(url))
+        program = Program(
+            idl, Pubkey.from_string(metadata["address"]), Provider.local(url)
+        )
         result[idl.name] = program
     return result
 

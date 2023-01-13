@@ -6,7 +6,7 @@ from anchorpy.pytest_plugin import workspace_fixture
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.system_program import SYS_PROGRAM_ID
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 
@@ -49,9 +49,9 @@ async def created_chatroom(program: Program) -> Keypair:
 @async_fixture(scope="module")
 async def created_user(
     created_chatroom: Keypair, program: Program
-) -> tuple[PublicKey, PublicKey]:
+) -> tuple[Pubkey, Pubkey]:
     authority = program.provider.wallet.public_key
-    user, bump = PublicKey.find_program_address([bytes(authority)], program.program_id)
+    user, bump = Pubkey.find_program_address([bytes(authority)], program.program_id)
     await program.rpc["create_user"](
         "My User",
         ctx=Context(
@@ -67,17 +67,14 @@ async def created_user(
 
 @async_fixture(scope="module")
 async def sent_messages(
-    created_user: tuple[PublicKey, PublicKey],
+    created_user: tuple[Pubkey, Pubkey],
     created_chatroom: Keypair,
     program: Program,
 ) -> list[str]:
     user, authority = created_user
     num_messages = 10
     to_choose = string.ascii_uppercase + string.digits
-    messages = [
-        "".join(random.choices(to_choose, k=13))
-        for _ in range(num_messages)
-    ]
+    messages = ["".join(random.choices(to_choose, k=13)) for _ in range(num_messages)]
     for i, msg in enumerate(messages):
         print(f"sending message {i}")
         await program.rpc["send_message"](
@@ -105,7 +102,7 @@ async def test_created_chatroom(created_chatroom: Keypair, program: Program) -> 
 
 @mark.asyncio
 async def test_created_user(
-    created_user: tuple[PublicKey, PublicKey],
+    created_user: tuple[Pubkey, Pubkey],
     program: Program,
 ) -> None:
     user, authority = created_user
@@ -119,7 +116,7 @@ async def test_sent_messages(
     program: Program,
     created_chatroom: Keypair,
     sent_messages: list[str],
-    created_user: tuple[PublicKey, PublicKey],
+    created_user: tuple[Pubkey, Pubkey],
 ) -> None:
     user, _ = created_user
     chat = await program.account["ChatRoom"].fetch(created_chatroom.public_key)

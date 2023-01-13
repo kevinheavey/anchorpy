@@ -3,7 +3,7 @@ from typing import Any, Callable, Sequence, Tuple, cast
 
 from anchorpy_core.idl import IdlAccount, IdlAccountItem, IdlAccounts, IdlInstruction
 from pyheck import snake
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.transaction import AccountMeta, TransactionInstruction
 
 from anchorpy.program.common import (
@@ -30,7 +30,7 @@ class _InstructionFn:
         self,
         idl_ix: IdlInstruction,
         encode_fn: Callable[[Instruction], bytes],
-        program_id: PublicKey,
+        program_id: Pubkey,
     ) -> None:
         """Init.
 
@@ -106,7 +106,7 @@ def _accounts_array(
             accounts_ret.extend(acc_arr)
         else:
             account: IdlAccount = acc
-            single_account = cast(PublicKey, ctx[snake(account.name)])
+            single_account = cast(Pubkey, ctx[snake(account.name)])
             accounts_ret.append(
                 AccountMeta(
                     pubkey=single_account,

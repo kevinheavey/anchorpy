@@ -4,7 +4,7 @@ from base64 import b64decode
 from dataclasses import dataclass
 from typing import Callable, List, Optional, cast
 
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 from anchorpy.coder.coder import Coder
 from anchorpy.program.common import Event
@@ -58,7 +58,7 @@ class _ExecutionContext:
 class EventParser:
     """Parser to handle on_logs callbacks."""
 
-    program_id: PublicKey
+    program_id: Pubkey
     coder: Coder
 
     def parse_logs(self, logs: List[str], callback: Callable[[Event], None]) -> None:

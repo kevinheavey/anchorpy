@@ -9,11 +9,11 @@ from anchorpy_core.idl import (
 )
 from construct import Container
 from pyheck import snake
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 from anchorpy.program.context import Accounts
 
-AddressType = Union[PublicKey, str]
+AddressType = Union[Pubkey, str]
 
 
 class Event(NamedTuple):
@@ -76,15 +76,15 @@ def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
             raise ValueError(f"Invalid arguments: {acc_name} not provided")
 
 
-def translate_address(address: AddressType) -> PublicKey:
-    """Convert `str | PublicKey` into `PublicKey`.
+def translate_address(address: AddressType) -> Pubkey:
+    """Convert `str | Pubkey` into `Pubkey`.
 
     Args:
-        address: Public key as string or `PublicKey`.
+        address: Public key as string or `Pubkey`.
 
     Returns:
-        Public key as `PublicKey`.
+        Public key as `Pubkey`.
     """
     if isinstance(address, str):
-        return PublicKey(address)
+        return Pubkey.from_string(address)
     return address

@@ -5,7 +5,7 @@ import re
 from enum import IntEnum
 from typing import Dict, List, Optional, Tuple
 
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.rpc.responses import RPCError
 from solders.transaction_status import (
@@ -217,7 +217,7 @@ class ProgramError(Exception):
         cls,
         err_info: RPCError,
         idl_errors: dict[int, str],
-        program_id: PublicKey,
+        program_id: Pubkey,
     ) -> Optional[ProgramError]:
         """Convert an RPC error into a ProgramError, if possible.
 
@@ -256,7 +256,7 @@ def _find_first_match(logs: list[str]) -> Optional[re.Match]:
 
 
 def extract_code_and_logs(
-    err_info: RPCError, program_id: PublicKey
+    err_info: RPCError, program_id: Pubkey
 ) -> Optional[Tuple[int, List[str]]]:
     """Extract the custom instruction error code from an RPC response.
 

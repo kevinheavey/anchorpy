@@ -13,7 +13,7 @@ from anchorpy_core.idl import IdlConst, IdlTypeSimple
 from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.core import RPCException
 from solana.rpc.types import MemcmpOpts
 from solana.system_program import SYS_PROGRAM_ID, TransferParams, transfer
@@ -284,7 +284,7 @@ async def test_can_use_instruction_data_in_accounts_constraints(
     program: Program,
 ) -> None:
     seed = b"my-seed"
-    my_pda, nonce = PublicKey.find_program_address(
+    my_pda, nonce = Pubkey.find_program_address(
         [seed, bytes(SYSVAR_RENT_PUBKEY)], program.program_id
     )
     await program.rpc["test_instruction_constraint"](
@@ -300,7 +300,7 @@ async def test_can_create_a_pda_with_instruction_data(
     seed = bytes([1, 2, 3, 4])
     domain = "my-domain"
     foo = SYSVAR_RENT_PUBKEY
-    my_pda, nonce = PublicKey.find_program_address(
+    my_pda, nonce = Pubkey.find_program_address(
         [b"my-seed", domain.encode(), bytes(foo), seed], program.program_id
     )
     await program.rpc["test_pda_init"](
@@ -323,7 +323,7 @@ async def test_can_create_a_pda_with_instruction_data(
 
 @mark.asyncio
 async def test_can_create_a_zero_copy_pda(program: Program) -> None:
-    my_pda, nonce = PublicKey.find_program_address([b"my-seed"], program.program_id)
+    my_pda, nonce = Pubkey.find_program_address([b"my-seed"], program.program_id)
     await program.rpc["test_pda_init_zero_copy"](
         ctx=Context(
             accounts={
@@ -341,7 +341,7 @@ async def test_can_create_a_zero_copy_pda(program: Program) -> None:
 
 @mark.asyncio
 async def test_can_write_to_a_zero_copy_pda(program: Program) -> None:
-    my_pda, bump = PublicKey.find_program_address([b"my-seed"], program.program_id)
+    my_pda, bump = Pubkey.find_program_address([b"my-seed"], program.program_id)
     await program.rpc["test_pda_mut_zero_copy"](
         ctx=Context(
             accounts={
@@ -357,10 +357,8 @@ async def test_can_write_to_a_zero_copy_pda(program: Program) -> None:
 
 @mark.asyncio
 async def test_can_create_a_token_account_from_seeds_pda(program: Program) -> None:
-    mint, mint_bump = PublicKey.find_program_address(
-        [b"my-mint-seed"], program.program_id
-    )
-    my_pda, token_bump = PublicKey.find_program_address(
+    mint, mint_bump = Pubkey.find_program_address([b"my-mint-seed"], program.program_id)
+    my_pda, token_bump = Pubkey.find_program_address(
         [b"my-token-seed"], program.program_id
     )
     await program.rpc["test_token_seeds_init"](
@@ -785,7 +783,7 @@ async def test_can_fetch_all_accounts_of_a_given_type(
 
 @mark.asyncio
 async def test_can_use_pdas_with_empty_seeds(program: Program) -> None:
-    pda, bump = PublicKey.find_program_address([], program.program_id)
+    pda, bump = Pubkey.find_program_address([], program.program_id)
     await program.rpc["test_init_with_empty_seeds"](
         ctx=Context(
             accounts={
@@ -802,7 +800,7 @@ async def test_can_use_pdas_with_empty_seeds(program: Program) -> None:
             },
         ),
     )
-    pda2, _ = PublicKey.find_program_address(
+    pda2, _ = Pubkey.find_program_address(
         [b"non-empty"],
         program.program_id,
     )

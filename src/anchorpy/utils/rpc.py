@@ -6,7 +6,7 @@ from typing import Any, NamedTuple, Optional
 
 import jsonrpcclient
 import zstandard
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 from solana.rpc.core import RPCException
@@ -37,7 +37,7 @@ class AccountInfo(NamedTuple):
     """
 
     executable: bool
-    owner: PublicKey
+    owner: Pubkey
     lamports: int
     data: bytes
     rent_epoch: Optional[int]
@@ -74,13 +74,13 @@ async def invoke(
 
 @dataclass
 class _MultipleAccountsItem:
-    pubkey: PublicKey
+    pubkey: Pubkey
     account: AccountInfo
 
 
 async def get_multiple_accounts(
     connection: AsyncClient,
-    pubkeys: list[PublicKey],
+    pubkeys: list[Pubkey],
     batch_size: int = 3,
     commitment: Optional[Commitment] = None,
 ) -> list[Optional[_MultipleAccountsItem]]:
@@ -107,7 +107,7 @@ async def get_multiple_accounts(
 
 
 async def _get_multiple_accounts_core(
-    connection: AsyncClient, pubkeys: list[PublicKey], commitment: Optional[Commitment]
+    connection: AsyncClient, pubkeys: list[Pubkey], commitment: Optional[Commitment]
 ) -> list[Optional[_MultipleAccountsItem]]:
     pubkey_batches = partition_all(_GET_MULTIPLE_ACCOUNTS_LIMIT, pubkeys)
     rpc_requests: list[dict[str, Any]] = []
@@ -147,7 +147,7 @@ async def _get_multiple_accounts_core(
                 )
                 acc_info = AccountInfo(
                     executable=account["executable"],
-                    owner=PublicKey(account["owner"]),
+                    owner=Pubkey.from_string(account["owner"]),
                     lamports=account["lamports"],
                     data=decompressed,
                     rent_epoch=account["rentEpoch"],

@@ -6,7 +6,7 @@ from anchorpy_core.idl import Idl, IdlTypeDefinition
 from based58 import b58encode
 from construct import Container
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.commitment import Commitment
 from solana.rpc.types import MemcmpOpts
 from solana.system_program import CreateAccountParams, create_account
@@ -26,7 +26,7 @@ from anchorpy.utils.rpc import get_multiple_accounts
 def _build_account(
     idl: Idl,
     coder: Coder,
-    program_id: PublicKey,
+    program_id: Pubkey,
     provider: Provider,
 ) -> Dict[str, "AccountClient"]:
     """Generate the `.account` namespace.
@@ -51,7 +51,7 @@ def _build_account(
 class ProgramAccount:
     """Deserialized account owned by a program."""
 
-    public_key: PublicKey
+    public_key: Pubkey
     account: Container
 
 
@@ -63,7 +63,7 @@ class AccountClient(object):
         idl: Idl,
         idl_account: IdlTypeDefinition,
         coder: Coder,
-        program_id: PublicKey,
+        program_id: Pubkey,
         provider: Provider,
     ):
         """Init.
@@ -82,7 +82,7 @@ class AccountClient(object):
         self._size = ACCOUNT_DISCRIMINATOR_SIZE + _account_size(idl, idl_account)
 
     async def fetch(
-        self, address: PublicKey, commitment: Optional[Commitment] = None
+        self, address: Pubkey, commitment: Optional[Commitment] = None
     ) -> Container[Any]:
         """Return a deserialized account.
 
@@ -111,7 +111,7 @@ class AccountClient(object):
 
     async def fetch_multiple(
         self,
-        addresses: List[PublicKey],
+        addresses: List[Pubkey],
         batch_size: int = 300,
         commitment: Optional[Commitment] = None,
     ) -> list[Optional[Container[Any]]]:
@@ -204,7 +204,7 @@ class AccountClient(object):
             account_data = r.account.data
             all_accounts.append(
                 ProgramAccount(
-                    public_key=PublicKey.from_solders(r.pubkey),
+                    public_key=r.pubkey,
                     account=self._coder.accounts.decode(account_data),
                 ),
             )
@@ -216,7 +216,7 @@ class AccountClient(object):
         return self._size
 
     @property
-    def program_id(self) -> PublicKey:
+    def program_id(self) -> Pubkey:
         """Return the program ID owning all accounts."""
         return self._program_id
 

@@ -2,7 +2,7 @@
 from typing import Optional
 
 from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.system_program import CreateAccountParams, create_account
 from solana.transaction import Transaction, TransactionInstruction
 from solders.rpc.responses import GetAccountInfoResp
@@ -24,9 +24,9 @@ from anchorpy.provider import Provider
 
 async def create_token_account(
     prov: Provider,
-    mint: PublicKey,
-    owner: PublicKey,
-) -> PublicKey:
+    mint: Pubkey,
+    owner: Pubkey,
+) -> Pubkey:
     """Create a token account.
 
     Args:
@@ -43,9 +43,9 @@ async def create_token_account(
 
 async def create_token_account_instrs(
     provider: Provider,
-    new_account_pubkey: PublicKey,
-    mint: PublicKey,
-    owner: PublicKey,
+    new_account_pubkey: Pubkey,
+    mint: Pubkey,
+    owner: Pubkey,
 ) -> tuple[TransactionInstruction, TransactionInstruction]:
     """Generate instructions for creating a token account.
 
@@ -84,9 +84,9 @@ async def create_token_account_instrs(
 async def create_mint_and_vault(
     provider: Provider,
     amount: int,
-    owner: Optional[PublicKey] = None,
+    owner: Optional[Pubkey] = None,
     decimals: Optional[int] = None,
-) -> tuple[PublicKey, PublicKey]:
+) -> tuple[Pubkey, Pubkey]:
     """Create a mint and a vault, then mint tokens to the vault.
 
     Args:
@@ -193,15 +193,15 @@ def parse_token_account(info: GetAccountInfoResp) -> AccountInfo:
 
     decoded_data = ACCOUNT_LAYOUT.parse(bytes_data)
 
-    mint = PublicKey(decoded_data.mint)
-    owner = PublicKey(decoded_data.owner)
+    mint = Pubkey(decoded_data.mint)
+    owner = Pubkey(decoded_data.owner)
     amount = decoded_data.amount
 
     if decoded_data.delegate_option == 0:
         delegate = None
         delegated_amount = 0
     else:
-        delegate = PublicKey(decoded_data.delegate)
+        delegate = Pubkey(decoded_data.delegate)
         delegated_amount = decoded_data.delegated_amount
 
     is_initialized = decoded_data.state != 0
@@ -217,7 +217,7 @@ def parse_token_account(info: GetAccountInfoResp) -> AccountInfo:
     if decoded_data.close_authority_option == 0:
         close_authority = None
     else:
-        close_authority = PublicKey(decoded_data.owner)
+        close_authority = Pubkey(decoded_data.owner)
 
     return AccountInfo(
         mint,
@@ -233,7 +233,7 @@ def parse_token_account(info: GetAccountInfoResp) -> AccountInfo:
     )
 
 
-async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
+async def get_token_account(provider: Provider, addr: Pubkey) -> AccountInfo:
     """Retrieve token account information.
 
     Args:
@@ -249,7 +249,7 @@ async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
 
 async def get_mint_info(
     provider: Provider,
-    addr: PublicKey,
+    addr: Pubkey,
 ) -> MintInfo:
     """Retrieve mint information.
 
@@ -294,7 +294,7 @@ def parse_mint_account(info: GetAccountInfoResp) -> MintInfo:
     if decoded_data.mint_authority_option == 0:
         mint_authority = None
     else:
-        mint_authority = PublicKey(decoded_data.mint_authority)
+        mint_authority = Pubkey(decoded_data.mint_authority)
 
     supply = decoded_data.supply
     is_initialized = decoded_data.is_initialized != 0
@@ -302,6 +302,6 @@ def parse_mint_account(info: GetAccountInfoResp) -> MintInfo:
     if decoded_data.freeze_authority_option == 0:
         freeze_authority = None
     else:
-        freeze_authority = PublicKey(decoded_data.freeze_authority)
+        freeze_authority = Pubkey(decoded_data.freeze_authority)
 
     return MintInfo(mint_authority, supply, decimals, is_initialized, freeze_authority)

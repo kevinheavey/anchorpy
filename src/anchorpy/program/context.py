@@ -10,7 +10,7 @@ from solana.transaction import AccountMeta, TransactionInstruction
 
 from anchorpy.error import ArgsError
 
-# should be Dict[str, Union[PublicKey, Accounts]]
+# should be Dict[str, Union[Pubkey, Accounts]]
 # but mypy doesn't support recursive types
 Accounts = Dict[str, Any]
 

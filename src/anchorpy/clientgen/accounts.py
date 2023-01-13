@@ -97,7 +97,7 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
         Import("typing"),
         FromImport("dataclasses", ["dataclass"]),
         FromImport("construct", ["Construct"]),
-        FromImport("solana.publickey", ["PublicKey"]),
+        FromImport("solana.publickey", ["Pubkey"]),
         FromImport("solana.rpc.async_api", ["AsyncClient"]),
         FromImport("solana.rpc.commitment", ["Commitment"]),
         ImportAs("borsh_construct", "borsh"),
@@ -181,9 +181,9 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
         "fetch",
         [
             TypedParam("conn", "AsyncClient"),
-            TypedParam("address", "PublicKey"),
+            TypedParam("address", "Pubkey"),
             TypedParam("commitment", "typing.Optional[Commitment] = None"),
-            TypedParam("program_id", "PublicKey = PROGRAM_ID"),
+            TypedParam("program_id", "Pubkey = PROGRAM_ID"),
         ],
         Suite(
             [
@@ -212,9 +212,9 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
         "fetch_multiple",
         [
             TypedParam("conn", "AsyncClient"),
-            TypedParam("addresses", "list[PublicKey]"),
+            TypedParam("addresses", "list[Pubkey]"),
             TypedParam("commitment", "typing.Optional[Commitment] = None"),
-            TypedParam("program_id", "PublicKey = PROGRAM_ID"),
+            TypedParam("program_id", "Pubkey = PROGRAM_ID"),
         ],
         Suite(
             [
