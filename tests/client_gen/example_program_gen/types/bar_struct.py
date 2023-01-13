@@ -1,10 +1,8 @@
 from __future__ import annotations
-
 import typing
 from dataclasses import dataclass
-
-import borsh_construct as borsh
 from construct import Container
+import borsh_construct as borsh
 
 
 class BarStructJSON(typing.TypedDict):

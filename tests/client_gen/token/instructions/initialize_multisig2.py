@@ -1,11 +1,8 @@
 from __future__ import annotations
-
 import typing
-
-import borsh_construct as borsh
 from solana.publickey import PublicKey
-from solana.transaction import AccountMeta, TransactionInstruction
-
+from solana.transaction import TransactionInstruction, AccountMeta
+import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
 

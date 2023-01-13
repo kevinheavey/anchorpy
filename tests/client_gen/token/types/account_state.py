@@ -1,10 +1,8 @@
 from __future__ import annotations
-
 import typing
 from dataclasses import dataclass
-
-import borsh_construct as borsh
 from anchorpy.borsh_extension import EnumForCodegen
+import borsh_construct as borsh
 
 
 class UninitializedJSON(typing.TypedDict):

@@ -1,12 +1,9 @@
 from __future__ import annotations
-
+from . import bar_struct, foo_enum
 import typing
 from dataclasses import dataclass
-
+from construct import Container, Construct
 import borsh_construct as borsh
-from construct import Construct, Container
-
-from . import bar_struct, foo_enum
 
 
 class FooStructJSON(typing.TypedDict):

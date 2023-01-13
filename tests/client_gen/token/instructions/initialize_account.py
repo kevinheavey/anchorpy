@@ -1,11 +1,8 @@
 from __future__ import annotations
-
 import typing
-
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
-from solana.transaction import AccountMeta, TransactionInstruction
-
+from solana.transaction import TransactionInstruction, AccountMeta
 from ..program_id import PROGRAM_ID
 
 

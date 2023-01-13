@@ -1,13 +1,10 @@
 from __future__ import annotations
-
+from . import bar_struct
 import typing
 from dataclasses import dataclass
-
-import borsh_construct as borsh
-from anchorpy.borsh_extension import EnumForCodegen
 from construct import Construct
-
-from . import bar_struct
+from anchorpy.borsh_extension import EnumForCodegen
+import borsh_construct as borsh
 
 UnnamedJSONValue = tuple[bool, int, bar_struct.BarStructJSON]
 UnnamedSingleJSONValue = tuple[bar_struct.BarStructJSON]
