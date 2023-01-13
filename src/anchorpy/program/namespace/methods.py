@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Any, List, Optional
 
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solana.rpc import types
-from solana.transaction import AccountMeta, Transaction, TransactionInstruction
+from solders.instruction import AccountMeta, Instruction
+from solana.transaction import Transaction
 from solders.signature import Signature
 
 from anchorpy.program.context import Accounts, Context
@@ -28,8 +29,8 @@ class MethodsBuilder:
         accounts: Accounts,
         remaining_accounts: List[AccountMeta],
         signers: List[Keypair],
-        pre_instructions: List[TransactionInstruction],
-        post_instructions: List[TransactionInstruction],
+        pre_instructions: List[Instruction],
+        post_instructions: List[Instruction],
         args: List[Any],
     ) -> None:
         self._idl_funcs = idl_funcs
@@ -48,7 +49,7 @@ class MethodsBuilder:
         ctx = self._build_context(opts)
         return await self._idl_funcs.simulate_fn(*self._args, ctx=ctx)
 
-    def instruction(self) -> TransactionInstruction:
+    def instruction(self) -> Instruction:
         ctx = self._build_context(opts=None)
         return self._idl_funcs.ix_fn(*self._args, ctx=ctx)
 
@@ -107,7 +108,7 @@ class MethodsBuilder:
             args=self._args,
         )
 
-    def pre_instructions(self, ixs: List[TransactionInstruction]) -> "MethodsBuilder":
+    def pre_instructions(self, ixs: List[Instruction]) -> "MethodsBuilder":
         idl_funcs = self._idl_funcs
         return MethodsBuilder(
             idl_funcs=idl_funcs,
@@ -119,7 +120,7 @@ class MethodsBuilder:
             args=self._args,
         )
 
-    def post_instructions(self, ixs: List[TransactionInstruction]) -> "MethodsBuilder":
+    def post_instructions(self, ixs: List[Instruction]) -> "MethodsBuilder":
         idl_funcs = self._idl_funcs
         return MethodsBuilder(
             idl_funcs=idl_funcs,

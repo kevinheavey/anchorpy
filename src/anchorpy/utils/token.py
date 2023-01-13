@@ -1,10 +1,11 @@
 """This module contains utilities for the SPL Token Program."""
 from typing import Optional
 
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
-from solana.system_program import CreateAccountParams, create_account
-from solana.transaction import Transaction, TransactionInstruction
+from solders.system_program import CreateAccountParams, create_account
+from solana.transaction import Transaction
+from solders.instruction import Instruction
 from solders.rpc.responses import GetAccountInfoResp
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
 from spl.token.async_client import AsyncToken
@@ -46,7 +47,7 @@ async def create_token_account_instrs(
     new_account_pubkey: Pubkey,
     mint: Pubkey,
     owner: Pubkey,
-) -> tuple[TransactionInstruction, TransactionInstruction]:
+) -> tuple[Instruction, Instruction]:
     """Generate instructions for creating a token account.
 
     Args:

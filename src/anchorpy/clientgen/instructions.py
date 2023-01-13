@@ -46,10 +46,10 @@ from anchorpy.coder.idl import FIELD_TYPE_MAP
 
 CONST_ACCOUNTS = {
     "associated_token_program": "ASSOCIATED_TOKEN_PROGRAM_ID",
-    "rent": "SYSVAR_RENT_PUBKEY",
+    "rent": "RENT",
     "system_program": "SYS_PROGRAM_ID",
     "token_program": "TOKEN_PROGRAM_ID",
-    "clock": "SYSVAR_CLOCK_PUBKEY",
+    "clock": "CLOCK",
 }
 
 
@@ -227,13 +227,13 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
     imports = [
         ANNOTATIONS_IMPORT,
         Import("typing"),
-        FromImport("solana.publickey", ["Pubkey"]),
-        FromImport("solana.system_program", ["SYS_PROGRAM_ID"]),
-        FromImport("solana.sysvar", ["SYSVAR_RENT_PUBKEY", "SYSVAR_CLOCK_PUBKEY"]),
+        FromImport("solders.pubkey", ["Pubkey"]),
+        FromImport("solders.system_program", ["SYS_PROGRAM_ID"]),
+        FromImport("solders.sysvar", ["RENT", "CLOCK"]),
         FromImport(
             "spl.token.constants", ["TOKEN_PROGRAM_ID", "ASSOCIATED_TOKEN_PROGRAM_ID"]
         ),
-        FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
+        FromImport("solders.instruction", ["Instruction", "AccountMeta"]),
         FromImport(
             "anchorpy.borsh_extension", ["BorshPubkey", "EnumForCodegen", "COption"]
         ),
@@ -312,7 +312,7 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
         )
         encoded_args_assignment = Assign("encoded_args", encoded_args_val)
         data_assignment = Assign("data", "identifier + encoded_args")
-        returning = Return("TransactionInstruction(keys, program_id, data)")
+        returning = Return("Instruction(keys, program_id, data)")
         ix_fn = Function(
             ix_name,
             [
@@ -334,7 +334,7 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
                     returning,
                 ]
             ),
-            "TransactionInstruction",
+            "Instruction",
         )
         contents = Collection(
             [

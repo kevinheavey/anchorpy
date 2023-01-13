@@ -5,10 +5,10 @@ from anchorpy import Context, Program, Provider
 from anchorpy.pytest_plugin import workspace_fixture
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
-from solana.system_program import SYS_PROGRAM_ID
-from solana.sysvar import SYSVAR_RENT_PUBKEY
+from solders.system_program import SYS_PROGRAM_ID
+from solders.sysvar import RENT
 
 workspace = workspace_fixture(
     "anchor/tests/chat/", build_cmd="anchor build --skip-lint"
@@ -35,7 +35,7 @@ async def created_chatroom(program: Program) -> Keypair:
         ctx=Context(
             accounts={
                 "chat_room": chatroom.public_key,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             pre_instructions=[
                 await program.account["ChatRoom"].create_instruction(chatroom),

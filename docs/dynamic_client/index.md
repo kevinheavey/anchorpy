@@ -117,8 +117,8 @@ As in the main Anchor tutorial, we will use `anchor/tutorial/examples/basic-1`:
 === "Python"
     ````python
     import asyncio
-    from solana.keypair import Keypair
-    from solana.system_program import SYS_PROGRAM_ID
+    from solders.keypair import Keypair
+    from solders.system_program import ID as SYS_PROGRAM_ID
     from anchorpy import create_workspace, close_workspace, Context
 
     async def main():

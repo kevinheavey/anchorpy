@@ -4,7 +4,7 @@ from typing import Any, Callable, Sequence, Tuple, cast
 from anchorpy_core.idl import IdlAccount, IdlAccountItem, IdlAccounts, IdlInstruction
 from pyheck import snake
 from solders.pubkey import Pubkey
-from solana.transaction import AccountMeta, TransactionInstruction
+from solders.instruction import AccountMeta, Instruction
 
 from anchorpy.program.common import (
     Instruction,
@@ -20,7 +20,7 @@ from anchorpy.program.context import (
 
 
 class _InstructionFn:
-    """Callable object to create a `TransactionInstruction` generated from an IDL.
+    """Callable object to create a `Instruction` generated from an IDL.
 
     Additionally it provides an `accounts` utility method, returning a list
     of ordered accounts for the instruction.
@@ -52,8 +52,8 @@ class _InstructionFn:
         self,
         *args: Any,
         ctx: Context = EMPTY_CONTEXT,
-    ) -> TransactionInstruction:
-        """Create the TransactionInstruction.
+    ) -> Instruction:
+        """Create the Instruction.
 
         Args:
             *args: The positional arguments for the program. The type and number
@@ -67,7 +67,7 @@ class _InstructionFn:
         keys = self.accounts(ctx.accounts)
         if ctx.remaining_accounts:
             keys.extend(ctx.remaining_accounts)
-        return TransactionInstruction(
+        return Instruction(
             keys=keys,
             program_id=self.program_id,
             data=self.encode_fn(_to_instruction(self.idl_ix, args)),

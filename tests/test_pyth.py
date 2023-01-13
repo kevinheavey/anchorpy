@@ -6,9 +6,9 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from construct import Int32sl, Int64ul
 from pytest import fixture, mark
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
-from solana.system_program import (
+from solders.system_program import (
     CreateAccountParams,
     create_account,
 )

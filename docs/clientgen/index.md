@@ -78,7 +78,7 @@ This will generate code to `./my_client`:
 
 ```python
 from solana.transaction import Transaction
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from anchorpy import Provider
 from my_client.instructions import some_instruction

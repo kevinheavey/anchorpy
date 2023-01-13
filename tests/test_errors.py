@@ -4,10 +4,11 @@ from anchorpy.error import ProgramError
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark, raises
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solana.rpc.core import RPCException
-from solana.sysvar import SYSVAR_RENT_PUBKEY
-from solana.transaction import AccountMeta, Transaction, TransactionInstruction
+from solders.sysvar import RENT
+from solders.instruction import AccountMeta, Instruction
+from solana.transaction import Transaction
 
 workspace = workspace_fixture(
     "anchor/tests/errors/", build_cmd="anchor build --skip-lint"
@@ -55,9 +56,7 @@ async def test_hello_next_err(program: Program) -> None:
 async def test_mut_err(program: Program) -> None:
     """Test mmut error."""
     with raises(ProgramError) as excinfo:
-        await program.rpc["mut_error"](
-            ctx=Context(accounts={"my_account": SYSVAR_RENT_PUBKEY})
-        )
+        await program.rpc["mut_error"](ctx=Context(accounts={"my_account": RENT}))
     assert excinfo.value.msg == "A mut constraint was violated"
     assert excinfo.value.code == 2000
     assert excinfo.value.logs
@@ -72,8 +71,8 @@ async def test_has_one_err(program: Program) -> None:
             ctx=Context(
                 accounts={
                     "my_account": account.public_key,
-                    "owner": SYSVAR_RENT_PUBKEY,
-                    "rent": SYSVAR_RENT_PUBKEY,
+                    "owner": RENT,
+                    "rent": RENT,
                 },
                 pre_instructions=[
                     await program.account["HasOneAccount"].create_instruction(account)
@@ -91,10 +90,10 @@ async def test_signer_err(program: Program) -> None:
     """Test signer error."""
     tx = Transaction()
     tx.add(
-        TransactionInstruction(
+        Instruction(
             keys=[
                 AccountMeta(
-                    pubkey=SYSVAR_RENT_PUBKEY,
+                    pubkey=RENT,
                     is_writable=False,
                     is_signer=False,
                 ),
@@ -118,7 +117,7 @@ async def test_raw_custom_err(program: Program) -> None:
         await program.rpc["raw_custom_error"](
             ctx=Context(
                 accounts={
-                    "my_account": SYSVAR_RENT_PUBKEY,
+                    "my_account": RENT,
                 },
             )
         )

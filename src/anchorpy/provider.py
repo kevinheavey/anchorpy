@@ -9,7 +9,7 @@ from typing import List, NamedTuple, Optional, Union
 
 from more_itertools import unique_everseen
 from solana.blockhash import Blockhash
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solana.rpc import types
 from solana.rpc.async_api import AsyncClient

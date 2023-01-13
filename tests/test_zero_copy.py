@@ -10,11 +10,11 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solana.rpc.core import RPCException
-from solana.system_program import SYS_PROGRAM_ID
-from solana.sysvar import SYSVAR_RENT_PUBKEY
+from solders.system_program import SYS_PROGRAM_ID
+from solders.sysvar import RENT
 
 PATH = Path("anchor/tests/zero-copy")
 DEFAULT_PUBKEY = Pubkey.from_string("11111111111111111111111111111111")
@@ -49,7 +49,7 @@ async def foo(program: Program) -> Keypair:
             accounts={
                 "foo": foo_keypair.public_key,
                 "authority": program.provider.wallet.public_key,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             pre_instructions=[
                 await program.account["Foo"].create_instruction(foo_keypair)
@@ -220,7 +220,7 @@ async def event_q(
         ctx=Context(
             accounts={
                 "event_q": event_q_keypair.public_key,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             pre_instructions=[
                 await program.account["EventQ"].create_instruction(

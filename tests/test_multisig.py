@@ -6,10 +6,10 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
-from solana.sysvar import SYSVAR_RENT_PUBKEY
-from solana.transaction import AccountMeta
+from solders.sysvar import RENT
+from solders.instruction import AccountMeta
 
 CreatedMultisig = tuple[Keypair, int, list[Pubkey], int, Pubkey, Keypair, Keypair]
 CreatedTransaction = tuple[Keypair, list[dict], bytes, Keypair, Pubkey, list[Pubkey]]
@@ -49,7 +49,7 @@ async def created_multisig(program: Program) -> CreatedMultisig:
         ctx=Context(
             accounts={
                 "multisig": multisig.public_key,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             pre_instructions=[
                 await program.account["Multisig"].create_instruction(
@@ -106,7 +106,7 @@ async def created_transaction(
                 "multisig": multisig.public_key,
                 "transaction": transaction.public_key,
                 "proposer": owner_a.public_key,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             pre_instructions=[
                 await program.account["Transaction"].create_instruction(

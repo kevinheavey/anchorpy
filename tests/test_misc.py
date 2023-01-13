@@ -12,12 +12,12 @@ from anchorpy.workspace import WorkspaceType
 from anchorpy_core.idl import IdlConst, IdlTypeSimple
 from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solana.rpc.core import RPCException
 from solana.rpc.types import MemcmpOpts
-from solana.system_program import SYS_PROGRAM_ID, TransferParams, transfer
-from solana.sysvar import SYSVAR_RENT_PUBKEY
+from solders.system_program import SYS_PROGRAM_ID, TransferParams, transfer
+from solders.sysvar import RENT
 from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
@@ -42,7 +42,7 @@ async def initialized_keypair(program: Program) -> Keypair:
         1234,
         22,
         ctx=Context(
-            accounts={"data": data.public_key, "rent": SYSVAR_RENT_PUBKEY},
+            accounts={"data": data.public_key, "rent": RENT},
             signers=[data],
             pre_instructions=[await program.account["Data"].create_instruction(data)],
         ),
@@ -91,7 +91,7 @@ async def keypair_after_test_u16(program: Program) -> Keypair:
     await program.rpc["test_u16"](
         99,
         ctx=Context(
-            accounts={"my_account": data.public_key, "rent": SYSVAR_RENT_PUBKEY},
+            accounts={"my_account": data.public_key, "rent": RENT},
             signers=[data],
             pre_instructions=[
                 await program.account["DataU16"].create_instruction(data)
@@ -172,7 +172,7 @@ async def test_can_use_i8_in_idl(program: Program) -> None:
     await program.rpc["test_i8"](
         -3,
         ctx=Context(
-            accounts={"data": data.public_key, "rent": SYSVAR_RENT_PUBKEY},
+            accounts={"data": data.public_key, "rent": RENT},
             pre_instructions=[await program.account["DataI8"].create_instruction(data)],
             signers=[data],
         ),
@@ -187,7 +187,7 @@ async def data_i16_keypair(program: Program) -> Keypair:
     await program.rpc["test_i16"](
         -2048,
         ctx=Context(
-            accounts={"data": data.public_key, "rent": SYSVAR_RENT_PUBKEY},
+            accounts={"data": data.public_key, "rent": RENT},
             pre_instructions=[
                 await program.account["DataI16"].create_instruction(data)
             ],
@@ -284,12 +284,10 @@ async def test_can_use_instruction_data_in_accounts_constraints(
     program: Program,
 ) -> None:
     seed = b"my-seed"
-    my_pda, nonce = Pubkey.find_program_address(
-        [seed, bytes(SYSVAR_RENT_PUBKEY)], program.program_id
-    )
+    my_pda, nonce = Pubkey.find_program_address([seed, bytes(RENT)], program.program_id)
     await program.rpc["test_instruction_constraint"](
         nonce,
-        ctx=Context(accounts={"my_pda": my_pda, "my_account": SYSVAR_RENT_PUBKEY}),
+        ctx=Context(accounts={"my_pda": my_pda, "my_account": RENT}),
     )
 
 
@@ -299,7 +297,7 @@ async def test_can_create_a_pda_with_instruction_data(
 ) -> None:
     seed = bytes([1, 2, 3, 4])
     domain = "my-domain"
-    foo = SYSVAR_RENT_PUBKEY
+    foo = RENT
     my_pda, nonce = Pubkey.find_program_address(
         [b"my-seed", domain.encode(), bytes(foo), seed], program.program_id
     )
@@ -312,7 +310,7 @@ async def test_can_create_a_pda_with_instruction_data(
                 "my_pda": my_pda,
                 "my_payer": program.provider.wallet.public_key,
                 "foo": foo,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
                 "system_program": SYS_PROGRAM_ID,
             }
         ),
@@ -329,7 +327,7 @@ async def test_can_create_a_zero_copy_pda(program: Program) -> None:
             accounts={
                 "my_pda": my_pda,
                 "my_payer": program.provider.wallet.public_key,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
                 "system_program": SYS_PROGRAM_ID,
             },
         ),
@@ -368,7 +366,7 @@ async def test_can_create_a_token_account_from_seeds_pda(program: Program) -> No
                 "mint": mint,
                 "authority": program.provider.wallet.public_key,
                 "system_program": SYS_PROGRAM_ID,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
                 "token_program": TOKEN_PROGRAM_ID,
             },
         ),
@@ -467,7 +465,7 @@ async def test_can_create_random_mint_account(
                 "payer": program.provider.wallet.public_key,
                 "system_program": SYS_PROGRAM_ID,
                 "token_program": TOKEN_PROGRAM_ID,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             signers=[mint],
         ),
@@ -494,7 +492,7 @@ async def prefunded_mint(program: Program) -> Keypair:
                 "payer": program.provider.wallet.public_key,
                 "system_program": SYS_PROGRAM_ID,
                 "token_program": TOKEN_PROGRAM_ID,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             signers=[mint],
             pre_instructions=[
@@ -541,7 +539,7 @@ async def test_can_create_random_token_account(
                 "payer": program.provider.wallet.public_key,
                 "system_program": SYS_PROGRAM_ID,
                 "token_program": TOKEN_PROGRAM_ID,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             signers=[token],
         ),
@@ -574,7 +572,7 @@ async def test_can_create_random_token_account_with_prefunding(
                 "payer": program.provider.wallet.public_key,
                 "system_program": SYS_PROGRAM_ID,
                 "token_program": TOKEN_PROGRAM_ID,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             signers=[token],
             pre_instructions=[
@@ -616,7 +614,7 @@ async def test_can_create_random_token_account_with_prefunding_under_rent_exempt
                 "payer": program.provider.wallet.public_key,
                 "system_program": SYS_PROGRAM_ID,
                 "token_program": TOKEN_PROGRAM_ID,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             signers=[token],
             pre_instructions=[

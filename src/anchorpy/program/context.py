@@ -4,9 +4,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from anchorpy_core.idl import IdlInstruction
 from pyheck import snake
-from solana.keypair import Keypair
+from solders.keypair import Keypair
 from solana.rpc.types import TxOpts
-from solana.transaction import AccountMeta, TransactionInstruction
+from solders.instruction import AccountMeta, Instruction
 
 from anchorpy.error import ArgsError
 
@@ -33,14 +33,14 @@ class Context:
     """
 
     # For some reason mkdocstrings doesn't understand the full type hint
-    # here if we use list[TransactionInstruction] instead of typing.List.
+    # here if we use list[Instruction] instead of typing.List.
     # Weirdly there are other places where it understands list[whatever].
 
     accounts: Accounts = field(default_factory=dict)
     remaining_accounts: List[AccountMeta] = field(default_factory=list)
     signers: List[Keypair] = field(default_factory=list)
-    pre_instructions: List[TransactionInstruction] = field(default_factory=list)
-    post_instructions: List[TransactionInstruction] = field(default_factory=list)
+    pre_instructions: List[Instruction] = field(default_factory=list)
+    post_instructions: List[Instruction] = field(default_factory=list)
     options: Optional[TxOpts] = None
 
 

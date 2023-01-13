@@ -21,8 +21,8 @@ Here's how it looks with the `basic-1` tests:
 
 ```python
 from pytest import fixture, mark
-from solana.keypair import Keypair
-from solana.system_program import SYS_PROGRAM_ID
+from solders.keypair import Keypair
+from solders.system_program import ID as SYS_PROGRAM_ID
 
 from anchorpy import Context, Program, workspace_fixture, WorkspaceType
 
@@ -109,8 +109,8 @@ import asyncio
 from pathlib import Path
 from pytest import fixture, mark
 from anchorpy import create_workspace, close_workspace, Context, Program
-from solana.keypair import Keypair
-from solana.system_program import SYS_PROGRAM_ID
+from solders.keypair import Keypair
+from solders.system_program import ID as SYS_PROGRAM_ID
 
 
 # Since our other fixtures have module scope, we need to define

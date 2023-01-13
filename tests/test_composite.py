@@ -4,8 +4,8 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
-from solana.keypair import Keypair
-from solana.sysvar import SYSVAR_RENT_PUBKEY
+from solders.keypair import Keypair
+from solders.sysvar import RENT
 
 workspace = workspace_fixture(
     "anchor/tests/composite/", build_cmd="anchor build --skip-lint"
@@ -28,7 +28,7 @@ async def initialized_accounts(program: Program) -> tuple[Keypair, Keypair]:
             accounts={
                 "dummy_a": dummy_a.public_key,
                 "dummy_b": dummy_b.public_key,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "rent": RENT,
             },
             signers=[dummy_a, dummy_b],
             pre_instructions=[

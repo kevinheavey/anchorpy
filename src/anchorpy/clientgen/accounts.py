@@ -97,7 +97,7 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
         Import("typing"),
         FromImport("dataclasses", ["dataclass"]),
         FromImport("construct", ["Construct"]),
-        FromImport("solana.publickey", ["Pubkey"]),
+        FromImport("solders.pubkey", ["Pubkey"]),
         FromImport("solana.rpc.async_api", ["AsyncClient"]),
         FromImport("solana.rpc.commitment", ["Commitment"]),
         ImportAs("borsh_construct", "borsh"),

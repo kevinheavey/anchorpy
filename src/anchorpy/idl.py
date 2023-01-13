@@ -1,7 +1,7 @@
 """Contains code for parsing the IDL file."""
 from typing import Sequence, TypedDict
 
-import solana.publickey
+import solders.pubkey
 from anchorpy_core.idl import IdlTypeDefinition
 from borsh_construct import U8, CStruct, Vec
 
