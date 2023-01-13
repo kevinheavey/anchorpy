@@ -6,10 +6,10 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
+from solders.instruction import AccountMeta
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.sysvar import RENT
-from solders.instruction import AccountMeta
 
 CreatedMultisig = tuple[Keypair, int, list[Pubkey], int, Pubkey, Keypair, Keypair]
 CreatedTransaction = tuple[Keypair, list[dict], bytes, Keypair, Pubkey, list[Pubkey]]
