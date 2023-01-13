@@ -1,12 +1,13 @@
 """This module contains code for handling Anchor events."""
-from dataclasses import dataclass
-from base64 import b64decode
-from typing import Callable, List, Optional, cast
 import binascii
+from base64 import b64decode
+from dataclasses import dataclass
+from typing import Callable, List, Optional, cast
+
 from solana.publickey import PublicKey
+
 from anchorpy.coder.coder import Coder
 from anchorpy.program.common import Event
-
 
 PROGRAM_LOG = "Program log: "
 PROGRAM_DATA = "Program data: "
@@ -96,7 +97,7 @@ class EventParser:
             that was invoked for CPI, and a boolean indicating if
             a program has completed execution (and thus should be popped off the
             execution stack).
-        """  # noqa: D401
+        """
         # Executing program is this program.
         if execution.stack and execution.program() == str(self.program_id):
             return self.handle_program_log(log)
@@ -136,7 +137,7 @@ class EventParser:
         """
         log_start = log.split(":")[0]
         splitted = log_start.split(" ")
-        invoke_msg = f"Program {str(self.program_id)} invoke"  # noqa: WPS237
+        invoke_msg = f"Program {str(self.program_id)} invoke"
         if len(splitted) == 3 and splitted[0] == "Program" and splitted[2] == "success":
             return None, True
         if log_start.startswith(invoke_msg):

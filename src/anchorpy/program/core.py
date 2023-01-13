@@ -1,39 +1,41 @@
 """This module defines the Program class."""
 from __future__ import annotations
-from typing import Any, Optional
-import zlib
-from pyheck import snake
-from anchorpy_core.idl import Idl
 
-from anchorpy.coder.coder import Coder
-from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE
-from anchorpy.program.common import AddressType, translate_address
-from anchorpy.idl import _decode_idl_account, _idl_address
+import zlib
+from typing import Any, Optional
+
+from anchorpy_core.idl import Idl
+from pyheck import snake
 from solana.publickey import PublicKey
-from anchorpy.provider import Provider
-from anchorpy.program.namespace.rpc import (
-    _RpcFn,
-    _build_rpc_item,
-)
-from anchorpy.program.namespace.transaction import (
-    _TransactionFn,
-    _build_transaction_fn,
-)
+
+from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE
+from anchorpy.coder.coder import Coder
+from anchorpy.error import IdlNotFoundError
+from anchorpy.idl import _decode_idl_account, _idl_address
+from anchorpy.program.common import AddressType, translate_address
+from anchorpy.program.namespace.account import AccountClient, _build_account
 from anchorpy.program.namespace.instruction import (
     _InstructionFn,
 )
-from anchorpy.program.namespace.account import AccountClient, _build_account
+from anchorpy.program.namespace.methods import (
+    IdlFuncs,
+    MethodsBuilder,
+    _build_methods_item,
+)
+from anchorpy.program.namespace.rpc import (
+    _build_rpc_item,
+    _RpcFn,
+)
 from anchorpy.program.namespace.simulate import (
-    _SimulateFn,
     _build_simulate_item,
+    _SimulateFn,
+)
+from anchorpy.program.namespace.transaction import (
+    _build_transaction_fn,
+    _TransactionFn,
 )
 from anchorpy.program.namespace.types import _build_types
-from anchorpy.program.namespace.methods import (
-    _build_methods_item,
-    MethodsBuilder,
-    IdlFuncs,
-)
-from anchorpy.error import IdlNotFoundError
+from anchorpy.provider import Provider
 
 
 def _parse_idl_errors(idl: Idl) -> dict[int, str]:
@@ -54,7 +56,7 @@ def _parse_idl_errors(idl: Idl) -> dict[int, str]:
     return errors
 
 
-def _build_namespace(  # noqa: WPS320
+def _build_namespace(
     idl: Idl,
     coder: Coder,
     program_id: PublicKey,
@@ -155,7 +157,7 @@ class Program(object):
         self.provider = provider if provider is not None else Provider.local()
         self.coder = Coder(idl)
 
-        (  # noqa: WPS236
+        (
             rpc,
             instruction,
             transaction,
@@ -180,7 +182,7 @@ class Program(object):
 
     async def __aenter__(self) -> Program:
         """Use as a context manager."""
-        await self.provider.__aenter__()  # noqa: WPS609
+        await self.provider.__aenter__()
         return self
 
     async def __aexit__(self, _exc_type, _exc, _tb):
@@ -192,7 +194,7 @@ class Program(object):
         await self.provider.close()
 
     @staticmethod
-    async def fetch_raw_idl(  # noqa: WPS602
+    async def fetch_raw_idl(
         address: AddressType,
         provider: Provider,
     ) -> str:

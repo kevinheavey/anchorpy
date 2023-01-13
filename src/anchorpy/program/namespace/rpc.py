@@ -1,15 +1,15 @@
 """This module contains code for generating RPC functions."""
 from typing import Any, Awaitable, Dict, Protocol
+
+from anchorpy_core.idl import IdlInstruction
+from solana.publickey import PublicKey
 from solana.rpc.core import RPCException
 from solders.signature import Signature
-from solana.publickey import PublicKey
 
 from anchorpy.error import ProgramError
-
 from anchorpy.program.context import EMPTY_CONTEXT, Context, _check_args_length
-from anchorpy_core.idl import IdlInstruction
-from anchorpy.provider import Provider
 from anchorpy.program.namespace.transaction import _TransactionFn
+from anchorpy.provider import Provider
 
 
 class _RpcFn(Protocol):

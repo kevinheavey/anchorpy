@@ -1,50 +1,52 @@
-from typing import cast
 from pathlib import Path
-from black import format_str, FileMode
-from autoflake import fix_code
-from pyheck import snake
-from genpy import (
-    FromImport,
-    Import,
-    Assign,
-    Suite,
-    Collection,
-    ImportAs,
-    Return,
-    For,
-    If,
-    Raise,
-    Statement,
-)
+from typing import cast
+
 from anchorpy_core.idl import (
     Idl,
+    IdlField,
     IdlTypeDefinition,
     IdlTypeDefinitionTyStruct,
-    IdlField,
 )
-from anchorpy.coder.accounts import _account_discriminator
-from anchorpy.clientgen.genpy_extension import (
-    Dataclass,
-    Method,
-    ClassMethod,
-    TypedParam,
-    TypedDict,
-    StrDict,
-    StrDictEntry,
-    NamedArg,
-    Call,
-    Continue,
+from autoflake import fix_code
+from black import FileMode, format_str
+from genpy import (
+    Assign,
+    Collection,
+    For,
+    FromImport,
+    If,
+    Import,
+    ImportAs,
+    Raise,
+    Return,
+    Statement,
+    Suite,
 )
+from pyheck import snake
+
 from anchorpy.clientgen.common import (
-    _json_interface_name,
-    _py_type_from_idl,
-    _idl_type_to_json_type,
-    _layout_for_type,
     _field_from_decoded,
-    _field_to_json,
     _field_from_json,
+    _field_to_json,
+    _idl_type_to_json_type,
+    _json_interface_name,
+    _layout_for_type,
+    _py_type_from_idl,
     _sanitize,
 )
+from anchorpy.clientgen.genpy_extension import (
+    Call,
+    ClassMethod,
+    Continue,
+    Dataclass,
+    Method,
+    NamedArg,
+    StrDict,
+    StrDictEntry,
+    TypedDict,
+    TypedParam,
+)
+from anchorpy.coder.accounts import _account_discriminator
 
 
 def gen_accounts(idl: Idl, root: Path) -> None:

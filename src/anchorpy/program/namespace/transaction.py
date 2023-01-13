@@ -1,10 +1,10 @@
 """This module deals with generating transactions."""
 from typing import Any, Protocol
 
+from anchorpy_core.idl import IdlInstruction
 from solana.transaction import Transaction
 
 from anchorpy.program.context import EMPTY_CONTEXT, Context, _check_args_length
-from anchorpy_core.idl import IdlInstruction
 from anchorpy.program.namespace.instruction import _InstructionFn
 
 

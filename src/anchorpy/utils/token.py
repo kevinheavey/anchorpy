@@ -1,22 +1,24 @@
 """This module contains utilities for the SPL Token Program."""
 from typing import Optional
-from solders.rpc.responses import GetAccountInfoResp
-from solana.publickey import PublicKey
+
 from solana.keypair import Keypair
+from solana.publickey import PublicKey
+from solana.system_program import CreateAccountParams, create_account
 from solana.transaction import Transaction, TransactionInstruction
-from solana.system_program import create_account, CreateAccountParams
-from spl.token.constants import TOKEN_PROGRAM_ID
-from spl.token.instructions import (
-    initialize_mint,
-    InitializeMintParams,
-    initialize_account,
-    InitializeAccountParams,
-    mint_to,
-    MintToParams,
-)
-from spl.token.async_client import AsyncToken
-from spl.token.core import AccountInfo, MintInfo
+from solders.rpc.responses import GetAccountInfoResp
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
+from spl.token.async_client import AsyncToken
+from spl.token.constants import TOKEN_PROGRAM_ID
+from spl.token.core import AccountInfo, MintInfo
+from spl.token.instructions import (
+    InitializeAccountParams,
+    InitializeMintParams,
+    MintToParams,
+    initialize_account,
+    initialize_mint,
+    mint_to,
+)
+
 from anchorpy import Provider
 
 
@@ -238,7 +240,7 @@ async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
         provider: The anchorpy Provider instance.
         addr: The pubkey of the token account.
 
-     Returns:
+    Returns:
         The parsed `AccountInfo` of the token account.
     """
     depositor_acc_info_raw = await provider.connection.get_account_info(addr)

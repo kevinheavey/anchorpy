@@ -1,12 +1,14 @@
-from typing import Iterator, Optional, Union as TypingUnion
+from typing import Iterator, Optional
+from typing import Union as TypingUnion
+
 from genpy import (
-    Function as FunctionOriginal,
+    Assign,
+    FromImport,
     Generable,
     Suite,
-    Class as BrokenClass,
-    FromImport,
-    Assign,
 )
+from genpy import Class as BrokenClass
+from genpy import Function as FunctionOriginal
 
 
 class Class(BrokenClass):

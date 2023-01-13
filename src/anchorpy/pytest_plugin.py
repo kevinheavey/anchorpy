@@ -27,7 +27,7 @@ class _FixedXProcessInfo(XProcessInfo):
         try:
             os.killpg(pgid, signal.SIGTERM)
         except OSError as err:
-            print(f"Error while terminating process {err}")  # noqa: WPS421
+            print(f"Error while terminating process {err}")
             return -1
         return 1
 
@@ -72,7 +72,7 @@ class _FixedXProcess(XProcess):
             starter = preparefunc(controldir, self)
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
-            stdout = open(str(info.logpath), "wb", 0)  # noqa: WPS515
+            stdout = open(str(info.logpath), "wb", 0)
 
             # is env still necessary? we could pass all in popen_kwargs
             kwargs = {"env": starter.env}
@@ -91,23 +91,23 @@ class _FixedXProcess(XProcess):
             # keep references of all popen
             # and info objects for cleanup
             self._info_objects.append((info, starter.terminate_on_interrupt))
-            popen_instance = subprocess.Popen(  # noqa: S603
+            popen_instance = subprocess.Popen(
                 args,
                 **popen_kwargs,
                 **kwargs,  # type: ignore
             )
             self._popen_instances.append(popen_instance)
 
-            info.pid = pid = self._popen_instances[-1].pid  # noqa: WPS429
+            info.pid = pid = self._popen_instances[-1].pid
             info.pidpath.write(str(pid))
-            self.log.debug("process %r started pid=%s", name, pid)  # noqa
+            self.log.debug("process %r started pid=%s", name, pid)
             stdout.close()
 
         # keep track of all file handles so we can
         # cleanup later during teardown phase
         self._file_handles.append(info.logpath.open())
 
-        if not restart:  # noqa: WPS504
+        if not restart:
             self._file_handles[-1].seek(0, 2)
         else:
             if not starter.wait(self._file_handles[-1]):
@@ -117,7 +117,7 @@ class _FixedXProcess(XProcess):
                 )
             self.log.debug("%s process startup detected", name)
 
-        pytest_extlogfiles = self.config.__dict__.setdefault(  # noqa: WPS609
+        pytest_extlogfiles = self.config.__dict__.setdefault(
             "_extlogfiles", {}
         )
         pytest_extlogfiles[name] = self._file_handles[-1]
@@ -129,11 +129,11 @@ class _FixedXProcess(XProcess):
 @async_fixture(scope="session")
 def _fixed_xprocess(request):
     """Yield session-scoped XProcess helper to manage long-running processes required for testing."""  # noqa: E501
-    rootdir = getrootdir(request.config)  # noqa: DAR101,DAR301
+    rootdir = getrootdir(request.config)
     with _FixedXProcess(request.config, rootdir) as xproc:
         # pass in xprocess object into pytest_unconfigure
         # through config for proper cleanup during teardown
-        request.config._xprocess = xproc  # noqa: WPS437
+        request.config._xprocess = xproc
         yield xproc
 
 
@@ -172,7 +172,7 @@ def localnet_fixture(
             # command to start process
 
         actual_build_cmd = "anchor build" if build_cmd is None else build_cmd
-        subprocess.run(actual_build_cmd, cwd=path, check=True, shell=True)  # noqa: S603
+        subprocess.run(actual_build_cmd, cwd=path, check=True, shell=True)
         # ensure process is running and return its logfile
         logfile = _fixed_xprocess.ensure("localnet", Starter)
 
@@ -225,7 +225,7 @@ def workspace_fixture(
             # command to start process
 
         actual_build_cmd = "anchor build" if build_cmd is None else build_cmd
-        subprocess.run(actual_build_cmd, cwd=path, check=True, shell=True)  # noqa: S603
+        subprocess.run(actual_build_cmd, cwd=path, check=True, shell=True)
         # ensure process is running
         _ = _fixed_xprocess.ensure("localnet", Starter)
         ws = create_workspace(path)

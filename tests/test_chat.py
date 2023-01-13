@@ -1,16 +1,14 @@
 import random
 import string
 
-from pytest import mark, fixture
+from anchorpy import Context, Program, Provider
+from anchorpy.pytest_plugin import workspace_fixture
+from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
-from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.system_program import SYS_PROGRAM_ID
-
-from anchorpy import Program, Context, Provider
-from anchorpy.pytest_plugin import workspace_fixture
-
+from solana.sysvar import SYSVAR_RENT_PUBKEY
 
 workspace = workspace_fixture(
     "anchor/tests/chat/", build_cmd="anchor build --skip-lint"
@@ -77,7 +75,7 @@ async def sent_messages(
     num_messages = 10
     to_choose = string.ascii_uppercase + string.digits
     messages = [
-        "".join(random.choices(to_choose, k=13))  # noqa: S311
+        "".join(random.choices(to_choose, k=13))
         for _ in range(num_messages)
     ]
     for i, msg in enumerate(messages):
@@ -132,4 +130,4 @@ async def test_sent_messages(
             assert msg.from_ == user
             assert data == sent_messages[i]
         else:
-            assert msg.data == [0] * 280  # noqa: WPS435
+            assert msg.data == [0] * 280

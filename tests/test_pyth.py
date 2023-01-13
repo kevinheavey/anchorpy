@@ -1,17 +1,17 @@
 """Mimics anchor/tests/misc/tests/misc.js."""
 from dataclasses import dataclass
-from pytest import mark, fixture
+
+from anchorpy import Context, Program
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
 from construct import Int32sl, Int64ul
-from anchorpy import Program, Context
+from pytest import fixture, mark
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.system_program import (
-    create_account,
     CreateAccountParams,
+    create_account,
 )
-from anchorpy.pytest_plugin import workspace_fixture
-from anchorpy.workspace import WorkspaceType
-
 
 workspace = workspace_fixture(
     "anchor/tests/pyth/", build_cmd="anchor build --skip-lint"

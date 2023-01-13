@@ -1,16 +1,14 @@
 """This module contains code handling the Context object."""
 from dataclasses import dataclass, field
-from typing import Tuple, Optional, Dict, List, Any
-
-from solana.keypair import Keypair
-from solana.rpc.types import TxOpts
-from solana.transaction import AccountMeta
-from solana.transaction import TransactionInstruction
-from pyheck import snake
+from typing import Any, Dict, List, Optional, Tuple
 
 from anchorpy_core.idl import IdlInstruction
-from anchorpy.error import ArgsError
+from pyheck import snake
+from solana.keypair import Keypair
+from solana.rpc.types import TxOpts
+from solana.transaction import AccountMeta, TransactionInstruction
 
+from anchorpy.error import ArgsError
 
 # should be Dict[str, Union[PublicKey, Accounts]]
 # but mypy doesn't support recursive types

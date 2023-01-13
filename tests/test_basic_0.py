@@ -1,10 +1,9 @@
 """Mimics anchor/examples/tutorial/basic-0/tests/basic-0.js."""
 from pathlib import Path
 
-from pytest import mark
-
 from anchorpy import create_workspace
 from anchorpy.pytest_plugin import localnet_fixture
+from pytest import mark
 
 PATH = Path("anchor/examples/tutorial/basic-0")
 

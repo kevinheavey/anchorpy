@@ -1,17 +1,15 @@
 """Mimics anchor/tests/multisig."""
 from dataclasses import replace
 
-from pytest import mark, fixture
+from anchorpy import Context, Program, Provider
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
+from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.sysvar import SYSVAR_RENT_PUBKEY
 from solana.transaction import AccountMeta
-
-from anchorpy import Program, Context, Provider
-from anchorpy.pytest_plugin import workspace_fixture
-from anchorpy.workspace import WorkspaceType
-
 
 CreatedMultisig = tuple[Keypair, int, list[PublicKey], int, PublicKey, Keypair, Keypair]
 CreatedTransaction = tuple[

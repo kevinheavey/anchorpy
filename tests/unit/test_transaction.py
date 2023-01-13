@@ -1,11 +1,10 @@
+from anchorpy import Coder, Idl
+from anchorpy.program.context import Context
+from anchorpy.program.namespace.instruction import _InstructionFn
+from anchorpy.program.namespace.transaction import _build_transaction_fn
 from pytest import fixture
 from solana.publickey import PublicKey
 from solana.transaction import TransactionInstruction
-
-from anchorpy import Idl, Coder
-from anchorpy.program.context import Context
-from anchorpy.program.namespace.transaction import _build_transaction_fn
-from anchorpy.program.namespace.instruction import _InstructionFn
 
 DEFAULT_PUBKEY = PublicKey("11111111111111111111111111111111")
 

@@ -1,9 +1,9 @@
 """Contains code for parsing the IDL file."""
-from typing import TypedDict, Sequence
-from anchorpy_core.idl import IdlTypeDefinition
+from typing import Sequence, TypedDict
 
-from borsh_construct import CStruct, Vec, U8
-import solana.publickey  # noqa: WPS301
+import solana.publickey
+from anchorpy_core.idl import IdlTypeDefinition
+from borsh_construct import U8, CStruct, Vec
 
 from anchorpy.borsh_extension import BorshPubkey
 

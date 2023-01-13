@@ -1,10 +1,10 @@
-from anchorpy import Idl
 from pathlib import Path
+
+from anchorpy import Idl
+from anchorpy.program.namespace.instruction import _accounts_array
 from pytest import mark
 from solana.keypair import Keypair
 from solana.transaction import AccountMeta
-
-from anchorpy.program.namespace.instruction import _accounts_array
 
 
 @mark.unit

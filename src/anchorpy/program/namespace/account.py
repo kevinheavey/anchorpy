@@ -1,23 +1,23 @@
 """Provides the `AccountClient` class."""
 from dataclasses import dataclass
-from based58 import b58encode
-from typing import Any, Optional, Dict, List, Union, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Union
 
+from anchorpy_core.idl import Idl, IdlTypeDefinition
+from based58 import b58encode
 from construct import Container
 from solana.keypair import Keypair
-from solana.system_program import create_account, CreateAccountParams
-from solana.transaction import TransactionInstruction
 from solana.publickey import PublicKey
-from solana.rpc.types import MemcmpOpts
 from solana.rpc.commitment import Commitment
-from anchorpy_core.idl import Idl, IdlTypeDefinition
+from solana.rpc.types import MemcmpOpts
+from solana.system_program import CreateAccountParams, create_account
+from solana.transaction import TransactionInstruction
 
-from anchorpy.coder.common import _account_size
 from anchorpy.coder.accounts import (
     ACCOUNT_DISCRIMINATOR_SIZE,
     _account_discriminator,
 )
 from anchorpy.coder.coder import Coder
+from anchorpy.coder.common import _account_size
 from anchorpy.error import AccountDoesNotExistError, AccountInvalidDiscriminator
 from anchorpy.provider import Provider
 from anchorpy.utils.rpc import get_multiple_accounts
@@ -197,7 +197,7 @@ class AccountClient(object):
         resp = await self._provider.connection.get_program_accounts(
             self._program_id,
             encoding="base64",
-            commitment=self.provider.connection._commitment,  # noqa: WPS437
+            commitment=self.provider.connection._commitment,
             filters=filters_to_use,
         )
         for r in resp.value:

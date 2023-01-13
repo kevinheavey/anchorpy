@@ -1,18 +1,20 @@
 # noqa: D100
 import os
-from typing import Optional, cast
-from pathlib import Path
 from contextlib import contextmanager
+from pathlib import Path
+from typing import Optional, cast
+
 import typer
-from IPython import embed
 from anchorpy_core.idl import Idl
+from IPython import embed
+
 from anchorpy import create_workspace
-from anchorpy.template import INIT_TESTS
-from anchorpy.clientgen.program_id import gen_program_id
-from anchorpy.clientgen.errors import gen_errors
-from anchorpy.clientgen.types import gen_types
 from anchorpy.clientgen.accounts import gen_accounts
+from anchorpy.clientgen.errors import gen_errors
 from anchorpy.clientgen.instructions import gen_instructions
+from anchorpy.clientgen.program_id import gen_program_id
+from anchorpy.clientgen.types import gen_types
+from anchorpy.template import INIT_TESTS
 
 app = typer.Typer()
 
@@ -29,7 +31,7 @@ def _set_directory(path: Path):
     """  # noqa: D202
 
     origin = Path().absolute()
-    try:  # noqa: WPS229
+    try:
         os.chdir(path)
         yield
     finally:
@@ -41,7 +43,7 @@ def _search_upwards_for_project_root() -> Path:
 
     Returns:
         The location of the first Anchor.toml file found
-    """  # noqa: D205,DAR401
+    """
     search_dir = Path.cwd()
     root = Path(search_dir.root)
 
@@ -56,7 +58,7 @@ def _search_upwards_for_project_root() -> Path:
 
 @app.callback()
 def callback():
-    """AnchorPy CLI."""  # noqa: D403
+    """AnchorPy CLI."""
 
 
 @app.command()
@@ -78,7 +80,7 @@ def shell():
 def init(
     program_name: str = typer.Argument(
         ..., help="The name of the Anchor program."
-    )  # noqa: DAR101,DAR401
+    )
 ):
     """Create a basic Python test file for an Anchor program.
 
@@ -103,7 +105,7 @@ def client_gen(
         None, help="Optional program ID to be included in the code"
     ),
     pdas: bool = typer.Option(
-        False, "--pdas", help="Auto-generate PDAs where possible."  # noqa: WPS425
+        False, "--pdas", help="Auto-generate PDAs where possible."
     ),
 ):
     """Generate Python client code from the specified anchor IDL."""

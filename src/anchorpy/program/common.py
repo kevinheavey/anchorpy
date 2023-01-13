@@ -1,15 +1,16 @@
 """Common utilities."""
 from dataclasses import dataclass
-from typing import Dict, Any, Union, Tuple, NamedTuple, cast
-from construct import Container
+from typing import Any, Dict, NamedTuple, Tuple, Union, cast
 
-from solana.publickey import PublicKey
 from anchorpy_core.idl import (
+    IdlAccountItem,
     IdlAccounts,
     IdlInstruction,
-    IdlAccountItem,
 )
+from construct import Container
 from pyheck import snake
+from solana.publickey import PublicKey
+
 from anchorpy.program.context import Accounts
 
 AddressType = Union[PublicKey, str]
