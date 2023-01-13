@@ -19,7 +19,7 @@ from spl.token.instructions import (
     mint_to,
 )
 
-from anchorpy import Provider
+from anchorpy.provider import Provider
 
 
 async def create_token_account(

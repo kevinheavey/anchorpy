@@ -10,8 +10,8 @@ from pytest_asyncio import fixture as async_fixture
 from pytest_xprocess import getrootdir
 from xprocess import ProcessStarter, XProcess, XProcessInfo
 
-from anchorpy import close_workspace, create_workspace
 from anchorpy.program.core import Program
+from anchorpy.workspace import close_workspace, create_workspace
 
 _Scope = Literal["session", "package", "module", "class", "function"]
 
