@@ -9,7 +9,7 @@ from pyheck import snake
 from anchorpy.coder.common import _sighash
 from anchorpy.coder.idl import _field_layout
 from anchorpy.idl import TypeDefs
-from anchorpy.program.common import Instruction
+from anchorpy.program.common import NamedInstruction
 
 
 class _Sighash(Adapter):
@@ -65,12 +65,14 @@ class InstructionCoder(Adapter):
         Returns:
             The encoded instruction.
         """
-        return self.build(Instruction(name=ix_name, data=ix))
+        return self.build(NamedInstruction(name=ix_name, data=ix))
 
-    def _decode(self, obj: Tuple[bytes, Any], context, path) -> Instruction:
-        return Instruction(data=obj[1], name=self.sighash_to_name[obj[0]])
+    def _decode(self, obj: Tuple[bytes, Any], context, path) -> NamedInstruction:
+        return NamedInstruction(data=obj[1], name=self.sighash_to_name[obj[0]])
 
-    def _encode(self, obj: Instruction, context: Container, path) -> Tuple[bytes, Any]:
+    def _encode(
+        self, obj: NamedInstruction, context: Container, path
+    ) -> Tuple[bytes, Any]:
         return (self.sighashes[obj.name], obj.data)
 
 

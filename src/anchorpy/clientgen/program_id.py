@@ -5,8 +5,8 @@ from genpy import Assign, Collection, FromImport
 
 
 def gen_program_id_code(program_id: str) -> str:
-    import_line = FromImport("solana.publickey", ["PublicKey"])
-    assignment_line = Assign("PROGRAM_ID", f'PublicKey("{program_id}")')
+    import_line = FromImport("solders.pubkey", ["Pubkey"])
+    assignment_line = Assign("PROGRAM_ID", f'Pubkey.from_string("{program_id}")')
     return str(Collection([import_line, assignment_line]))
 
 

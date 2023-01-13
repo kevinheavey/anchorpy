@@ -78,8 +78,8 @@ This will generate code to `./my_client`:
 
 ```python
 from solana.transaction import Transaction
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.keypair import Keypair
+from solders.pubkey import Pubkey
 from anchorpy import Provider
 from my_client.instructions import some_instruction
 
@@ -91,8 +91,8 @@ ix = some_instruction({
   "bar_param": "...",
   ...
 }, {
-  "foo_account": foo_account.public_key, # signer
-  "bar_account": PublicKey("..."),
+  "foo_account": foo_account.pubkey(), # signer
+  "bar_account": Pubkey("..."),
   ...
 })
 tx = Transaction().add(ix)
@@ -105,11 +105,11 @@ await provider.send(tx, [payer, foo_account])
 ### Accounts
 
 ```python
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from my_client.accounts import FooAccount
 
 # fetch an account
-addr = PublicKey("...")
+addr = Pubkey("...")
 
 acc = await FooAccount.fetch(connection, addr)
 if acc is None:

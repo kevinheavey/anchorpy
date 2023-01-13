@@ -19,7 +19,7 @@ Here is how we generate a client from an IDL and use it to interact with a smart
     from pathlib import Path
     import asyncio
     import json
-    from solana.publickey import PublicKey
+    from solders.pubkey import Pubkey
     from anchorpy import Idl, Program
 
     async def main():
@@ -28,7 +28,7 @@ Here is how we generate a client from an IDL and use it to interact with a smart
             raw_idl = json.load(f)
         idl = Idl.from_json(raw_idl)
         # Address of the deployed program.
-        program_id = PublicKey("<YOUR-PROGRAM-ID>")
+        program_id = Pubkey("<YOUR-PROGRAM-ID>")
         # Generate the program client from IDL.
         async with Program(idl, program_id) as program:
             # Execute the RPC.
@@ -47,7 +47,7 @@ Here is how we generate a client from an IDL and use it to interact with a smart
     const idl = JSON.parse(require('fs').readFileSync('./target/idl/basic_0.json', 'utf8'));
 
     // Address of the deployed program.
-    const programId = new anchor.web3.PublicKey('<YOUR-PROGRAM-ID>');
+    const programId = new anchor.web3.Pubkey('<YOUR-PROGRAM-ID>');
 
     // Generate the program client from IDL.
     const program = new anchor.Program(idl, programId);
@@ -117,8 +117,8 @@ As in the main Anchor tutorial, we will use `anchor/tutorial/examples/basic-1`:
 === "Python"
     ````python
     import asyncio
-    from solana.keypair import Keypair
-    from solana.system_program import SYS_PROGRAM_ID
+    from solders.keypair import Keypair
+    from solders.system_program import ID as SYS_PROGRAM_ID
     from anchorpy import create_workspace, close_workspace, Context
 
     async def main():
@@ -130,7 +130,7 @@ As in the main Anchor tutorial, we will use `anchor/tutorial/examples/basic-1`:
         my_account = Keypair()
         # Execute the RPC.
         accounts = {
-            "my_account": my_account.public_key,
+            "my_account": my_account.pubkey(),
             "user": program.provider.wallet.public_key,
             "system_program": SYS_PROGRAM_ID
         }
@@ -148,13 +148,13 @@ As in the main Anchor tutorial, we will use `anchor/tutorial/examples/basic-1`:
     const program = anchor.workspace.Basic1;
 
     // The Account to create.
-    const myAccount = anchor.web3.Keypair.generate();
+    const myAccount = anchor.web3.Keypair();
 
     // Create the new account and initialize it with the program.
     await program.rpc.initialize(new anchor.BN(1234), {
     accounts: {
-        myAccount: myAccount.publicKey,
-        user: provider.wallet.publicKey,
+        myAccount: myAccount.Pubkey,
+        user: provider.wallet.Pubkey,
         systemProgram: SystemProgram.programId,
     },
     signers: [myAccount],

@@ -1,6 +1,6 @@
 import typing
 from dataclasses import dataclass
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment
 import borsh_construct as borsh
@@ -29,25 +29,25 @@ class Mint:
         "is_initialized" / borsh.Bool,
         "freeze_authority" / COption(BorshPubkey),
     )
-    mint_authority: typing.Optional[PublicKey]
+    mint_authority: typing.Optional[Pubkey]
     supply: int
     decimals: int
     is_initialized: bool
-    freeze_authority: typing.Optional[PublicKey]
+    freeze_authority: typing.Optional[Pubkey]
 
     @classmethod
     async def fetch(
         cls,
         conn: AsyncClient,
-        address: PublicKey,
+        address: Pubkey,
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.Optional["Mint"]:
         resp = await conn.get_account_info(address, commitment=commitment)
         info = resp.value
         if info is None:
             return None
-        if info.owner != program_id.to_solders():
+        if info.owner != program_id:
             raise ValueError("Account does not belong to this program")
         bytes_data = info.data
         return cls.decode(bytes_data)
@@ -56,9 +56,9 @@ class Mint:
     async def fetch_multiple(
         cls,
         conn: AsyncClient,
-        addresses: list[PublicKey],
+        addresses: list[Pubkey],
         commitment: typing.Optional[Commitment] = None,
-        program_id: PublicKey = PROGRAM_ID,
+        program_id: Pubkey = PROGRAM_ID,
     ) -> typing.List[typing.Optional["Mint"]]:
         infos = await get_multiple_accounts(conn, addresses, commitment=commitment)
         res: typing.List[typing.Optional["Mint"]] = []
@@ -105,7 +105,7 @@ class Mint:
             mint_authority=(
                 None
                 if obj["mint_authority"] is None
-                else PublicKey(obj["mint_authority"])
+                else Pubkey.from_string(obj["mint_authority"])
             ),
             supply=obj["supply"],
             decimals=obj["decimals"],
@@ -113,6 +113,6 @@ class Mint:
             freeze_authority=(
                 None
                 if obj["freeze_authority"] is None
-                else PublicKey(obj["freeze_authority"])
+                else Pubkey.from_string(obj["freeze_authority"])
             ),
         )

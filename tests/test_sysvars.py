@@ -5,10 +5,10 @@ from anchorpy.program.context import Context
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import mark
-from solana.sysvar import (
-    SYSVAR_CLOCK_PUBKEY,
-    SYSVAR_RENT_PUBKEY,
-    SYSVAR_STAKE_HISTORY_PUBKEY,
+from solders.sysvar import (
+    CLOCK,
+    RENT,
+    STAKE_HISTORY,
 )
 
 PATH = Path("anchor/tests/sysvars")
@@ -26,9 +26,9 @@ async def test_init(workspace: WorkspaceType) -> None:
     res = await program.rpc["sysvars"](
         ctx=Context(
             accounts={
-                "clock": SYSVAR_CLOCK_PUBKEY,
-                "rent": SYSVAR_RENT_PUBKEY,
-                "stake_history": SYSVAR_STAKE_HISTORY_PUBKEY,
+                "clock": CLOCK,
+                "rent": RENT,
+                "stake_history": STAKE_HISTORY,
             }
         )
     )

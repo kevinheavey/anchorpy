@@ -3,11 +3,11 @@ from typing import Any, Callable, Sequence, Tuple, cast
 
 from anchorpy_core.idl import IdlAccount, IdlAccountItem, IdlAccounts, IdlInstruction
 from pyheck import snake
-from solana.publickey import PublicKey
-from solana.transaction import AccountMeta, TransactionInstruction
+from solders.instruction import AccountMeta, Instruction
+from solders.pubkey import Pubkey
 
 from anchorpy.program.common import (
-    Instruction,
+    NamedInstruction,
     _to_instruction,
     validate_accounts,
 )
@@ -20,7 +20,7 @@ from anchorpy.program.context import (
 
 
 class _InstructionFn:
-    """Callable object to create a `TransactionInstruction` generated from an IDL.
+    """Callable object to create a `Instruction` generated from an IDL.
 
     Additionally it provides an `accounts` utility method, returning a list
     of ordered accounts for the instruction.
@@ -29,8 +29,8 @@ class _InstructionFn:
     def __init__(
         self,
         idl_ix: IdlInstruction,
-        encode_fn: Callable[[Instruction], bytes],
-        program_id: PublicKey,
+        encode_fn: Callable[[NamedInstruction], bytes],
+        program_id: Pubkey,
     ) -> None:
         """Init.
 
@@ -52,8 +52,8 @@ class _InstructionFn:
         self,
         *args: Any,
         ctx: Context = EMPTY_CONTEXT,
-    ) -> TransactionInstruction:
-        """Create the TransactionInstruction.
+    ) -> Instruction:
+        """Create the Instruction.
 
         Args:
             *args: The positional arguments for the program. The type and number
@@ -67,8 +67,8 @@ class _InstructionFn:
         keys = self.accounts(ctx.accounts)
         if ctx.remaining_accounts:
             keys.extend(ctx.remaining_accounts)
-        return TransactionInstruction(
-            keys=keys,
+        return Instruction(
+            accounts=keys,
             program_id=self.program_id,
             data=self.encode_fn(_to_instruction(self.idl_ix, args)),
         )
@@ -106,7 +106,7 @@ def _accounts_array(
             accounts_ret.extend(acc_arr)
         else:
             account: IdlAccount = acc
-            single_account = cast(PublicKey, ctx[snake(account.name)])
+            single_account = cast(Pubkey, ctx[snake(account.name)])
             accounts_ret.append(
                 AccountMeta(
                     pubkey=single_account,

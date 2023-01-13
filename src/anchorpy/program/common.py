@@ -9,11 +9,11 @@ from anchorpy_core.idl import (
 )
 from construct import Container
 from pyheck import snake
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 from anchorpy.program.context import Accounts
 
-AddressType = Union[PublicKey, str]
+AddressType = Union[Pubkey, str]
 
 
 class Event(NamedTuple):
@@ -24,7 +24,7 @@ class Event(NamedTuple):
 
 
 @dataclass
-class Instruction:
+class NamedInstruction:
     """Container for a named instruction.
 
     Attributes:
@@ -36,7 +36,7 @@ class Instruction:
     name: str
 
 
-def _to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
+def _to_instruction(idl_ix: IdlInstruction, args: Tuple) -> NamedInstruction:
     """Convert an IDL instruction and arguments to an Instruction object.
 
     Args:
@@ -54,7 +54,7 @@ def _to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
     ix: Dict[str, Any] = {}
     for idx, ix_arg in enumerate(idl_ix.args):
         ix[snake(ix_arg.name)] = args[idx]
-    return Instruction(data=ix, name=snake(idl_ix.name))
+    return NamedInstruction(data=ix, name=snake(idl_ix.name))
 
 
 def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
@@ -76,15 +76,15 @@ def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
             raise ValueError(f"Invalid arguments: {acc_name} not provided")
 
 
-def translate_address(address: AddressType) -> PublicKey:
-    """Convert `str | PublicKey` into `PublicKey`.
+def translate_address(address: AddressType) -> Pubkey:
+    """Convert `str | Pubkey` into `Pubkey`.
 
     Args:
-        address: Public key as string or `PublicKey`.
+        address: Public key as string or `Pubkey`.
 
     Returns:
-        Public key as `PublicKey`.
+        Public key as `Pubkey`.
     """
     if isinstance(address, str):
-        return PublicKey(address)
+        return Pubkey.from_string(address)
     return address

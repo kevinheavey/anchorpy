@@ -1,8 +1,8 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.system_program import SYS_PROGRAM_ID
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.system_program import ID as SYS_PROGRAM_ID
+from solders.instruction import Instruction, AccountMeta
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
@@ -12,7 +12,7 @@ class InitMyAccountArgs(typing.TypedDict):
 
 
 layout = borsh.CStruct("seed_a" / borsh.U8)
-NESTED_NESTED_ACCOUNT_NESTED = PublicKey.find_program_address(
+NESTED_NESTED_ACCOUNT_NESTED = Pubkey.find_program_address(
     seeds=[
         b"nested-seed",
         b"test",
@@ -24,7 +24,7 @@ NESTED_NESTED_ACCOUNT_NESTED = PublicKey.find_program_address(
     ],
     program_id=PROGRAM_ID,
 )[0]
-INIT_MY_ACCOUNT_ACCOUNTS_ACCOUNT = PublicKey.find_program_address(
+INIT_MY_ACCOUNT_ACCOUNTS_ACCOUNT = Pubkey.find_program_address(
     seeds=[
         b"another-seed",
         b"test",
@@ -39,16 +39,16 @@ INIT_MY_ACCOUNT_ACCOUNTS_ACCOUNT = PublicKey.find_program_address(
 
 
 class InitMyAccountAccounts(typing.TypedDict):
-    base: PublicKey
-    base2: PublicKey
+    base: Pubkey
+    base2: Pubkey
 
 
 def init_my_account(
     args: InitMyAccountArgs,
     accounts: InitMyAccountAccounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["base"], is_signer=False, is_writable=False),
         AccountMeta(pubkey=accounts["base2"], is_signer=False, is_writable=False),
@@ -69,4 +69,4 @@ def init_my_account(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

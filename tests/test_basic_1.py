@@ -5,8 +5,8 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
-from solana.keypair import Keypair
-from solana.system_program import SYS_PROGRAM_ID
+from solders.keypair import Keypair
+from solders.system_program import ID as SYS_PROGRAM_ID
 
 workspace = workspace_fixture(
     "anchor/examples/tutorial/basic-1", build_cmd="anchor build --skip-lint"
@@ -27,7 +27,7 @@ async def initialized_account(program: Program) -> Keypair:
         1234,
         ctx=Context(
             accounts={
-                "my_account": my_account.public_key,
+                "my_account": my_account.pubkey(),
                 "user": program.provider.wallet.public_key,
                 "system_program": SYS_PROGRAM_ID,
             },
@@ -43,7 +43,7 @@ async def test_create_and_initialize_account(
     initialized_account: Keypair,
 ) -> None:
     """Test creating and initializing account in single tx."""
-    account = await program.account["MyAccount"].fetch(initialized_account.public_key)
+    account = await program.account["MyAccount"].fetch(initialized_account.pubkey())
     assert account.data == 1234
 
 
@@ -55,7 +55,7 @@ async def test_update_previously_created_account(
     """Test updating a previously created account."""
     await program.rpc["update"](
         4321,
-        ctx=Context(accounts={"my_account": initialized_account.public_key}),
+        ctx=Context(accounts={"my_account": initialized_account.pubkey()}),
     )
-    account = await program.account["MyAccount"].fetch(initialized_account.public_key)
+    account = await program.account["MyAccount"].fetch(initialized_account.pubkey())
     assert account.data == 4321

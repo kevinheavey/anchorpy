@@ -80,9 +80,7 @@ def _py_type_from_idl(
         filtered = [t for t in idl.types if _sanitize(t.name) == defined]
         maybe_coption_split = defined.split("COption<")
         if len(maybe_coption_split) == 2:
-            inner_type = {"u64": "int", "Pubkey": "PublicKey"}[
-                maybe_coption_split[1][:-1]
-            ]
+            inner_type = {"u64": "int", "Pubkey": "Pubkey"}[maybe_coption_split[1][:-1]]
             return f"typing.Optional[{inner_type}]"
         if defined == "&'astr":
             return "str"
@@ -120,7 +118,7 @@ def _py_type_from_idl(
     if ty == IdlTypeSimple.String:
         return "str"
     if ty == IdlTypeSimple.PublicKey:
-        return "PublicKey"
+        return "Pubkey"
     raise ValueError(f"Unrecognized type: {ty}")
 
 
@@ -554,7 +552,7 @@ def _field_from_json(
     ty_name = _sanitize(ty_name_snake_unsanitized)
     var_name = f"{param_prefix}{ty_name_snake_unsanitized}{param_suffix}"
     if ty_type == IdlTypeSimple.PublicKey:
-        return f"PublicKey({var_name})"
+        return f"Pubkey.from_string({var_name})"
     if isinstance(ty_type, IdlTypeVec):
         map_body = _field_from_json(
             idl=idl,

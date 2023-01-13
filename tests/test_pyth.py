@@ -6,9 +6,9 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from construct import Int32sl, Int64ul
 from pytest import fixture, mark
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
-from solana.system_program import (
+from solders.keypair import Keypair
+from solders.pubkey import Pubkey
+from solders.system_program import (
     CreateAccountParams,
     create_account,
 )
@@ -27,7 +27,7 @@ async def create_price_feed(
     oracle_program: Program,
     init_price: int,
     expo: int,
-) -> PublicKey:
+) -> Pubkey:
     conf = int((init_price / 10) * 10**-expo)
     space = 3312
     mbre_resp = (
@@ -41,28 +41,28 @@ async def create_price_feed(
         expo,
         conf,
         ctx=Context(
-            accounts={"price": collateral_token_feed.public_key},
+            accounts={"price": collateral_token_feed.pubkey()},
             signers=[collateral_token_feed],
             pre_instructions=[
                 create_account(
                     CreateAccountParams(
                         from_pubkey=oracle_program.provider.wallet.public_key,
-                        new_account_pubkey=collateral_token_feed.public_key,
+                        to_pubkey=collateral_token_feed.pubkey(),
                         space=3312,
                         lamports=mbre_resp.value,
-                        program_id=oracle_program.program_id,
+                        owner=oracle_program.program_id,
                     ),
                 ),
             ],
         ),
     )
-    return collateral_token_feed.public_key
+    return collateral_token_feed.pubkey()
 
 
 async def set_feed_price(
     oracle_program: Program,
     new_price: int,
-    price_feed: PublicKey,
+    price_feed: Pubkey,
 ) -> None:
     data = await get_feed_data(oracle_program, price_feed)
     await oracle_program.rpc["set_price"](
@@ -86,7 +86,7 @@ def parse_price_data(data: bytes) -> PriceData:
 
 async def get_feed_data(
     oracle_program: Program,
-    price_feed: PublicKey,
+    price_feed: Pubkey,
 ) -> PriceData:
     info = await oracle_program.provider.connection.get_account_info(
         price_feed,

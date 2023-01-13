@@ -6,7 +6,7 @@ from anchorpy_core.idl import Idl
 from construct import Adapter, Bytes, Container, Sequence, Switch
 
 from anchorpy.coder.idl import _typedef_layout
-from anchorpy.program.common import Instruction as AccountToSerialize
+from anchorpy.program.common import NamedInstruction as AccountToSerialize
 
 ACCOUNT_DISCRIMINATOR_SIZE = 8  # bytes
 

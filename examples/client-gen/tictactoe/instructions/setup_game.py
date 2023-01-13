@@ -1,31 +1,31 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.system_program import SYS_PROGRAM_ID
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.system_program import ID as SYS_PROGRAM_ID
+from solders.instruction import Instruction, AccountMeta
 from anchorpy.borsh_extension import BorshPubkey
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
 
 class SetupGameArgs(typing.TypedDict):
-    player_two: PublicKey
+    player_two: Pubkey
 
 
 layout = borsh.CStruct("player_two" / BorshPubkey)
 
 
 class SetupGameAccounts(typing.TypedDict):
-    game: PublicKey
-    player_one: PublicKey
+    game: Pubkey
+    player_one: Pubkey
 
 
 def setup_game(
     args: SetupGameArgs,
     accounts: SetupGameAccounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["game"], is_signer=True, is_writable=True),
         AccountMeta(pubkey=accounts["player_one"], is_signer=True, is_writable=True),
@@ -40,4 +40,4 @@ def setup_game(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

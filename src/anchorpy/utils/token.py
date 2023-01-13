@@ -1,11 +1,12 @@
 """This module contains utilities for the SPL Token Program."""
 from typing import Optional
 
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
-from solana.system_program import CreateAccountParams, create_account
-from solana.transaction import Transaction, TransactionInstruction
+from solana.transaction import Transaction
+from solders.instruction import Instruction
+from solders.keypair import Keypair
+from solders.pubkey import Pubkey
 from solders.rpc.responses import GetAccountInfoResp
+from solders.system_program import CreateAccountParams, create_account
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
 from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
@@ -24,9 +25,9 @@ from anchorpy.provider import Provider
 
 async def create_token_account(
     prov: Provider,
-    mint: PublicKey,
-    owner: PublicKey,
-) -> PublicKey:
+    mint: Pubkey,
+    owner: Pubkey,
+) -> Pubkey:
     """Create a token account.
 
     Args:
@@ -43,10 +44,10 @@ async def create_token_account(
 
 async def create_token_account_instrs(
     provider: Provider,
-    new_account_pubkey: PublicKey,
-    mint: PublicKey,
-    owner: PublicKey,
-) -> tuple[TransactionInstruction, TransactionInstruction]:
+    new_account_pubkey: Pubkey,
+    mint: Pubkey,
+    owner: Pubkey,
+) -> tuple[Instruction, Instruction]:
     """Generate instructions for creating a token account.
 
     Args:
@@ -64,10 +65,10 @@ async def create_token_account_instrs(
         create_account(
             CreateAccountParams(
                 from_pubkey=provider.wallet.public_key,
-                new_account_pubkey=new_account_pubkey,
+                to_pubkey=new_account_pubkey,
                 space=165,
                 lamports=lamports,
-                program_id=TOKEN_PROGRAM_ID,
+                owner=TOKEN_PROGRAM_ID,
             )
         ),
         initialize_account(
@@ -84,9 +85,9 @@ async def create_token_account_instrs(
 async def create_mint_and_vault(
     provider: Provider,
     amount: int,
-    owner: Optional[PublicKey] = None,
+    owner: Optional[Pubkey] = None,
     decimals: Optional[int] = None,
-) -> tuple[PublicKey, PublicKey]:
+) -> tuple[Pubkey, Pubkey]:
     """Create a mint and a vault, then mint tokens to the vault.
 
     Args:
@@ -109,17 +110,17 @@ async def create_mint_and_vault(
     create_mint_mbre = create_mint_mbre_resp.value
     create_mint_account_params = CreateAccountParams(
         from_pubkey=provider.wallet.public_key,
-        new_account_pubkey=mint.public_key,
+        to_pubkey=mint.pubkey(),
         space=mint_space,
         lamports=create_mint_mbre,
-        program_id=TOKEN_PROGRAM_ID,
+        owner=TOKEN_PROGRAM_ID,
     )
     create_mint_account_instruction = create_account(
         create_mint_account_params,
     )
     init_mint_instruction = initialize_mint(
         InitializeMintParams(
-            mint=mint.public_key,
+            mint=mint.pubkey(),
             decimals=0 if decimals is None else decimals,
             mint_authority=provider.wallet.public_key,
             program_id=TOKEN_PROGRAM_ID,
@@ -133,25 +134,25 @@ async def create_mint_and_vault(
     create_vault_account_instruction = create_account(
         CreateAccountParams(
             from_pubkey=provider.wallet.public_key,
-            new_account_pubkey=vault.public_key,
+            to_pubkey=vault.pubkey(),
             space=vault_space,
             lamports=create_vault_mbre,
-            program_id=TOKEN_PROGRAM_ID,
+            owner=TOKEN_PROGRAM_ID,
         ),
     )
     init_vault_instruction = initialize_account(
         InitializeAccountParams(
             program_id=TOKEN_PROGRAM_ID,
-            account=vault.public_key,
-            mint=mint.public_key,
+            account=vault.pubkey(),
+            mint=mint.pubkey(),
             owner=actual_owner,
         ),
     )
     mint_to_instruction = mint_to(
         MintToParams(
             program_id=TOKEN_PROGRAM_ID,
-            mint=mint.public_key,
-            dest=vault.public_key,
+            mint=mint.pubkey(),
+            dest=vault.pubkey(),
             amount=amount,
             mint_authority=provider.wallet.public_key,
         ),
@@ -164,7 +165,7 @@ async def create_mint_and_vault(
         mint_to_instruction,
     )
     await provider.send(tx, [mint, vault])
-    return mint.public_key, vault.public_key
+    return mint.pubkey(), vault.pubkey()
 
 
 def parse_token_account(info: GetAccountInfoResp) -> AccountInfo:
@@ -184,7 +185,7 @@ def parse_token_account(info: GetAccountInfoResp) -> AccountInfo:
     if not val:
         raise ValueError("Invalid account owner")
 
-    if val.owner != TOKEN_PROGRAM_ID.to_solders():
+    if val.owner != TOKEN_PROGRAM_ID:
         raise AttributeError("Invalid account owner")
 
     bytes_data = val.data
@@ -193,15 +194,15 @@ def parse_token_account(info: GetAccountInfoResp) -> AccountInfo:
 
     decoded_data = ACCOUNT_LAYOUT.parse(bytes_data)
 
-    mint = PublicKey(decoded_data.mint)
-    owner = PublicKey(decoded_data.owner)
+    mint = Pubkey(decoded_data.mint)
+    owner = Pubkey(decoded_data.owner)
     amount = decoded_data.amount
 
     if decoded_data.delegate_option == 0:
         delegate = None
         delegated_amount = 0
     else:
-        delegate = PublicKey(decoded_data.delegate)
+        delegate = Pubkey(decoded_data.delegate)
         delegated_amount = decoded_data.delegated_amount
 
     is_initialized = decoded_data.state != 0
@@ -217,7 +218,7 @@ def parse_token_account(info: GetAccountInfoResp) -> AccountInfo:
     if decoded_data.close_authority_option == 0:
         close_authority = None
     else:
-        close_authority = PublicKey(decoded_data.owner)
+        close_authority = Pubkey(decoded_data.owner)
 
     return AccountInfo(
         mint,
@@ -233,7 +234,7 @@ def parse_token_account(info: GetAccountInfoResp) -> AccountInfo:
     )
 
 
-async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
+async def get_token_account(provider: Provider, addr: Pubkey) -> AccountInfo:
     """Retrieve token account information.
 
     Args:
@@ -249,7 +250,7 @@ async def get_token_account(provider: Provider, addr: PublicKey) -> AccountInfo:
 
 async def get_mint_info(
     provider: Provider,
-    addr: PublicKey,
+    addr: Pubkey,
 ) -> MintInfo:
     """Retrieve mint information.
 
@@ -281,7 +282,7 @@ def parse_mint_account(info: GetAccountInfoResp) -> MintInfo:
     if val is None:
         raise ValueError("Account does not exist.")
     owner = val.owner
-    if owner != TOKEN_PROGRAM_ID.to_solders():
+    if owner != TOKEN_PROGRAM_ID:
         raise AttributeError(f"Invalid mint owner: {owner}")
 
     bytes_data = val.data
@@ -291,10 +292,11 @@ def parse_mint_account(info: GetAccountInfoResp) -> MintInfo:
     decoded_data = MINT_LAYOUT.parse(bytes_data)
     decimals = decoded_data.decimals
 
-    if decoded_data.mint_authority_option == 0:
-        mint_authority = None
-    else:
-        mint_authority = PublicKey(decoded_data.mint_authority)
+    mint_authority = (
+        None
+        if decoded_data.mint_authority_option == 0
+        else Pubkey(decoded_data.mint_authority)
+    )
 
     supply = decoded_data.supply
     is_initialized = decoded_data.is_initialized != 0
@@ -302,6 +304,6 @@ def parse_mint_account(info: GetAccountInfoResp) -> MintInfo:
     if decoded_data.freeze_authority_option == 0:
         freeze_authority = None
     else:
-        freeze_authority = PublicKey(decoded_data.freeze_authority)
+        freeze_authority = Pubkey(decoded_data.freeze_authority)
 
     return MintInfo(mint_authority, supply, decimals, is_initialized, freeze_authority)

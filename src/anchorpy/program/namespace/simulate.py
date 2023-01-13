@@ -2,8 +2,8 @@
 from typing import Any, Awaitable, Dict, NamedTuple, Protocol
 
 from anchorpy_core.idl import Idl, IdlInstruction
-from solana.publickey import PublicKey
 from solana.rpc.core import RPCException
+from solders.pubkey import Pubkey
 from solders.rpc.responses import SimulateTransactionResp
 
 from anchorpy.coder.coder import Coder
@@ -50,7 +50,7 @@ def _build_simulate_item(
     idl_errors: Dict[int, str],
     provider: Provider,
     coder: Coder,
-    program_id: PublicKey,
+    program_id: Pubkey,
     idl: Idl,
 ) -> _SimulateFn:
     """Build the function to simulate transactions for a given method of a program.

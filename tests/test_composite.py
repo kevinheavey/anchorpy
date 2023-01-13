@@ -4,8 +4,8 @@ from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
-from solana.keypair import Keypair
-from solana.sysvar import SYSVAR_RENT_PUBKEY
+from solders.keypair import Keypair
+from solders.sysvar import RENT
 
 workspace = workspace_fixture(
     "anchor/tests/composite/", build_cmd="anchor build --skip-lint"
@@ -26,9 +26,9 @@ async def initialized_accounts(program: Program) -> tuple[Keypair, Keypair]:
     await program.rpc["initialize"](
         ctx=Context(
             accounts={
-                "dummy_a": dummy_a.public_key,
-                "dummy_b": dummy_b.public_key,
-                "rent": SYSVAR_RENT_PUBKEY,
+                "dummy_a": dummy_a.pubkey(),
+                "dummy_b": dummy_b.pubkey(),
+                "rent": RENT,
             },
             signers=[dummy_a, dummy_b],
             pre_instructions=[
@@ -49,8 +49,8 @@ async def composite_updated_accounts(
     dummy_a, dummy_b = initialized_accounts
     ctx = Context(
         accounts={
-            "foo": {"dummy_a": dummy_a.public_key},
-            "bar": {"dummy_b": dummy_b.public_key},
+            "foo": {"dummy_a": dummy_a.pubkey()},
+            "bar": {"dummy_b": dummy_b.pubkey()},
         },
     )
     await program.rpc["composite_update"](1234, 4321, ctx=ctx)
@@ -64,7 +64,7 @@ async def test_composite_update(
 ) -> None:
     """Test that the call to composite_update worked."""
     dummy_a, dummy_b = composite_updated_accounts
-    dummy_a_account = await program.account["DummyA"].fetch(dummy_a.public_key)
-    dummy_b_account = await program.account["DummyB"].fetch(dummy_b.public_key)
+    dummy_a_account = await program.account["DummyA"].fetch(dummy_a.pubkey())
+    dummy_b_account = await program.account["DummyB"].fetch(dummy_b.pubkey())
     assert dummy_a_account.data == 1234
     assert dummy_b_account.data == 4321

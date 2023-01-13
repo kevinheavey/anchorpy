@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 from anchorpy_core.idl import Idl
 from pyheck import snake
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 
 from anchorpy.coder.accounts import ACCOUNT_DISCRIMINATOR_SIZE
 from anchorpy.coder.coder import Coder
@@ -59,7 +59,7 @@ def _parse_idl_errors(idl: Idl) -> dict[int, str]:
 def _build_namespace(
     idl: Idl,
     coder: Coder,
-    program_id: PublicKey,
+    program_id: Pubkey,
     provider: Provider,
 ) -> tuple[
     dict[str, _RpcFn],
@@ -143,7 +143,7 @@ class Program(object):
     """
 
     def __init__(
-        self, idl: Idl, program_id: PublicKey, provider: Optional[Provider] = None
+        self, idl: Idl, program_id: Pubkey, provider: Optional[Provider] = None
     ):
         """Initialize the Program object.
 

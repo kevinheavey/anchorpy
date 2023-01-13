@@ -14,17 +14,17 @@ from construct import (
     Renamed,
     Switch,
 )
-from solana import publickey
+from solders import pubkey
 
 
 class BorshPubkeyAdapter(Adapter):
     def __init__(self) -> None:
         super().__init__(Bytes(32))  # type: ignore
 
-    def _decode(self, obj: bytes, context, path) -> publickey.PublicKey:
-        return publickey.PublicKey(obj)
+    def _decode(self, obj: bytes, context, path) -> pubkey.Pubkey:
+        return pubkey.Pubkey(obj)
 
-    def _encode(self, obj: publickey.PublicKey, context, path) -> bytes:
+    def _encode(self, obj: pubkey.Pubkey, context, path) -> bytes:
         return bytes(obj)
 
 

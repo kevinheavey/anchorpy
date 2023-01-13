@@ -3,27 +3,27 @@ from anchorpy.program.context import Context
 from anchorpy.program.namespace.instruction import _InstructionFn
 from anchorpy.program.namespace.transaction import _build_transaction_fn
 from pytest import fixture
-from solana.publickey import PublicKey
-from solana.transaction import TransactionInstruction
+from solders.instruction import Instruction
+from solders.pubkey import Pubkey
 
-DEFAULT_PUBKEY = PublicKey("11111111111111111111111111111111")
+DEFAULT_PUBKEY = Pubkey.default()
 
 
-def _make_ix(data: bytes) -> TransactionInstruction:
-    return TransactionInstruction(
-        keys=[],
+def _make_ix(data: bytes) -> Instruction:
+    return Instruction(
+        accounts=[],
         program_id=DEFAULT_PUBKEY,
         data=data,
     )
 
 
 @fixture
-def pre_ix() -> TransactionInstruction:
+def pre_ix() -> Instruction:
     return _make_ix(b"pre")
 
 
 @fixture
-def post_ix() -> TransactionInstruction:
+def post_ix() -> Instruction:
     return _make_ix(b"post")
 
 
@@ -48,9 +48,7 @@ def coder(idl: Idl) -> Coder:
     return Coder(idl)
 
 
-def test_pre_instructions(
-    coder: Coder, idl: Idl, pre_ix: TransactionInstruction
-) -> None:
+def test_pre_instructions(coder: Coder, idl: Idl, pre_ix: Instruction) -> None:
     coder.instruction.encode
     ix_item = _InstructionFn(
         idl.instructions[0], coder.instruction.build, DEFAULT_PUBKEY
@@ -61,9 +59,7 @@ def test_pre_instructions(
     assert tx.instructions[0] == pre_ix
 
 
-def test_post_instructions(
-    coder: Coder, idl: Idl, post_ix: TransactionInstruction
-) -> None:
+def test_post_instructions(coder: Coder, idl: Idl, post_ix: Instruction) -> None:
     coder.instruction.encode
     ix_item = _InstructionFn(
         idl.instructions[0], coder.instruction.build, DEFAULT_PUBKEY

@@ -131,7 +131,7 @@ def gen_struct(idl: Idl, name: str, fields: list[IdlField]) -> Collection:
         Import("typing"),
         FromImport("dataclasses", ["dataclass"]),
         FromImport("construct", ["Container", "Construct"]),
-        FromImport("solana.publickey", ["PublicKey"]),
+        FromImport("solders.pubkey", ["Pubkey"]),
         FromImport("anchorpy.borsh_extension", ["BorshPubkey"]),
         ImportAs("borsh_construct", "borsh"),
     ]
@@ -366,7 +366,7 @@ def gen_enum(idl: Idl, name: str, variants: list[IdlEnumVariant]) -> Collection:
     imports = [
         Import("typing"),
         FromImport("dataclasses", ["dataclass"]),
-        FromImport("solana.publickey", ["PublicKey"]),
+        FromImport("solders.pubkey", ["Pubkey"]),
         FromImport("construct", ["Construct"]),
         FromImport("anchorpy.borsh_extension", ["EnumForCodegen", "BorshPubkey"]),
         ImportAs("borsh_construct", "borsh"),

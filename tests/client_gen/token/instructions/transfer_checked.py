@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.instruction import Instruction, AccountMeta
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
@@ -15,18 +15,18 @@ layout = borsh.CStruct("amount" / borsh.U64, "decimals" / borsh.U8)
 
 
 class TransferCheckedAccounts(typing.TypedDict):
-    source: PublicKey
-    mint: PublicKey
-    destination: PublicKey
-    authority: PublicKey
+    source: Pubkey
+    mint: Pubkey
+    destination: Pubkey
+    authority: Pubkey
 
 
 def transfer_checked(
     args: TransferCheckedArgs,
     accounts: TransferCheckedAccounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["source"], is_signer=False, is_writable=True),
         AccountMeta(pubkey=accounts["mint"], is_signer=False, is_writable=False),
@@ -43,4 +43,4 @@ def transfer_checked(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

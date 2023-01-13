@@ -1,33 +1,33 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.sysvar import SYSVAR_RENT_PUBKEY
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.sysvar import RENT
+from solders.instruction import Instruction, AccountMeta
 from anchorpy.borsh_extension import BorshPubkey
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
 
 class CreateArgs(typing.TypedDict):
-    authority: PublicKey
+    authority: Pubkey
 
 
 layout = borsh.CStruct("authority" / BorshPubkey)
 
 
 class CreateAccounts(typing.TypedDict):
-    counter: PublicKey
+    counter: Pubkey
 
 
 def create(
     args: CreateArgs,
     accounts: CreateAccounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["counter"], is_signer=False, is_writable=True),
-        AccountMeta(pubkey=SYSVAR_RENT_PUBKEY, is_signer=False, is_writable=False),
+        AccountMeta(pubkey=RENT, is_signer=False, is_writable=False),
     ]
     if remaining_accounts is not None:
         keys += remaining_accounts
@@ -38,4 +38,4 @@ def create(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)

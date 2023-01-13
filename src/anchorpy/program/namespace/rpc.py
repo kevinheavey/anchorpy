@@ -2,8 +2,8 @@
 from typing import Any, Awaitable, Dict, Protocol
 
 from anchorpy_core.idl import IdlInstruction
-from solana.publickey import PublicKey
 from solana.rpc.core import RPCException
+from solders.pubkey import Pubkey
 from solders.signature import Signature
 
 from anchorpy.error import ProgramError
@@ -35,7 +35,7 @@ def _build_rpc_item(  # ts: RpcFactory
     tx_fn: _TransactionFn,
     idl_errors: Dict[int, str],
     provider: Provider,
-    program_id: PublicKey,
+    program_id: Pubkey,
 ) -> _RpcFn:
     """Build the function that sends transactions for the given method.
 

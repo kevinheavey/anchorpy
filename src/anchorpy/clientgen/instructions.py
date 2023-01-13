@@ -46,10 +46,10 @@ from anchorpy.coder.idl import FIELD_TYPE_MAP
 
 CONST_ACCOUNTS = {
     "associated_token_program": "ASSOCIATED_TOKEN_PROGRAM_ID",
-    "rent": "SYSVAR_RENT_PUBKEY",
+    "rent": "RENT",
     "system_program": "SYS_PROGRAM_ID",
     "token_program": "TOKEN_PROGRAM_ID",
-    "clock": "SYSVAR_CLOCK_PUBKEY",
+    "clock": "CLOCK",
 }
 
 
@@ -203,7 +203,7 @@ def gen_accounts(
                     seeds_arg = List(const_pda_body_items)
                     seeds_named_arg = NamedArg("seeds", seeds_arg)
                     const_pda_body = Call(
-                        "PublicKey.find_program_address",
+                        "Pubkey.find_program_address",
                         [seeds_named_arg, NamedArg("program_id", "PROGRAM_ID")],
                     )
                     const_pdas.append(Assign(const_pda_name, f"{const_pda_body}[0]"))
@@ -216,7 +216,7 @@ def gen_accounts(
                 try:
                     CONST_ACCOUNTS[acc_name]
                 except KeyError:
-                    params.append(TypedParam(acc_name, "PublicKey"))
+                    params.append(TypedParam(acc_name, "Pubkey"))
     maybe_typed_dict_container = [TypedDict(name, params)] if params else []
     accounts = maybe_typed_dict_container + extra_typeddicts_to_use
     return accounts, accum_const_pdas + const_pdas, const_acc_indices, acc_count
@@ -227,13 +227,13 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
     imports = [
         ANNOTATIONS_IMPORT,
         Import("typing"),
-        FromImport("solana.publickey", ["PublicKey"]),
-        FromImport("solana.system_program", ["SYS_PROGRAM_ID"]),
-        FromImport("solana.sysvar", ["SYSVAR_RENT_PUBKEY", "SYSVAR_CLOCK_PUBKEY"]),
+        FromImport("solders.pubkey", ["Pubkey"]),
+        FromImport("solders.system_program", ["ID as SYS_PROGRAM_ID"]),
+        FromImport("solders.sysvar", ["RENT", "CLOCK"]),
         FromImport(
             "spl.token.constants", ["TOKEN_PROGRAM_ID", "ASSOCIATED_TOKEN_PROGRAM_ID"]
         ),
-        FromImport("solana.transaction", ["TransactionInstruction", "AccountMeta"]),
+        FromImport("solders.instruction", ["Instruction", "AccountMeta"]),
         FromImport(
             "anchorpy.borsh_extension", ["BorshPubkey", "EnumForCodegen", "COption"]
         ),
@@ -312,13 +312,13 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
         )
         encoded_args_assignment = Assign("encoded_args", encoded_args_val)
         data_assignment = Assign("data", "identifier + encoded_args")
-        returning = Return("TransactionInstruction(keys, program_id, data)")
+        returning = Return("Instruction(program_id, data, keys)")
         ix_fn = Function(
             ix_name,
             [
                 *args_container,
                 *accounts_container,
-                TypedParam("program_id", "PublicKey = PROGRAM_ID"),
+                TypedParam("program_id", "Pubkey = PROGRAM_ID"),
                 TypedParam(
                     "remaining_accounts",
                     "typing.Optional[typing.List[AccountMeta]] = None",
@@ -334,7 +334,7 @@ def gen_instructions_code(idl: Idl, out: Path, gen_pdas: bool) -> dict[Path, str
                     returning,
                 ]
             ),
-            "TransactionInstruction",
+            "Instruction",
         )
         contents = Collection(
             [

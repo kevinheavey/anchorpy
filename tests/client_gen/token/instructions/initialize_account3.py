@@ -1,30 +1,30 @@
 from __future__ import annotations
 import typing
-from solana.publickey import PublicKey
-from solana.transaction import TransactionInstruction, AccountMeta
+from solders.pubkey import Pubkey
+from solders.instruction import Instruction, AccountMeta
 from anchorpy.borsh_extension import BorshPubkey
 import borsh_construct as borsh
 from ..program_id import PROGRAM_ID
 
 
 class InitializeAccount3Args(typing.TypedDict):
-    owner: PublicKey
+    owner: Pubkey
 
 
 layout = borsh.CStruct("owner" / BorshPubkey)
 
 
 class InitializeAccount3Accounts(typing.TypedDict):
-    account: PublicKey
-    mint: PublicKey
+    account: Pubkey
+    mint: Pubkey
 
 
 def initialize_account3(
     args: InitializeAccount3Args,
     accounts: InitializeAccount3Accounts,
-    program_id: PublicKey = PROGRAM_ID,
+    program_id: Pubkey = PROGRAM_ID,
     remaining_accounts: typing.Optional[typing.List[AccountMeta]] = None,
-) -> TransactionInstruction:
+) -> Instruction:
     keys: list[AccountMeta] = [
         AccountMeta(pubkey=accounts["account"], is_signer=False, is_writable=True),
         AccountMeta(pubkey=accounts["mint"], is_signer=False, is_writable=False),
@@ -38,4 +38,4 @@ def initialize_account3(
         }
     )
     data = identifier + encoded_args
-    return TransactionInstruction(keys, program_id, data)
+    return Instruction(program_id, data, keys)
