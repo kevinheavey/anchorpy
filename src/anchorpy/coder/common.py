@@ -1,20 +1,20 @@
 """Common utilities for encoding and decoding."""
-from typing import Dict, Union
 from hashlib import sha256
+from typing import Dict, Union
 
 from anchorpy_core.idl import (
     Idl,
     IdlEnumVariant,
     IdlField,
     IdlType,
+    IdlTypeArray,
+    IdlTypeCompound,
+    IdlTypeDefined,
+    IdlTypeDefinition,
     IdlTypeDefinitionTyEnum,
     IdlTypeOption,
-    IdlTypeArray,
-    IdlTypeDefined,
-    IdlTypeVec,
-    IdlTypeDefinition,
-    IdlTypeCompound,
     IdlTypeSimple,
+    IdlTypeVec,
 )
 
 

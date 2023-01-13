@@ -1,10 +1,11 @@
 """This module provides `AccountsCoder` and `_account_discriminator`."""
 from hashlib import sha256
-from typing import Tuple, Any
-from construct import Adapter, Sequence, Bytes, Switch, Container
+from typing import Any, Tuple
+
+from anchorpy_core.idl import Idl
+from construct import Adapter, Bytes, Container, Sequence, Switch
 
 from anchorpy.coder.idl import _typedef_layout
-from anchorpy_core.idl import Idl
 from anchorpy.program.common import Instruction as AccountToSerialize
 
 ACCOUNT_DISCRIMINATOR_SIZE = 8  # bytes

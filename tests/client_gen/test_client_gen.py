@@ -1,45 +1,47 @@
+import asyncio
+import json
+import subprocess
+from filecmp import dircmp
 from pathlib import Path
 from typing import AsyncGenerator
-import json
-import asyncio
-from filecmp import dircmp
-import subprocess
-from pytest import fixture, mark
-from py.path import local
-from pytest_asyncio import fixture as async_fixture
-from construct import ListContainer
-from solders.rpc.errors import SendTransactionPreflightFailureMessage
-from solders.rpc.responses import SimulateTransactionResp
-from solana.keypair import Keypair
-from solana.rpc.async_api import AsyncClient
-from solana.transaction import Transaction
-from solana.rpc.commitment import Processed
-from solana.rpc.core import RPCException
-from solana.publickey import PublicKey
-from anchorpy.pytest_plugin import localnet_fixture
+
 from anchorpy import Provider, Wallet
 from anchorpy.cli import client_gen
+from anchorpy.pytest_plugin import localnet_fixture
+from construct import ListContainer
+from py.path import local
+from pytest import fixture, mark
+from pytest_asyncio import fixture as async_fixture
+from solana.keypair import Keypair
+from solana.publickey import PublicKey
+from solana.rpc.async_api import AsyncClient
+from solana.rpc.commitment import Processed
+from solana.rpc.core import RPCException
+from solana.transaction import Transaction
+from solders.rpc.errors import SendTransactionPreflightFailureMessage
+from solders.rpc.responses import SimulateTransactionResp
+
+from tests.client_gen.example_program_gen.accounts import State, State2
+from tests.client_gen.example_program_gen.errors import from_tx_error
+from tests.client_gen.example_program_gen.errors.anchor import InvalidProgramId
+from tests.client_gen.example_program_gen.errors.custom import SomeError
 from tests.client_gen.example_program_gen.instructions import (
-    initialize,
-    initialize_with_values,
-    initialize_with_values2,
     InitializeWithValuesAccounts,
     InitializeWithValuesArgs,
     cause_error,
+    initialize,
+    initialize_with_values,
+    initialize_with_values2,
 )
-from tests.client_gen.example_program_gen.accounts import State, State2
 from tests.client_gen.example_program_gen.program_id import PROGRAM_ID
-from tests.client_gen.example_program_gen.types import FooStruct, BarStruct
+from tests.client_gen.example_program_gen.types import BarStruct, FooStruct
 from tests.client_gen.example_program_gen.types.foo_enum import (
     Named,
     NamedValue,
-    Unnamed,
     NoFields,
     Struct,
+    Unnamed,
 )
-from tests.client_gen.example_program_gen.errors import from_tx_error  # noqa: WPS347
-from tests.client_gen.example_program_gen.errors.custom import SomeError
-from tests.client_gen.example_program_gen.errors.anchor import InvalidProgramId
 
 EXAMPLE_PROGRAM_DIR = Path("tests/client_gen/example-program")
 
@@ -47,7 +49,7 @@ EXAMPLE_PROGRAM_DIR = Path("tests/client_gen/example-program")
 @fixture(scope="session")
 def event_loop():
     """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()  # noqa: DAR301
+    loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
 

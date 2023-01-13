@@ -1,13 +1,11 @@
 """Mimics anchor/tests/composite/tests/composite.js."""
-from pytest import mark, fixture
+from anchorpy import Context, Program
+from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.workspace import WorkspaceType
+from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
 from solana.keypair import Keypair
 from solana.sysvar import SYSVAR_RENT_PUBKEY
-
-from anchorpy import Program, Context
-from anchorpy.workspace import WorkspaceType
-from anchorpy.pytest_plugin import workspace_fixture
-
 
 workspace = workspace_fixture(
     "anchor/tests/composite/", build_cmd="anchor build --skip-lint"

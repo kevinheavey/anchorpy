@@ -1,18 +1,19 @@
 """Code generation utilities."""
-from typing import Optional
 import keyword
-from pyheck import snake
+from typing import Optional
+
 from anchorpy_core.idl import (
     Idl,
+    IdlField,
     IdlType,
-    IdlTypeVec,
-    IdlTypeOption,
+    IdlTypeArray,
     IdlTypeDefined,
     IdlTypeDefinitionTyStruct,
-    IdlTypeArray,
-    IdlField,
+    IdlTypeOption,
     IdlTypeSimple,
+    IdlTypeVec,
 )
+from pyheck import snake
 
 _DEFAULT_DEFINED_TYPES_PREFIX = "types."
 

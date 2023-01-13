@@ -1,5 +1,4 @@
 """Various utility functions."""
-from anchorpy.utils import rpc
-from anchorpy.utils import token
+from anchorpy.utils import rpc, token
 
 __all__ = ["rpc", "token"]

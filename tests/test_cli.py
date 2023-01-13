@@ -2,13 +2,12 @@
 
 from pathlib import Path
 
-from typer.testing import CliRunner
-from solders.signature import Signature
-from solana.rpc.api import Client
-from solana.rpc.commitment import Processed
-
 from anchorpy import localnet_fixture
 from anchorpy.cli import app
+from solana.rpc.api import Client
+from solana.rpc.commitment import Processed
+from solders.signature import Signature
+from typer.testing import CliRunner
 
 PATH = Path("anchor/examples/tutorial/basic-0")
 

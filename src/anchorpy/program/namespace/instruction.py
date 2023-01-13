@@ -1,22 +1,22 @@
 """This module deals with generating program instructions."""
-from typing import Callable, Any, Sequence, cast, Tuple
+from typing import Any, Callable, Sequence, Tuple, cast
 
-from solana.transaction import TransactionInstruction, AccountMeta
-from solana.publickey import PublicKey
+from anchorpy_core.idl import IdlAccount, IdlAccountItem, IdlAccounts, IdlInstruction
 from pyheck import snake
+from solana.publickey import PublicKey
+from solana.transaction import AccountMeta, TransactionInstruction
 
-from anchorpy.program.common import (  # noqa: WPS347
+from anchorpy.program.common import (
+    Instruction,
     _to_instruction,
     validate_accounts,
-    Instruction,
 )
 from anchorpy.program.context import (
     EMPTY_CONTEXT,
+    Accounts,
     Context,
     _check_args_length,
-    Accounts,
 )
-from anchorpy_core.idl import IdlInstruction, IdlAccountItem, IdlAccounts, IdlAccount
 
 
 class _InstructionFn:
@@ -117,7 +117,7 @@ def _accounts_array(
     return accounts_ret
 
 
-def _validate_instruction(ix: IdlInstruction, args: Tuple):
+def _validate_instruction(ix: IdlInstruction, args: Tuple):  # noqa: ARG001
     """Throws error if any argument required for the `ix` is not given.
 
     Args:

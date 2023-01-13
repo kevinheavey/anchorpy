@@ -1,6 +1,4 @@
 {
-    "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true,
     "python.formatting.provider": "black",
     "python.linting.mypyEnabled": true,
     "python.linting.pydocstyleEnabled": false,
@@ -28,5 +26,8 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "ruff.args": [
+        "--config=pyproject.toml"
+    ]
 }

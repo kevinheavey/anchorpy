@@ -1,49 +1,49 @@
 """IDL coding."""
-from dataclasses import make_dataclass, fields as dc_fields
-from types import MappingProxyType
+from dataclasses import fields as dc_fields
+from dataclasses import make_dataclass
 from keyword import kwlist
-from typing import Mapping, cast, Type
+from types import MappingProxyType
+from typing import Mapping, Type, cast
 
-from construct import Construct
-from pyheck import snake
-from borsh_construct import (
-    CStruct,
-    TupleStruct,
-    Vec,
-    Enum,
-    Bool,
-    U8,
-    I8,
-    U16,
-    I16,
-    U32,
-    I32,
-    F32,
-    U64,
-    I64,
-    F64,
-    U128,
-    I128,
-    Bytes,
-    String,
-    Option,
-)
-
-from anchorpy.borsh_extension import BorshPubkey, _DataclassStruct
-from anchorpy.idl import TypeDefs
 from anchorpy_core.idl import (
     IdlField,
     IdlType,
     IdlTypeArray,
+    IdlTypeDefined,
     IdlTypeDefinition,
     IdlTypeDefinitionTyEnum,
     IdlTypeDefinitionTyStruct,
-    IdlTypeDefined,
     IdlTypeOption,
-    IdlTypeVec,
     IdlTypeSimple,
+    IdlTypeVec,
 )
+from borsh_construct import (
+    F32,
+    F64,
+    I8,
+    I16,
+    I32,
+    I64,
+    I128,
+    U8,
+    U16,
+    U32,
+    U64,
+    U128,
+    Bool,
+    Bytes,
+    CStruct,
+    Enum,
+    Option,
+    String,
+    TupleStruct,
+    Vec,
+)
+from construct import Construct
+from pyheck import snake
 
+from anchorpy.borsh_extension import BorshPubkey, _DataclassStruct
+from anchorpy.idl import TypeDefs
 
 FIELD_TYPE_MAP: Mapping[IdlTypeSimple, Construct] = MappingProxyType(
     {
@@ -169,7 +169,7 @@ def _typedef_layout(
 
     Returns:
         `Construct` object from `borsh-construct`.
-    """  # noqa: DAR402
+    """
     return field_name / _typedef_layout_without_field_name(typedef, types)
 
 
@@ -210,7 +210,7 @@ def _field_layout(field: IdlField, types: TypeDefs) -> Construct:
 
     Returns:
         `Construct` object from `borsh-construct`.
-    """  # noqa: DAR402
+    """
     field_name = snake(field.name) if field.name else ""
     return field_name / _type_layout(field.ty, types)
 

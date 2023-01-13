@@ -1,19 +1,20 @@
 """Extensions to the Borsh spec for Solana-specific types."""
-from typing import Any, Dict, Type, TypeVar, cast
-from keyword import kwlist
 from dataclasses import asdict
-from borsh_construct import CStruct, U8
-from solana import publickey
+from keyword import kwlist
+from typing import Any, Dict, Type, TypeVar, cast
+
+from borsh_construct import U8, CStruct
 from construct import (
-    Bytes,
     Adapter,
-    Container,
-    Padding,
+    Bytes,
     Construct,
+    Container,
     IfThenElse,
-    Switch,
+    Padding,
     Renamed,
+    Switch,
 )
+from solana import publickey
 
 
 class BorshPubkeyAdapter(Adapter):
@@ -32,7 +33,7 @@ class EnumForCodegen(Adapter):
     _value_key = "value"
 
     def __init__(self, *variants: "Renamed[CStruct, CStruct]") -> None:
-        """Init enum."""  # noqa: DAR101
+        """Init enum."""
         switch_cases: dict[int, "Renamed[CStruct, CStruct]"] = {}
         variant_name_to_index: dict[str, int] = {}
         index_to_variant_name: dict[int, str] = {}
@@ -116,5 +117,5 @@ class _DataclassStruct(Adapter):
         return asdict(obj)
 
 
-BorshPubkey = BorshPubkeyAdapter()  # noqa: WPS462
-"""Adapter for (de)serializing a public key."""  # noqa: WPS322
+BorshPubkey = BorshPubkeyAdapter()
+"""Adapter for (de)serializing a public key."""

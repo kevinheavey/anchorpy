@@ -1,9 +1,7 @@
 """This module deals with (de)serializing Anchor events."""
 from hashlib import sha256
-from typing import Dict, Tuple, Any, Optional
+from typing import Any, Dict, Optional, Tuple
 
-from construct import Adapter, Construct, Sequence, Bytes, Switch
-from pyheck import snake
 from anchorpy_core.idl import (
     Idl,
     IdlEvent,
@@ -11,9 +9,11 @@ from anchorpy_core.idl import (
     IdlTypeDefinition,
     IdlTypeDefinitionTyStruct,
 )
+from construct import Adapter, Bytes, Construct, Sequence, Switch
+from pyheck import snake
 
-from anchorpy.program.common import Event
 from anchorpy.coder.idl import _typedef_layout
+from anchorpy.program.common import Event
 
 
 def _event_discriminator(name: str) -> bytes:

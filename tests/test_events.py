@@ -3,17 +3,17 @@
 Note: this is unfinished.
 """
 from typing import cast
-from pytest import mark, fixture
-from solders.rpc.config import RpcTransactionLogsFilter
-from solders.rpc.responses import LogsNotification
-from solana.rpc.websocket_api import connect, SolanaWsClientProtocol
+
 from anchorpy import (
-    Program,
     EventParser,
+    Program,
 )
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
-
+from pytest import fixture, mark
+from solana.rpc.websocket_api import SolanaWsClientProtocol, connect
+from solders.rpc.config import RpcTransactionLogsFilter
+from solders.rpc.responses import LogsNotification
 
 workspace = workspace_fixture(
     "anchor/tests/events/", build_cmd="anchor build --skip-lint"

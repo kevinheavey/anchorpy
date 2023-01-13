@@ -8,5 +8,5 @@ init-clientgen-examples:
 	poetry run anchorpy client-gen tests/idls/spl_token.json tests/client_gen/token --program-id TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
 
 lint:
-	poetry run flake8
+	poetry run ruff src tests
 	poetry run mypy src tests

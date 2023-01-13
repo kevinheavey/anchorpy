@@ -1,14 +1,12 @@
-"""Mimics anchor/examples/tutorial/basic-1"""
-
-from pytest import fixture, mark
-from pytest_asyncio import fixture as async_fixture
-from solana.keypair import Keypair
-from solana.system_program import SYS_PROGRAM_ID
+"""Mimics anchor/examples/tutorial/basic-1."""
 
 from anchorpy import Context, Program
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
-
+from pytest import fixture, mark
+from pytest_asyncio import fixture as async_fixture
+from solana.keypair import Keypair
+from solana.system_program import SYS_PROGRAM_ID
 
 workspace = workspace_fixture(
     "anchor/examples/tutorial/basic-1", build_cmd="anchor build --skip-lint"

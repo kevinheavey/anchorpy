@@ -1,56 +1,59 @@
-from pathlib import Path
-from typing import cast, Union as TypingUnion
 from dataclasses import dataclass
-from black import format_str, FileMode
-from autoflake import fix_code
-from pyheck import snake
-from genpy import (
-    FromImport,
-    Import,
-    Assign,
-    Suite,
-    Collection,
-    ImportAs,
-    Return,
-    If,
-    Raise,
-    Generable,
-)
+from pathlib import Path
+from typing import Union as TypingUnion
+from typing import cast
+
 from anchorpy_core.idl import (
     Idl,
-    IdlTypeDefinitionTyStruct,
+    IdlEnumVariant,
     IdlField,
     IdlType,
-    IdlEnumVariant,
+    IdlTypeDefinitionTyStruct,
 )
-from anchorpy.clientgen.genpy_extension import (
-    Union,
-    Tuple,
-    Dataclass,
-    Method,
-    ClassMethod,
-    TypedParam,
-    TypedDict,
-    StrDict,
-    StrDictEntry,
-    Function,
-    ANNOTATIONS_IMPORT,
-    TupleTypeAlias,
-    NamedArg,
-    Call,
+from autoflake import fix_code
+from black import FileMode, format_str
+from genpy import (
+    Assign,
+    Collection,
+    FromImport,
+    Generable,
+    If,
+    Import,
+    ImportAs,
+    Raise,
+    Return,
+    Suite,
 )
+from pyheck import snake
+
 from anchorpy.clientgen.common import (
-    _json_interface_name,
-    _kind_interface_name,
-    _value_interface_name,
-    _py_type_from_idl,
-    _idl_type_to_json_type,
-    _layout_for_type,
     _field_from_decoded,
+    _field_from_json,
     _field_to_encodable,
     _field_to_json,
-    _field_from_json,
+    _idl_type_to_json_type,
+    _json_interface_name,
+    _kind_interface_name,
+    _layout_for_type,
+    _py_type_from_idl,
     _sanitize,
+    _value_interface_name,
+)
+from anchorpy.clientgen.genpy_extension import (
+    ANNOTATIONS_IMPORT,
+    Call,
+    ClassMethod,
+    Dataclass,
+    Function,
+    Method,
+    NamedArg,
+    StrDict,
+    StrDictEntry,
+    Tuple,
+    TupleTypeAlias,
+    TypedDict,
+    TypedParam,
+    Union,
 )
 
 
@@ -77,16 +80,11 @@ def gen_index_code(idl: Idl) -> str:
         ty_type = ty.ty
         module_name = _sanitize(snake(ty.name))
         imports.append(FromImport(".", [module_name]))
-        if isinstance(ty_type, IdlTypeDefinitionTyStruct):
-            import_members = [
-                _sanitize(ty.name),
-                _json_interface_name(ty.name),
-            ]
-        else:
-            import_members = [
-                _kind_interface_name(ty.name),
-                _json_interface_name(ty.name),
-            ]
+        import_members = (
+            [_sanitize(ty.name), _json_interface_name(ty.name)]
+            if isinstance(ty_type, IdlTypeDefinitionTyStruct)
+            else [_kind_interface_name(ty.name), _json_interface_name(ty.name)]
+        )
         imports.append(
             FromImport(
                 f".{module_name}",

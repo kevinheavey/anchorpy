@@ -1,5 +1,6 @@
 from pathlib import Path
-from anchorpy import EventParser, Idl, Program, Event
+
+from anchorpy import Event, EventParser, Idl, Program
 from solana.publickey import PublicKey
 
 

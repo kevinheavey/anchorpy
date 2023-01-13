@@ -1,46 +1,48 @@
-from typing import cast, Optional, Union
-from black import format_str, FileMode
-from autoflake import fix_code
 from pathlib import Path
-from pyheck import upper_camel, snake, shouty_snake
+from typing import Optional, Union, cast
+
+from anchorpy_core.idl import (
+    Idl,
+    IdlAccountItem,
+    IdlAccounts,
+    IdlSeedConst,
+    IdlTypeArray,
+    IdlTypeSimple,
+)
+from autoflake import fix_code
+from black import FileMode, format_str
 from genpy import (
-    Import,
-    FromImport,
     Assign,
-    Suite,
     Collection,
-    ImportAs,
-    Return,
+    FromImport,
     If,
+    Import,
+    ImportAs,
     Line,
+    Return,
+    Suite,
+)
+from pyheck import shouty_snake, snake, upper_camel
+
+from anchorpy.clientgen.common import (
+    _field_to_encodable,
+    _layout_for_type,
+    _py_type_from_idl,
+    _sanitize,
+)
+from anchorpy.clientgen.genpy_extension import (
+    ANNOTATIONS_IMPORT,
+    Call,
+    Function,
+    List,
+    NamedArg,
+    StrDict,
+    StrDictEntry,
+    TypedDict,
+    TypedParam,
 )
 from anchorpy.coder.common import _sighash
 from anchorpy.coder.idl import FIELD_TYPE_MAP
-from anchorpy_core.idl import (
-    Idl,
-    IdlAccounts,
-    IdlAccountItem,
-    IdlTypeSimple,
-    IdlSeedConst,
-    IdlTypeArray,
-)
-from anchorpy.clientgen.genpy_extension import (
-    TypedParam,
-    TypedDict,
-    StrDict,
-    StrDictEntry,
-    List,
-    Function,
-    ANNOTATIONS_IMPORT,
-    Call,
-    NamedArg,
-)
-from anchorpy.clientgen.common import (
-    _py_type_from_idl,
-    _layout_for_type,
-    _field_to_encodable,
-    _sanitize,
-)
 
 CONST_ACCOUNTS = {
     "associated_token_program": "ASSOCIATED_TOKEN_PROGRAM_ID",
@@ -112,7 +114,7 @@ def recurse_accounts(
             try:
                 pubkey_var = const_accs[acc_idx]
             except KeyError:
-                try:  # noqa: WPS505
+                try:
                     pubkey_var = CONST_ACCOUNTS[names[-1]]
                 except KeyError:
                     nested_keys = [f'["{key}"]' for key in names]
@@ -162,7 +164,7 @@ def gen_accounts(
         if isinstance(acc, IdlAccounts):
             nested_accs = cast(IdlAccounts, acc)
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
-            nested_res = gen_accounts(  # noqa: WPS317
+            nested_res = gen_accounts(
                 nested_acc_name,
                 nested_accs.accounts,
                 gen_pdas,
@@ -184,33 +186,32 @@ def gen_accounts(
             pda_generated = False
             if gen_pdas:
                 maybe_pda = acc.pda
-                if maybe_pda is not None:
-                    if all(isinstance(seed, IdlSeedConst) for seed in maybe_pda.seeds):
-                        seeds = cast(list[IdlSeedConst], maybe_pda.seeds)
-                        const_pda_name = shouty_snake(f"{name}_{acc_name}")
-                        const_pda_body_items = [
-                            str(
-                                to_buffer_value(
-                                    cast(Union[IdlTypeSimple, IdlTypeArray], seed.ty),
-                                    cast(Union[str, int, list[int]], seed.value),
-                                )
+                if maybe_pda is not None and all(
+                    isinstance(seed, IdlSeedConst) for seed in maybe_pda.seeds
+                ):
+                    seeds = cast(list[IdlSeedConst], maybe_pda.seeds)
+                    const_pda_name = shouty_snake(f"{name}_{acc_name}")
+                    const_pda_body_items = [
+                        str(
+                            to_buffer_value(
+                                cast(Union[IdlTypeSimple, IdlTypeArray], seed.ty),
+                                cast(Union[str, int, list[int]], seed.value),
                             )
-                            for seed in seeds
-                        ]
-                        seeds_arg = List(const_pda_body_items)
-                        seeds_named_arg = NamedArg("seeds", seeds_arg)
-                        const_pda_body = Call(
-                            "PublicKey.find_program_address",
-                            [seeds_named_arg, NamedArg("program_id", "PROGRAM_ID")],
                         )
-                        const_pdas.append(
-                            Assign(const_pda_name, f"{const_pda_body}[0]")
-                        )
-                        const_acc_indices = {
-                            **const_acc_indices,
-                            acc_count: const_pda_name,
-                        }
-                        pda_generated = True
+                        for seed in seeds
+                    ]
+                    seeds_arg = List(const_pda_body_items)
+                    seeds_named_arg = NamedArg("seeds", seeds_arg)
+                    const_pda_body = Call(
+                        "PublicKey.find_program_address",
+                        [seeds_named_arg, NamedArg("program_id", "PROGRAM_ID")],
+                    )
+                    const_pdas.append(Assign(const_pda_name, f"{const_pda_body}[0]"))
+                    const_acc_indices = {
+                        **const_acc_indices,
+                        acc_count: const_pda_name,
+                    }
+                    pda_generated = True
             if not pda_generated:
                 try:
                     CONST_ACCOUNTS[acc_name]

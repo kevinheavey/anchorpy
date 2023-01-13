@@ -1,8 +1,9 @@
 """Provides the Coder class."""
+from anchorpy_core.idl import Idl
+
 from anchorpy.coder.accounts import AccountsCoder
 from anchorpy.coder.event import EventCoder
 from anchorpy.coder.instruction import InstructionCoder
-from anchorpy_core.idl import Idl
 
 
 class Coder:

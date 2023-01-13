@@ -2,23 +2,24 @@
 import asyncio
 import subprocess
 from pathlib import Path
-from pytest import raises, mark, fixture
-from pytest_asyncio import fixture as async_fixture
-from solana.rpc.types import MemcmpOpts
-from anchorpy import Program, Context
+
+from anchorpy import Context, Program
 from anchorpy.error import ProgramError
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
-from solana.sysvar import SYSVAR_RENT_PUBKEY
-from solana.system_program import SYS_PROGRAM_ID, transfer, TransferParams
-from solana.rpc.core import RPCException
-from spl.token.constants import TOKEN_PROGRAM_ID
-from spl.token.async_client import AsyncToken
 from anchorpy.provider import Provider, Wallet
-from anchorpy.utils.rpc import invoke
 from anchorpy.pytest_plugin import workspace_fixture
+from anchorpy.utils.rpc import invoke
 from anchorpy.workspace import WorkspaceType
 from anchorpy_core.idl import IdlConst, IdlTypeSimple
+from pytest import fixture, mark, raises
+from pytest_asyncio import fixture as async_fixture
+from solana.keypair import Keypair
+from solana.publickey import PublicKey
+from solana.rpc.core import RPCException
+from solana.rpc.types import MemcmpOpts
+from solana.system_program import SYS_PROGRAM_ID, TransferParams, transfer
+from solana.sysvar import SYSVAR_RENT_PUBKEY
+from spl.token.async_client import AsyncToken
+from spl.token.constants import TOKEN_PROGRAM_ID
 
 PATH = Path("anchor/tests/misc/")
 workspace = workspace_fixture(PATH, build_cmd="anchor build --skip-lint")
@@ -76,7 +77,7 @@ async def test_fetch_multiple(program: Program, initialized_keypair: Keypair) ->
     batch_size = 2
     n_accounts = batch_size * 100 + 1
     data_account = await program.account["Data"].fetch(initialized_keypair.public_key)
-    pubkeys = [initialized_keypair.public_key] * n_accounts  # noqa: WPS435
+    pubkeys = [initialized_keypair.public_key] * n_accounts
     data_accounts = await program.account["Data"].fetch_multiple(
         pubkeys, batch_size=batch_size
     )
@@ -875,7 +876,7 @@ async def test_idl_constants(program: Program) -> None:
 async def test_at_constructor(program: Program) -> None:
     """Test that the Program.at classmethod works."""
     idl_path = "target/idl/misc.json"
-    subprocess.run(  # noqa: S607,S603
+    subprocess.run(
         ["anchor", "idl", "init", "-f", idl_path, str(program.program_id)],
         cwd=PATH,
     )

@@ -1,16 +1,15 @@
 """This module deals (de)serializing program instructions."""
-from typing import Dict, Any, Tuple, cast, TypeVar, Protocol
+from typing import Any, Dict, Protocol, Tuple, TypeVar, cast
 
+from anchorpy_core.idl import Idl
 from borsh_construct import CStruct
-from construct import Sequence, Bytes
-from construct import Construct, Adapter, Switch, Container
+from construct import Adapter, Bytes, Construct, Container, Sequence, Switch
 from pyheck import snake
 
 from anchorpy.coder.common import _sighash
-from anchorpy.program.common import Instruction
 from anchorpy.coder.idl import _field_layout
 from anchorpy.idl import TypeDefs
-from anchorpy_core.idl import Idl
+from anchorpy.program.common import Instruction
 
 
 class _Sighash(Adapter):

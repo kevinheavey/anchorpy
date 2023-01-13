@@ -1,8 +1,9 @@
 from pathlib import Path
-from pytest import mark
+
 from anchorpy import Idl, InstructionCoder
+from anchorpy.program.common import _to_instruction
 from anchorpy.program.context import _check_args_length
-from anchorpy.program.common import _to_instruction  # noqa: WPS347
+from pytest import mark
 
 
 @mark.unit

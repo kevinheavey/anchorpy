@@ -1,14 +1,12 @@
 """Mimics anchor/examples/tutorial/basic-2/tests/basic-2.js."""
 
-from solana.keypair import Keypair
-from solana.system_program import SYS_PROGRAM_ID
-
-from pytest import fixture, mark
-from pytest_asyncio import fixture as async_fixture
-from anchorpy import Program, Provider, Context
+from anchorpy import Context, Program, Provider
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
-
+from pytest import fixture, mark
+from pytest_asyncio import fixture as async_fixture
+from solana.keypair import Keypair
+from solana.system_program import SYS_PROGRAM_ID
 
 workspace = workspace_fixture("anchor/examples/tutorial/basic-2")
 

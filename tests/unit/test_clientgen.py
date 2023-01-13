@@ -1,8 +1,9 @@
 from pathlib import Path
-from genpy import Suite
+
 from anchorpy import Idl
 from anchorpy.clientgen.instructions import gen_accounts
 from anchorpy.clientgen.types import gen_struct
+from genpy import Suite
 
 
 def test_gen_accounts() -> None:
@@ -32,7 +33,7 @@ def test_empty_fields() -> None:
     idl = Idl.from_json(raw)
     struct = gen_struct(idl, "AggregatorLockParams", [])
     assert str(struct) == (
-        "import typing"  # noqa: P103
+        "import typing"
         "\nfrom dataclasses import dataclass"
         "\nfrom construct import Container, Construct"
         "\nfrom solana.publickey import PublicKey"

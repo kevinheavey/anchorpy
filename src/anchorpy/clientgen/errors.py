@@ -1,29 +1,31 @@
 from pathlib import Path
-from black import format_str, FileMode
+
+from anchorpy_core.idl import Idl, IdlErrorCode
 from autoflake import fix_code
+from black import FileMode, format_str
 from genpy import (
-    FromImport,
-    Suite,
-    Collection,
-    Return,
     Assign,
+    Collection,
+    FromImport,
     If,
     Import,
-    Function as UntypedFunction,
+    Return,
     Statement,
+    Suite,
 )
-from anchorpy_core.idl import Idl, IdlErrorCode
-from anchorpy.error import _LangErrorCode, LangErrorMessage
+from genpy import Function as UntypedFunction
+
+from anchorpy.clientgen.common import _sanitize
 from anchorpy.clientgen.genpy_extension import (
-    Function,
-    TypedParam,
-    Union,
-    InitMethod,
     Class,
+    Function,
+    InitMethod,
     IntDict,
     IntDictEntry,
+    TypedParam,
+    Union,
 )
-from anchorpy.clientgen.common import _sanitize
+from anchorpy.error import LangErrorMessage, _LangErrorCode
 
 
 def gen_from_code_fn(has_custom_errors: bool) -> Function:

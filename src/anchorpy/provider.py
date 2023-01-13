@@ -1,22 +1,22 @@
 """This module contains the Provider class and associated utilities."""
 from __future__ import annotations
 
-from pathlib import Path
-from os import getenv, environ
 import json
+from os import environ, getenv
+from pathlib import Path
 from types import MappingProxyType
-from typing import List, Optional, Union, NamedTuple
+from typing import List, NamedTuple, Optional, Union
 
-from solders.rpc.responses import SimulateTransactionResp
-from solders.signature import Signature
 from more_itertools import unique_everseen
+from solana.blockhash import Blockhash
 from solana.keypair import Keypair
+from solana.publickey import PublicKey
 from solana.rpc import types
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Finalized, Processed, Confirmed
+from solana.rpc.commitment import Confirmed, Finalized, Processed
 from solana.transaction import Transaction
-from solana.publickey import PublicKey
-from solana.blockhash import Blockhash
+from solders.rpc.responses import SimulateTransactionResp
+from solders.signature import Signature
 
 
 class SendTxRequest(NamedTuple):
@@ -186,7 +186,7 @@ class Provider:
 
     async def __aenter__(self) -> Provider:
         """Use as a context manager."""
-        await self.connection.__aenter__()  # noqa: WPS609
+        await self.connection.__aenter__()
         return self
 
     async def __aexit__(self, _exc_type, _exc, _tb):
@@ -254,5 +254,5 @@ class Wallet:
     @classmethod
     def dummy(cls) -> Wallet:
         """Create a dummy wallet instance that won't be used to sign transactions."""
-        keypair = Keypair.from_secret_key(bytes([0] * 64))  # noqa: WPS435
+        keypair = Keypair.from_secret_key(bytes([0] * 64))
         return cls(keypair)
