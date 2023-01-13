@@ -3,7 +3,7 @@ import json
 import subprocess
 from filecmp import dircmp
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List
 
 from anchorpy import Provider, Wallet
 from anchorpy.cli import client_gen
@@ -60,8 +60,8 @@ localnet = localnet_fixture(EXAMPLE_PROGRAM_DIR, scope="session")
 @fixture(scope="session")
 def payer(localnet) -> Keypair:
     with (EXAMPLE_PROGRAM_DIR / ".anchor/test-ledger/faucet-keypair.json").open() as f:
-        faucet_keypair_json = json.load(f)
-    return Keypair.from_secret_key(bytes(faucet_keypair_json))
+        faucet_keypair_json: List[int] = json.load(f)
+    return Keypair.from_bytes(faucet_keypair_json)
 
 
 @async_fixture(scope="session")

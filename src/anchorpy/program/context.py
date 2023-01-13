@@ -4,9 +4,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from anchorpy_core.idl import IdlInstruction
 from pyheck import snake
-from solders.keypair import Keypair
 from solana.rpc.types import TxOpts
 from solders.instruction import AccountMeta, Instruction
+from solders.keypair import Keypair
 
 from anchorpy.error import ArgsError
 

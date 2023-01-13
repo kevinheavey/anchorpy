@@ -3,8 +3,8 @@ from typing import Any, Callable, Sequence, Tuple, cast
 
 from anchorpy_core.idl import IdlAccount, IdlAccountItem, IdlAccounts, IdlInstruction
 from pyheck import snake
-from solders.pubkey import Pubkey
 from solders.instruction import AccountMeta, Instruction
+from solders.pubkey import Pubkey
 
 from anchorpy.program.common import (
     NamedInstruction,
