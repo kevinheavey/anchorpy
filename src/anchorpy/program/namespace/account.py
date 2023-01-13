@@ -172,7 +172,7 @@ class AccountClient(object):
             )
         )
 
-    async def all(
+    async def all(  # noqa: A003
         self,
         buffer: Optional[bytes] = None,
         filters: Optional[Sequence[Union[int, MemcmpOpts]]] = None,

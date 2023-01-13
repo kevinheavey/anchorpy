@@ -1,4 +1,3 @@
-# noqa: D100
 import os
 from contextlib import contextmanager
 from pathlib import Path
@@ -39,7 +38,7 @@ def _set_directory(path: Path):
 
 
 def _search_upwards_for_project_root() -> Path:
-    """Search in the current directory and all directories above it for an Anchor.toml file.
+    """Search in the current dir and all directories above it for an Anchor.toml file.
 
     Returns:
         The location of the first Anchor.toml file found
@@ -78,9 +77,7 @@ def shell():
 
 @app.command()
 def init(
-    program_name: str = typer.Argument(
-        ..., help="The name of the Anchor program."
-    )
+    program_name: str = typer.Argument(..., help="The name of the Anchor program.")
 ):
     """Create a basic Python test file for an Anchor program.
 
@@ -130,7 +127,7 @@ def client_gen(
     out.mkdir(exist_ok=True)
     (out / "__init__.py").touch()
     typer.echo("generating program_id.py...")
-    gen_program_id(idl_obj, program_id_to_use, out)
+    gen_program_id(program_id_to_use, out)
     typer.echo("generating errors.py...")
     gen_errors(idl_obj, out)
     typer.echo("generating instructions...")

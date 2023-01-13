@@ -186,33 +186,32 @@ def gen_accounts(
             pda_generated = False
             if gen_pdas:
                 maybe_pda = acc.pda
-                if maybe_pda is not None:
-                    if all(isinstance(seed, IdlSeedConst) for seed in maybe_pda.seeds):
-                        seeds = cast(list[IdlSeedConst], maybe_pda.seeds)
-                        const_pda_name = shouty_snake(f"{name}_{acc_name}")
-                        const_pda_body_items = [
-                            str(
-                                to_buffer_value(
-                                    cast(Union[IdlTypeSimple, IdlTypeArray], seed.ty),
-                                    cast(Union[str, int, list[int]], seed.value),
-                                )
+                if maybe_pda is not None and all(
+                    isinstance(seed, IdlSeedConst) for seed in maybe_pda.seeds
+                ):
+                    seeds = cast(list[IdlSeedConst], maybe_pda.seeds)
+                    const_pda_name = shouty_snake(f"{name}_{acc_name}")
+                    const_pda_body_items = [
+                        str(
+                            to_buffer_value(
+                                cast(Union[IdlTypeSimple, IdlTypeArray], seed.ty),
+                                cast(Union[str, int, list[int]], seed.value),
                             )
-                            for seed in seeds
-                        ]
-                        seeds_arg = List(const_pda_body_items)
-                        seeds_named_arg = NamedArg("seeds", seeds_arg)
-                        const_pda_body = Call(
-                            "PublicKey.find_program_address",
-                            [seeds_named_arg, NamedArg("program_id", "PROGRAM_ID")],
                         )
-                        const_pdas.append(
-                            Assign(const_pda_name, f"{const_pda_body}[0]")
-                        )
-                        const_acc_indices = {
-                            **const_acc_indices,
-                            acc_count: const_pda_name,
-                        }
-                        pda_generated = True
+                        for seed in seeds
+                    ]
+                    seeds_arg = List(const_pda_body_items)
+                    seeds_named_arg = NamedArg("seeds", seeds_arg)
+                    const_pda_body = Call(
+                        "PublicKey.find_program_address",
+                        [seeds_named_arg, NamedArg("program_id", "PROGRAM_ID")],
+                    )
+                    const_pdas.append(Assign(const_pda_name, f"{const_pda_body}[0]"))
+                    const_acc_indices = {
+                        **const_acc_indices,
+                        acc_count: const_pda_name,
+                    }
+                    pda_generated = True
             if not pda_generated:
                 try:
                     CONST_ACCOUNTS[acc_name]

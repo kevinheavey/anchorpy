@@ -80,16 +80,11 @@ def gen_index_code(idl: Idl) -> str:
         ty_type = ty.ty
         module_name = _sanitize(snake(ty.name))
         imports.append(FromImport(".", [module_name]))
-        if isinstance(ty_type, IdlTypeDefinitionTyStruct):
-            import_members = [
-                _sanitize(ty.name),
-                _json_interface_name(ty.name),
-            ]
-        else:
-            import_members = [
-                _kind_interface_name(ty.name),
-                _json_interface_name(ty.name),
-            ]
+        import_members = (
+            [_sanitize(ty.name), _json_interface_name(ty.name)]
+            if isinstance(ty_type, IdlTypeDefinitionTyStruct)
+            else [_kind_interface_name(ty.name), _json_interface_name(ty.name)]
+        )
         imports.append(
             FromImport(
                 f".{module_name}",

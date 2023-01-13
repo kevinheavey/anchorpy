@@ -117,7 +117,7 @@ def _accounts_array(
     return accounts_ret
 
 
-def _validate_instruction(ix: IdlInstruction, args: Tuple):
+def _validate_instruction(ix: IdlInstruction, args: Tuple):  # noqa: ARG001
     """Throws error if any argument required for the `ix` is not given.
 
     Args:

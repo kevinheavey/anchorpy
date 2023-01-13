@@ -17,7 +17,7 @@ _Scope = Literal["session", "package", "module", "class", "function"]
 
 
 class _FixedXProcessInfo(XProcessInfo):
-    def terminate(self, timeout=60):
+    def terminate(self, timeout=60):  # noqa: ARG002
         if not self.pid:
             return 0
         try:
@@ -72,7 +72,7 @@ class _FixedXProcess(XProcess):
             starter = preparefunc(controldir, self)
             args = [str(x) for x in starter.args]
             self.log.debug("%s$ %s", controldir, " ".join(args))
-            stdout = open(str(info.logpath), "wb", 0)
+            stdout = open(str(info.logpath), "wb", 0)  # noqa: SIM115
 
             # is env still necessary? we could pass all in popen_kwargs
             kwargs = {"env": starter.env}
@@ -117,9 +117,7 @@ class _FixedXProcess(XProcess):
                 )
             self.log.debug("%s process startup detected", name)
 
-        pytest_extlogfiles = self.config.__dict__.setdefault(
-            "_extlogfiles", {}
-        )
+        pytest_extlogfiles = self.config.__dict__.setdefault("_extlogfiles", {})
         pytest_extlogfiles[name] = self._file_handles[-1]
         self.getinfo(name)
 
