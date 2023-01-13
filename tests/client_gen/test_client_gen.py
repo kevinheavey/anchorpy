@@ -12,12 +12,12 @@ from construct import ListContainer
 from py.path import local
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Processed
 from solana.rpc.core import RPCException
 from solana.transaction import Transaction
+from solders.keypair import Keypair
+from solders.pubkey import Pubkey
 from solders.rpc.errors import SendTransactionPreflightFailureMessage
 from solders.rpc.responses import SimulateTransactionResp
 
@@ -124,7 +124,7 @@ async def init_and_account_fetch(provider: Provider) -> Keypair:
     state = Keypair()
     initialize_ix = initialize(
         {
-            "state": state.public_key,
+            "state": state.pubkey(),
             "payer": provider.wallet.public_key,
         }
     )
@@ -223,7 +223,7 @@ async def test_init_and_account_fetch(
         i128_field=-85070591730234615865843651857942052874,
         bytes_field=b"\x01\x02\xff\xfe",
         string_field="hello",
-        pubkey_field=PublicKey("EPZP2wrcRtMxrAPJCXVEQaYD9eH7fH7h12YqKDcd4aS7"),
+        pubkey_field=Pubkey.from_string("EPZP2wrcRtMxrAPJCXVEQaYD9eH7fH7h12YqKDcd4aS7"),
         vec_field=vec_field_expected,
         vec_struct_field=vec_struct_field_expected,
         option_field=None,
@@ -235,11 +235,9 @@ async def test_init_and_account_fetch(
         enum_field3=enum_field3_expected,
         enum_field4=enum_field4_expected,
     )
-    res = await State.fetch(provider.connection, state.public_key)
+    res = await State.fetch(provider.connection, state.pubkey())
     assert res == expected
-    res = await State.fetch(
-        provider.connection, state.public_key, program_id=PROGRAM_ID
-    )
+    res = await State.fetch(provider.connection, state.pubkey(), program_id=PROGRAM_ID)
     assert res == expected
 
 
@@ -250,13 +248,13 @@ async def setup_fetch_multiple(provider: Provider) -> tuple[Keypair, Keypair]:
     initialize_ixs = [
         initialize(
             {
-                "state": state.public_key,
+                "state": state.pubkey(),
                 "payer": provider.wallet.public_key,
             }
         ),
         initialize(
             {
-                "state": another_state.public_key,
+                "state": another_state.pubkey(),
                 "payer": provider.wallet.public_key,
             }
         ),
@@ -274,7 +272,7 @@ async def test_fetch_multiple(
     non_state = Keypair()
     res = await State.fetch_multiple(
         provider.connection,
-        [state.public_key, non_state.public_key, another_state.public_key],
+        [state.pubkey(), non_state.pubkey(), another_state.pubkey()],
     )
     assert isinstance(res[0], State)
     assert res[1] is None
@@ -328,7 +326,7 @@ async def send_instructions_with_args(provider: Provider) -> tuple[Keypair, Keyp
         i128_field=-85070591730234615865843651857942052877,
         bytes_field=bytes([5, 10, 255]),
         string_field="string value",
-        pubkey_field=PublicKey("GDddEKTjLBqhskzSMYph5o54VYLQfPCR3PoFqKHLJK6s"),
+        pubkey_field=Pubkey.from_string("GDddEKTjLBqhskzSMYph5o54VYLQfPCR3PoFqKHLJK6s"),
         vec_field=[1, 123456789123456789],
         vec_struct_field=vec_struct_field,
         option_field=True,
@@ -341,7 +339,7 @@ async def send_instructions_with_args(provider: Provider) -> tuple[Keypair, Keyp
         enum_field4=NoFields(),
     )
     initialize_with_values_accounts = InitializeWithValuesAccounts(
-        state=state.public_key,
+        state=state.pubkey(),
         payer=provider.wallet.public_key,
     )
     ix1 = initialize_with_values(
@@ -350,7 +348,7 @@ async def send_instructions_with_args(provider: Provider) -> tuple[Keypair, Keyp
     ix2 = initialize_with_values2(
         {"vec_of_option": [None, None, 20]},
         {
-            "state": state2.public_key,
+            "state": state2.pubkey(),
             "payer": provider.wallet.public_key,
         },
     )
@@ -380,7 +378,7 @@ async def test_instructions_with_args(
         i128_field=-85070591730234615865843651857942052877,
         bytes_field=b"\x05\n\xff",
         string_field="string value",
-        pubkey_field=PublicKey("GDddEKTjLBqhskzSMYph5o54VYLQfPCR3PoFqKHLJK6s"),
+        pubkey_field=Pubkey.from_string("GDddEKTjLBqhskzSMYph5o54VYLQfPCR3PoFqKHLJK6s"),
         vec_field=ListContainer([1, 123456789123456789]),
         vec_struct_field=[
             FooStruct(
@@ -419,8 +417,8 @@ async def test_instructions_with_args(
         enum_field4=NoFields(),
     )
     expected2 = State2(vec_of_option=ListContainer([None, None, 20]))
-    res = await State.fetch(provider.connection, state.public_key)
-    res2 = await State2.fetch(provider.connection, state2.public_key)
+    res = await State.fetch(provider.connection, state.pubkey())
+    res2 = await State2.fetch(provider.connection, state2.pubkey())
     assert res == expected
     assert res2 == expected2
 
@@ -601,7 +599,7 @@ def test_json() -> None:
         i128_field=-85070591730234615865843651857942052897,
         bytes_field=bytes([1, 255]),
         string_field="a string",
-        pubkey_field=PublicKey("EPZP2wrcRtMxrAPJCXVEQaYD9eH7fH7h12YqKDcd4aS7"),
+        pubkey_field=Pubkey.from_string("EPZP2wrcRtMxrAPJCXVEQaYD9eH7fH7h12YqKDcd4aS7"),
         vec_field=[10, 1234567890123456],
         vec_struct_field=vec_struct_field,
         option_field=None,
