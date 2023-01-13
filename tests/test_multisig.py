@@ -1,6 +1,4 @@
 """Mimics anchor/tests/multisig."""
-from dataclasses import replace
-
 from anchorpy import Context, Program, Provider
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
@@ -157,10 +155,13 @@ async def executed_transaction(
     )
     with_corrected_signer = []
     for meta in remaining_accounts_raw:
-        if meta.pubkey == multisig_signer:
-            to_append = replace(meta, is_signer=False)
-        else:
-            to_append = meta
+        to_append = (
+            AccountMeta(
+                pubkey=meta.pubkey, is_signer=False, is_writable=meta.is_writable
+            )
+            if meta.pubkey == multisig_signer
+            else meta
+        )
         with_corrected_signer.append(to_append)
     remaining_accounts = with_corrected_signer + [
         AccountMeta(pubkey=program.program_id, is_signer=False, is_writable=False)
