@@ -31,7 +31,7 @@ async def created_counter(program: Program, provider: Provider) -> Keypair:
         provider.wallet.public_key,
         ctx=Context(
             accounts={
-                "counter": counter.public_key,
+                "counter": counter.pubkey(),
                 "user": provider.wallet.public_key,
                 "system_program": SYS_PROGRAM_ID,
             },
@@ -48,7 +48,7 @@ async def test_create_counter(
     provider: Provider,
 ) -> None:
     """Test creating a counter."""
-    counter_account = await program.account["Counter"].fetch(created_counter.public_key)
+    counter_account = await program.account["Counter"].fetch(created_counter.pubkey())
     assert counter_account.authority == provider.wallet.public_key
     assert counter_account.count == 0
 
@@ -63,11 +63,11 @@ async def test_update_counter(
     await program.rpc["increment"](
         ctx=Context(
             accounts={
-                "counter": created_counter.public_key,
+                "counter": created_counter.pubkey(),
                 "authority": provider.wallet.public_key,
             },
         ),
     )
-    counter_account = await program.account["Counter"].fetch(created_counter.public_key)
+    counter_account = await program.account["Counter"].fetch(created_counter.pubkey())
     assert counter_account.authority == provider.wallet.public_key
     assert counter_account.count == 1

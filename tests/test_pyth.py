@@ -41,13 +41,13 @@ async def create_price_feed(
         expo,
         conf,
         ctx=Context(
-            accounts={"price": collateral_token_feed.public_key},
+            accounts={"price": collateral_token_feed.pubkey()},
             signers=[collateral_token_feed],
             pre_instructions=[
                 create_account(
                     CreateAccountParams(
                         from_pubkey=oracle_program.provider.wallet.public_key,
-                        new_account_pubkey=collateral_token_feed.public_key,
+                        new_account_pubkey=collateral_token_feed.pubkey(),
                         space=3312,
                         lamports=mbre_resp.value,
                         program_id=oracle_program.program_id,
@@ -56,7 +56,7 @@ async def create_price_feed(
             ],
         ),
     )
-    return collateral_token_feed.public_key
+    return collateral_token_feed.pubkey()
 
 
 async def set_feed_price(

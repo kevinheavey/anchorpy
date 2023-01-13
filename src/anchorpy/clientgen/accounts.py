@@ -194,7 +194,7 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
                 Assign("info", "resp.value"),
                 If("info is None", Return("None")),
                 If(
-                    "info.owner != program_id.to_solders()",
+                    "info.owner != program_id",
                     Raise('ValueError("Account does not belong to this program")'),
                 ),
                 Assign("bytes_data", "info.data"),

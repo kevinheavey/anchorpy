@@ -165,10 +165,10 @@ class AccountClient(object):
         return create_account(
             CreateAccountParams(
                 from_pubkey=self._provider.wallet.public_key,
-                new_account_pubkey=signer.public_key,
+                to_pubkey=signer.pubkey(),
                 space=space,
                 lamports=mbre_resp.value,
-                program_id=self._program_id,
+                owner=self._program_id,
             )
         )
 

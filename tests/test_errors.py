@@ -70,7 +70,7 @@ async def test_has_one_err(program: Program) -> None:
         await program.rpc["has_one_error"](
             ctx=Context(
                 accounts={
-                    "my_account": account.public_key,
+                    "my_account": account.pubkey(),
                     "owner": RENT,
                     "rent": RENT,
                 },
@@ -132,7 +132,7 @@ async def test_account_not_initialised_err(program: Program) -> None:
         await program.rpc["account_not_initialized_error"](
             ctx=Context(
                 accounts={
-                    "not_initialized_account": Keypair().public_key,
+                    "not_initialized_account": Keypair().pubkey(),
                 },
             )
         )

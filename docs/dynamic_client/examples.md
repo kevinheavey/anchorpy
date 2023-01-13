@@ -53,7 +53,7 @@ See this snippet from [test_multisig.py](https://github.com/kevinheavey/anchorpy
 
 ````python
 program.type["TransactionAccount"](
-    pubkey=multisig.public_key,
+    pubkey=multisig.pubkey(),
     is_writable=True,
     is_signer=False,
 )
@@ -67,7 +67,7 @@ for many accounts at once. Look at this example from `test_misc.py`:
 
 ````python
 n_accounts = 200
-pubkeys = [initialized_keypair.public_key] * n_accounts  # noqa: WPS435
+pubkeys = [initialized_keypair.pubkey()] * n_accounts  # noqa: WPS435
 data_accounts = await program.account["Data"].fetch_multiple(
     pubkeys, batch_size=2
 )

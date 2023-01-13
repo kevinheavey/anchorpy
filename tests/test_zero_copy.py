@@ -47,7 +47,7 @@ async def foo(program: Program) -> Keypair:
     await program.rpc["create_foo"](
         ctx=Context(
             accounts={
-                "foo": foo_keypair.public_key,
+                "foo": foo_keypair.pubkey(),
                 "authority": program.provider.wallet.public_key,
                 "rent": RENT,
             },
@@ -62,7 +62,7 @@ async def foo(program: Program) -> Keypair:
 
 @mark.asyncio
 async def test_create_foo(foo: Keypair, provider: Provider, program: Program) -> None:
-    account = await program.account["Foo"].fetch(foo.public_key)
+    account = await program.account["Foo"].fetch(foo.pubkey())
     assert account.authority == provider.wallet.public_key
     assert account.data == 0
     assert account.second_data == 0
@@ -75,7 +75,7 @@ async def update_foo(program: Program, foo: Keypair) -> None:
         1234,
         ctx=Context(
             accounts={
-                "foo": foo.public_key,
+                "foo": foo.pubkey(),
                 "authority": program.provider.wallet.public_key,
             },
         ),
@@ -86,7 +86,7 @@ async def update_foo(program: Program, foo: Keypair) -> None:
 async def test_update_foo(
     foo: Keypair, provider: Provider, program: Program, update_foo: None
 ) -> None:
-    account = await program.account["Foo"].fetch(foo.public_key)
+    account = await program.account["Foo"].fetch(foo.pubkey())
     assert account.authority == provider.wallet.public_key
     assert account.data == 1234
     assert account.second_data == 0
@@ -99,7 +99,7 @@ async def update_foo_second(program: Program, foo: Keypair, update_foo: None) ->
         55,
         ctx=Context(
             accounts={
-                "foo": foo.public_key,
+                "foo": foo.pubkey(),
                 "second_authority": program.provider.wallet.public_key,
             },
         ),
@@ -110,7 +110,7 @@ async def update_foo_second(program: Program, foo: Keypair, update_foo: None) ->
 async def test_update_foo_second(
     foo: Keypair, provider: Provider, program: Program, update_foo_second: None
 ) -> None:
-    account = await program.account["Foo"].fetch(foo.public_key)
+    account = await program.account["Foo"].fetch(foo.pubkey())
     assert account.authority == provider.wallet.public_key
     assert account.data == 1234
     assert account.second_data == 55
@@ -122,14 +122,14 @@ async def bar(
     program: Program, provider: Provider, foo: Keypair, update_foo_second: None
 ) -> Pubkey:
     bar_pubkey = Pubkey.find_program_address(
-        [bytes(provider.wallet.public_key), bytes(foo.public_key)], program.program_id
+        [bytes(provider.wallet.public_key), bytes(foo.pubkey())], program.program_id
     )[0]
     await program.rpc["create_bar"](
         ctx=Context(
             accounts={
                 "bar": bar_pubkey,
                 "authority": provider.wallet.public_key,
-                "foo": foo.public_key,
+                "foo": foo.pubkey(),
                 "system_program": SYS_PROGRAM_ID,
             }
         )
@@ -157,7 +157,7 @@ async def update_associated_zero_copy_account(
             accounts={
                 "bar": bar,
                 "authority": program.provider.wallet.public_key,
-                "foo": foo.public_key,
+                "foo": foo.pubkey(),
             },
         ),
     )
@@ -190,7 +190,7 @@ async def check_cpi(
             accounts={
                 "bar": bar,
                 "authority": provider.wallet.public_key,
-                "foo": foo.public_key,
+                "foo": foo.pubkey(),
                 "zero_copy_program": program.program_id,
             },
         ),
@@ -219,7 +219,7 @@ async def event_q(
     await program.rpc["create_large_account"](
         ctx=Context(
             accounts={
-                "event_q": event_q_keypair.public_key,
+                "event_q": event_q_keypair.pubkey(),
                 "rent": RENT,
             },
             pre_instructions=[
@@ -238,7 +238,7 @@ async def test_event_q(
     program: Program,
     event_q: Keypair,
 ) -> None:
-    account = await program.account["EventQ"].fetch(event_q.public_key)
+    account = await program.account["EventQ"].fetch(event_q.pubkey())
     events = account.events
     assert len(events) == 25000
     for event in events:
@@ -257,12 +257,12 @@ async def test_update_event_q(
         48,
         ctx=Context(
             accounts={
-                "event_q": event_q.public_key,
+                "event_q": event_q.pubkey(),
                 "from": provider.wallet.public_key,
             },
         ),
     )
-    account = await program.account["EventQ"].fetch(event_q.public_key)
+    account = await program.account["EventQ"].fetch(event_q.pubkey())
     events = account.events
     assert len(events) == 25000
     for idx, event in enumerate(events):
@@ -277,12 +277,12 @@ async def test_update_event_q(
         1234,
         ctx=Context(
             accounts={
-                "event_q": event_q.public_key,
+                "event_q": event_q.pubkey(),
                 "from": provider.wallet.public_key,
             },
         ),
     )
-    account = await program.account["EventQ"].fetch(event_q.public_key)
+    account = await program.account["EventQ"].fetch(event_q.pubkey())
     events = account.events
     assert len(events) == 25000
     for idx, event in enumerate(events):
@@ -300,12 +300,12 @@ async def test_update_event_q(
         99,
         ctx=Context(
             accounts={
-                "event_q": event_q.public_key,
+                "event_q": event_q.pubkey(),
                 "from": provider.wallet.public_key,
             },
         ),
     )
-    account = await program.account["EventQ"].fetch(event_q.public_key)
+    account = await program.account["EventQ"].fetch(event_q.pubkey())
     events = account.events
     assert len(events) == 25000
     for idx, event in enumerate(events):
@@ -327,7 +327,7 @@ async def test_update_event_q(
             99,
             ctx=Context(
                 accounts={
-                    "event_q": event_q.public_key,
+                    "event_q": event_q.pubkey(),
                     "from": provider.wallet.public_key,
                 },
             ),

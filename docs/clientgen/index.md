@@ -91,7 +91,7 @@ ix = some_instruction({
   "bar_param": "...",
   ...
 }, {
-  "foo_account": foo_account.public_key, # signer
+  "foo_account": foo_account.pubkey(), # signer
   "bar_account": Pubkey("..."),
   ...
 })

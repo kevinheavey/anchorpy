@@ -34,7 +34,7 @@ async def created_chatroom(program: Program) -> Keypair:
         "Test Chat",
         ctx=Context(
             accounts={
-                "chat_room": chatroom.public_key,
+                "chat_room": chatroom.pubkey(),
                 "rent": RENT,
             },
             pre_instructions=[
@@ -83,7 +83,7 @@ async def sent_messages(
                 accounts={
                     "user": user,
                     "authority": authority,
-                    "chat_room": created_chatroom.public_key,
+                    "chat_room": created_chatroom.pubkey(),
                 },
             ),
         )
@@ -92,7 +92,7 @@ async def sent_messages(
 
 @mark.asyncio
 async def test_created_chatroom(created_chatroom: Keypair, program: Program) -> None:
-    chat = await program.account["ChatRoom"].fetch(created_chatroom.public_key)
+    chat = await program.account["ChatRoom"].fetch(created_chatroom.pubkey())
     name = bytes(chat.name).rstrip(b"\x00").decode("utf-8")
     assert name == "Test Chat"
     assert len(chat.messages) == 33607
@@ -119,7 +119,7 @@ async def test_sent_messages(
     created_user: tuple[Pubkey, Pubkey],
 ) -> None:
     user, _ = created_user
-    chat = await program.account["ChatRoom"].fetch(created_chatroom.public_key)
+    chat = await program.account["ChatRoom"].fetch(created_chatroom.pubkey())
     for i, msg in enumerate(chat.messages):
         if i < len(sent_messages):
             data = bytes(msg.data).rstrip(b"\x00").decode("utf-8")

@@ -8,7 +8,6 @@ from types import MappingProxyType
 from typing import List, NamedTuple, Optional, Union
 
 from more_itertools import unique_everseen
-from solana.blockhash import Blockhash
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solana.rpc import types
@@ -116,7 +115,7 @@ class Provider:
         recent_blockhash_resp = await self.connection.get_latest_blockhash(
             Finalized,
         )
-        tx.recent_blockhash = Blockhash(str(recent_blockhash_resp.value.blockhash))
+        tx.recent_blockhash = recent_blockhash_resp.value.blockhash
         tx.fee_payer = self.wallet.public_key
         all_signers = list(unique_everseen([self.wallet.payer, *signers]))
         tx.sign(*all_signers)
@@ -212,7 +211,7 @@ class Wallet:
     @property
     def public_key(self) -> Pubkey:
         """Get the public key of the wallet."""
-        return self.payer.public_key
+        return self.payer.pubkey()
 
     def sign_transaction(self, tx: Transaction) -> Transaction:
         """Sign a transaction using the wallet's keypair.
@@ -248,11 +247,11 @@ class Wallet:
         """
         path = Path(getenv("ANCHOR_WALLET", Path.home() / ".config/solana/id.json"))
         with path.open() as f:
-            keypair = json.load(f)
-        return cls(Keypair.from_secret_key(bytes(keypair)))
+            keypair: List[int] = json.load(f)
+        return cls(Keypair.from_bytes(keypair))
 
     @classmethod
     def dummy(cls) -> Wallet:
         """Create a dummy wallet instance that won't be used to sign transactions."""
-        keypair = Keypair.from_secret_key(bytes([0] * 64))
+        keypair = Keypair.from_bytes([0] * 64)
         return cls(keypair)

@@ -62,7 +62,7 @@ async def invoke(
     tx.add(
         Instruction(
             program_id=translated_program_id,
-            keys=[] if accounts is None else accounts,
+            accounts=[] if accounts is None else accounts,
             data=bytes(0) if data is None else data,
         ),
     )

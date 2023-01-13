@@ -6,7 +6,7 @@ from anchorpy.coder.coder import AccountsCoder, Coder, EventCoder, InstructionCo
 from anchorpy.idl import IdlProgramAccount
 from anchorpy.program.common import (
     Event,
-    Instruction,
+    NamedInstruction,
     translate_address,
     validate_accounts,
 )
@@ -35,7 +35,7 @@ __all__ = [
     "InstructionCoder",
     "EventCoder",
     "AccountsCoder",
-    "Instruction",
+    "NamedInstruction",
     "IdlProgramAccount",
     "Event",
     "translate_address",

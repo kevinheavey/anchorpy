@@ -130,7 +130,7 @@ As in the main Anchor tutorial, we will use `anchor/tutorial/examples/basic-1`:
         my_account = Keypair()
         # Execute the RPC.
         accounts = {
-            "my_account": my_account.public_key,
+            "my_account": my_account.pubkey(),
             "user": program.provider.wallet.public_key,
             "system_program": SYS_PROGRAM_ID
         }

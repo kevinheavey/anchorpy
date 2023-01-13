@@ -24,7 +24,7 @@ class Event(NamedTuple):
 
 
 @dataclass
-class Instruction:
+class NamedInstruction:
     """Container for a named instruction.
 
     Attributes:
@@ -36,7 +36,7 @@ class Instruction:
     name: str
 
 
-def _to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
+def _to_instruction(idl_ix: IdlInstruction, args: Tuple) -> NamedInstruction:
     """Convert an IDL instruction and arguments to an Instruction object.
 
     Args:
@@ -54,7 +54,7 @@ def _to_instruction(idl_ix: IdlInstruction, args: Tuple) -> Instruction:
     ix: Dict[str, Any] = {}
     for idx, ix_arg in enumerate(idl_ix.args):
         ix[snake(ix_arg.name)] = args[idx]
-    return Instruction(data=ix, name=snake(idl_ix.name))
+    return NamedInstruction(data=ix, name=snake(idl_ix.name))
 
 
 def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):

@@ -7,7 +7,7 @@ from solders.pubkey import Pubkey
 from solders.instruction import AccountMeta, Instruction
 
 from anchorpy.program.common import (
-    Instruction,
+    NamedInstruction,
     _to_instruction,
     validate_accounts,
 )
@@ -29,7 +29,7 @@ class _InstructionFn:
     def __init__(
         self,
         idl_ix: IdlInstruction,
-        encode_fn: Callable[[Instruction], bytes],
+        encode_fn: Callable[[NamedInstruction], bytes],
         program_id: Pubkey,
     ) -> None:
         """Init.
@@ -68,7 +68,7 @@ class _InstructionFn:
         if ctx.remaining_accounts:
             keys.extend(ctx.remaining_accounts)
         return Instruction(
-            keys=keys,
+            accounts=keys,
             program_id=self.program_id,
             data=self.encode_fn(_to_instruction(self.idl_ix, args)),
         )
