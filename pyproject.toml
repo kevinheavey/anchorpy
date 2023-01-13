@@ -38,16 +38,12 @@ cli = ["typer", "ipython", "genpy", "black", "autoflake"]
 anchorpy = "anchorpy.cli:app"
 
 [tool.poetry.dev-dependencies]
-wemake-python-styleguide = "^0.16.0"
 mypy = "^0.982"
-pydocstyle = "^6.1.1"
-isort = "^5.9.3"
 jinja2 = "3.0.3"
 mkdocs-material = "^8.1.7"
 bump2version = "^1.0.1"
-pyserum = "^0.5.0-alpha.0"
 mkdocstrings = "^0.17.0"
-bandit = "1.7.2"
+ruff = "^0.0.220"
 
 [tool.poetry.plugins.pytest11]
 pytest_anchorpy = "anchorpy.pytest_plugin"
@@ -55,3 +51,39 @@ pytest_anchorpy = "anchorpy.pytest_plugin"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+select = ["A", "B", "D", "E", "F", "I", "ARG", "BLE", "C4", "SIM", "PLC", "PLE", "PLR", "PLW", "RUF"]
+ignore = ["D203"]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.10.
+target-version = "py310"
+
+[tool.ruff.pydocstyle]
+convention = "google"

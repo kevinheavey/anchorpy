@@ -28,5 +28,8 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "ruff.args": [
+        "--config=pyproject.toml"
+    ]
 }
