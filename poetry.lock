@@ -735,14 +735,17 @@ files = [
 
 [[package]]
 name = "jsonrpcclient"
-version = "4.0.2"
+version = "4.0.3"
 description = "Send JSON-RPC requests"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 files = [
-    {file = "jsonrpcclient-4.0.2.tar.gz", hash = "sha256:c0d475494b3e1b591ecdee7883739accaf5695edb673f16b7383b8c6bbdb1ca3"},
+    {file = "jsonrpcclient-4.0.3-py3-none-any.whl", hash = "sha256:3cbb9e27e1be29821becf135ea183144a836215422727e1ffe5056a49a670f0d"},
 ]
+
+[package.extras]
+qa = ["pytest", "pytest-cov", "tox"]
 
 [[package]]
 name = "markdown"
