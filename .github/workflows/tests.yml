@@ -6,8 +6,8 @@ on:
     branches: [main]
 
 env:
-  solana_verion: 1.14.3
-  anchor_version: 0.25.0
+  solana_version: 1.14.3
+  anchor_version: 0.26.0
 
 jobs:
   tests:
@@ -46,7 +46,7 @@ jobs:
           path: |
             ~/.cache/solana/
             ~/.local/share/solana/
-          key: solana-${{ runner.os }}-v0000-${{ env.solana_verion }}
+          key: solana-${{ runner.os }}-v0000-${{ env.solana_version }}
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
@@ -57,15 +57,21 @@ jobs:
       - uses: Swatinem/rust-cache@v1
       - name: Install Solana
         if: steps.cache-solana.outputs.cache-hit != 'true'
-        run: sh -c "$(curl -sSfL https://release.solana.com/v${{ env.solana_verion }}/install)"
+        run: sh -c "$(curl -sSfL https://release.solana.com/v${{ env.solana_version }}/install)"
 
       - name: Add Solana to path
         run: echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
-      - name: install Anchor CLI
-        run: cargo install anchor-cli --version ${{ env.anchor_version }}
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: check CLI Anchor installation
+      - name: Install Anchor CLI
+        run: npm install -g @coral-xyz/anchor-cli@${{ env.anchor_version }}
+
+      - name: Check CLI Anchor installation
         run: anchor -V
 
       - name: Generate local keypair
@@ -82,7 +88,7 @@ jobs:
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.1.10
+          version: 1.3.2
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
@@ -104,7 +110,7 @@ jobs:
       # install your root project
       #----------------------------------------------
       - name: Install library
-        run: poetry install --no-interaction
+        run: poetry install -E cli --no-interaction
       #----------------------------------------------
       #              run test suite
       #----------------------------------------------
