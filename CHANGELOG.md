@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.16.0] - 2023-02-23
+
+### Changed
+
+Bump minimum version of zstandard dep [#(112)](https://github.com/kevinheavey/anchorpy/pull/112)
+
 ## [0.15.0] - 2023-01-13
 
 ### Changed
