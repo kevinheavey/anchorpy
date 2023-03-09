@@ -18,7 +18,7 @@ async def main():
     client = AsyncClient("https://api.mainnet-beta.solana.com/")
     provider = Provider(client, Wallet.local())
     # load the Serum Swap Program (not the Serum dex itself).
-    program_id = Pubkey("22Y43yTVxuUkoRKdm9thyRhQ3SdgQS7c7kB6UNCiaczD")
+    program_id = Pubkey.from_string("22Y43yTVxuUkoRKdm9thyRhQ3SdgQS7c7kB6UNCiaczD")
     program = await Program.at(
         program_id, provider
     )
