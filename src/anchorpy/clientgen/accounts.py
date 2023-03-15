@@ -95,12 +95,15 @@ def gen_accounts_code(idl: Idl, accounts_dir: Path) -> dict[Path, str]:
 def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
     base_imports = [
         Import("typing"),
+        ImportAs("borsh_construct", "borsh"),
+        FromImport("based58", ["b58encode"]),
         FromImport("dataclasses", ["dataclass"]),
         FromImport("construct", ["Construct"]),
         FromImport("solders.pubkey", ["Pubkey"]),
         FromImport("solana.rpc.async_api", ["AsyncClient"]),
         FromImport("solana.rpc.commitment", ["Commitment"]),
-        ImportAs("borsh_construct", "borsh"),
+        FromImport("solana.rpc.types", ["MemcmpOpts"]),
+        FromImport("anchorpy", ["ProgramAccount"]),
         FromImport("anchorpy.coder.accounts", ["ACCOUNT_DISCRIMINATOR_SIZE"]),
         FromImport("anchorpy.error", ["AccountInvalidDiscriminator"]),
         FromImport("anchorpy.utils.rpc", ["get_multiple_accounts"]),
@@ -177,6 +180,7 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
     layout_assignment = Assign(
         "layout: typing.ClassVar", f"borsh.CStruct({','.join(layout_items)})"
     )
+
     fetch_method = ClassMethod(
         "fetch",
         [
@@ -207,6 +211,7 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
     account_does_not_belong_raise = Raise(
         'ValueError("Account does not belong to this program")'
     )
+
     fetch_multiple_return_type = f'typing.List[typing.Optional["{name}"]]'
     fetch_multiple_method = ClassMethod(
         "fetch_multiple",
@@ -249,6 +254,47 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
         f'typing.List[typing.Optional["{name}"]]',
         is_async=True,
     )
+
+    fetch_all_return_type = "typing.List[ProgramAccount]"
+    fetch_all_method = ClassMethod(
+        "fetch_all",
+        [
+            TypedParam("conn", "AsyncClient"),
+            TypedParam("buffer", "typing.Optional[bytes]=None"),
+            TypedParam(
+                "filters",
+                "typing.Optional[typing.Sequence[typing.Union[int, MemcmpOpts]]]=None",
+            ),
+            TypedParam("commitment", "typing.Optional[Commitment] = None"),
+            TypedParam("program_id", "Pubkey = PROGRAM_ID"),
+        ],
+        Suite(
+            [
+                Assign("buffer", "buffer or b''"),
+                Assign(
+                    "bytes_arg", 'b58encode(cls.discriminator + buffer).decode("ascii")'
+                ),
+                Assign("base_memcmp_opt", "MemcmpOpts(offset=0, bytes=bytes_arg)"),
+                Assign(
+                    "filters_to_use",
+                    "[base_memcmp_opt] + ([] if filters is None else filters)",
+                ),
+                Assign(
+                    "resp",
+                    (
+                        "await conn.get_program_accounts"
+                        '(pubkey=program_id, commitment=commitment or conn._commitment, encoding="base64", filters=filters_to_use)'
+                    ),
+                ),
+                Return(
+                    "[ ProgramAccount(public_key=r.pubkey, account=cls.decode(r.account.data)) for r in resp.value ]"
+                ),
+            ]
+        ),
+        "typing.List[ProgramAccount]",
+        is_async=True,
+    )
+
     decode_body_end = Call("cls", decode_body_entries)
     account_invalid_raise = Raise(
         'AccountInvalidDiscriminator("The discriminator for this account is invalid")'
@@ -287,6 +333,7 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
             *fields_interface_params,
             fetch_method,
             fetch_multiple_method,
+            fetch_all_method,
             decode_method,
             to_json_method,
             from_json_method,
