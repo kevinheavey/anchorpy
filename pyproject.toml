@@ -10,9 +10,9 @@ authors = ["kevinheavey <kevinheavey123@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 construct-typing = "^0.5.1"
-solana = "^0.29.0"
+solana = ">=0.29.0,<30.0"
 borsh-construct = "^0.1.0"
-websockets = "^10.0"
+websockets = ">=9.0,<11.0"
 toolz = "^0.11.2"
 jsonrpcclient = "^4.0.1"
 zstandard = "^0.18.0"
