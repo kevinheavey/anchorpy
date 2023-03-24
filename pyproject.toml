@@ -10,7 +10,7 @@ authors = ["kevinheavey <kevinheavey123@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 construct-typing = "^0.5.1"
-solana = { git = "https://github.com/8ball030/solana-py", rev = "7c0f7cb5" }
+solana = { git = "https://github.com/8ball030/solana-py", rev = "f0601d7" }
 borsh-construct = "^0.1.0"
 websockets = "^9.0"
 toolz = "^0.11.2"
