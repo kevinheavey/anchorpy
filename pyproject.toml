@@ -12,7 +12,7 @@ python = "^3.9"
 construct-typing = "^0.5.1"
 solana = { git = "https://github.com/8ball030/solana-py", rev = "f0601d7" }
 borsh-construct = "^0.1.0"
-websockets = "^9.0"
+websockets = ">=9.0,<11.0"
 toolz = "^0.11.2"
 jsonrpcclient = "^4.0.1"
 zstandard = "^0.18.0"
