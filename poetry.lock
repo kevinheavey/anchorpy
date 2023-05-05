@@ -1590,21 +1590,21 @@ websockets = ">=9.0,<11.0"
 
 [[package]]
 name = "solders"
-version = "0.15.0"
+version = "0.15.1"
 description = "Python binding to the Solana Rust SDK"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "solders-0.15.0-cp37-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:d015bf49625a7fe90744e3597fa0e4c4d7cd317576f46792bf078e397a141599"},
-    {file = "solders-0.15.0-cp37-abi3-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:8395a6887bf275d2d38e1f8581020e0258c605be344c8baf0a95442e1a79a8ea"},
-    {file = "solders-0.15.0-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b4ab857637d73dfeba2db6b0421b61047d51840cf99c910aa498c950a35e2cc0"},
-    {file = "solders-0.15.0-cp37-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:e71b75e0ce163e8100d9d204fbdff4e3b61982db1063c58134bb418d16cda264"},
-    {file = "solders-0.15.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0276a77b4fde41cd6bd45856005e9808b855bba97991916484ea5ba29cfa338c"},
-    {file = "solders-0.15.0-cp37-abi3-musllinux_1_2_i686.whl", hash = "sha256:48e260f2782d76598378484e6680da40f8a55d3017d2e65983dc5ff58a6b523f"},
-    {file = "solders-0.15.0-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:725c9fe0ac89250321f868feb08a2678bbf679e24fa72321e27f71c38bd70794"},
-    {file = "solders-0.15.0-cp37-abi3-win_amd64.whl", hash = "sha256:8968847f24e6de40a3c976f7809cc6ea746d46c621ede7d115aefb807cf409a4"},
-    {file = "solders-0.15.0.tar.gz", hash = "sha256:7fe70c8fb7a1d038093bf4dfee44a427f81e9745e95f03b1ff4d6b4ade198e5f"},
+    {file = "solders-0.15.1-cp37-abi3-macosx_10_9_x86_64.macosx_11_0_arm64.macosx_10_9_universal2.whl", hash = "sha256:23a410024fbce8b57a759342714e9ae5f9eda78fe2f0c648ed601ec4cd2f9deb"},
+    {file = "solders-0.15.1-cp37-abi3-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:0117d671d090593f6c482b8f51405684e2aa5ab7eef82e57d30fd243eea73335"},
+    {file = "solders-0.15.1-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d6c0d4e403e708e56c2c12e3debb7a9ae0e278ccd08e67c659c1de1156977525"},
+    {file = "solders-0.15.1-cp37-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:2cb35a2b092303a7a7ba7de797f95f24ad1abf13b28e17c7668970a413958b0d"},
+    {file = "solders-0.15.1-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dd2a720ee52884727798b7f944b4fa7be4280ff705e6a790b87947c5f74b4d66"},
+    {file = "solders-0.15.1-cp37-abi3-musllinux_1_2_i686.whl", hash = "sha256:506b2d6560b19df4bd33d547801af3554a6c9c34fc46270e6a6bffbaccf529bc"},
+    {file = "solders-0.15.1-cp37-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:2d69c69aaac94006e9315bf820dab1bd0c179acecc85b9cab4475fa3230b82c2"},
+    {file = "solders-0.15.1-cp37-abi3-win_amd64.whl", hash = "sha256:bb393a1826382e87ec41e01d7125d8457fe19b8ac7480395633e76ba48a5a9a1"},
+    {file = "solders-0.15.1.tar.gz", hash = "sha256:5ec6194980e32136c4fe18c293dce596ae40fd0c148f24621361d9d3a4f2e29d"},
 ]
 
 [package.dependencies]
@@ -1962,4 +1962,4 @@ cli = ["typer", "ipython", "genpy", "black", "autoflake"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "cf66d9e21b06162b781cd99ab4161b3753e9b39a839f287362b92983a3c62031"
+content-hash = "613cde662464720e2b5705956050fe0e25bdb466b34ed3fedeb865ce29aa194d"
