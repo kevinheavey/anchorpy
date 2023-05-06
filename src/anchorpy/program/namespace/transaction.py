@@ -7,7 +7,7 @@ from solana.transaction import Transaction
 from solders.hash import Hash
 from solders.instruction import Instruction
 from solders.keypair import Keypair
-from solders.message import MessageV0
+from solders.message import Message
 from solders.transaction import VersionedTransaction
 
 from anchorpy.program.context import EMPTY_CONTEXT, Context, _check_args_length
@@ -56,7 +56,7 @@ def _build_transaction_fn(
         ctx_signers = ctx.signers
         signers = [] if ctx_signers is None else ctx_signers
         all_signers = list(unique_everseen([payer, *signers]))
-        msg = MessageV0.try_compile(payer.pubkey(), ixns, [], blockhash)
+        msg = Message.new_with_blockhash(ixns, payer.pubkey(), blockhash)
         return VersionedTransaction(msg, all_signers)
 
     return tx_fn
