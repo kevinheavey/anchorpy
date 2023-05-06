@@ -27,6 +27,8 @@ jobs:
             "test_errors",
             "test_events",
             "test_misc",
+            "test_misc_core",
+            "test_misc_core_bankrun",
             "test_multisig",
             "test_pyth",
             "test_sysvars",
