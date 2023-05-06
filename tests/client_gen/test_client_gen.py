@@ -9,8 +9,9 @@ from construct import ListContainer
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Processed
+from solana.rpc.commitment import Confirmed, Processed
 from solana.rpc.core import RPCException
+from solders.hash import Hash
 from solders.keypair import Keypair
 from solders.message import Message
 from solders.pubkey import Pubkey
@@ -67,7 +68,12 @@ async def provider(localnet, payer: Keypair) -> AsyncGenerator[Provider, None]:
 
 
 @async_fixture(scope="module")
-async def init_and_account_fetch(provider: Provider) -> Keypair:
+async def blockhash(provider: Provider) -> Hash:
+    return (await provider.connection.get_latest_blockhash(Confirmed)).value.blockhash
+
+
+@async_fixture(scope="module")
+async def init_and_account_fetch(provider: Provider, blockhash: Hash) -> Keypair:
     state = Keypair()
     initialize_ix = initialize(
         {
@@ -75,10 +81,10 @@ async def init_and_account_fetch(provider: Provider) -> Keypair:
             "payer": provider.wallet.public_key,
         }
     )
-    msg = Message([initialize_ix], provider.wallet.public_key)
-    tx = VersionedTransaction(
-        msg, [provider.wallet.payer, state]
+    msg = Message.new_with_blockhash(
+        [initialize_ix], provider.wallet.public_key, blockhash
     )
+    tx = VersionedTransaction(msg, [provider.wallet.payer, state])
     await provider.send(tx)
     return state
 
@@ -192,7 +198,9 @@ async def test_init_and_account_fetch(
 
 
 @async_fixture(scope="session")
-async def setup_fetch_multiple(provider: Provider) -> tuple[Keypair, Keypair]:
+async def setup_fetch_multiple(
+    provider: Provider, blockhash: Hash
+) -> tuple[Keypair, Keypair]:
     state = Keypair()
     another_state = Keypair()
     initialize_ixs = [
@@ -209,7 +217,9 @@ async def setup_fetch_multiple(provider: Provider) -> tuple[Keypair, Keypair]:
             }
         ),
     ]
-    msg = Message(initialize_ixs, provider.wallet.public_key)
+    msg = Message.new_with_blockhash(
+        initialize_ixs, provider.wallet.public_key, blockhash
+    )
     tx = VersionedTransaction(msg, [provider.wallet.payer, state, another_state])
     await provider.send(tx)
     return state, another_state
@@ -231,7 +241,9 @@ async def test_fetch_multiple(
 
 
 @async_fixture(scope="session")
-async def send_instructions_with_args(provider: Provider) -> tuple[Keypair, Keypair]:
+async def send_instructions_with_args(
+    provider: Provider, blockhash
+) -> tuple[Keypair, Keypair]:
     state = Keypair()
     state2 = Keypair()
     vec_struct_field = [
@@ -303,7 +315,7 @@ async def send_instructions_with_args(provider: Provider) -> tuple[Keypair, Keyp
             "payer": provider.wallet.public_key,
         },
     )
-    msg = Message([ix1, ix2], provider.wallet.public_key)
+    msg = Message.new_with_blockhash([ix1, ix2], provider.wallet.public_key, blockhash)
     tx = VersionedTransaction(msg, [provider.wallet.payer, state, state2])
     await provider.send(tx)
     return state, state2
@@ -376,8 +388,10 @@ async def test_instructions_with_args(
 
 
 @mark.asyncio
-async def test_cause_error(provider: Provider) -> None:
-    msg = Message([cause_error()], provider.wallet.public_key)
+async def test_cause_error(provider: Provider, blockhash: Hash) -> None:
+    msg = Message.new_with_blockhash(
+        [cause_error()], provider.wallet.public_key, blockhash
+    )
     tx = VersionedTransaction(msg, [provider.wallet.payer])
     try:
         await provider.send(tx)

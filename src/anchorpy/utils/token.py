@@ -1,6 +1,7 @@
 """This module contains utilities for the SPL Token Program."""
 from typing import Optional
 
+from solana.rpc.commitment import Confirmed
 from solders.instruction import Instruction
 from solders.keypair import Keypair
 from solders.message import Message
@@ -157,7 +158,10 @@ async def create_mint_and_vault(
             mint_authority=provider.wallet.public_key,
         ),
     )
-    msg = Message(
+    blockhash = (
+        await provider.connection.get_latest_blockhash(Confirmed)
+    ).value.blockhash
+    msg = Message.new_with_blockhash(
         [
             create_mint_account_instruction,
             init_mint_instruction,
@@ -166,6 +170,7 @@ async def create_mint_and_vault(
             mint_to_instruction,
         ],
         provider.wallet.public_key,
+        blockhash,
     )
     tx = VersionedTransaction(msg, [provider.wallet.payer, mint, vault])
     await provider.send(tx)
