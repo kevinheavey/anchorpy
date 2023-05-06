@@ -106,7 +106,7 @@ class Provider:
             opts: Transaction confirmation options.
 
         Returns:
-            The transaction signature from the RPC server.
+            The transaction simulation result.
         """
         if signers is None:
             signers = []
