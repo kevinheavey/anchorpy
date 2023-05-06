@@ -198,3 +198,5 @@ startup time.
 
 `bankrun_fixture` calls `bankrun.start()` and deploys all the programs in the current
 Anchor workspace to the test envioronment.
+Check out [this example](https://github.com/kevinheavey/anchorpy/blob/main/tests/test_basic_3_bankrun.py).
+
