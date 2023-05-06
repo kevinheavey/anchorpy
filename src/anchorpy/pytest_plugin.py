@@ -244,7 +244,7 @@ def workspace_fixture(
 
 
 async def _bankrun_helper(
-    path: Path,
+    path: Union[Path, str],
     build_cmd: Optional[str] = None,
     accounts: Optional[Sequence[Tuple[Pubkey, Account]]] = None,
     compute_max_units: Optional[int] = None,
@@ -253,8 +253,9 @@ async def _bankrun_helper(
 ) -> "bankrun.ProgramTestContext":
     actual_build_cmd = "anchor build" if build_cmd is None else build_cmd
     subprocess.run(actual_build_cmd, cwd=path, check=True, shell=True)
-    os.environ["SBF_OUT_DIR"] = str(path / "target/deploy")
-    toml_programs: dict[str, str] = toml.load(path / "Anchor.toml")["programs"][
+    path_to_use = Path(path)
+    os.environ["SBF_OUT_DIR"] = str(path_to_use / "target/deploy")
+    toml_programs: dict[str, str] = toml.load(path_to_use / "Anchor.toml")["programs"][
         "localnet"
     ]
     programs = [(key, Pubkey.from_string(val)) for key, val in toml_programs.items()]
@@ -268,7 +269,7 @@ async def _bankrun_helper(
 
 
 def bankrun_fixture(
-    path: Path,
+    path: Union[Path, str],
     scope: _Scope = "module",
     build_cmd: Optional[str] = None,
     accounts: Optional[Sequence[Tuple[Pubkey, Account]]] = None,
