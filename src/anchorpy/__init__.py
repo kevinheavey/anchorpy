@@ -16,7 +16,7 @@ from anchorpy.program.event import EventParser
 from anchorpy.program.namespace.account import AccountClient, ProgramAccount
 from anchorpy.program.namespace.simulate import SimulateResponse
 from anchorpy.provider import Provider, Wallet
-from anchorpy.pytest_plugin import localnet_fixture, workspace_fixture, bankrun_fixture
+from anchorpy.pytest_plugin import bankrun_fixture, localnet_fixture, workspace_fixture
 from anchorpy.workspace import WorkspaceType, close_workspace, create_workspace
 
 __all__ = [
