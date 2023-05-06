@@ -12,7 +12,7 @@ from anchorpy.workspace import WorkspaceType
 from anchorpy_core.idl import IdlConst, IdlTypeSimple
 from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
-from solana.rpc.core import RPCException
+from solana.rpc.core import RPCNoResultException
 from solana.rpc.types import MemcmpOpts
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
@@ -23,6 +23,7 @@ from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
 PATH = Path("anchor/tests/misc/")
+# bankrun = bankrun_fixture(PATH, build_cmd="anchor build --skip-lint")
 workspace = workspace_fixture(PATH, build_cmd="anchor build --skip-lint")
 
 
@@ -388,9 +389,12 @@ async def test_can_create_a_token_account_from_seeds_pda(program: Program) -> No
 
 @mark.asyncio
 async def test_can_execute_fallback_function(program: Program) -> None:
-    with raises(RPCException) as excinfo:
+    with raises(RPCNoResultException) as excinfo:
         await invoke(program.program_id, program.provider)
-    assert "custom program error: 0x4d2" in excinfo.value.args[0].message
+    assert (
+        "Transaction failed to sanitize accounts offsets correctly"
+        in excinfo.value.args[0]
+    )
 
 
 @mark.asyncio
