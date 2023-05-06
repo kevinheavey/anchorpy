@@ -10,7 +10,8 @@ authors = ["kevinheavey <kevinheavey123@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 construct-typing = "^0.5.1"
-solana = "^0.29.0"
+solana = "^0.30.0"
+solders = "^0.15.1"
 borsh-construct = "^0.1.0"
 websockets = ">=9.0,<11.0"
 toolz = "^0.11.2"
@@ -23,12 +24,13 @@ more-itertools = "^8.11.0"
 pyheck = "^0.1.4"
 typer = { version = "0.4.1", optional = true }
 ipython = { version = "^8.0.1", optional = true }
-genpy = {version = "^2021.1", optional = true }
-black = {version = "^22.3.0", optional = true }
+genpy = { version = "^2021.1", optional = true }
+black = { version = "^22.3.0", optional = true }
 autoflake = { version = "^1.4", optional = true }
 based58 = "^0.1.1"
 anchorpy-core = "^0.1.2"
 py = "^1.11.0"
+toml = "^0.10.2"
 
 [tool.poetry.extras]
 cli = ["typer", "ipython", "genpy", "black", "autoflake"]
@@ -53,7 +55,23 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-select = ["A", "B", "D", "E", "F", "I", "ARG", "BLE", "C4", "SIM", "PLC", "PLE", "PLR", "PLW", "RUF"]
+select = [
+    "A",
+    "B",
+    "D",
+    "E",
+    "F",
+    "I",
+    "ARG",
+    "BLE",
+    "C4",
+    "SIM",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "RUF",
+]
 ignore = ["B023", "D100", "D101", "D102", "D103", "D104", "D107", "D203"]
 
 # Exclude a variety of commonly ignored directories.

@@ -1,7 +1,8 @@
 """This module contains code for creating the Anchor workspace."""
 from pathlib import Path
-from typing import Dict, Optional, Union, cast
+from typing import Dict, Optional, Union
 
+import toml  # type: ignore
 from anchorpy_core.idl import Idl
 from solders.pubkey import Pubkey
 
@@ -27,13 +28,15 @@ def create_workspace(
     result = {}
     project_root = Path.cwd() if path is None else Path(path)
     idl_folder = project_root / "target/idl"
+    localnet_programs: dict[str, str] = toml.load(project_root / "Anchor.toml")[
+        "programs"
+    ]["localnet"]
     for file in idl_folder.iterdir():
         raw = file.read_text()
         idl = Idl.from_json(raw)
-        metadata = cast(Dict[str, str], idl.metadata)
-        program = Program(
-            idl, Pubkey.from_string(metadata["address"]), Provider.local(url)
-        )
+        name = idl.name
+        program_id = Pubkey.from_string(localnet_programs[name])
+        program = Program(idl, program_id, Provider.local(url))
         result[idl.name] = program
     return result
 

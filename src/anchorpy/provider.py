@@ -5,9 +5,8 @@ import json
 from os import environ, getenv
 from pathlib import Path
 from types import MappingProxyType
-from typing import List, NamedTuple, Optional, Union
+from typing import List, Optional, Sequence, Union
 
-from more_itertools import unique_everseen
 from solana.rpc import types
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
@@ -16,19 +15,7 @@ from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.rpc.responses import SimulateTransactionResp
 from solders.signature import Signature
-
-
-class SendTxRequest(NamedTuple):
-    """Use this to provide custom signers to `Provider.send_all`.
-
-    Attributes:
-        tx: The Transaction to send.
-        signers: Custom signers for the transaction.
-    """
-
-    tx: Transaction
-    signers: List[Keypair]
-
+from solders.transaction import VersionedTransaction
 
 DEFAULT_OPTIONS = types.TxOpts(skip_confirmation=False, preflight_commitment=Processed)
 COMMITMENT_RANKS = MappingProxyType({Processed: 0, Confirmed: 1, Finalized: 2})
@@ -93,8 +80,7 @@ class Provider:
 
     async def simulate(
         self,
-        tx: Transaction,
-        signers: Optional[list[Keypair]] = None,
+        tx: Union[Transaction, VersionedTransaction],
         opts: Optional[types.TxOpts] = None,
     ) -> SimulateTransactionResp:
         """Simulate the given transaction, returning emitted logs from execution.
@@ -106,27 +92,17 @@ class Provider:
             opts: Transaction confirmation options.
 
         Returns:
-            The transaction signature from the RPC server.
+            The transaction simulation result.
         """
-        if signers is None:
-            signers = []
         if opts is None:
             opts = self.opts
-        recent_blockhash_resp = await self.connection.get_latest_blockhash(
-            Finalized,
-        )
-        tx.recent_blockhash = recent_blockhash_resp.value.blockhash
-        tx.fee_payer = self.wallet.public_key
-        all_signers = list(unique_everseen([self.wallet.payer, *signers]))
-        tx.sign(*all_signers)
         return await self.connection.simulate_transaction(
             tx, sig_verify=True, commitment=opts.preflight_commitment
         )
 
     async def send(
         self,
-        tx: Transaction,
-        signers: Optional[list[Keypair]] = None,
+        tx: Union[Transaction, VersionedTransaction],
         opts: Optional[types.TxOpts] = None,
     ) -> Signature:
         """Send the given transaction, paid for and signed by the provider's wallet.
@@ -140,25 +116,21 @@ class Provider:
         Returns:
             The transaction signature from the RPC server.
         """
-        if signers is None:
-            signers = []
         if opts is None:
             opts = self.opts
-        tx.fee_payer = self.wallet.public_key
-        all_signers = list(unique_everseen([self.wallet.payer, *signers]))
-        resp = await self.connection.send_transaction(tx, *all_signers, opts=opts)
+        raw = tx.serialize() if isinstance(tx, Transaction) else bytes(tx)
+        resp = await self.connection.send_raw_transaction(raw, opts=opts)
         return resp.value
 
     async def send_all(
         self,
-        reqs: list[Union[Transaction, SendTxRequest]],
+        txs: Sequence[Union[Transaction, VersionedTransaction]],
         opts: Optional[types.TxOpts] = None,
     ) -> list[Signature]:
         """Similar to `send`, but for an array of transactions and signers.
 
         Args:
-            reqs: a list of Transaction or SendTxRequest objects.
-                Use SendTxRequest to specify additional signers other than the wallet.
+            txs: a list of transaction objects.
             opts: Transaction confirmation options.
 
         Returns:
@@ -166,20 +138,10 @@ class Provider:
         """
         if opts is None:
             opts = self.opts
-        txs = []
-        for req in reqs:
-            signers = [] if isinstance(req, Transaction) else req.signers
-            tx = req if isinstance(req, Transaction) else req.tx
-            tx.fee_payer = self.wallet.public_key
-            for signer in signers:
-                tx.sign_partial(signer)
-            txs.append(tx)
-        signed_txs = self.wallet.sign_all_transactions(txs)
         sigs = []
-        for signed in signed_txs:
-            resp = await self.connection.send_raw_transaction(
-                signed.serialize(), opts=opts
-            )
+        for tx in txs:
+            raw = tx.serialize() if isinstance(tx, Transaction) else bytes(tx)
+            resp = await self.connection.send_raw_transaction(raw, opts=opts)
             sigs.append(resp.value)
         return sigs
 

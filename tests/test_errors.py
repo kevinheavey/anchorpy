@@ -4,7 +4,7 @@ from anchorpy.error import ProgramError
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.workspace import WorkspaceType
 from pytest import fixture, mark, raises
-from solana.rpc.core import RPCException
+from solana.rpc.core import RPCNoResultException
 from solana.transaction import Transaction
 from solders.instruction import AccountMeta, Instruction
 from solders.keypair import Keypair
@@ -102,13 +102,8 @@ async def test_signer_err(program: Program) -> None:
             data=program.coder.instruction.encode("signer_error", {}),
         ),
     )
-    with raises(RPCException) as excinfo:
+    with raises(RPCNoResultException):
         await program.provider.send(tx)
-    assert (
-        excinfo.value.args[0].message
-        == "Transaction simulation failed: Error processing "
-        "Instruction 0: custom program error: 0xbc2"
-    )
 
 
 @mark.asyncio

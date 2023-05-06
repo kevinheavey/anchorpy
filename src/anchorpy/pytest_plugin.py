@@ -2,16 +2,23 @@
 import os
 import signal
 import subprocess
+from contextlib import suppress
 from pathlib import Path
-from typing import AsyncGenerator, Callable, Literal, Optional, Union
+from typing import AsyncGenerator, Callable, Literal, Optional, Sequence, Tuple, Union
 
+import toml  # type: ignore
 from pytest import fixture
 from pytest_asyncio import fixture as async_fixture
 from pytest_xprocess import getrootdir
+from solders.account import Account
+from solders.pubkey import Pubkey
 from xprocess import ProcessStarter, XProcess, XProcessInfo
 
 from anchorpy.program.core import Program
 from anchorpy.workspace import close_workspace, create_workspace
+
+with suppress(ImportError):
+    from solders import bankrun
 
 _Scope = Literal["session", "package", "module", "class", "function"]
 
@@ -234,3 +241,67 @@ def workspace_fixture(
         _fixed_xprocess.getinfo("localnet").terminate()
 
     return _workspace_fixture
+
+
+async def _bankrun_helper(
+    path: Union[Path, str],
+    build_cmd: Optional[str] = None,
+    accounts: Optional[Sequence[Tuple[Pubkey, Account]]] = None,
+    compute_max_units: Optional[int] = None,
+    transaction_account_lock_limit: Optional[int] = None,
+    use_bpf_jit: Optional[bool] = None,
+) -> "bankrun.ProgramTestContext":
+    actual_build_cmd = "anchor build" if build_cmd is None else build_cmd
+    subprocess.run(actual_build_cmd, cwd=path, check=True, shell=True)
+    path_to_use = Path(path)
+    os.environ["SBF_OUT_DIR"] = str(path_to_use / "target/deploy")
+    toml_programs: dict[str, str] = toml.load(path_to_use / "Anchor.toml")["programs"][
+        "localnet"
+    ]
+    programs = [(key, Pubkey.from_string(val)) for key, val in toml_programs.items()]
+    return await bankrun.start(
+        programs=programs,
+        accounts=accounts,
+        compute_max_units=compute_max_units,
+        transaction_account_lock_limit=transaction_account_lock_limit,
+        use_bpf_jit=use_bpf_jit,
+    )
+
+
+def bankrun_fixture(
+    path: Union[Path, str],
+    scope: _Scope = "module",
+    build_cmd: Optional[str] = None,
+    accounts: Optional[Sequence[Tuple[Pubkey, Account]]] = None,
+    compute_max_units: Optional[int] = None,
+    transaction_account_lock_limit: Optional[int] = None,
+    use_bpf_jit: Optional[bool] = None,
+) -> "bankrun.ProgramTestContext":
+    """Create a fixture that builds the project and starts a bankrun with all the programs in the workspace deployed.
+
+    Args:
+        path: Path to root of the Anchor project.
+        scope: Pytest fixture scope.
+        build_cmd: Command to build the project. Defaults to `anchor build`.
+        accounts: A sequence of (address, account_object) tuples, indicating
+            what data to write to the given addresses.
+        compute_max_units: Override the default compute unit limit for a transaction.
+        transaction_account_lock_limit: Override the default transaction account lock limit.
+        use_bpf_jit: Execute the program with JIT if true, interpreted if false.
+
+    Returns:
+        A bankrun fixture for use with pytest.
+    """  # noqa: E501,D202
+
+    @async_fixture(scope=scope)
+    async def _bankrun_fixture() -> bankrun.ProgramTestContext:
+        return await _bankrun_helper(
+            path,
+            build_cmd,
+            accounts,
+            compute_max_units,
+            transaction_account_lock_limit,
+            use_bpf_jit,
+        )
+
+    return _bankrun_fixture

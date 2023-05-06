@@ -2,10 +2,11 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 
 from solana.rpc import types
-from solana.transaction import Transaction
+from solders.hash import Hash
 from solders.instruction import AccountMeta, Instruction
 from solders.keypair import Keypair
 from solders.signature import Signature
+from solders.transaction import VersionedTransaction
 
 from anchorpy.program.context import Accounts, Context
 from anchorpy.program.namespace.instruction import _InstructionFn
@@ -53,9 +54,11 @@ class MethodsBuilder:
         ctx = self._build_context(opts=None)
         return self._idl_funcs.ix_fn(*self._args, ctx=ctx)
 
-    def transaction(self) -> Transaction:
+    def transaction(self, payer: Keypair, blockhash: Hash) -> VersionedTransaction:
         ctx = self._build_context(opts=None)
-        return self._idl_funcs.tx_fn(*self._args, ctx=ctx)
+        return self._idl_funcs.tx_fn(
+            *self._args, ctx=ctx, payer=payer, blockhash=blockhash
+        )
 
     def pubkeys(self) -> Accounts:
         return self._accounts

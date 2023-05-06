@@ -1,12 +1,14 @@
 """This module contains utilities for the SPL Token Program."""
 from typing import Optional
 
-from solana.transaction import Transaction
+from solana.rpc.commitment import Confirmed
 from solders.instruction import Instruction
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.responses import GetAccountInfoResp
 from solders.system_program import CreateAccountParams, create_account
+from solders.transaction import VersionedTransaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
 from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
@@ -102,7 +104,6 @@ async def create_mint_and_vault(
     actual_owner = provider.wallet.public_key if owner is None else owner
     mint = Keypair()
     vault = Keypair()
-    tx = Transaction()
     mint_space = 82
     create_mint_mbre_resp = (
         await provider.connection.get_minimum_balance_for_rent_exemption(mint_space)
@@ -157,14 +158,22 @@ async def create_mint_and_vault(
             mint_authority=provider.wallet.public_key,
         ),
     )
-    tx.add(
-        create_mint_account_instruction,
-        init_mint_instruction,
-        create_vault_account_instruction,
-        init_vault_instruction,
-        mint_to_instruction,
+    blockhash = (
+        await provider.connection.get_latest_blockhash(Confirmed)
+    ).value.blockhash
+    msg = Message.new_with_blockhash(
+        [
+            create_mint_account_instruction,
+            init_mint_instruction,
+            create_vault_account_instruction,
+            init_vault_instruction,
+            mint_to_instruction,
+        ],
+        provider.wallet.public_key,
+        blockhash,
     )
-    await provider.send(tx, [mint, vault])
+    tx = VersionedTransaction(msg, [provider.wallet.payer, mint, vault])
+    await provider.send(tx)
     return mint.pubkey(), vault.pubkey()
 
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.17.0] - Unreleased
+
+### Added
+
+- Add `bankrun_fixture` to `anchorpy.pytest_plugin`. This calls
+[`solders.bankrun.start()`](https://kevinheavey.github.io/solders/examples/bankrun.html)
+and deploys programs to the test environment.
+
+### Changed
+
+- Use latest solders and solana-py.
+- Don't do any signing or blockhash fetching in `Provider.send`, `.send_all` and `.simulate`.
+- Remove `SendTxRequest` class
+- Replace `Transaction` with `VersionedTransaction` in the `.transaction` namespace.
+- Add mandatory `payer` and `blockhash` params to `.transaction` so it always returns a fully-formed tx.
+
 ## [0.16.0] - 2023-02-23
 
 ### Changed

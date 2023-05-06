@@ -11,6 +11,7 @@ from solders.rpc.responses import RPCError
 from solders.transaction_status import (
     InstructionErrorCustom,
     TransactionErrorInstructionError,
+    TransactionErrorType,
 )
 
 
@@ -243,6 +244,38 @@ class ProgramError(Exception):
         # Unable to parse the error.
         return None
 
+    @classmethod
+    def parse_tx_error(
+        cls,
+        err_info: TransactionErrorType,
+        idl_errors: dict[int, str],
+        program_id: Pubkey,
+        logs: List[str],
+    ) -> Optional[ProgramError]:
+        """Convert an RPC error into a ProgramError, if possible.
+
+        Args:
+            err_info: The RPC error.
+            idl_errors: Errors from the IDL file.
+            program_id: The ID of the program we expect the error to come from.
+            logs: The transaction logs.
+
+        Returns:
+            A ProgramError or None.
+        """
+        code = extract_code_tx_error(err_info, program_id, logs)
+        if code is None:
+            return None
+        msg = idl_errors.get(code)
+        if msg is not None:
+            return cls(code, msg, logs)
+        # parse framework internal error
+        msg = LangErrorMessage.get(code)
+        if msg is not None:
+            return cls(code, msg, logs)
+        # Unable to parse the error.
+        return None
+
 
 error_re = re.compile(r"Program (\w+) failed: custom program error: (\w+)")
 
@@ -270,15 +303,38 @@ def extract_code_and_logs(
         logs = err_data.logs
         if logs is None:
             return None
-        if isinstance(err_data_err, TransactionErrorInstructionError):
-            instruction_err = err_data_err.err
-            if isinstance(instruction_err, InstructionErrorCustom):
-                code = instruction_err.code
-                first_match = _find_first_match(logs)
-                if first_match is None:
-                    return None
-                program_id_raw, _ = first_match.groups()
-                if program_id_raw != str(program_id):
-                    return None
-                return code, logs
+        if err_data_err is None:
+            return None
+        maybe_code = _handle_ix_err(err_data_err, logs, program_id)
+        return None if maybe_code is None else (maybe_code, logs)
+    return None
+
+
+def extract_code_tx_error(
+    err_info: TransactionErrorType, program_id: Pubkey, logs: List[str]
+) -> Optional[int]:
+    """Extract the custom instruction error code from a transaction error.
+
+    Args:
+        err_info: The tx error.
+        program_id: The ID of the program we expect the error to come from.
+        logs: The tx logs.
+    """
+    return _handle_ix_err(err_info, logs, program_id)
+
+
+def _handle_ix_err(
+    err: TransactionErrorType, logs: List[str], program_id: Pubkey
+) -> Optional[int]:
+    if isinstance(err, TransactionErrorInstructionError):
+        instruction_err = err.err
+        if isinstance(instruction_err, InstructionErrorCustom):
+            code = instruction_err.code
+            first_match = _find_first_match(logs)
+            if first_match is None:
+                return None
+            program_id_raw, _ = first_match.groups()
+            if program_id_raw != str(program_id):
+                return None
+            return code
     return None

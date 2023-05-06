@@ -2,9 +2,9 @@
 from typing import Any, Awaitable, Dict, NamedTuple, Protocol
 
 from anchorpy_core.idl import Idl, IdlInstruction
+from solana.rpc.commitment import Confirmed
 from solana.rpc.core import RPCException
 from solders.pubkey import Pubkey
-from solders.rpc.responses import SimulateTransactionResp
 
 from anchorpy.coder.coder import Coder
 from anchorpy.error import ProgramError
@@ -69,22 +69,26 @@ def _build_simulate_item(
     """
 
     async def simulate_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> SimulateResponse:
-        tx = tx_fn(*args, ctx=ctx)
+        blockhash = (
+            await provider.connection.get_latest_blockhash(Confirmed)
+        ).value.blockhash
+        tx = tx_fn(*args, payer=provider.wallet.payer, blockhash=blockhash, ctx=ctx)
         _check_args_length(idl_ix, args)
-        resp = await provider.simulate(tx, ctx.signers, ctx.options)
-        if isinstance(resp, SimulateTransactionResp):
-            ok_res = resp.value
+        resp = (await provider.simulate(tx, ctx.options)).value
+        resp_err = resp.err
+        logs = resp.logs or []
+        if resp_err is None:
+            events = []
+            if idl.events is not None:
+                parser = EventParser(program_id, coder)
+                parser.parse_logs(logs, lambda evt: events.append(evt))
+            return SimulateResponse(events, logs)
         else:
-            err_res = resp.error
-            translated_err = ProgramError.parse(err_res, idl_errors)
+            translated_err = ProgramError.parse_tx_error(
+                resp_err, idl_errors, program_id, logs
+            )
             if translated_err is not None:
                 raise translated_err
-            raise RPCException(err_res)
-        logs = ok_res.logs or []
-        events = []
-        if idl.events is not None:
-            parser = EventParser(program_id, coder)
-            parser.parse_logs(logs, lambda evt: events.append(evt))
-        return SimulateResponse(events, logs)
+            raise RPCException(resp_err)
 
     return simulate_fn
