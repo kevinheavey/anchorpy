@@ -304,7 +304,7 @@ def extract_code_and_logs(
         if logs is None:
             return None
         maybe_code = _handle_ix_err(err_data_err, logs, program_id)
-        return None if maybe_code is None else maybe_code, logs
+        return None if maybe_code is None else (maybe_code, logs)
     return None
 
 
