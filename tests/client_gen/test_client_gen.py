@@ -11,9 +11,10 @@ from pytest_asyncio import fixture as async_fixture
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Processed
 from solana.rpc.core import RPCException
-from solana.transaction import Transaction
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.pubkey import Pubkey
+from solders.transaction import VersionedTransaction
 
 from tests.client_gen.example_program_gen.accounts import State, State2
 from tests.client_gen.example_program_gen.errors import from_tx_error
@@ -74,8 +75,11 @@ async def init_and_account_fetch(provider: Provider) -> Keypair:
             "payer": provider.wallet.public_key,
         }
     )
-    tx = Transaction().add(initialize_ix)
-    await provider.send(tx, [state, provider.wallet.payer])
+    msg = Message([initialize_ix], provider.wallet.public_key)
+    tx = VersionedTransaction(
+        msg, [provider.wallet.payer, state, provider.wallet.payer]
+    )
+    await provider.send(tx)
     return state
 
 
@@ -205,8 +209,9 @@ async def setup_fetch_multiple(provider: Provider) -> tuple[Keypair, Keypair]:
             }
         ),
     ]
-    tx = Transaction().add(*initialize_ixs)
-    await provider.send(tx, [state, another_state])
+    msg = Message(initialize_ixs, provider.wallet.public_key)
+    tx = VersionedTransaction(msg, [provider.wallet.payer, state, another_state])
+    await provider.send(tx)
     return state, another_state
 
 
@@ -298,8 +303,9 @@ async def send_instructions_with_args(provider: Provider) -> tuple[Keypair, Keyp
             "payer": provider.wallet.public_key,
         },
     )
-    tx = Transaction().add(ix1, ix2)
-    await provider.send(tx, [state, state2, provider.wallet.payer])
+    msg = Message([ix1, ix2], provider.wallet.public_key)
+    tx = VersionedTransaction(msg, [provider.wallet.payer, state, state2])
+    await provider.send(tx)
     return state, state2
 
 
@@ -371,9 +377,10 @@ async def test_instructions_with_args(
 
 @mark.asyncio
 async def test_cause_error(provider: Provider) -> None:
-    tx = Transaction().add(cause_error())
+    msg = Message([cause_error()], provider.wallet.public_key)
+    tx = VersionedTransaction(msg, [provider.wallet.payer])
     try:
-        await provider.send(tx, [provider.wallet.payer])
+        await provider.send(tx)
     except RPCException as exc:
         caught = from_tx_error(exc)
         assert isinstance(caught, SomeError)

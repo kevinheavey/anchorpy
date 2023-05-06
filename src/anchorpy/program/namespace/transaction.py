@@ -3,7 +3,6 @@ from typing import Any, Protocol
 
 from anchorpy_core.idl import IdlInstruction
 from more_itertools import unique_everseen
-from solana.transaction import Transaction
 from solders.hash import Hash
 from solders.instruction import Instruction
 from solders.keypair import Keypair
@@ -17,12 +16,16 @@ from anchorpy.program.namespace.instruction import _InstructionFn
 class _TransactionFn(Protocol):
     """A function to create a `Transaction` for a given program instruction."""
 
-    def __call__(self, *args: Any, ctx: Context = EMPTY_CONTEXT) -> Transaction:
+    def __call__(
+        self, *args: Any, payer: Keypair, blockhash: Hash, ctx: Context = EMPTY_CONTEXT
+    ) -> VersionedTransaction:
         """Make sure that the function looks like this.
 
         Args:
             *args: The positional arguments for the program. The type and number
                 of these arguments depend on the program being used.
+            payer: The transaction fee payer.
+            blockhash: A recent blockhash.
             ctx: non-argument parameters to pass to the method.
 
         """

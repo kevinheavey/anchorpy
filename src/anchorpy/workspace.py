@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-import toml
+import toml  # type: ignore
 from anchorpy_core.idl import Idl
 from solders.pubkey import Pubkey
 
