@@ -2,6 +2,7 @@
 from typing import Any, Awaitable, Dict, NamedTuple, Protocol
 
 from anchorpy_core.idl import Idl, IdlInstruction
+from solana.rpc.commitment import Confirmed
 from solana.rpc.core import RPCException
 from solders.pubkey import Pubkey
 
@@ -68,9 +69,12 @@ def _build_simulate_item(
     """
 
     async def simulate_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> SimulateResponse:
-        tx = tx_fn(*args, ctx=ctx)
+        blockhash = (
+            await provider.connection.get_latest_blockhash(Confirmed)
+        ).value.blockhash
+        tx = tx_fn(*args, payer=provider.wallet.payer, blockhash=blockhash, ctx=ctx)
         _check_args_length(idl_ix, args)
-        resp = (await provider.simulate(tx, ctx.signers, ctx.options)).value
+        resp = (await provider.simulate(tx, ctx.options)).value
         resp_err = resp.err
         logs = resp.logs or []
         if resp_err is None:

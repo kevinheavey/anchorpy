@@ -2,7 +2,13 @@
 from typing import Any, Protocol
 
 from anchorpy_core.idl import IdlInstruction
+from more_itertools import unique_everseen
 from solana.transaction import Transaction
+from solders.hash import Hash
+from solders.instruction import Instruction
+from solders.keypair import Keypair
+from solders.message import MessageV0
+from solders.transaction import VersionedTransaction
 
 from anchorpy.program.context import EMPTY_CONTEXT, Context, _check_args_length
 from anchorpy.program.namespace.instruction import _InstructionFn
@@ -37,14 +43,20 @@ def _build_transaction_fn(
         _TransactionFn: [description]
     """
 
-    def tx_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> Transaction:
+    def tx_fn(
+        *args: Any, payer: Keypair, blockhash: Hash, ctx: Context = EMPTY_CONTEXT
+    ) -> VersionedTransaction:
+        ixns: list[Instruction] = []
         _check_args_length(idl_ix, args)
-        tx = Transaction()
         if ctx.pre_instructions:
-            tx.add(*ctx.pre_instructions)
-        tx.add(ix_fn(*args, ctx=ctx))
+            ixns.extend(ctx.pre_instructions)
+        ixns.append(ix_fn(*args, ctx=ctx))
         if ctx.post_instructions:
-            tx.add(*ctx.post_instructions)
-        return tx
+            ixns.extend(ctx.post_instructions)
+        ctx_signers = ctx.signers
+        signers = [] if ctx_signers is None else ctx_signers
+        all_signers = list(unique_everseen([payer, *signers]))
+        msg = MessageV0.try_compile(payer.pubkey(), ixns, [], blockhash)
+        return VersionedTransaction(msg, all_signers)
 
     return tx_fn

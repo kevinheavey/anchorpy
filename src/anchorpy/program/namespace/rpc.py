@@ -2,7 +2,6 @@
 from typing import Any, Awaitable, Dict, Protocol
 
 from anchorpy_core.idl import IdlInstruction
-from more_itertools import unique_everseen
 from solana.rpc.commitment import Confirmed
 from solana.rpc.core import RPCException
 from solders.pubkey import Pubkey
@@ -53,16 +52,12 @@ def _build_rpc_item(  # ts: RpcFactory
     """
 
     async def rpc_fn(*args: Any, ctx: Context = EMPTY_CONTEXT) -> Signature:
-        tx = tx_fn(*args, ctx=ctx)
         recent_blockhash = (
             await provider.connection.get_latest_blockhash(Confirmed)
         ).value.blockhash
-        tx.recent_blockhash = recent_blockhash
-        tx.fee_payer = provider.wallet.public_key
-        ctx_signers = ctx.signers
-        signers = [] if ctx_signers is None else ctx_signers
-        all_signers = list(unique_everseen([provider.wallet.payer, *signers]))
-        tx.sign(*all_signers)
+        tx = tx_fn(
+            *args, payer=provider.wallet.payer, blockhash=recent_blockhash, ctx=ctx
+        )
         _check_args_length(idl_ix, args)
         try:
             return await provider.send(tx, ctx.options)
