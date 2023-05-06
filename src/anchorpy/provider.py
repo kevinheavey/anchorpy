@@ -118,7 +118,8 @@ class Provider:
         """
         if opts is None:
             opts = self.opts
-        resp = await self.connection.send_transaction(tx, opts=opts)
+        raw = tx.serialize() if isinstance(tx, Transaction) else bytes(tx)
+        resp = await self.connection.send_raw_transaction(raw, opts=opts)
         return resp.value
 
     async def send_all(
@@ -139,7 +140,8 @@ class Provider:
             opts = self.opts
         sigs = []
         for tx in txs:
-            resp = await self.connection.send_transaction(tx, opts=opts)
+            raw = tx.serialize() if isinstance(tx, Transaction) else bytes(tx)
+            resp = await self.connection.send_raw_transaction(raw, opts=opts)
             sigs.append(resp.value)
         return sigs
 
