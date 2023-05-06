@@ -185,3 +185,16 @@ Then run `anchor test` and voila!.
 
 !!! note
     You must have `pytest-asyncio` installed for `test_basic_1.py` to work.
+
+## Bankrun Integration
+
+AnchorPy comes with a `bankrun_fixture` to help use
+[`solders.bankrun`](https://kevinheavey.github.io/solders/examples/bankrun.html) in tests.
+
+If you haven't heard, `bankrun` is a much faster and more convenient alternative to
+`solana-test-validator`. Long test suites are about 40 times faster with `bankrun`,
+and for short test suites the difference is even bigger because `bankrun` has neglible
+startup time.
+
+`bankrun_fixture` calls `bankrun.start()` and deploys all the programs in the current
+Anchor workspace to the test envioronment.
