@@ -32,6 +32,7 @@ jobs:
             "test_sysvars",
             "test_zero_copy",
             "client_gen/test_client_gen",
+            "client_gen/test_functional",
           ]
     steps:
       - name: Checkout repo.
