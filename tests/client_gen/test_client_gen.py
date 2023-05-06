@@ -77,7 +77,7 @@ async def init_and_account_fetch(provider: Provider) -> Keypair:
     )
     msg = Message([initialize_ix], provider.wallet.public_key)
     tx = VersionedTransaction(
-        msg, [provider.wallet.payer, state, provider.wallet.payer]
+        msg, [provider.wallet.payer, state]
     )
     await provider.send(tx)
     return state
