@@ -6,10 +6,10 @@
 :::anchorpy.Context
 :::anchorpy.create_workspace
 :::anchorpy.close_workspace
+:::anchorpy.bankrun_fixture
 :::anchorpy.workspace_fixture
 :::anchorpy.localnet_fixture
 :::anchorpy.Wallet
-:::anchorpy.SendTxRequest
 :::anchorpy.Coder
 :::anchorpy.InstructionCoder
 :::anchorpy.EventCoder
