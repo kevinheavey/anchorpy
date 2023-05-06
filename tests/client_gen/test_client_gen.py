@@ -67,7 +67,7 @@ async def provider(localnet, payer: Keypair) -> AsyncGenerator[Provider, None]:
     await prov.close()
 
 
-@async_fixture(scope="module")
+@async_fixture(scope="session")
 async def blockhash(provider: Provider) -> Hash:
     return (await provider.connection.get_latest_blockhash(Confirmed)).value.blockhash
 
