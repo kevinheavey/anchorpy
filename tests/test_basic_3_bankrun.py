@@ -17,7 +17,7 @@ bankrun = bankrun_fixture(PATH)
 
 
 @async_fixture(scope="module")
-async def workspace() -> AsyncGenerator[WorkspaceType, None]:
+async def workspace(bankrun: ProgramTestContext) -> AsyncGenerator[WorkspaceType, None]:
     ws = create_workspace(PATH)
     yield ws
     await close_workspace(ws)
