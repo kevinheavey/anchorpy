@@ -58,5 +58,6 @@ async def test_cpi(workspace: WorkspaceType, bankrun: ProgramTestContext) -> Non
     )
     await client.process_transaction(tx1)
     puppet_account_raw = await client.get_account(new_puppet_account.pubkey())
+    assert puppet_account_raw is not None
     decoded = puppet.account["Data"].coder.accounts.decode(puppet_account_raw.data)
     assert decoded.data == 111
