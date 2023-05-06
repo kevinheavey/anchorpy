@@ -56,7 +56,7 @@ def _build_rpc_item(  # ts: RpcFactory
         tx = tx_fn(*args, ctx=ctx)
         recent_blockhash = (
             await provider.connection.get_latest_blockhash(Confirmed)
-        ).value
+        ).value.blockhash
         tx.recent_blockhash = recent_blockhash
         signers = ctx.signers
         all_signers = list(unique_everseen([provider.wallet.payer, *signers]))
