@@ -58,7 +58,9 @@ def _build_rpc_item(  # ts: RpcFactory
             await provider.connection.get_latest_blockhash(Confirmed)
         ).value.blockhash
         tx.recent_blockhash = recent_blockhash
-        signers = ctx.signers
+        tx.fee_payer = provider.wallet.public_key
+        ctx_signers = ctx.signers
+        signers = [] if ctx_signers is None else ctx_signers
         all_signers = list(unique_everseen([provider.wallet.payer, *signers]))
         tx.sign(*all_signers)
         _check_args_length(idl_ix, args)
