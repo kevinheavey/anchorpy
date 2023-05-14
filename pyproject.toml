@@ -30,7 +30,6 @@ autoflake = { version = "^1.4", optional = true }
 based58 = "^0.1.1"
 anchorpy-core = "^0.1.2"
 py = "^1.11.0"
-toml = "^0.10.2"
 
 [tool.poetry.extras]
 cli = ["typer", "ipython", "genpy", "black", "autoflake"]

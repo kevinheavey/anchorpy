@@ -6,7 +6,6 @@ from contextlib import suppress
 from pathlib import Path
 from typing import AsyncGenerator, Callable, Literal, Optional, Sequence, Tuple, Union
 
-import toml  # type: ignore
 from pytest import fixture
 from pytest_asyncio import fixture as async_fixture
 from pytest_xprocess import getrootdir
