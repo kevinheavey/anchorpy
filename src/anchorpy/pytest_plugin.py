@@ -254,13 +254,8 @@ async def _bankrun_helper(
     actual_build_cmd = "anchor build" if build_cmd is None else build_cmd
     subprocess.run(actual_build_cmd, cwd=path, check=True, shell=True)
     path_to_use = Path(path)
-    os.environ["SBF_OUT_DIR"] = str(path_to_use / "target/deploy")
-    toml_programs: dict[str, str] = toml.load(path_to_use / "Anchor.toml")["programs"][
-        "localnet"
-    ]
-    programs = [(key, Pubkey.from_string(val)) for key, val in toml_programs.items()]
-    return await bankrun.start(
-        programs=programs,
+    return await bankrun.start_anchor(
+        path_to_use,
         accounts=accounts,
         compute_max_units=compute_max_units,
         transaction_account_lock_limit=transaction_account_lock_limit,
