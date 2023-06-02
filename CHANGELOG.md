@@ -1,10 +1,16 @@
 # Changelog
 
+## [0.17.2] - 2023-06-02
+
+### Changed
+
+Use latest `solders` and `solana-py` [#(126)](https://github.com/kevinheavey/anchorpy/pull/126)
+
 ## [0.17.1] - 2023-05-14
 
 ### Changed
 
-Use latest `solders` and `solana-py` [#(124)](https://github.com/kevinheavey/anchorpy/pull/124)
+Use latest `solders` and `solana-py` [#(125)](https://github.com/kevinheavey/anchorpy/pull/125)
 
 ## [0.17.0] - 2023-05-06
 
