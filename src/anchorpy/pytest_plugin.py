@@ -248,7 +248,6 @@ async def _bankrun_helper(
     accounts: Optional[Sequence[Tuple[Pubkey, Account]]] = None,
     compute_max_units: Optional[int] = None,
     transaction_account_lock_limit: Optional[int] = None,
-    use_bpf_jit: Optional[bool] = None,
 ) -> "bankrun.ProgramTestContext":
     actual_build_cmd = "anchor build" if build_cmd is None else build_cmd
     subprocess.run(actual_build_cmd, cwd=path, check=True, shell=True)
@@ -258,7 +257,6 @@ async def _bankrun_helper(
         accounts=accounts,
         compute_max_units=compute_max_units,
         transaction_account_lock_limit=transaction_account_lock_limit,
-        use_bpf_jit=use_bpf_jit,
     )
 
 
@@ -269,7 +267,6 @@ def bankrun_fixture(
     accounts: Optional[Sequence[Tuple[Pubkey, Account]]] = None,
     compute_max_units: Optional[int] = None,
     transaction_account_lock_limit: Optional[int] = None,
-    use_bpf_jit: Optional[bool] = None,
 ) -> "bankrun.ProgramTestContext":
     """Create a fixture that builds the project and starts a bankrun with all the programs in the workspace deployed.
 
@@ -281,7 +278,6 @@ def bankrun_fixture(
             what data to write to the given addresses.
         compute_max_units: Override the default compute unit limit for a transaction.
         transaction_account_lock_limit: Override the default transaction account lock limit.
-        use_bpf_jit: Execute the program with JIT if true, interpreted if false.
 
     Returns:
         A bankrun fixture for use with pytest.
@@ -295,7 +291,6 @@ def bankrun_fixture(
             accounts,
             compute_max_units,
             transaction_account_lock_limit,
-            use_bpf_jit,
         )
 
     return _bankrun_fixture
