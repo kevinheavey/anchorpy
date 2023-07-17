@@ -375,6 +375,28 @@
           "type": "u8"
         }
       ]
+    },
+    {
+      "name": "incrementStateWhenPresent",
+      "accounts": [
+        {
+          "name": "firstState",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "secondState",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
