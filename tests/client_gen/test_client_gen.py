@@ -24,6 +24,7 @@ from tests.client_gen.example_program_gen.instructions import (
     InitializeWithValuesAccounts,
     InitializeWithValuesArgs,
     cause_error,
+    increment_state_when_present,
     initialize,
     initialize_with_values,
     initialize_with_values2,
@@ -385,6 +386,49 @@ async def test_instructions_with_args(
     res2 = await State2.fetch(provider.connection, state2.pubkey())
     assert res == expected
     assert res2 == expected2
+
+
+@mark.asyncio
+async def test_instruction_with_optional_account(
+    send_instructions_with_args: tuple[Keypair, Keypair],
+    provider: Provider,
+    blockhash: Hash,
+) -> None:
+    def prepare_tx(ixs):
+        msg = Message.new_with_blockhash([ix], provider.wallet.public_key, blockhash)
+        tx = VersionedTransaction(msg, [provider.wallet.payer])
+        return tx
+
+    state, state2 = send_instructions_with_args
+    ix = increment_state_when_present(
+        {
+            "first_state": None,
+            "second_state": state2.pubkey(),
+        },
+    )
+    before_res = await State.fetch(provider.connection, state.pubkey())
+    assert before_res is not None
+    tx = prepare_tx(ix)
+    await provider.send(tx)
+
+    res = await State.fetch(provider.connection, state.pubkey())
+    assert res is not None
+    assert before_res.u8_field == res.u8_field
+
+    ix = increment_state_when_present(
+        {
+            "first_state": state.pubkey(),
+            "second_state": state2.pubkey(),
+        },
+    )
+
+    res = await State.fetch(provider.connection, state.pubkey())
+    tx = prepare_tx(ix)
+    await provider.send(tx)
+
+    res = await State.fetch(provider.connection, state.pubkey())
+    assert res is not None
+    assert before_res.u8_field + 1 == res.u8_field
 
 
 @mark.asyncio

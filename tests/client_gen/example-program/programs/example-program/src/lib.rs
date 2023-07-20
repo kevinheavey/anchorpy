@@ -98,6 +98,13 @@ pub mod example_program {
         ctx.accounts.account.data = 1337;
         Ok(())
     }
+
+    pub fn increment_state_when_present(ctx: Context<IncrementStateWhenPresent>) -> Result<()> {
+        if let Some(state) = ctx.accounts.first_state.as_mut() {
+            state.u8_field += 1;
+        }
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -321,6 +328,14 @@ pub struct Initialize2<'info> {
 
     #[account(mut)]
     payer: Signer<'info>,
+    system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct IncrementStateWhenPresent<'info> {
+    #[account(mut)]
+    first_state: Option<Account<'info, State>>,
+    second_state: Account<'info, State2>,
     system_program: Program<'info, System>,
 }
 
