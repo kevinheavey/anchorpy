@@ -435,7 +435,7 @@ def _field_to_json(
     convert_case: bool = True,
 ) -> str:
     ty_type = ty.ty
-    maybe_converted = snake(ty.name) if convert_case else ty.name
+    maybe_converted = _sanitize(snake(ty.name)) if convert_case else _sanitize(ty.name)
     var_name = f"{val_prefix}{maybe_converted}{val_suffix}"
     if ty_type == IdlTypeSimple.PublicKey:
         return f"str({var_name})"
