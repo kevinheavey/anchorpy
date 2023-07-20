@@ -125,7 +125,9 @@ def recurse_accounts(
                     f"AccountMeta(pubkey={pubkey_var}, "
                     f"is_signer={acc.is_signer}, "
                     f"is_writable={acc.is_mut}) "
-                    f"if {pubkey_var} else AccountMeta(pubkey=program_id, is_signer=False, is_writable=False)"
+                    f"if {pubkey_var} else "
+                    f"AccountMeta(pubkey=program_id, "
+                    f"is_signer=False, is_writable=False)"
                 )
             else:
                 elements.append(

@@ -5,7 +5,7 @@ from typing import AsyncGenerator, List
 
 from anchorpy import Provider, Wallet
 from anchorpy.pytest_plugin import localnet_fixture
-from construct import ListContainer, Sequence
+from construct import ListContainer
 from pytest import fixture, mark
 from pytest_asyncio import fixture as async_fixture
 from solana.rpc.async_api import AsyncClient
