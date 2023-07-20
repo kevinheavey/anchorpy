@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.18.0] - 2023-07-20
+
+### Changed
+
+Client-gen: add support for optional accounts [#(128)](https://github.com/kevinheavey/anchorpy/pull/128)
+
+### Fixed
+
+Client-gen: fix missing sanitization in to_json method generation [#(129)](https://github.com/kevinheavey/anchorpy/pull/129)
+
 ## [0.17.2] - 2023-06-02
 
 ### Changed
