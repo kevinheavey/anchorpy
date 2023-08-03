@@ -25,10 +25,10 @@ Here is how we generate a client from an IDL and use it to interact with a smart
     async def main():
         # Read the generated IDL.
         with Path("target/idl/basic_0.json").open() as f:
-            raw_idl = json.load(f)
+            raw_idl = f.read()
         idl = Idl.from_json(raw_idl)
         # Address of the deployed program.
-        program_id = Pubkey("<YOUR-PROGRAM-ID>")
+        program_id = Pubkey.from_string("<YOUR-PROGRAM-ID>")
         # Generate the program client from IDL.
         async with Program(idl, program_id) as program:
             # Execute the RPC.
