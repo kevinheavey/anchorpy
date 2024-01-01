@@ -126,7 +126,7 @@ files = [
 name = "black"
 version = "22.12.0"
 description = "The uncompromising code formatter."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "black-22.12.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9eedd20838bd5d75b80c9f5487dbcb06836a43833a37846cf1d8c1cc01cef59d"},
@@ -1743,4 +1743,4 @@ pytest = ["py", "pytest", "pytest-asyncio", "pytest-xprocess"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "545bcd87ca6c626bf626c6b42ae3e3a603c5a40f35079e14dba8cccf2f78b5f4"
+content-hash = "b170a480419a25afd7a2e40795705e829905acbca310aa77d98493c349d76d44"
