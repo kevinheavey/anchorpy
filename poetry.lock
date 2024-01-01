@@ -515,7 +515,7 @@ testing = ["flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
@@ -995,7 +995,7 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-co
 name = "pluggy"
 version = "1.3.0"
 description = "plugin and hook calling mechanisms for python"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pluggy-1.3.0-py3-none-any.whl", hash = "sha256:d89c696a773f8bd377d18e5ecda92b7a3793cbe66c87060a6fb58c7b6e1061f7"},
@@ -1024,7 +1024,7 @@ wcwidth = "*"
 name = "psutil"
 version = "5.9.7"
 description = "Cross-platform lib for process and system monitoring in Python."
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 files = [
     {file = "psutil-5.9.7-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:0bd41bf2d1463dfa535942b2a8f0e958acf6607ac0be52265ab31f7923bcd5e6"},
@@ -1077,7 +1077,7 @@ tests = ["pytest"]
 name = "py"
 version = "1.11.0"
 description = "library with cross-python path, ini-parsing, io, code, log facilities"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
@@ -1157,7 +1157,7 @@ extra = ["pygments (>=2.12)"]
 name = "pytest"
 version = "7.4.4"
 description = "pytest: simple powerful testing with Python"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "pytest-7.4.4-py3-none-any.whl", hash = "sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8"},
@@ -1179,7 +1179,7 @@ testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "no
 name = "pytest-asyncio"
 version = "0.21.1"
 description = "Pytest support for asyncio"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "pytest-asyncio-0.21.1.tar.gz", hash = "sha256:40a7eae6dded22c7b604986855ea48400ab15b069ae38116e8c01238e9eeb64d"},
@@ -1197,7 +1197,7 @@ testing = ["coverage (>=6.2)", "flaky (>=3.5.0)", "hypothesis (>=5.7.1)", "mypy 
 name = "pytest-xprocess"
 version = "0.18.1"
 description = "A pytest plugin for managing processes across test runs."
-optional = true
+optional = false
 python-versions = ">=3.5"
 files = [
     {file = "pytest-xprocess-0.18.1.tar.gz", hash = "sha256:fd9f30ed1584b5833bc34494748adf0fb9de3ca7bacc4e88ad71989c21cba266"},
@@ -1743,4 +1743,4 @@ pytest = ["py", "pytest", "pytest-asyncio", "pytest-xprocess"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "4ed9893a156ab0a2a415f0188693f17b2c3b33158009a7e84c313333ceb86021"
+content-hash = "545bcd87ca6c626bf626c6b42ae3e3a603c5a40f35079e14dba8cccf2f78b5f4"
