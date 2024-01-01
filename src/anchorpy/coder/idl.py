@@ -11,6 +11,7 @@ from anchorpy_core.idl import (
     IdlTypeArray,
     IdlTypeDefined,
     IdlTypeDefinition,
+    IdlTypeDefinitionTyAlias,
     IdlTypeDefinitionTyEnum,
     IdlTypeDefinitionTyStruct,
     IdlTypeOption,
@@ -148,6 +149,8 @@ def _typedef_layout_without_field_name(
         return _DataclassStruct(cstruct, datacls=datacls)
     elif isinstance(typedef_type, IdlTypeDefinitionTyEnum):
         return _handle_enum_variants(typedef_type, types, name)
+    elif isinstance(typedef_type, IdlTypeDefinitionTyAlias):
+        return _type_layout(typedef_type.value, types)
     unknown_type = typedef_type.kind
     raise ValueError(f"Unknown type {unknown_type}")
 
@@ -321,5 +324,7 @@ def _idl_typedef_to_python_type(
         )
     elif isinstance(typedef_type, IdlTypeDefinitionTyEnum):
         return _handle_enum_variants(typedef_type, types, typedef.name).enum
+    elif isinstance(typedef_type, IdlTypeDefinitionTyAlias):
+        raise ValueError(f"Alias not handled here: {typedef_type}")
     unknown_type = typedef_type.kind
     raise ValueError(f"Unknown type {unknown_type}")
