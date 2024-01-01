@@ -15,9 +15,10 @@ It provides:
 ## Installation (requires Python >= 3.9)
 
 ```shell
-pip install anchorpy[cli]
+pip install anchorpy[cli, pytest]
 ```
 
+Or, if you're not using the CLI or Pytest plugin features of AnchorPy you can just run `pip install anchorpy`.
 
 !!! note
     These docs will assume you've read the [Anchor documentation](https://www.anchor-lang.com/) first.
