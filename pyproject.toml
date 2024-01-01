@@ -27,12 +27,12 @@ black = { version = "^22.3.0", optional = true }
 autoflake = { version = "^1.4", optional = true }
 based58 = "^0.1.1"
 anchorpy-core = "^0.2.0"
-py = "^1.11.0"
+py = { version = "^1.11.0", optional = true }
 toml = "^0.10.2"
 
 [tool.poetry.extras]
 cli = ["typer", "ipython", "genpy", "black", "autoflake"]
-pytest = ["pytest", "pytest-xprocess", "pytest-asyncio"]
+pytest = ["pytest", "py", "pytest-xprocess", "pytest-asyncio"]
 
 
 [tool.poetry.scripts]
