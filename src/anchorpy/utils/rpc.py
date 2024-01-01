@@ -7,6 +7,7 @@ from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Commitment, Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException
 from solana.transaction import Transaction
+from solders.account import Account
 from solders.account_decoder import UiAccountEncoding
 from solders.commitment_config import CommitmentLevel
 from solders.instruction import AccountMeta, Instruction
@@ -80,7 +81,7 @@ async def invoke(
 @dataclass
 class _MultipleAccountsItem:
     pubkey: Pubkey
-    account: AccountInfo
+    account: Account
 
 
 async def get_multiple_accounts(
@@ -129,9 +130,9 @@ async def _get_multiple_accounts_core(
     result: list[Optional[_MultipleAccountsItem]] = []
     idx = 0
     for rpc_result in parsed:
-        if isinstance(rpc_result, RPCError):
+        if not isinstance(rpc_result, GetMultipleAccountsResp):
             raise RPCException(
-                f"Failed to get info about accounts: {rpc_result.message}"
+                f"Failed to get info about accounts: {rpc_result}"
             )
         for account in rpc_result.value:
             if account is None:
