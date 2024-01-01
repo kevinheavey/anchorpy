@@ -9,6 +9,7 @@ pub const MY_SEED_STR: &str = "hi";
 pub const MY_SEED_U8: u8 = 1;
 pub const MY_SEED_U32: u32 = 2;
 pub const MY_SEED_U64: u64 = 3;
+pub type U8Array = [u8; 8];
 
 #[program]
 pub mod example_program {
@@ -103,6 +104,11 @@ pub mod example_program {
         if let Some(state) = ctx.accounts.first_state.as_mut() {
             state.u8_field += 1;
         }
+        Ok(())
+    }
+
+    pub fn type_alias(_ctx: Context<TypeAlias>, u8_array: U8Array) -> Result<()> {
+        msg!("{:?}", u8_array);
         Ok(())
     }
 }
@@ -341,6 +347,9 @@ pub struct IncrementStateWhenPresent<'info> {
 
 #[derive(Accounts)]
 pub struct CauseError {}
+
+#[derive(Accounts)]
+pub struct TypeAlias {}
 
 #[error_code]
 pub enum ErrorCode {
