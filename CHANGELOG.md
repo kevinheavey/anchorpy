@@ -2,9 +2,13 @@
 
 ## [0.19.0] - Unreleased
 
+### Added
+
+- Add support for alias types in IDL [#(129)](https://github.com/kevinheavey/anchorpy/pull/129)
+
 ### Changed
 
-Make the Pytest plugin dependencies optional. Install with `pip install anchorpy[pytest]` if you 
+- Make the Pytest plugin dependencies optional. Install with `pip install anchorpy[pytest]` if you 
 want the Pytest plugin [#(129)](https://github.com/kevinheavey/anchorpy/pull/129)
 
 ## [0.18.0] - 2023-07-20
