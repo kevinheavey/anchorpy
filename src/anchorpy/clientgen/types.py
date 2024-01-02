@@ -8,6 +8,7 @@ from anchorpy_core.idl import (
     IdlEnumVariant,
     IdlField,
     IdlType,
+    IdlTypeDefinitionTyAlias,
     IdlTypeDefinitionTyStruct,
 )
 from autoflake import fix_code
@@ -80,11 +81,15 @@ def gen_index_code(idl: Idl) -> str:
         ty_type = ty.ty
         module_name = _sanitize(snake(ty.name))
         imports.append(FromImport(".", [module_name]))
-        import_members = (
-            [_sanitize(ty.name), _json_interface_name(ty.name)]
-            if isinstance(ty_type, IdlTypeDefinitionTyStruct)
-            else [_kind_interface_name(ty.name), _json_interface_name(ty.name)]
-        )
+        if isinstance(ty_type, IdlTypeDefinitionTyStruct):
+            import_members = [_sanitize(ty.name), _json_interface_name(ty.name)]
+        elif isinstance(ty_type, IdlTypeDefinitionTyAlias):
+            import_members = [_sanitize(ty.name)]
+        else:
+            import_members = [
+                _kind_interface_name(ty.name),
+                _json_interface_name(ty.name),
+            ]
         imports.append(
             FromImport(
                 f".{module_name}",
@@ -115,11 +120,20 @@ def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
             [FromImport(".", relative_import_items)] if relative_import_items else []
         )
         ty_type = ty.ty
-        body = (
-            gen_struct(idl, ty_name, ty_type.fields)
-            if isinstance(ty_type, IdlTypeDefinitionTyStruct)
-            else gen_enum(idl, ty_name, ty_type.variants)
-        )
+        if isinstance(ty_type, IdlTypeDefinitionTyAlias):
+            body = Assign(
+                ty.name,
+                _py_type_from_idl(
+                    idl,
+                    ty_type.value,
+                    types_relative_imports=True,
+                    use_fields_interface_for_struct=False,
+                ),
+            )
+        elif isinstance(ty_type, IdlTypeDefinitionTyStruct):
+            body = gen_struct(idl, ty_name, ty_type.fields)
+        else:
+            body = gen_enum(idl, ty_name, ty_type.variants)
         code = str(Collection([ANNOTATIONS_IMPORT, *relative_import_container, body]))
         path = (out / module_name).with_suffix(".py")
         res[path] = code
