@@ -119,21 +119,28 @@ async def _get_multiple_accounts_core(
     rpc_requests: list[GetMultipleAccounts] = []
     commitment_to_use = connection._commitment if commitment is None else commitment
     for pubkey_batch in pubkey_batches:
-        rpc_req = GetMultipleAccounts(list(pubkey_batch), RpcAccountInfoConfig(encoding=UiAccountEncoding.Base64Zstd, commitment=_COMMITMENT_TO_SOLDERS[commitment_to_use]))
+        rpc_req = GetMultipleAccounts(
+            list(pubkey_batch),
+            RpcAccountInfoConfig(
+                encoding=UiAccountEncoding.Base64Zstd,
+                commitment=_COMMITMENT_TO_SOLDERS[commitment_to_use],
+            ),
+        )
         rpc_requests.append(rpc_req)
     resp = await connection._provider.session.post(
         connection._provider.endpoint_uri,
         content=batch_to_json(rpc_requests),
         headers={"content-encoding": "gzip"},
     )
-    parsed = cast(list[Union[RPCError, GetMultipleAccountsResp]], batch_from_json(resp.text, [GetMultipleAccounts for _ in rpc_requests]))
+    parsed = cast(
+        list[Union[RPCError, GetMultipleAccountsResp]],
+        batch_from_json(resp.text, [GetMultipleAccounts for _ in rpc_requests]),
+    )
     result: list[Optional[_MultipleAccountsItem]] = []
     idx = 0
     for rpc_result in parsed:
         if not isinstance(rpc_result, GetMultipleAccountsResp):
-            raise RPCException(
-                f"Failed to get info about accounts: {rpc_result}"
-            )
+            raise RPCException(f"Failed to get info about accounts: {rpc_result}")
         for account in rpc_result.value:
             if account is None:
                 result.append(None)
