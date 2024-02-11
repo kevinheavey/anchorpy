@@ -28,6 +28,7 @@ from solders.system_program import (
     transfer,
 )
 from solders.sysvar import RENT
+from solders.transaction import TransactionError
 from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
@@ -169,7 +170,7 @@ async def test_can_use_owner_constraint(
         ),
         bankrun=bankrun,
     )
-    with raises(BanksClientError):
+    with raises(TransactionError):
         await bankrun_rpc(
             program,
             "test_owner",
