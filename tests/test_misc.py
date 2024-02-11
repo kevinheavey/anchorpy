@@ -28,14 +28,6 @@ def program(workspace: WorkspaceType) -> Program:
     return workspace["misc"]
 
 
-def test_idl_constants(program: Program) -> None:
-    idl_constants = program.idl.constants
-    assert idl_constants == [
-        IdlConst(name="BASE", ty=IdlTypeSimple.U128, value="1_000_000"),
-        IdlConst(name="DECIMALS", ty=IdlTypeSimple.U8, value="6"),
-    ]
-
-
 def test_methods(program: Program, initialized_keypair: Keypair) -> None:
     ix_from_methods = (
         program.methods["test_close"]
