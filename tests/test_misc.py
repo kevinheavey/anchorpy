@@ -9,7 +9,6 @@ from anchorpy.provider import Provider, Wallet
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.utils.rpc import invoke
 from anchorpy.workspace import WorkspaceType
-from anchorpy_core.idl import IdlConst, IdlTypeSimple
 from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
 from solana.rpc.core import RPCNoResultException
