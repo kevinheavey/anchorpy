@@ -229,27 +229,6 @@ async def test_can_use_i8_in_idl(program: Program, bankrun: ProgramTestContext) 
     assert data_account.data == -3
 
 
-@async_fixture(scope="module")
-async def data_i16_keypair(program: Program, bankrun: ProgramTestContext) -> Keypair:
-    data = Keypair()
-    await bankrun_rpc(
-        program,
-        "test_i16",
-        [-2048],
-        ctx=Context(
-            accounts={"data": data.pubkey(), "rent": RENT},
-            pre_instructions=[
-                await bankrun_create_instruction(
-                    program.account["DataI16"], data, program.program_id, bankrun
-                )
-            ],
-            signers=[data],
-        ),
-        bankrun=bankrun,
-    )
-    return data
-
-
 @mark.asyncio
 async def test_can_use_i16_in_idl(
     program: Program, data_i16_keypair: Keypair, bankrun: ProgramTestContext

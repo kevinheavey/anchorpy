@@ -94,22 +94,6 @@ async def test_can_retrieve_events_when_simulating_transaction(
     assert events[2].data.data == 9
 
 
-@async_fixture(scope="module")
-async def data_i16_keypair(program: Program) -> Keypair:
-    data = Keypair()
-    await program.rpc["test_i16"](
-        -2048,
-        ctx=Context(
-            accounts={"data": data.pubkey(), "rent": RENT},
-            pre_instructions=[
-                await program.account["DataI16"].create_instruction(data)
-            ],
-            signers=[data],
-        ),
-    )
-    return data
-
-
 @mark.asyncio
 async def test_can_use_i16_in_idl(program: Program, data_i16_keypair: Keypair) -> None:
     data_account = await program.account["DataI16"].fetch(data_i16_keypair.pubkey())
