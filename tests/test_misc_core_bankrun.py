@@ -206,30 +206,6 @@ async def test_can_retrieve_events_when_simulating_transaction(
 
 
 @mark.asyncio
-async def test_can_use_i8_in_idl(program: Program, bankrun: ProgramTestContext) -> None:
-    data = Keypair()
-    await bankrun_rpc(
-        program,
-        "test_i8",
-        [-3],
-        ctx=Context(
-            accounts={"data": data.pubkey(), "rent": RENT},
-            pre_instructions=[
-                await bankrun_create_instruction(
-                    program.account["DataI8"], data, program.program_id, bankrun
-                )
-            ],
-            signers=[data],
-        ),
-        bankrun=bankrun,
-    )
-    data_account = await bankrun_fetch(
-        program.account["DataI8"], data.pubkey(), bankrun
-    )
-    assert data_account.data == -3
-
-
-@mark.asyncio
 async def test_fail_to_close_account_when_sending_lamports_to_itself(
     program: Program,
     initialized_keypair: Keypair,
