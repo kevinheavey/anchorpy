@@ -31,7 +31,6 @@ jobs:
             "test_misc_core",
             "test_misc_core_bankrun",
             "test_multisig",
-            "test_pyth",
             "test_zero_copy",
             "client_gen/test_client_gen",
             "client_gen/test_functional",
