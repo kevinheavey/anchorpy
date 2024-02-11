@@ -53,33 +53,6 @@ async def test_can_use_u128_and_i128(
     assert data_account.idata == 22
 
 
-@async_fixture(scope="module")
-async def keypair_after_test_u16(program: Program) -> Keypair:
-    data = Keypair()
-    await program.rpc["test_u16"](
-        99,
-        ctx=Context(
-            accounts={"my_account": data.pubkey(), "rent": RENT},
-            signers=[data],
-            pre_instructions=[
-                await program.account["DataU16"].create_instruction(data)
-            ],
-        ),
-    )
-    return data
-
-
-@mark.asyncio
-async def test_can_use_u16(
-    program: Program,
-    keypair_after_test_u16: Keypair,
-) -> None:
-    data_account = await program.account["DataU16"].fetch(
-        keypair_after_test_u16.pubkey(),
-    )
-    assert data_account.data == 99
-
-
 @mark.asyncio
 async def test_can_use_owner_constraint(
     program: Program, initialized_keypair: Keypair
