@@ -130,11 +130,11 @@ async def _get_multiple_accounts_core(
     resp = await connection._provider.session.post(
         connection._provider.endpoint_uri,
         content=batch_to_json(rpc_requests),
-        headers={"content-encoding": "gzip"},
+        headers={"content-encoding": "gzip", "Content-type": "application/json"},
     )
     parsed = cast(
         list[Union[RPCError, GetMultipleAccountsResp]],
-        batch_from_json(resp.text, [GetMultipleAccounts for _ in rpc_requests]),
+        batch_from_json(resp.text, [GetMultipleAccountsResp for _ in rpc_requests]),
     )
     result: list[Optional[_MultipleAccountsItem]] = []
     idx = 0
