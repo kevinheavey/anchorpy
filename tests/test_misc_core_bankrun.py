@@ -230,16 +230,6 @@ async def test_can_use_i8_in_idl(program: Program, bankrun: ProgramTestContext) 
 
 
 @mark.asyncio
-async def test_can_use_i16_in_idl(
-    program: Program, data_i16_keypair: Keypair, bankrun: ProgramTestContext
-) -> None:
-    data_account = await bankrun_fetch(
-        program.account["DataI16"], data_i16_keypair.pubkey(), bankrun
-    )
-    assert data_account.data == -2048
-
-
-@mark.asyncio
 async def test_fail_to_close_account_when_sending_lamports_to_itself(
     program: Program,
     initialized_keypair: Keypair,

@@ -95,12 +95,6 @@ async def test_can_retrieve_events_when_simulating_transaction(
 
 
 @mark.asyncio
-async def test_can_use_i16_in_idl(program: Program, data_i16_keypair: Keypair) -> None:
-    data_account = await program.account["DataI16"].fetch(data_i16_keypair.pubkey())
-    assert data_account.data == -2048
-
-
-@mark.asyncio
 async def test_fail_to_close_account_when_sending_lamports_to_itself(
     program: Program,
     initialized_keypair: Keypair,

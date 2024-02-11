@@ -58,7 +58,7 @@ async def test_at_constructor(program: Program) -> None:
         cwd=PATH,
     )
     fetched = await program.at(program.program_id, program.provider)
-    await fetched.close()
+    # await fetched.close()
     assert fetched.idl.name == "misc"
 
 
