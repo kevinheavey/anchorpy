@@ -15,7 +15,7 @@ from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
 from solana.rpc.core import RPCException
 from solders.account import Account
-from solders.bankrun import BanksClientError, ProgramTestContext
+from solders.bankrun import ProgramTestContext
 from solders.instruction import Instruction
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
@@ -211,7 +211,7 @@ async def test_fail_to_close_account_when_sending_lamports_to_itself(
     initialized_keypair: Keypair,
     bankrun: ProgramTestContext,
 ) -> None:
-    with raises(BanksClientError) as excinfo:
+    with raises(TransactionError) as excinfo:
         await bankrun_rpc(
             program,
             "test_close",
@@ -776,7 +776,7 @@ async def test_can_use_pdas_with_empty_seeds(
         [b"non-empty"],
         program.program_id,
     )
-    with raises(BanksClientError) as excinfo:
+    with raises(TransactionError) as excinfo:
         await bankrun_rpc(
             program,
             "test_empty_seeds_constraint",
