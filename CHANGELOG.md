@@ -10,6 +10,7 @@
 
 - Make the Pytest plugin dependencies optional. Install with `pip install anchorpy[pytest]` if you 
 want the Pytest plugin [#(129)](https://github.com/kevinheavey/anchorpy/pull/129)
+- Update to Anchor 0.29.0 [#(132)](https://github.com/kevinheavey/anchorpy/pull/132)
 
 ## [0.18.0] - 2023-07-20
 
