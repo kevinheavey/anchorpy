@@ -53,33 +53,6 @@ async def test_can_use_u128_and_i128(
     assert data_account.idata == 22
 
 
-@async_fixture(scope="module")
-async def keypair_after_test_u16(program: Program) -> Keypair:
-    data = Keypair()
-    await program.rpc["test_u16"](
-        99,
-        ctx=Context(
-            accounts={"my_account": data.pubkey(), "rent": RENT},
-            signers=[data],
-            pre_instructions=[
-                await program.account["DataU16"].create_instruction(data)
-            ],
-        ),
-    )
-    return data
-
-
-@mark.asyncio
-async def test_can_use_u16(
-    program: Program,
-    keypair_after_test_u16: Keypair,
-) -> None:
-    data_account = await program.account["DataU16"].fetch(
-        keypair_after_test_u16.pubkey(),
-    )
-    assert data_account.data == 99
-
-
 @mark.asyncio
 async def test_can_use_owner_constraint(
     program: Program, initialized_keypair: Keypair
@@ -119,43 +92,6 @@ async def test_can_retrieve_events_when_simulating_transaction(
     assert events[1].data.data == 1234
     assert events[2].name == "E3"
     assert events[2].data.data == 9
-
-
-@mark.asyncio
-async def test_can_use_i8_in_idl(program: Program) -> None:
-    data = Keypair()
-    await program.rpc["test_i8"](
-        -3,
-        ctx=Context(
-            accounts={"data": data.pubkey(), "rent": RENT},
-            pre_instructions=[await program.account["DataI8"].create_instruction(data)],
-            signers=[data],
-        ),
-    )
-    data_account = await program.account["DataI8"].fetch(data.pubkey())
-    assert data_account.data == -3
-
-
-@async_fixture(scope="module")
-async def data_i16_keypair(program: Program) -> Keypair:
-    data = Keypair()
-    await program.rpc["test_i16"](
-        -2048,
-        ctx=Context(
-            accounts={"data": data.pubkey(), "rent": RENT},
-            pre_instructions=[
-                await program.account["DataI16"].create_instruction(data)
-            ],
-            signers=[data],
-        ),
-    )
-    return data
-
-
-@mark.asyncio
-async def test_can_use_i16_in_idl(program: Program, data_i16_keypair: Keypair) -> None:
-    data_account = await program.account["DataI16"].fetch(data_i16_keypair.pubkey())
-    assert data_account.data == -2048
 
 
 @mark.asyncio

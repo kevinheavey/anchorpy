@@ -215,5 +215,5 @@ class Wallet:
     @classmethod
     def dummy(cls) -> Wallet:
         """Create a dummy wallet instance that won't be used to sign transactions."""
-        keypair = Keypair.from_bytes([0] * 64)
+        keypair = Keypair()
         return cls(keypair)

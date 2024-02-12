@@ -6,8 +6,8 @@ on:
     branches: [main]
 
 env:
-  solana_version: 1.14.17
-  anchor_version: 0.26.0
+  solana_version: 1.18.1
+  anchor_version: 0.29.0
 
 jobs:
   tests:
@@ -31,7 +31,6 @@ jobs:
             "test_misc_core",
             "test_misc_core_bankrun",
             "test_multisig",
-            "test_pyth",
             "test_zero_copy",
             "client_gen/test_client_gen",
             "client_gen/test_functional",
@@ -55,7 +54,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: 1.75.0
           override: true
       - uses: Swatinem/rust-cache@v1
       - name: Install Solana

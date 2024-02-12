@@ -11,6 +11,7 @@ from anchorpy_core.idl import (
     IdlTypeCompound,
     IdlTypeDefined,
     IdlTypeDefinition,
+    IdlTypeDefinitionTyAlias,
     IdlTypeDefinitionTyEnum,
     IdlTypeOption,
     IdlTypeSimple,
@@ -120,6 +121,8 @@ def _account_size(idl: Idl, idl_account: IdlTypeDefinition) -> int:
             _variant_size(idl, variant) for variant in idl_account_type.variants
         )
         return max(variant_sizes) + 1
+    if isinstance(idl_account_type, IdlTypeDefinitionTyAlias):
+        return _type_size(idl, idl_account_type.value)
     if idl_account_type.fields is None:
         return 0
     return sum(_type_size(idl, f.ty) for f in idl_account_type.fields)

@@ -397,6 +397,18 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "typeAlias",
+      "accounts": [],
+      "args": [
+        {
+          "name": "u8Array",
+          "type": {
+            "defined": "U8Array"
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -672,11 +684,11 @@
             "name": "Named",
             "fields": [
               {
-                "name": "bool_field",
+                "name": "boolField",
                 "type": "bool"
               },
               {
-                "name": "u8_field",
+                "name": "u8Field",
                 "type": "u8"
               },
               {
@@ -719,6 +731,18 @@
             "name": "NoFields"
           }
         ]
+      }
+    },
+    {
+      "name": "U8Array",
+      "type": {
+        "kind": "alias",
+        "value": {
+          "array": [
+            "u8",
+            8
+          ]
+        }
       }
     }
   ],

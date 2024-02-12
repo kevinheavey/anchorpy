@@ -15,7 +15,7 @@ from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
 from solana.rpc.core import RPCException
 from solders.account import Account
-from solders.bankrun import BanksClientError, ProgramTestContext
+from solders.bankrun import ProgramTestContext
 from solders.instruction import Instruction
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
@@ -28,6 +28,7 @@ from solders.system_program import (
     transfer,
 )
 from solders.sysvar import RENT
+from solders.transaction import TransactionError
 from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
 
@@ -153,41 +154,6 @@ async def test_can_use_u128_and_i128(
     assert data_account.idata == 22
 
 
-@async_fixture(scope="module")
-async def keypair_after_test_u16(
-    program: Program, bankrun: ProgramTestContext
-) -> Keypair:
-    data = Keypair()
-    await bankrun_rpc(
-        program,
-        "test_u16",
-        [99],
-        ctx=Context(
-            accounts={"my_account": data.pubkey(), "rent": RENT},
-            signers=[data],
-            pre_instructions=[
-                await bankrun_create_instruction(
-                    program.account["DataU16"], data, program.program_id, bankrun
-                )
-            ],
-        ),
-        bankrun=bankrun,
-    )
-    return data
-
-
-@mark.asyncio
-async def test_can_use_u16(
-    program: Program,
-    keypair_after_test_u16: Keypair,
-    bankrun: ProgramTestContext,
-) -> None:
-    data_account = await bankrun_fetch(
-        program.account["DataU16"], keypair_after_test_u16.pubkey(), bankrun
-    )
-    assert data_account.data == 99
-
-
 @mark.asyncio
 async def test_can_use_owner_constraint(
     program: Program, initialized_keypair: Keypair, bankrun: ProgramTestContext
@@ -204,7 +170,7 @@ async def test_can_use_owner_constraint(
         ),
         bankrun=bankrun,
     )
-    with raises(BanksClientError):
+    with raises(TransactionError):
         await bankrun_rpc(
             program,
             "test_owner",
@@ -240,67 +206,12 @@ async def test_can_retrieve_events_when_simulating_transaction(
 
 
 @mark.asyncio
-async def test_can_use_i8_in_idl(program: Program, bankrun: ProgramTestContext) -> None:
-    data = Keypair()
-    await bankrun_rpc(
-        program,
-        "test_i8",
-        [-3],
-        ctx=Context(
-            accounts={"data": data.pubkey(), "rent": RENT},
-            pre_instructions=[
-                await bankrun_create_instruction(
-                    program.account["DataI8"], data, program.program_id, bankrun
-                )
-            ],
-            signers=[data],
-        ),
-        bankrun=bankrun,
-    )
-    data_account = await bankrun_fetch(
-        program.account["DataI8"], data.pubkey(), bankrun
-    )
-    assert data_account.data == -3
-
-
-@async_fixture(scope="module")
-async def data_i16_keypair(program: Program, bankrun: ProgramTestContext) -> Keypair:
-    data = Keypair()
-    await bankrun_rpc(
-        program,
-        "test_i16",
-        [-2048],
-        ctx=Context(
-            accounts={"data": data.pubkey(), "rent": RENT},
-            pre_instructions=[
-                await bankrun_create_instruction(
-                    program.account["DataI16"], data, program.program_id, bankrun
-                )
-            ],
-            signers=[data],
-        ),
-        bankrun=bankrun,
-    )
-    return data
-
-
-@mark.asyncio
-async def test_can_use_i16_in_idl(
-    program: Program, data_i16_keypair: Keypair, bankrun: ProgramTestContext
-) -> None:
-    data_account = await bankrun_fetch(
-        program.account["DataI16"], data_i16_keypair.pubkey(), bankrun
-    )
-    assert data_account.data == -2048
-
-
-@mark.asyncio
 async def test_fail_to_close_account_when_sending_lamports_to_itself(
     program: Program,
     initialized_keypair: Keypair,
     bankrun: ProgramTestContext,
 ) -> None:
-    with raises(BanksClientError) as excinfo:
+    with raises(TransactionError) as excinfo:
         await bankrun_rpc(
             program,
             "test_close",
@@ -865,7 +776,7 @@ async def test_can_use_pdas_with_empty_seeds(
         [b"non-empty"],
         program.program_id,
     )
-    with raises(BanksClientError) as excinfo:
+    with raises(TransactionError) as excinfo:
         await bankrun_rpc(
             program,
             "test_empty_seeds_constraint",

@@ -22,10 +22,10 @@ Read the [Documentation](https://kevinheavey.github.io/anchorpy/).
 ## Installation (requires Python >=3.9)
 
 ```sh
-pip install anchorpy[cli]
+pip install anchorpy[cli, pytest]
 
 ```
-Or, if you're not using the CLI features of AnchorPy you can just run `pip install anchorpy`.
+Or, if you're not using the CLI or Pytest plugin features of AnchorPy you can just run `pip install anchorpy`.
 
 ### Development Setup
 
@@ -37,8 +37,7 @@ If you want to contribute to AnchorPy, follow these steps to get set up:
 poetry install
 
 ```
-3. Install [nox-poetry](https://github.com/cjolowicz/nox-poetry) (note: do not use Poetry to install this, see [here](https://medium.com/@cjolowicz/nox-is-a-part-of-your-global-developer-environment-like-poetry-pre-commit-pyenv-or-pipx-1cdeba9198bd))
-4. Activate the poetry shell:
+3. Activate the poetry shell:
 ```sh
 poetry shell
 

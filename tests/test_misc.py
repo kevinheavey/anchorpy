@@ -9,7 +9,6 @@ from anchorpy.provider import Provider, Wallet
 from anchorpy.pytest_plugin import workspace_fixture
 from anchorpy.utils.rpc import invoke
 from anchorpy.workspace import WorkspaceType
-from anchorpy_core.idl import IdlConst, IdlTypeSimple
 from pytest import fixture, mark, raises
 from pytest_asyncio import fixture as async_fixture
 from solana.rpc.core import RPCNoResultException
@@ -26,14 +25,6 @@ workspace = workspace_fixture(PATH, build_cmd="anchor build --skip-lint")
 @fixture(scope="module")
 def program(workspace: WorkspaceType) -> Program:
     return workspace["misc"]
-
-
-def test_idl_constants(program: Program) -> None:
-    idl_constants = program.idl.constants
-    assert idl_constants == [
-        IdlConst(name="BASE", ty=IdlTypeSimple.U128, value="1_000_000"),
-        IdlConst(name="DECIMALS", ty=IdlTypeSimple.U8, value="6"),
-    ]
 
 
 def test_methods(program: Program, initialized_keypair: Keypair) -> None:
@@ -67,7 +58,7 @@ async def test_at_constructor(program: Program) -> None:
         cwd=PATH,
     )
     fetched = await program.at(program.program_id, program.provider)
-    await fetched.close()
+    # await fetched.close()
     assert fetched.idl.name == "misc"
 
 

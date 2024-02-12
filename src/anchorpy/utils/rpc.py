@@ -1,17 +1,20 @@
 """This module contains the invoke function."""
 from asyncio import gather
-from base64 import b64decode
 from dataclasses import dataclass
-from typing import Any, NamedTuple, Optional
+from typing import NamedTuple, Optional, Union, cast
 
-import jsonrpcclient
-import zstandard
 from solana.rpc.async_api import AsyncClient
-from solana.rpc.commitment import Commitment
+from solana.rpc.commitment import Commitment, Confirmed, Finalized, Processed
 from solana.rpc.core import RPCException
 from solana.transaction import Transaction
+from solders.account import Account
+from solders.account_decoder import UiAccountEncoding
+from solders.commitment_config import CommitmentLevel
 from solders.instruction import AccountMeta, Instruction
 from solders.pubkey import Pubkey
+from solders.rpc.config import RpcAccountInfoConfig
+from solders.rpc.requests import GetMultipleAccounts, batch_to_json
+from solders.rpc.responses import GetMultipleAccountsResp, RPCError, batch_from_json
 from solders.signature import Signature
 from toolz import concat, partition_all
 
@@ -20,6 +23,12 @@ from anchorpy.provider import Provider
 
 _GET_MULTIPLE_ACCOUNTS_LIMIT = 100
 _MAX_ACCOUNT_SIZE = 10 * 1048576
+
+_COMMITMENT_TO_SOLDERS = {
+    Finalized: CommitmentLevel.Finalized,
+    Confirmed: CommitmentLevel.Confirmed,
+    Processed: CommitmentLevel.Processed,
+}
 
 
 class AccountInfo(NamedTuple):
@@ -72,7 +81,7 @@ async def invoke(
 @dataclass
 class _MultipleAccountsItem:
     pubkey: Pubkey
-    account: AccountInfo
+    account: Account
 
 
 async def get_multiple_accounts(
@@ -107,50 +116,37 @@ async def _get_multiple_accounts_core(
     connection: AsyncClient, pubkeys: list[Pubkey], commitment: Optional[Commitment]
 ) -> list[Optional[_MultipleAccountsItem]]:
     pubkey_batches = partition_all(_GET_MULTIPLE_ACCOUNTS_LIMIT, pubkeys)
-    rpc_requests: list[dict[str, Any]] = []
+    rpc_requests: list[GetMultipleAccounts] = []
     commitment_to_use = connection._commitment if commitment is None else commitment
     for pubkey_batch in pubkey_batches:
-        pubkeys_to_send = [str(pubkey) for pubkey in pubkey_batch]
-        rpc_request = jsonrpcclient.request(
-            "getMultipleAccounts",
-            params=[
-                pubkeys_to_send,
-                {"encoding": "base64+zstd", "commitment": commitment_to_use},
-            ],
+        rpc_req = GetMultipleAccounts(
+            list(pubkey_batch),
+            RpcAccountInfoConfig(
+                encoding=UiAccountEncoding.Base64Zstd,
+                commitment=_COMMITMENT_TO_SOLDERS[commitment_to_use],
+            ),
         )
-        rpc_requests.append(rpc_request)
+        rpc_requests.append(rpc_req)
     resp = await connection._provider.session.post(
         connection._provider.endpoint_uri,
-        json=rpc_requests,
-        headers={"content-encoding": "gzip"},
+        content=batch_to_json(rpc_requests),
+        headers={"content-encoding": "gzip", "Content-type": "application/json"},
     )
-    parsed = jsonrpcclient.parse(resp.json())
+    parsed = cast(
+        list[Union[RPCError, GetMultipleAccountsResp]],
+        batch_from_json(resp.text, [GetMultipleAccountsResp for _ in rpc_requests]),
+    )
     result: list[Optional[_MultipleAccountsItem]] = []
-    dctx = zstandard.ZstdDecompressor()
     idx = 0
     for rpc_result in parsed:
-        if isinstance(rpc_result, jsonrpcclient.Error):
-            raise RPCException(
-                f"Failed to get info about accounts: {rpc_result.message}"
-            )
-        for account in rpc_result.result["value"]:
+        if not isinstance(rpc_result, GetMultipleAccountsResp):
+            raise RPCException(f"Failed to get info about accounts: {rpc_result}")
+        for account in rpc_result.value:
             if account is None:
                 result.append(None)
             else:
-                acc_info_data = account["data"][0]
-                decoded = b64decode(acc_info_data)
-                decompressed = dctx.decompress(
-                    decoded, max_output_size=_MAX_ACCOUNT_SIZE
-                )
-                acc_info = AccountInfo(
-                    executable=account["executable"],
-                    owner=Pubkey.from_string(account["owner"]),
-                    lamports=account["lamports"],
-                    data=decompressed,
-                    rent_epoch=account["rentEpoch"],
-                )
                 multiple_accounts_item = _MultipleAccountsItem(
-                    pubkey=pubkeys[idx], account=acc_info
+                    pubkey=pubkeys[idx], account=account
                 )
                 result.append(multiple_accounts_item)
             idx += 1

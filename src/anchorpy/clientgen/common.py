@@ -8,6 +8,7 @@ from anchorpy_core.idl import (
     IdlType,
     IdlTypeArray,
     IdlTypeDefined,
+    IdlTypeDefinitionTyAlias,
     IdlTypeDefinitionTyStruct,
     IdlTypeOption,
     IdlTypeSimple,
@@ -97,6 +98,8 @@ def _py_type_from_idl(
                 if use_fields_interface_for_struct
                 else defined
             )
+        elif isinstance(typedef_type, IdlTypeDefinitionTyAlias):
+            name = defined
         else:
             # enum
             name = _kind_interface_name(ty.defined)
@@ -155,15 +158,18 @@ def _layout_for_type(
         else:
             filtered = [t for t in idl.types if _sanitize(t.name) == defined]
             typedef_type = filtered[0].ty
+            if isinstance(typedef_type, IdlTypeDefinitionTyAlias):
+                return _layout_for_type(
+                    idl, typedef_type.value, types_relative_imports=True, name=name
+                )
             defined_types_prefix = (
                 "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
             )
             module = snake(defined)
-            inner = (
-                f"{defined_types_prefix}{module}.{defined}.layout"
-                if isinstance(typedef_type, IdlTypeDefinitionTyStruct)
-                else f"{defined_types_prefix}{module}.layout"
-            )
+            if isinstance(typedef_type, IdlTypeDefinitionTyStruct):
+                inner = f"{defined_types_prefix}{module}.{defined}.layout"
+            else:
+                inner = f"{defined_types_prefix}{module}.layout"
     elif isinstance(ty, IdlTypeArray):
         layout = _layout_for_type(
             idl=idl, ty=ty.array[0], types_relative_imports=types_relative_imports
@@ -248,6 +254,8 @@ def _field_to_encodable(
         if isinstance(typedef_type, IdlTypeDefinitionTyStruct):
             val_full_name = f"{val_prefix}{ty_name}{val_suffix}"
             return f"{val_full_name}.to_encodable()"
+        if isinstance(typedef_type, IdlTypeDefinitionTyAlias):
+            return f"{val_prefix}{ty_name}{val_suffix}"
         return f"{val_prefix}{ty_name}{val_suffix}.to_encodable()"
     if isinstance(ty_type, IdlTypeArray):
         map_body = _field_to_encodable(
