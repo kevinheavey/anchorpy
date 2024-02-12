@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.19.1] - 2024-02-12
+
+### Fixed
+
+- Fix anchorpy import when no extras are included [#(136)](https://github.com/kevinheavey/anchorpy/pull/136)
+
 ## [0.19.0] - 2024-02-12
 
 ### Added
