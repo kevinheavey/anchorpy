@@ -28,13 +28,11 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
-      - name: Install dependencies
-        run: poetry install --no-interaction --no-root
       #----------------------------------------------
       # install your root project
       #----------------------------------------------
       - name: install library
-        run: poetry install --no-interaction --only-root
+        run: poetry install --without pytest,cli
 
       - name: Check import
         run: poetry run python -c "from anchorpy import Program"
