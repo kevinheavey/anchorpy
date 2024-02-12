@@ -1,4 +1,6 @@
 """The Python Anchor client."""
+from contextlib import suppress as __suppress
+
 from anchorpy_core.idl import Idl
 
 from anchorpy import error, utils
@@ -16,20 +18,26 @@ from anchorpy.program.event import EventParser
 from anchorpy.program.namespace.account import AccountClient, ProgramAccount
 from anchorpy.program.namespace.simulate import SimulateResponse
 from anchorpy.provider import Provider, Wallet
-from anchorpy.pytest_plugin import bankrun_fixture, localnet_fixture, workspace_fixture
+
+__has_pytest = False
+with __suppress(ImportError):
+    from anchorpy.pytest_plugin import (
+        bankrun_fixture,
+        localnet_fixture,
+        workspace_fixture,
+    )
+
+    __has_pytest = True
 from anchorpy.workspace import WorkspaceType, close_workspace, create_workspace
 
-__all__ = [
+__all_core = [
     "Program",
     "Provider",
     "Context",
-    "bankrun_fixture",
     "create_workspace",
     "close_workspace",
     "Idl",
-    "workspace_fixture",
     "WorkspaceType",
-    "localnet_fixture",
     "Wallet",
     "Coder",
     "InstructionCoder",
@@ -48,5 +56,15 @@ __all__ = [
     "utils",
 ]
 
+__all__ = (
+    [
+        *__all_core,
+        "bankrun_fixture",
+        "localnet_fixture",
+        "workspace_fixture",
+    ]
+    if __has_pytest
+    else __all_core
+)
 
 __version__ = "0.19.0"
