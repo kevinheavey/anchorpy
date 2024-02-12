@@ -32,7 +32,7 @@ jobs:
       # install your root project
       #----------------------------------------------
       - name: install library
-        run: poetry install --without "pytest cli dev"
+        run: poetry install --only main
 
       - name: Check import
         run: poetry run python -c "from anchorpy import Program"
