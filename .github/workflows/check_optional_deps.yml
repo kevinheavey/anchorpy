@@ -1,4 +1,4 @@
-name: Lint
+name: Dependency check
 on:
   push:
     branches: [main]
@@ -37,4 +37,4 @@ jobs:
         run: poetry install --no-interaction --only-root
 
       - name: Check import
-        run: python -c "from anchorpy import Program"
+        run: poettry run python -c "from anchorpy import Program"
