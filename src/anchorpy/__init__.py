@@ -18,6 +18,7 @@ from anchorpy.program.event import EventParser
 from anchorpy.program.namespace.account import AccountClient, ProgramAccount
 from anchorpy.program.namespace.simulate import SimulateResponse
 from anchorpy.provider import Provider, Wallet
+from anchorpy.workspace import WorkspaceType, close_workspace, create_workspace
 
 __has_pytest = False
 with __suppress(ImportError):
@@ -28,7 +29,6 @@ with __suppress(ImportError):
     )
 
     __has_pytest = True
-from anchorpy.workspace import WorkspaceType, close_workspace, create_workspace
 
 __all_core = [
     "Program",
