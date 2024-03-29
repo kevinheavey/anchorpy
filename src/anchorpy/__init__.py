@@ -67,4 +67,4 @@ __all__ = (
     else __all_core
 )
 
-__version__ = "0.19.1"
+__version__ = "0.20.0"

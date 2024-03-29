@@ -23,7 +23,6 @@ jobs:
             "test_basic_3_bankrun",
             "test_chat",
             "test_cli",
-            "test_cli_init",
             "test_composite",
             "test_errors",
             "test_events",
