@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.1] - 2024-05-05
+
+### Changed
+
+- Relax solana-py dependency [#(141)](https://github.com/kevinheavey/anchorpy/pull/141)
+
+
 ## [0.20.0] - 2024-03-29
 
 ### Changed
