@@ -193,7 +193,7 @@ class AccountClient(object):
             offset=0,
             bytes=bytes_arg,
         )
-        filters_to_use = [base_memcmp_opt] + [] if filters is None else filters
+        filters_to_use = [base_memcmp_opt] + ([] if filters is None else filters)
         resp = await self._provider.connection.get_program_accounts(
             self._program_id,
             encoding="base64",
