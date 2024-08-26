@@ -8,7 +8,7 @@ from typing import AsyncGenerator, Callable, Literal, Optional, Sequence, Tuple,
 
 from pytest import fixture
 from pytest_asyncio import fixture as async_fixture
-from pytest_xprocess import getrootdir
+from xprocess.pytest_xprocess import getrootdir
 from solders.account import Account
 from solders.pubkey import Pubkey
 from xprocess import ProcessStarter, XProcess, XProcessInfo
