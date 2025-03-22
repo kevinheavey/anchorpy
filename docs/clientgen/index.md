@@ -100,7 +100,7 @@ ix = some_instruction({
   ...
 })
 msg = Message(instructions=[instruction], payer=payer.pubkey())
-tx = Transaction(signers=[payer], msg, recent_blockhash)
+tx = Transaction([payer], msg, recent_blockhash)
 
 provider = Provider.local()
 
