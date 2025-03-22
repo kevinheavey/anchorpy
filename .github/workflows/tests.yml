@@ -17,6 +17,7 @@ jobs:
       matrix:
         node: [
             "test_cli",
+            "tests/unit",
             "client_gen/test_client_gen",
             "client_gen/test_functional",
           ]
