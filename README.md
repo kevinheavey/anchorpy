@@ -31,14 +31,9 @@ Or, if you're not using the CLI or Pytest plugin features of AnchorPy you can ju
 
 If you want to contribute to AnchorPy, follow these steps to get set up:
 
-1. Install [poetry](https://python-poetry.org/docs/#installation)
-2. Install dev dependencies:
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+2. Run the unit tests:
 ```sh
-poetry install
-
-```
-3. Activate the poetry shell:
-```sh
-poetry shell
+uv run --all-extras pytest tests/unit
 
 ```

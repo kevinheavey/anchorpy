@@ -1,6 +1,6 @@
 """Provides the `AccountClient` class."""
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Union
 
 from anchorpy_core.idl import Idl, IdlTypeDefinition
 from based58 import b58encode
@@ -175,7 +175,7 @@ class AccountClient(object):
     async def all(  # noqa: A003
         self,
         buffer: Optional[bytes] = None,
-        filters: Optional[Sequence[Union[int, MemcmpOpts]]] = None,
+        filters: Optional[List[Union[int, MemcmpOpts]]] = None,
     ) -> list[ProgramAccount]:
         """Return all instances of this account type for the program.
 
