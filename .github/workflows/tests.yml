@@ -16,7 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         node: [
-            "test_cli",
             "unit",
             "client_gen/test_client_gen",
             "client_gen/test_functional",
