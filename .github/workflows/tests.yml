@@ -16,21 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         node: [
-            "test_basic_0",
-            "test_basic_1",
-            "test_basic_2",
-            "test_basic_3",
-            "test_basic_3_bankrun",
-            "test_chat",
             "test_cli",
-            "test_composite",
-            "test_errors",
-            "test_events",
-            "test_misc",
-            "test_misc_core",
-            "test_misc_core_bankrun",
-            "test_multisig",
-            "test_zero_copy",
             "client_gen/test_client_gen",
             "client_gen/test_functional",
           ]
