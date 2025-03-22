@@ -16,9 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         node: [
+            "client_gen",
             "unit",
-            "client_gen/test_client_gen",
-            "client_gen/test_functional",
           ]
     steps:
       - name: Checkout repo.
@@ -60,7 +59,7 @@ jobs:
       - name: Set up Python
         run: uv python install
       - name: Run tests
-        run: uv run --all-extras pytest tests/${{ matrix.node }}.py
+        run: uv run --all-extras pytest tests/${{ matrix.node }}
 
   all_good:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
