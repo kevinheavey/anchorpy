@@ -81,7 +81,7 @@ def _build_transaction_fn(
             ixns.extend(ctx.post_instructions)
         ctx_signers = ctx.signers
         signers = [] if ctx_signers is None else ctx_signers
-        all_signers = list(unique_everseen([payer, *signers]))
+        all_signers = list(_unique_everseen([payer, *signers]))
         msg = Message.new_with_blockhash(ixns, payer.pubkey(), blockhash)
         return VersionedTransaction(msg, all_signers)
 
