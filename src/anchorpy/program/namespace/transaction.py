@@ -14,11 +14,10 @@ from anchorpy.program.namespace.instruction import _InstructionFn
 
 # ported from more-itertools
 def _unique_everseen(iterable):
-    """
-    Yield unique elements, preserving order.
+    """Yield unique elements, preserving order.
 
-        >>> list(_unique_everseen('AAAABBBCCDAABBB'))
-        ['A', 'B', 'C', 'D']
+    >>> list(_unique_everseen('AAAABBBCCDAABBB'))
+    ['A', 'B', 'C', 'D']
     """
     seenset = set()
     seenset_add = seenset.add
