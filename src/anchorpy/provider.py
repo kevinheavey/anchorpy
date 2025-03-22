@@ -183,7 +183,7 @@ class Wallet:
         Returns:
             The signed transaction.
         """
-        tx.sign(self.payer)
+        tx.sign([self.payer], tx.message.recent_blockhash)
         return tx
 
     def sign_all_transactions(self, txs: list[Transaction]) -> list[Transaction]:
@@ -196,7 +196,7 @@ class Wallet:
             The signed transactions.
         """
         for tx in txs:
-            tx.sign_partial(self.payer)
+            tx.partial_sign([self.payer], tx.message.recent_blockhash)
         return txs
 
     @classmethod
