@@ -23,7 +23,6 @@ from anchorpy.workspace import WorkspaceType, close_workspace, create_workspace
 __has_pytest = False
 with __suppress(ImportError):
     from anchorpy.pytest_plugin import (
-        bankrun_fixture,
         localnet_fixture,
         workspace_fixture,
     )
@@ -59,7 +58,6 @@ __all_core = [
 __all__ = (
     [
         *__all_core,
-        "bankrun_fixture",
         "localnet_fixture",
         "workspace_fixture",
     ]

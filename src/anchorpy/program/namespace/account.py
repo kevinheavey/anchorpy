@@ -7,7 +7,7 @@ from based58 import b58encode
 from construct import Container
 from solana.rpc.commitment import Commitment
 from solana.rpc.types import MemcmpOpts
-from solana.transaction import Instruction
+from solders.instruction import Instruction
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.system_program import CreateAccountParams, create_account
