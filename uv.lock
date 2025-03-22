@@ -3,7 +3,7 @@ requires-python = ">=3.9, <4"
 
 [[package]]
 name = "anchorpy"
-version = "0.20.1"
+version = "0.20.2"
 source = { editable = "." }
 dependencies = [
     { name = "anchorpy-core" },
@@ -15,7 +15,6 @@ dependencies = [
     { name = "solders" },
     { name = "toml" },
     { name = "toolz" },
-    { name = "websockets" },
 ]
 
 [package.optional-dependencies]
@@ -64,11 +63,10 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'pytest'", specifier = ">=0.21.0,<0.22" },
     { name = "pytest-xprocess", marker = "extra == 'pytest'", specifier = ">=0.18.1,<0.19" },
     { name = "solana", specifier = ">=0.33.0,<1.0" },
-    { name = "solders", specifier = ">=0.21.0,<0.22" },
+    { name = "solders", specifier = ">=0.21.0,<1.0" },
     { name = "toml", specifier = ">=0.10.2,<0.11" },
     { name = "toolz", specifier = ">=0.11.2,<0.12" },
     { name = "typer", marker = "extra == 'cli'", specifier = "==0.4.1" },
-    { name = "websockets", specifier = ">=9.0,<11.0" },
 ]
 
 [package.metadata.requires-dev]
