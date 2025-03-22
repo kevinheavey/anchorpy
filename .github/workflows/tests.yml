@@ -40,15 +40,6 @@ jobs:
         with:
           submodules: "recursive"
 
-      - name: Cache Solana Tool Suite
-        uses: actions/cache@v2
-        id: cache-solana
-        with:
-          path: |
-            ~/.cache/solana/
-            ~/.local/share/solana/
-          key: solana-${{ runner.os }}-v0000-${{ env.solana_version }}
-
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -57,7 +48,6 @@ jobs:
           override: true
       - uses: Swatinem/rust-cache@v1
       - name: Install Solana
-        if: steps.cache-solana.outputs.cache-hit != 'true'
         run: sh -c "$(curl -sSfL https://release.solana.com/v${{ env.solana_version }}/install)"
 
       - name: Add Solana to path
