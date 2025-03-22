@@ -10,7 +10,6 @@ dependencies = [
     { name = "based58" },
     { name = "borsh-construct" },
     { name = "construct-typing" },
-    { name = "more-itertools" },
     { name = "pyheck" },
     { name = "solana" },
     { name = "solders" },
@@ -59,7 +58,6 @@ requires-dist = [
     { name = "construct-typing", specifier = ">=0.5.1,<0.6" },
     { name = "genpy", marker = "extra == 'cli'", specifier = "~=2021.1" },
     { name = "ipython", marker = "extra == 'cli'", specifier = ">=8.0.1,<9" },
-    { name = "more-itertools", specifier = ">=8.11.0,<9" },
     { name = "py", marker = "extra == 'pytest'", specifier = ">=1.11.0,<2" },
     { name = "pyheck", specifier = ">=0.1.4,<0.2" },
     { name = "pytest", marker = "extra == 'pytest'", specifier = ">=7.2.0,<8" },
@@ -693,15 +691,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/40/e8/24ea8c974b71c3e1490648fb1e89c0bc3fb2b20d787bf23b67c990081adc/mkdocstrings-0.17.0.tar.gz", hash = "sha256:75b5cfa2039aeaf3a5f5cf0aa438507b0330ce76c8478da149d692daa7213a98", size = 38435 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c2/5c/7ee2e70841704bbd8ebaf9f399598bdad21a990689a9a3b889f443c7668f/mkdocstrings-0.17.0-py3-none-any.whl", hash = "sha256:103fc1dd58cb23b7e0a6da5292435f01b29dc6fa0ba829132537f3f556f985de", size = 45222 },
-]
-
-[[package]]
-name = "more-itertools"
-version = "8.14.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c7/0c/fad24ca2c9283abc45a32b3bfc2a247376795683449f595ff1280c171396/more-itertools-8.14.0.tar.gz", hash = "sha256:c09443cd3d5438b8dafccd867a6bc1cb0894389e90cb53d227456b0b0bccb750", size = 102642 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/ff/1ad78678bee731ae5414ea5e97396b3f91de32186028daa614d322ac5a8b/more_itertools-8.14.0-py3-none-any.whl", hash = "sha256:1bc4f91ee5b1b31ac7ceacc17c09befe6a40a503907baf9c839c229b5095cfd2", size = 52193 },
 ]
 
 [[package]]
