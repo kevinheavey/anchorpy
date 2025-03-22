@@ -78,45 +78,15 @@ jobs:
       - name: Generate local keypair
         run: solana-keygen new --no-bip39-passphrase
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          # Install a specific version of uv.
+          version: "0.6.9"
       - name: Set up Python
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.9
-
-      #----------------------------------------------
-      #  -----  install & configure poetry  -----
-      #----------------------------------------------
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.3.2
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-      #----------------------------------------------
-      #       load cached venv if cache exists
-      #----------------------------------------------
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v2
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-      #----------------------------------------------
-      # install dependencies if cache does not exist
-      #----------------------------------------------
-      - name: Install dependencies
-        run: poetry install -E cli --no-interaction --no-root
-      #----------------------------------------------
-      # install your root project
-      #----------------------------------------------
-      - name: Install library
-        run: poetry install -E cli --no-interaction
-      #----------------------------------------------
-      #              run test suite
-      #----------------------------------------------
+        run: uv python install
       - name: Run tests
-        run: poetry run pytest tests/${{ matrix.node }}.py
+        run: uv run --all-extras pytest tests/${{ matrix.node }}.py
 
   all_good:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
