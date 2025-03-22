@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.20.2] - 2025-03-22
+
+### Fixed
+
+- Fix logical grouping issue in filters_to_use assignment [#(145)](https://github.com/kevinheavey/anchorpy/pull/145)
+
+### Changed
+
+- Relax solders dependency [#(158)](https://github.com/kevinheavey/anchorpy/pull/158)
+
 ## [0.20.1] - 2024-05-05
 
 ### Changed
