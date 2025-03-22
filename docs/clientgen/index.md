@@ -77,14 +77,18 @@ This will generate code to `./my_client`:
 ### Instructions
 
 ```python
-from solana.transaction import Transaction
+from solders.hash import Hash
 from solders.keypair import Keypair
+from solders.message import Message
 from solders.pubkey import Pubkey
+from solders.transaction import Transaction
 from anchorpy import Provider
 from my_client.instructions import some_instruction
 
  # call an instruction
 foo_account = Keypair()
+# in real use, fetch this from an RPC
+recent_blockhash = Hash.default() 
 
 ix = some_instruction({
   "foo_param": "...",
@@ -95,11 +99,12 @@ ix = some_instruction({
   "bar_account": Pubkey("..."),
   ...
 })
-tx = Transaction().add(ix)
+msg = Message(instructions=[instruction], payer=payer.pubkey())
+tx = Transaction(signers=[payer], msg, recent_blockhash)
 
 provider = Provider.local()
 
-await provider.send(tx, [payer, foo_account])
+await provider.send(tx)
 ```
 
 ### Accounts

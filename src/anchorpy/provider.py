@@ -10,12 +10,11 @@ from typing import List, Optional, Sequence, Union
 from solana.rpc import types
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Finalized, Processed
-from solana.transaction import Transaction
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.rpc.responses import SimulateTransactionResp
 from solders.signature import Signature
-from solders.transaction import VersionedTransaction
+from solders.transaction import Transaction, VersionedTransaction
 
 DEFAULT_OPTIONS = types.TxOpts(skip_confirmation=False, preflight_commitment=Processed)
 COMMITMENT_RANKS = MappingProxyType({Processed: 0, Confirmed: 1, Finalized: 2})
@@ -118,7 +117,7 @@ class Provider:
         """
         if opts is None:
             opts = self.opts
-        raw = tx.serialize() if isinstance(tx, Transaction) else bytes(tx)
+        raw = bytes(tx)
         resp = await self.connection.send_raw_transaction(raw, opts=opts)
         return resp.value
 
@@ -140,7 +139,7 @@ class Provider:
             opts = self.opts
         sigs = []
         for tx in txs:
-            raw = tx.serialize() if isinstance(tx, Transaction) else bytes(tx)
+            raw = bytes(tx)
             resp = await self.connection.send_raw_transaction(raw, opts=opts)
             sigs.append(resp.value)
         return sigs

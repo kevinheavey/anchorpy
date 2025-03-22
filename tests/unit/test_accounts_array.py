@@ -3,7 +3,7 @@ from pathlib import Path
 from anchorpy import Idl
 from anchorpy.program.namespace.instruction import _accounts_array
 from pytest import mark
-from solana.transaction import AccountMeta
+from solders.instruction import AccountMeta
 from solders.keypair import Keypair
 
 
