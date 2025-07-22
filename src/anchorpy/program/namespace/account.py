@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
-from anchorpy_core.idl import Idl, IdlTypeDefinition
+from anchorpy_idl import Idl, IdlTypeDef
 from based58 import b58encode
 from construct import Container
 from solana.rpc.commitment import Commitment
@@ -61,7 +61,7 @@ class AccountClient(object):
     def __init__(
         self,
         idl: Idl,
-        idl_account: IdlTypeDefinition,
+        idl_account: IdlTypeDef,
         coder: Coder,
         program_id: Pubkey,
         provider: Provider,

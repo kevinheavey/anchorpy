@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Optional, Union, cast
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     Idl,
     IdlAccountItem,
-    IdlAccounts,
+    IdlInstructionAccounts,
     IdlSeedConst,
     IdlTypeArray,
     IdlTypeSimple,
@@ -103,8 +103,8 @@ def recurse_accounts(
     elements: list[str] = []
     for acc in accs:
         names = [*nested_names, _sanitize(snake(acc.name))]
-        if isinstance(acc, IdlAccounts):
-            nested_accs = cast(IdlAccounts, acc)
+        if isinstance(acc, IdlInstructionAccounts):
+            nested_accs = cast(IdlInstructionAccounts, acc)
             new_elements, acc_idx = recurse_accounts(
                 nested_accs.accounts, names, const_accs, acc_idx
             )
@@ -120,11 +120,11 @@ def recurse_accounts(
                     nested_keys = [f'["{key}"]' for key in names]
                     dict_accessor = "".join(nested_keys)
                     pubkey_var = f"accounts{dict_accessor}"
-            if acc.is_optional:
+            if acc.optional:
                 elements.append(
                     f"AccountMeta(pubkey={pubkey_var}, "
-                    f"is_signer={acc.is_signer}, "
-                    f"is_writable={acc.is_mut}) "
+                    f"is_signer={acc.signer}, "
+                    f"is_writable={acc.writable}) "
                     f"if {pubkey_var} else "
                     f"AccountMeta(pubkey=program_id, "
                     f"is_signer=False, is_writable=False)"
@@ -132,8 +132,8 @@ def recurse_accounts(
             else:
                 elements.append(
                     f"AccountMeta(pubkey={pubkey_var}, "
-                    f"is_signer={acc.is_signer}, "
-                    f"is_writable={acc.is_mut})"
+                    f"is_signer={acc.signer}, "
+                    f"is_writable={acc.writable})"
                 )
     return elements, acc_idx
 
@@ -171,8 +171,8 @@ def gen_accounts(
     const_pdas: list[Assign] = []
     for acc in idl_accs:
         acc_name = _sanitize(snake(acc.name))
-        if isinstance(acc, IdlAccounts):
-            nested_accs = cast(IdlAccounts, acc)
+        if isinstance(acc, IdlInstructionAccounts):
+            nested_accs = cast(IdlInstructionAccounts, acc)
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
             nested_res = gen_accounts(
                 nested_acc_name,
@@ -204,7 +204,10 @@ def gen_accounts(
                     const_pda_body_items = [
                         str(
                             to_buffer_value(
-                                cast(Union[IdlTypeSimple, IdlTypeArray], seed.ty),
+                                #cast(Union[IdlTypeSimple, IdlTypeArray], seed.ty),
+                                #seed.ty if seed.ty is not None else IdlTypeArray,
+                                IdlTypeArray if getattr(seed, 'ty', None) is None else cast(
+                                    Union[IdlTypeSimple, IdlTypeArray], seed.ty),
                                 cast(Union[str, int, list[int]], seed.value),
                             )
                         )
@@ -226,7 +229,7 @@ def gen_accounts(
                 try:
                     CONST_ACCOUNTS[acc_name]
                 except KeyError:
-                    if acc.is_optional:
+                    if acc.optional:
                         params.append(TypedParam(acc_name, "typing.Optional[Pubkey]"))
                     else:
                         params.append(TypedParam(acc_name, "Pubkey"))

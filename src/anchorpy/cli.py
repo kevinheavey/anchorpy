@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional, cast
 
 import typer
-from anchorpy_core.idl import Idl
+from anchorpy_idl import Idl
 from IPython import embed
 
 from anchorpy import create_workspace
@@ -106,6 +106,7 @@ def client_gen(
     ),
 ):
     """Generate Python client code from the specified anchor IDL."""
+
     idl_obj = Idl.from_json(idl.read_text())
     if program_id is None:
         idl_metadata = idl_obj.metadata

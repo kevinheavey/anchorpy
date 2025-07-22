@@ -1,11 +1,12 @@
 from pathlib import Path
 from typing import cast
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     Idl,
     IdlField,
-    IdlTypeDefinition,
-    IdlTypeDefinitionTyStruct,
+    IdlTypeDef,
+    IdlTypeDefStruct,
+    #IdlTypeDefTyStruct,
 )
 from autoflake import fix_code
 from black import FileMode, format_str
@@ -47,6 +48,7 @@ from anchorpy.clientgen.genpy_extension import (
     TypedParam,
 )
 from anchorpy.coder.accounts import _account_discriminator
+from anchorpy.coder.idl import find_type_by_name
 
 
 def gen_accounts(idl: Idl, root: Path) -> None:
@@ -92,7 +94,7 @@ def gen_accounts_code(idl: Idl, accounts_dir: Path) -> dict[Path, str]:
     return res
 
 
-def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
+def gen_account_code(acc: IdlTypeDef, idl: Idl) -> str:
     base_imports = [
         Import("typing"),
         FromImport("dataclasses", ["dataclass"]),
@@ -114,8 +116,10 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
     )
     fields_interface_params: list[TypedParam] = []
     json_interface_params: list[TypedParam] = []
-    ty = cast(IdlTypeDefinitionTyStruct, acc.ty)
-    fields = ty.fields
+    accType = find_type_by_name(acc.name,idl.types)
+
+    ty = cast(IdlTypeDefStruct, accType.ty)
+    fields = ty.fields.fields
     name = _sanitize(acc.name)
     json_interface_name = _json_interface_name(name)
     layout_items: list[str] = []
@@ -155,7 +159,7 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
                 field_name,
                 _field_from_decoded(
                     idl=idl,
-                    ty=IdlField(name=snake(field.name), docs=None, ty=field.ty),
+                    ty=IdlField(name=snake(field.name), docs=[], ty=field.ty),
                     types_relative_imports=False,
                     val_prefix="dec.",
                 ),

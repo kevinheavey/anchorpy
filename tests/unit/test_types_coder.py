@@ -2,7 +2,8 @@ import json
 
 import pytest
 from anchorpy import Coder
-from anchorpy_core.idl import Idl
+from anchorpy_idl import Idl
+
 
 
 @pytest.mark.unit
@@ -11,7 +12,6 @@ def test_can_encode_and_decode_user_defined_types():
     idl_json = {
         "version": "0.0.0",
         "name": "basic_0",
-        "address": "Test111111111111111111111111111111111111111",
         "instructions": [
             {
                 "name": "initialize",
@@ -60,7 +60,6 @@ def test_can_encode_and_decode_large_integers():
     idl_json = {
         "version": "0.0.0",
         "name": "basic_0",
-        "address": "Test111111111111111111111111111111111111111",
         "instructions": [
             {
                 "name": "initialize",

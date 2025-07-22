@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from anchorpy_core.idl import Idl, IdlErrorCode
+from anchorpy_idl import Idl, IdlErrorCode
 from autoflake import fix_code
 from black import FileMode, format_str
 from genpy import (

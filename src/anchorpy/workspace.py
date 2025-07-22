@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 import toml  # type: ignore
-from anchorpy_core.idl import Idl
+from anchorpy_idl import Idl
 from solders.pubkey import Pubkey
 
 from anchorpy.program.core import Program

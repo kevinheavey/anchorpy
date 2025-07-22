@@ -5,15 +5,15 @@ from keyword import kwlist
 from types import MappingProxyType
 from typing import Mapping, Type, cast
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     IdlField,
     IdlType,
     IdlTypeArray,
     IdlTypeDefined,
-    IdlTypeDefinition,
-    IdlTypeDefinitionTyAlias,
-    IdlTypeDefinitionTyEnum,
-    IdlTypeDefinitionTyStruct,
+    IdlTypeDef,
+    IdlTypeDefAlias,
+    IdlTypeDefEnum,
+    IdlTypeDefStruct,
     IdlTypeOption,
     IdlTypeSimple,
     IdlTypeVec,
@@ -40,12 +40,21 @@ from borsh_construct import (
     TupleStruct,
     Vec,
 )
+import borsh_construct as borshc
 from construct import Construct
 from pyheck import snake
 
 from anchorpy.borsh_extension import BorshPubkey, _DataclassStruct
 from anchorpy.idl import TypeDefs
 
+def find_type_by_name(type_name, types_list) -> IdlTypeDef:
+    """Find an IdlTypeDef in types_list that matches the given type_name, or return None."""
+    for type_def in types_list:
+        if type_def.name == type_name:
+            return type_def
+    raise ValueError(f"Type '{type_name}' not found in types list")  # Raise error if type not found
+
+"""
 FIELD_TYPE_MAP: Mapping[IdlTypeSimple, Construct] = MappingProxyType(
     {
         IdlTypeSimple.Bool: Bool,
@@ -61,10 +70,31 @@ FIELD_TYPE_MAP: Mapping[IdlTypeSimple, Construct] = MappingProxyType(
         IdlTypeSimple.F64: F64,
         IdlTypeSimple.U128: U128,
         IdlTypeSimple.I128: I128,
-        IdlTypeSimple.Bytes: Bytes,
-        IdlTypeSimple.String: String,
-        IdlTypeSimple.PublicKey: BorshPubkey,
+        IdlTypeSimple.Bytes: borshc.Bytes,
+        IdlTypeSimple.String: borshc.String,
+        IdlTypeSimple.Pubkey: BorshPubkey,
     },
+)
+"""
+FIELD_TYPE_MAP: Mapping[IdlTypeSimple, Construct] = MappingProxyType(
+{
+    IdlTypeSimple.Bool: Bool,
+    IdlTypeSimple.U8:U8,
+    IdlTypeSimple.I8: I8,
+    IdlTypeSimple.U16: U16,
+    IdlTypeSimple.I16: I16,
+    IdlTypeSimple.U32: U32,
+    IdlTypeSimple.I32: I32,
+    IdlTypeSimple.F32: F32,
+    IdlTypeSimple.U64: U64,
+    IdlTypeSimple.I64: I64,
+    IdlTypeSimple.F64: F64,
+    IdlTypeSimple.U128: U128,
+    IdlTypeSimple.I128: I128,
+    IdlTypeSimple.Bytes: borshc.Bytes,
+    IdlTypeSimple.String: borshc.String,
+    IdlTypeSimple.Pubkey: BorshPubkey,
+}
 )
 
 
@@ -72,7 +102,7 @@ _enums_cache: dict[tuple[str, str], Enum] = {}
 
 
 def _handle_enum_variants(
-    idl_enum: IdlTypeDefinitionTyEnum,
+    idl_enum: IdlTypeDefEnum,
     types: TypeDefs,
     name: str,
 ) -> Enum:
@@ -86,7 +116,7 @@ def _handle_enum_variants(
 
 
 def _handle_enum_variants_no_cache(
-    idl_enum: IdlTypeDefinitionTyEnum,
+    idl_enum: IdlTypeDefEnum,
     types: TypeDefs,
     name: str,
 ) -> Enum:
@@ -137,27 +167,31 @@ def _handle_enum_variants_no_cache(
 
 
 def _typedef_layout_without_field_name(
-    typedef: IdlTypeDefinition,
+    typedef: IdlTypeDef,
     types: TypeDefs,
 ) -> Construct:
     typedef_type = typedef.ty
     name = typedef.name
-    if isinstance(typedef_type, IdlTypeDefinitionTyStruct):
-        field_layouts = [_field_layout(field, types) for field in typedef_type.fields]
+    if isinstance(typedef_type, IdlTypeDefStruct):
+        field_layouts = []
+        if typedef_type.fields == None:
+            field_layouts = []
+        else:
+            field_layouts = [_field_layout(field, types) for field in typedef_type.fields.fields]
         cstruct = CStruct(*field_layouts)
         datacls = _idl_typedef_ty_struct_to_dataclass_type(typedef_type, name)
         return _DataclassStruct(cstruct, datacls=datacls)
-    elif isinstance(typedef_type, IdlTypeDefinitionTyEnum):
+    elif isinstance(typedef_type, IdlTypeDefEnum):
         return _handle_enum_variants(typedef_type, types, name)
-    elif isinstance(typedef_type, IdlTypeDefinitionTyAlias):
-        return _type_layout(typedef_type.value, types)
+    elif isinstance(typedef_type, IdlTypeDefAlias):
+        return _type_layout(typedef_type.alias, types)
     unknown_type = typedef_type.kind
     raise ValueError(f"Unknown type {unknown_type}")
 
 
 def _typedef_layout(
-    typedef: IdlTypeDefinition,
-    types: list[IdlTypeDefinition],
+    typedef: IdlTypeDef,
+    types: list[IdlTypeDef],
     field_name: str,
 ) -> Construct:
     """Map an IDL typedef to a `Construct` object.
@@ -184,7 +218,7 @@ def _type_layout(type_: IdlType, types: TypeDefs) -> Construct:
     elif isinstance(type_, IdlTypeOption):
         return Option(_type_layout(type_.option, types))
     elif isinstance(type_, IdlTypeDefined):
-        defined = type_.defined
+        defined = type_.name
         if not types:
             raise ValueError("User defined types not provided")
         filtered = [t for t in types if t.name == defined]
@@ -226,7 +260,7 @@ _idl_typedef_ty_struct_to_dataclass_type_cache: dict[tuple[str, str], Type] = {}
 
 
 def _idl_typedef_ty_struct_to_dataclass_type(
-    typedef_type: IdlTypeDefinitionTyStruct,
+    typedef_type: IdlTypeDefStruct,
     name: str,
 ) -> Type:
     dict_key = (name, str(typedef_type))
@@ -239,7 +273,7 @@ def _idl_typedef_ty_struct_to_dataclass_type(
 
 
 def _idl_typedef_ty_struct_to_dataclass_type_no_cache(
-    typedef_type: IdlTypeDefinitionTyStruct,
+    typedef_type: IdlTypeDefStruct,
     name: str,
 ) -> Type:
     """Generate a dataclass definition from an IDL struct.
@@ -252,7 +286,7 @@ def _idl_typedef_ty_struct_to_dataclass_type_no_cache(
         Dataclass definition.
     """
     dataclass_fields = []
-    for field in typedef_type.fields:
+    for field in typedef_type.fields.fields if typedef_type.fields is not None else []:
         field_name = snake(field.name)
         field_name_to_use = f"{field_name}_" if field_name in kwlist else field_name
         dataclass_fields.append(
@@ -301,7 +335,7 @@ def _idl_enum_fields_named_to_dataclass_type_no_cache(
 
 
 def _idl_typedef_to_python_type(
-    typedef: IdlTypeDefinition,
+    typedef: IdlTypeDef,
     types: TypeDefs,
 ) -> Type:
     """Generate Python type from IDL user-defined type.
@@ -317,14 +351,14 @@ def _idl_typedef_to_python_type(
         The Python type.
     """
     typedef_type = typedef.ty
-    if isinstance(typedef_type, IdlTypeDefinitionTyStruct):
+    if isinstance(typedef_type, IdlTypeDefStruct):
         return _idl_typedef_ty_struct_to_dataclass_type(
             typedef_type,
             typedef.name,
         )
-    elif isinstance(typedef_type, IdlTypeDefinitionTyEnum):
+    elif isinstance(typedef_type, IdlTypeDefEnum):
         return _handle_enum_variants(typedef_type, types, typedef.name).enum
-    elif isinstance(typedef_type, IdlTypeDefinitionTyAlias):
+    elif isinstance(typedef_type, IdlTypeDefAlias):
         raise ValueError(f"Alias not handled here: {typedef_type}")
     unknown_type = typedef_type.kind
     raise ValueError(f"Unknown type {unknown_type}")

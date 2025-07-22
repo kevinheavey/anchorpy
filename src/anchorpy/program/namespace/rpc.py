@@ -1,7 +1,7 @@
 """This module contains code for generating RPC functions."""
 from typing import Any, Awaitable, Dict, Protocol
 
-from anchorpy_core.idl import IdlInstruction
+from anchorpy_idl import IdlInstruction
 from solana.rpc.commitment import Confirmed
 from solana.rpc.core import RPCException
 from solders.pubkey import Pubkey

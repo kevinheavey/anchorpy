@@ -1,7 +1,7 @@
 """This module contains code for creating simulate functions."""
 from typing import Any, Awaitable, Dict, NamedTuple, Protocol
 
-from anchorpy_core.idl import Idl, IdlInstruction
+from anchorpy_idl import Idl, IdlInstruction
 from solana.rpc.commitment import Confirmed
 from solana.rpc.core import RPCException
 from solders.pubkey import Pubkey

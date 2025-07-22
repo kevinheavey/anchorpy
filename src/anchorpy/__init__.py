@@ -1,7 +1,7 @@
 """The Python Anchor client."""
 from contextlib import suppress as __suppress
 
-from anchorpy_core.idl import Idl
+from anchorpy_idl import Idl
 
 from anchorpy import error, utils
 from anchorpy.coder.coder import AccountsCoder, Coder, EventCoder, InstructionCoder

@@ -7,7 +7,7 @@ from typing import AsyncGenerator, Callable, Literal, Optional, Union
 
 from pytest import fixture
 from pytest_asyncio import fixture as async_fixture
-from pytest_xprocess import getrootdir
+from xprocess.pytest_xprocess import getrootdir
 from xprocess import ProcessStarter, XProcess, XProcessInfo
 
 from anchorpy.program.core import Program
@@ -33,6 +33,9 @@ class _FixedXProcessInfo(XProcessInfo):
 
 
 class _FixedXProcess(XProcess):
+    _info_objects = []
+    _popen_instances = []
+    _file_handles = []
     def getinfo(self, name: str) -> _FixedXProcessInfo:
         """Return Process Info for the given external process.
 

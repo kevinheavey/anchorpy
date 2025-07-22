@@ -1,10 +1,4 @@
 [project]
-name = "anchorpy"
-version = "0.21.0"
-description = "The Python Anchor client."
-authors = [{ name = "kevinheavey", email = "kevinheavey123@gmail.com" }]
-requires-python = "~=3.9"
-readme = "README.md"
 dependencies = [
     "construct-typing>=0.5.1,<0.6",
     "solana>=0.36.1,<1.0",
@@ -13,10 +7,25 @@ dependencies = [
     "toolz>=0.11.2,<0.12",
     "pyheck>=0.1.4,<0.2",
     "based58>=0.1.1,<0.2",
-    "anchorpy-core>=0.2.0,<0.3",
     "toml>=0.10.2,<0.11",
+    "typer>=0.16.0",
+    "ipython>=9.4.0",
+    "pytest-asyncio>=1.1.0",
+    "pytest-xprocess>=1.0.2",
+    "autoflake>=2.3.1",
+    "black>=25.1.0",
+    "genpy>=2022.1",
+    "anchorpy-idl @ file:///Users/ttt/code/pysrc/anchorpy-idl2",
 ]
+#    "anchorpy-idl @ file:////Users/ttt/code/pysrc/anchorpy-idl2",
+name = "anchorpy"
+version = "0.21.0"
+description = "The Python Anchor client."
+authors = [{ name = "kevinheavey", email = "kevinheavey123@gmail.com" }]
+requires-python = "~=3.9"
+readme = "README.md"
 
+#"anchorpy-core>=0.2.0,<0.3",
 [project.optional-dependencies]
 cli = [
     "typer==0.4.1",
@@ -26,7 +35,6 @@ cli = [
     "autoflake~=1.4",
 ]
 pytest = [
-    "pytest>=7.2.0,<8",
     "py>=1.11.0,<2",
     "pytest-xprocess>=0.18.1,<0.19",
     "pytest-asyncio>=0.21.0,<0.22",
@@ -122,5 +130,33 @@ convention = "google"
 "tests/client_gen/token/**/*.py" = ["C417", "I001", "F401"]
 "src/anchorpy/cli.py" = ["B008"]
 
+#[tool.pyright]
+#reportMissingModuleSource = false
+[tool.ty.rules]
+index-out-of-bounds = "ignore"
+
 [tool.pyright]
-reportMissingModuleSource = false
+venvPath = "."
+venv = ".venv"
+#pythonVersion = "3.13"
+typeCheckingMode = "basic"
+include = ["src"]
+exclude = [".venv"]
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "pytest>=8.4.1",
+    "pytest-xprocess>=1.0.2",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+
+
+

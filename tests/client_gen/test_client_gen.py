@@ -7,6 +7,7 @@ from anchorpy import Provider, Wallet
 from anchorpy.pytest_plugin import localnet_fixture
 from construct import ListContainer
 from pytest import fixture, mark
+import pytest
 from pytest_asyncio import fixture as async_fixture
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed, Processed
@@ -44,9 +45,19 @@ EXAMPLE_PROGRAM_DIR = Path("tests/client_gen/example-program")
 @fixture(scope="session")
 def event_loop():
     """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
+    #loop = asyncio.get_event_loop_policy().new_event_loop()
+    #loop = asyncio.new_event_loop()
+    #print("new event loop\n")
+    #yield loop
+    #loop.close()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+            # 如果没有运行的事件循环，创建一个新的
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     yield loop
-    loop.close()
+    #loop.close()
 
 
 localnet = localnet_fixture(EXAMPLE_PROGRAM_DIR, scope="session")
@@ -73,7 +84,7 @@ async def blockhash(provider: Provider) -> Hash:
     return (await provider.connection.get_latest_blockhash(Confirmed)).value.blockhash
 
 
-@async_fixture(scope="module")
+@async_fixture(scope="session")
 async def init_and_account_fetch(provider: Provider, blockhash: Hash) -> Keypair:
     state = Keypair()
     initialize_ix = initialize(
@@ -90,7 +101,7 @@ async def init_and_account_fetch(provider: Provider, blockhash: Hash) -> Keypair
     return state
 
 
-@mark.asyncio
+@pytest.mark.asyncio(scope="session")
 async def test_init_and_account_fetch(
     init_and_account_fetch: Keypair, provider: Provider
 ) -> None:
@@ -192,6 +203,7 @@ async def test_init_and_account_fetch(
         enum_field3=enum_field3_expected,
         enum_field4=enum_field4_expected,
     )
+
     res = await State.fetch(provider.connection, state.pubkey())
     assert res == expected
     res = await State.fetch(provider.connection, state.pubkey(), program_id=PROGRAM_ID)
@@ -226,7 +238,7 @@ async def setup_fetch_multiple(
     return state, another_state
 
 
-@mark.asyncio
+@mark.asyncio(scope="session")
 async def test_fetch_multiple(
     provider: Provider, setup_fetch_multiple: tuple[Keypair, Keypair]
 ) -> None:
@@ -322,7 +334,7 @@ async def send_instructions_with_args(
     return state, state2
 
 
-@mark.asyncio
+@mark.asyncio(scope="session")
 async def test_instructions_with_args(
     send_instructions_with_args: tuple[Keypair, Keypair], provider: Provider
 ) -> None:
@@ -388,7 +400,7 @@ async def test_instructions_with_args(
     assert res2 == expected2
 
 
-@mark.asyncio
+@mark.asyncio(scope="session")
 async def test_instruction_with_optional_account(
     send_instructions_with_args: tuple[Keypair, Keypair],
     provider: Provider,
@@ -431,7 +443,7 @@ async def test_instruction_with_optional_account(
     assert before_res.u8_field + 1 == res.u8_field
 
 
-@mark.asyncio
+@mark.asyncio(scope="session")
 async def test_cause_error(provider: Provider, blockhash: Hash) -> None:
     msg = Message.new_with_blockhash(
         [cause_error()], provider.wallet.public_key, blockhash

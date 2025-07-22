@@ -2,10 +2,12 @@
 
 from typing import Any, Dict
 
-from anchorpy_core.idl import Idl
+from anchorpy_idl import Idl,IdlTypeDef
 from construct import Construct, Container
 
 from anchorpy.coder.idl import _typedef_layout_without_field_name
+
+
 
 
 class TypesCoder:

@@ -11,6 +11,7 @@ from solders.keypair import Keypair
 def test_accounts_array() -> None:
     """Test accounts_array returns expected."""
     raw = Path("tests/idls/composite.json").read_text()
+    #print(f'raw {raw}')
     idl = Idl.from_json(raw)
     dummy_a = Keypair()
     dummy_b = Keypair()

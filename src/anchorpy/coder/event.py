@@ -1,18 +1,24 @@
 """This module deals with (de)serializing Anchor events."""
 from hashlib import sha256
 from typing import Any, Dict, Optional, Tuple
+#,evaluate_forward_ref
+#from typing_extensions import evaluate_forward_ref
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     Idl,
     IdlEvent,
     IdlField,
-    IdlTypeDefinition,
-    IdlTypeDefinitionTyStruct,
+    IdlTypeDef,
+    IdlTypeDefStruct,
+    IdlSerializationSimple,
+IdlDefinedFieldsNamed,
+IdlDefinedFieldsTuple
+
 )
 from construct import Adapter, Bytes, Construct, Sequence, Switch
 from pyheck import snake
 
-from anchorpy.coder.idl import _typedef_layout
+from anchorpy.coder.idl import _typedef_layout,find_type_by_name
 from anchorpy.program.common import Event
 
 
@@ -29,16 +35,23 @@ def _event_discriminator(name: str) -> bytes:
 
 
 def _event_layout(event: IdlEvent, idl: Idl) -> Construct:
-    event_type_def = IdlTypeDefinition(
-        name=event.name,
-        docs=None,
-        ty=IdlTypeDefinitionTyStruct(
-            fields=[
-                IdlField(name=snake(f.name), docs=None, ty=f.ty) for f in event.fields
-            ],
-        ),
-    )
-    return _typedef_layout(event_type_def, idl.types, event.name)
+    evType =find_type_by_name(event.name,idl.types)
+    if isinstance(evType.ty,IdlTypeDefStruct):
+        evFields = evType.ty.fields.fields
+        event_type_def = IdlTypeDef(
+            name=event.name,
+            docs=[],
+            ty=IdlTypeDefStruct(
+                IdlDefinedFieldsNamed(fields=[
+                    IdlField(name=snake(f.name), docs=[], ty=f.ty) for f in evFields
+                ]),
+            ),
+            generics=[],
+            repr=None,
+            serialization=IdlSerializationSimple.Borsh,
+        )
+        return _typedef_layout(event_type_def, idl.types, event.name)
+    raise ValueError(f"Type '{event.name}' not found in types list")  # Raise error if type not found
 
 
 class EventCoder(Adapter):

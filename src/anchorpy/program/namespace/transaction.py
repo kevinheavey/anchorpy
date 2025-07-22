@@ -1,7 +1,7 @@
 """This module deals with generating transactions."""
 from typing import Any, Protocol
 
-from anchorpy_core.idl import IdlInstruction
+from anchorpy_idl import IdlInstruction
 from solders.hash import Hash
 from solders.instruction import Instruction
 from solders.keypair import Keypair

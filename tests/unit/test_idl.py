@@ -8,13 +8,24 @@ def test_idls() -> None:
     idls = []
     programs = []
     for path in Path("tests/idls/").iterdir():
+        if path.name == "__pycache__":
+            continue
         raw = path.read_text()
+        print(f"path:{path.name}")
         idl = Idl.from_json(raw)
         idls.append(idl)
         if "spl_token" not in str(path):
             program = Program(idl, Pubkey.default())
             programs.append(program)
     assert idls
+
+def test_idl_debug() -> None:
+    path = Path("tests/idls/switchboard_v2.mainnet.06022022.json")
+    raw = path.read_text()
+    print(f"path:{path.name}")
+    idl = Idl.from_json(raw)
+    if "spl_token" not in str(path):
+        program = Program(idl, Pubkey.default())
 
 
 def test_jet_enum() -> None:
