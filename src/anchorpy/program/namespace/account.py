@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
-from anchorpy_core.idl import Idl, IdlTypeDefinition
+from anchorpy_idl import Idl, IdlTypeDef
 from based58 import b58encode
 from construct import Container
 from solana.rpc.commitment import Commitment
@@ -42,7 +42,8 @@ def _build_account(
     """
     accounts_fns = {}
     for idl_account in idl.accounts:
-        account_client = AccountClient(idl, idl_account, coder, program_id, provider)
+        acc_type = next(t for t in idl.types if t.name == idl_account.name)
+        account_client = AccountClient(idl, acc_type, coder, program_id, provider)
         accounts_fns[idl_account.name] = account_client
     return accounts_fns
 
@@ -61,7 +62,7 @@ class AccountClient(object):
     def __init__(
         self,
         idl: Idl,
-        idl_account: IdlTypeDefinition,
+        idl_account: IdlTypeDef,
         coder: Coder,
         program_id: Pubkey,
         provider: Provider,

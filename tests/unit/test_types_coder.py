@@ -2,16 +2,21 @@ import json
 
 import pytest
 from anchorpy import Coder
-from anchorpy_core.idl import Idl
+from anchorpy_idl import Idl
 
 
 @pytest.mark.unit
 def test_can_encode_and_decode_user_defined_types():
     """Test that the TypesCoder can encode and decode user-defined types."""
     idl_json = {
-        "version": "0.0.0",
+        "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
         "name": "basic_0",
-        "address": "Test111111111111111111111111111111111111111",
+        "metadata": {
+          "name": "basic_0",
+          "version": "0.1.0",
+          "spec": "0.1.0",
+          "description": "Created with Anchor"
+        },
         "instructions": [
             {
                 "name": "initialize",
@@ -58,9 +63,14 @@ def test_can_encode_and_decode_user_defined_types():
 def test_can_encode_and_decode_large_integers():
     """Test that the TypesCoder can encode and decode 128-bit integers."""
     idl_json = {
-        "version": "0.0.0",
+        "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
         "name": "basic_0",
-        "address": "Test111111111111111111111111111111111111111",
+        "metadata": {
+          "name": "basic_0",
+          "version": "0.1.0",
+          "spec": "0.1.0",
+          "description": "Created with Anchor"
+        },
         "instructions": [
             {
                 "name": "initialize",

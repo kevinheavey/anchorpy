@@ -2,15 +2,11 @@
 from hashlib import sha256
 from typing import Any, Dict, Optional, Tuple
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     Idl,
     IdlEvent,
-    IdlField,
-    IdlTypeDefinition,
-    IdlTypeDefinitionTyStruct,
 )
 from construct import Adapter, Bytes, Construct, Sequence, Switch
-from pyheck import snake
 
 from anchorpy.coder.idl import _typedef_layout
 from anchorpy.program.common import Event
@@ -29,15 +25,7 @@ def _event_discriminator(name: str) -> bytes:
 
 
 def _event_layout(event: IdlEvent, idl: Idl) -> Construct:
-    event_type_def = IdlTypeDefinition(
-        name=event.name,
-        docs=None,
-        ty=IdlTypeDefinitionTyStruct(
-            fields=[
-                IdlField(name=snake(f.name), docs=None, ty=f.ty) for f in event.fields
-            ],
-        ),
-    )
+    event_type_def = next(t for t in idl.types if t.name == event.name)
     return _typedef_layout(event_type_def, idl.types, event.name)
 
 

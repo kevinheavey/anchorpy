@@ -34,10 +34,10 @@ class InitializeWithValuesArgs(typing.TypedDict):
     option_struct_field: typing.Optional[types.foo_struct.FooStruct]
     struct_field: types.foo_struct.FooStruct
     array_field: list[bool]
-    enum_field1: types.foo_enum.FooEnumKind
-    enum_field2: types.foo_enum.FooEnumKind
-    enum_field3: types.foo_enum.FooEnumKind
-    enum_field4: types.foo_enum.FooEnumKind
+    enum_field_1: types.foo_enum.FooEnumKind
+    enum_field_2: types.foo_enum.FooEnumKind
+    enum_field_3: types.foo_enum.FooEnumKind
+    enum_field_4: types.foo_enum.FooEnumKind
 
 
 layout = borsh.CStruct(
@@ -64,10 +64,10 @@ layout = borsh.CStruct(
     "option_struct_field" / borsh.Option(types.foo_struct.FooStruct.layout),
     "struct_field" / types.foo_struct.FooStruct.layout,
     "array_field" / borsh.Bool[3],
-    "enum_field1" / types.foo_enum.layout,
-    "enum_field2" / types.foo_enum.layout,
-    "enum_field3" / types.foo_enum.layout,
-    "enum_field4" / types.foo_enum.layout,
+    "enum_field_1" / types.foo_enum.layout,
+    "enum_field_2" / types.foo_enum.layout,
+    "enum_field_3" / types.foo_enum.layout,
+    "enum_field_4" / types.foo_enum.layout,
 )
 
 
@@ -122,10 +122,10 @@ def initialize_with_values(
             ),
             "struct_field": args["struct_field"].to_encodable(),
             "array_field": args["array_field"],
-            "enum_field1": args["enum_field1"].to_encodable(),
-            "enum_field2": args["enum_field2"].to_encodable(),
-            "enum_field3": args["enum_field3"].to_encodable(),
-            "enum_field4": args["enum_field4"].to_encodable(),
+            "enum_field_1": args["enum_field_1"].to_encodable(),
+            "enum_field_2": args["enum_field_2"].to_encodable(),
+            "enum_field_3": args["enum_field_3"].to_encodable(),
+            "enum_field_4": args["enum_field_4"].to_encodable(),
         }
     )
     data = identifier + encoded_args

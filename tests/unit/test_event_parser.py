@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from anchorpy import Event, EventParser, Idl, Program
+from anchorpy import Event, EventParser, Idl, Program, Provider
 from solders.pubkey import Pubkey
 
 
@@ -9,7 +9,9 @@ def test_event_parser() -> None:
     raw = path.read_text()
     idl = Idl.from_json(raw)
     program = Program(
-        idl, Pubkey.from_string("2dhGsWUzy5YKUsjZdLHLmkNpUDAXkNa9MYWsPc4Ziqzy")
+        idl,
+        Pubkey.from_string("2dhGsWUzy5YKUsjZdLHLmkNpUDAXkNa9MYWsPc4Ziqzy"),
+        Provider.readonly(),
     )
     logs = [
         "Program 2dhGsWUzy5YKUsjZdLHLmkNpUDAXkNa9MYWsPc4Ziqzy invoke [1]",

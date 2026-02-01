@@ -1,44 +1,161 @@
 {
-  "version": "0.0.0",
-  "name": "cashiers_check",
+  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+  "metadata": {
+    "name": "cashiers_check",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
-      "name": "createCheck",
+      "name": "cancel_check",
+      "discriminator": [
+        207,
+        131,
+        251,
+        87,
+        124,
+        4,
+        72,
+        207
+      ],
       "accounts": [
         {
           "name": "check",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "vault",
-          "isMut": true,
-          "isSigner": false
+          "writable": true,
+          "relations": [
+            "check"
+          ]
         },
         {
-          "name": "checkSigner",
-          "isMut": false,
-          "isSigner": false
+          "name": "check_signer",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "check"
+              }
+            ]
+          }
         },
         {
           "name": "from",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "to",
-          "isMut": false,
-          "isSigner": false
+          "writable": true,
+          "relations": [
+            "check"
+          ]
         },
         {
           "name": "owner",
-          "isMut": false,
-          "isSigner": false
+          "signer": true,
+          "relations": [
+            "from"
+          ]
         },
         {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "token_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cash_check",
+      "discriminator": [
+        127,
+        132,
+        123,
+        115,
+        147,
+        101,
+        85,
+        232
+      ],
+      "accounts": [
+        {
+          "name": "check",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "relations": [
+            "check"
+          ]
+        },
+        {
+          "name": "check_signer",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "check"
+              }
+            ]
+          }
+        },
+        {
+          "name": "to",
+          "writable": true,
+          "relations": [
+            "check"
+          ]
+        },
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "to"
+          ]
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_check",
+      "discriminator": [
+        57,
+        71,
+        10,
+        234,
+        193,
+        121,
+        121,
+        121
+      ],
+      "accounts": [
+        {
+          "name": "check",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "check_signer"
+        },
+        {
+          "name": "from",
+          "writable": true
+        },
+        {
+          "name": "to"
+        },
+        {
+          "name": "owner",
+          "relations": [
+            "from"
+          ]
+        },
+        {
+          "name": "token_program"
         }
       ],
       "args": [
@@ -57,81 +174,41 @@
           "type": "u8"
         }
       ]
-    },
-    {
-      "name": "cashCheck",
-      "accounts": [
-        {
-          "name": "check",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "checkSigner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "to",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "owner",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "cancelCheck",
-      "accounts": [
-        {
-          "name": "check",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "checkSigner",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "from",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "owner",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
     }
   ],
   "accounts": [
+    {
+      "name": "Check",
+      "discriminator": [
+        184,
+        116,
+        144,
+        69,
+        156,
+        212,
+        121,
+        212
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidCheckNonce",
+      "msg": "The given nonce does not create a valid program derived address."
+    },
+    {
+      "code": 6001,
+      "name": "InvalidCheckSigner",
+      "msg": "The derived check signer does not match that which was given."
+    },
+    {
+      "code": 6002,
+      "name": "AlreadyBurned",
+      "msg": "The given check has already been burned."
+    }
+  ],
+  "types": [
     {
       "name": "Check",
       "type": {
@@ -139,11 +216,11 @@
         "fields": [
           {
             "name": "from",
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "to",
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "amount",
@@ -157,7 +234,7 @@
           },
           {
             "name": "vault",
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "nonce",
@@ -169,23 +246,6 @@
           }
         ]
       }
-    }
-  ],
-  "errors": [
-    {
-      "code": 300,
-      "name": "InvalidCheckNonce",
-      "msg": "The given nonce does not create a valid program derived address."
-    },
-    {
-      "code": 301,
-      "name": "InvalidCheckSigner",
-      "msg": "The derived check signer does not match that which was given."
-    },
-    {
-      "code": 302,
-      "name": "AlreadyBurned",
-      "msg": "The given check has already been burned."
     }
   ]
 }

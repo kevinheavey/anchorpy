@@ -1,33 +1,31 @@
 {
-  "version": "0.0.0",
-  "name": "composite",
+  "address": "EHthziFziNoac9LBGxEaVN47Y3uUiRoXvqAiR6oes4iU",
+  "metadata": {
+    "name": "composite",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
-      "name": "initialize",
-      "accounts": [
-        {
-          "name": "dummyA",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "dummyB",
-          "isMut": true,
-          "isSigner": false
-        }
+      "name": "composite_update",
+      "discriminator": [
+        154,
+        25,
+        49,
+        254,
+        53,
+        162,
+        167,
+        200
       ],
-      "args": []
-    },
-    {
-      "name": "compositeUpdate",
       "accounts": [
         {
           "name": "foo",
           "accounts": [
             {
-              "name": "dummyA",
-              "isMut": true,
-              "isSigner": false
+              "name": "dummy_a",
+              "writable": true
             }
           ]
         },
@@ -35,26 +33,77 @@
           "name": "bar",
           "accounts": [
             {
-              "name": "dummyB",
-              "isMut": true,
-              "isSigner": false
+              "name": "dummy_b",
+              "writable": true
             }
           ]
         }
       ],
       "args": [
         {
-          "name": "dummyA",
+          "name": "dummy_a",
           "type": "u64"
         },
         {
-          "name": "dummyB",
+          "name": "dummy_b",
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "dummy_a",
+          "writable": true
+        },
+        {
+          "name": "dummy_b",
+          "writable": true
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
+    {
+      "name": "DummyA",
+      "discriminator": [
+        248,
+        202,
+        56,
+        194,
+        34,
+        52,
+        164,
+        111
+      ]
+    },
+    {
+      "name": "DummyB",
+      "discriminator": [
+        189,
+        219,
+        250,
+        54,
+        234,
+        102,
+        242,
+        132
+      ]
+    }
+  ],
+  "types": [
     {
       "name": "DummyA",
       "type": {
@@ -79,8 +128,5 @@
         ]
       }
     }
-  ],
-  "metadata": {
-    "address": "FYuVUPk3hmpT44GjCTL6w8Z3kYQoYBAWZMXEi4P63xto"
-  }
+  ]
 }

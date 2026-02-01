@@ -1,9 +1,9 @@
 [project]
 name = "anchorpy"
-version = "0.21.0"
+version = "0.32.1"
 description = "The Python Anchor client."
 authors = [{ name = "kevinheavey", email = "kevinheavey123@gmail.com" }]
-requires-python = "~=3.9"
+requires-python = ">=3.9,<3.14"
 readme = "README.md"
 dependencies = [
     "construct-typing>=0.5.1,<0.6",
@@ -13,8 +13,8 @@ dependencies = [
     "toolz>=0.11.2,<0.12",
     "pyheck>=0.1.4,<0.2",
     "based58>=0.1.1,<0.2",
-    "anchorpy-core>=0.2.0,<0.3",
     "toml>=0.10.2,<0.11",
+    "anchorpy-idl @ git+https://github.com/plocca-inc/anchorpy-idl.git@anchor-0.32.1",
 ]
 
 [project.optional-dependencies]
@@ -124,3 +124,6 @@ convention = "google"
 
 [tool.pyright]
 reportMissingModuleSource = false
+
+[tool.hatch.metadata]
+allow-direct-references = true

@@ -22,7 +22,7 @@ def test_accounts_array() -> None:
             "dummy_b": dummy_b.pubkey(),
         },
     }
-    accounts_arg = idl.instructions[1].accounts
+    accounts_arg = idl.instructions[0].accounts
     acc_arr = _accounts_array(comp_accounts, accounts_arg)
     assert acc_arr == [
         AccountMeta(pubkey=dummy_a.pubkey(), is_signer=False, is_writable=True),

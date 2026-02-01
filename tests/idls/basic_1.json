@@ -1,19 +1,38 @@
 {
-  "version": "0.0.0",
-  "name": "basic_1",
+  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+  "metadata": {
+    "name": "basic_1",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
       "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
       "accounts": [
         {
-          "name": "myAccount",
-          "isMut": true,
-          "isSigner": false
+          "name": "my_account",
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -25,11 +44,20 @@
     },
     {
       "name": "update",
+      "discriminator": [
+        219,
+        200,
+        88,
+        176,
+        158,
+        63,
+        253,
+        127
+      ],
       "accounts": [
         {
-          "name": "myAccount",
-          "isMut": true,
-          "isSigner": false
+          "name": "my_account",
+          "writable": true
         }
       ],
       "args": [
@@ -41,6 +69,21 @@
     }
   ],
   "accounts": [
+    {
+      "name": "MyAccount",
+      "discriminator": [
+        246,
+        28,
+        6,
+        87,
+        251,
+        45,
+        50,
+        42
+      ]
+    }
+  ],
+  "types": [
     {
       "name": "MyAccount",
       "type": {

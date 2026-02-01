@@ -1,19 +1,32 @@
 {
-  "version": "0.0.0",
-  "name": "puppet_master",
+  "address": "HmbTLCmaGvZhKnn1Zfa1JVnp7vkMV4DYVxPLWBVoN65L",
+  "metadata": {
+    "name": "puppet_master",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
-      "name": "pullStrings",
+      "name": "pull_strings",
+      "discriminator": [
+        13,
+        252,
+        243,
+        149,
+        120,
+        132,
+        189,
+        145
+      ],
       "accounts": [
         {
           "name": "puppet",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
-          "name": "puppetProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "puppet_program",
+          "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
         }
       ],
       "args": [
@@ -24,7 +37,33 @@
       ]
     }
   ],
-  "metadata": {
-    "address": "3UDzsDD9WWPAgHASFHyFdqZz1hFmWpWVCZzLPZabDJxe"
-  }
+  "accounts": [
+    {
+      "name": "Data",
+      "discriminator": [
+        206,
+        156,
+        59,
+        188,
+        18,
+        79,
+        240,
+        232
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "Data",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "data",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
 }

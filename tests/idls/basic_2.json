@@ -1,40 +1,70 @@
 {
-  "version": "0.0.0",
-  "name": "basic_2",
+  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+  "metadata": {
+    "name": "basic_2",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
       "name": "create",
+      "discriminator": [
+        24,
+        30,
+        200,
+        40,
+        5,
+        28,
+        7,
+        119
+      ],
       "accounts": [
         {
           "name": "counter",
-          "isMut": true,
-          "isSigner": false
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
           "name": "authority",
-          "type": "publicKey"
+          "type": "pubkey"
         }
       ]
     },
     {
       "name": "increment",
+      "discriminator": [
+        11,
+        18,
+        104,
+        9,
+        104,
+        174,
+        59,
+        33
+      ],
       "accounts": [
         {
           "name": "counter",
-          "isMut": true,
-          "isSigner": false
+          "writable": true
         },
         {
           "name": "authority",
-          "isMut": false,
-          "isSigner": true
+          "signer": true,
+          "relations": [
+            "counter"
+          ]
         }
       ],
       "args": []
@@ -43,12 +73,27 @@
   "accounts": [
     {
       "name": "Counter",
+      "discriminator": [
+        255,
+        176,
+        4,
+        245,
+        188,
+        253,
+        124,
+        25
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "Counter",
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "authority",
-            "type": "publicKey"
+            "type": "pubkey"
           },
           {
             "name": "count",
@@ -57,8 +102,5 @@
         ]
       }
     }
-  ],
-  "metadata": {
-    "address": "4V6T2muqU1mHSg5XfK3SMgxZWQRSEUh72LzwGTLHGzsY"
-  }
+  ]
 }

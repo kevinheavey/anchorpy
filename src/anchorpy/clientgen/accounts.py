@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import cast
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     Idl,
     IdlField,
-    IdlTypeDefinition,
-    IdlTypeDefinitionTyStruct,
+    IdlTypeDef,
+    IdlTypeDefStruct,
 )
 from autoflake import fix_code
 from black import FileMode, format_str
@@ -31,6 +31,7 @@ from anchorpy.clientgen.common import (
     _idl_type_to_json_type,
     _json_interface_name,
     _layout_for_type,
+    _partition_idl_types,
     _py_type_from_idl,
     _sanitize,
 )
@@ -83,16 +84,18 @@ def gen_index_code(idl: Idl) -> str:
 
 
 def gen_accounts_code(idl: Idl, accounts_dir: Path) -> dict[Path, str]:
+    account_types, _ = _partition_idl_types(idl)
+    account_type_map = {t.name: t for t in account_types}
     res = {}
     for acc in idl.accounts:
         filename = f"{_sanitize(snake(acc.name))}.py"
         path = accounts_dir / filename
-        code = gen_account_code(acc, idl)
+        code = gen_account_code(account_type_map[acc.name], idl)
         res[path] = code
     return res
 
 
-def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
+def gen_account_code(acc: IdlTypeDef, idl: Idl) -> str:
     base_imports = [
         Import("typing"),
         FromImport("dataclasses", ["dataclass"]),
@@ -109,12 +112,13 @@ def gen_account_code(acc: IdlTypeDefinition, idl: Idl) -> str:
         ),
         FromImport("..program_id", ["PROGRAM_ID"]),
     ]
+    _, user_types = _partition_idl_types(idl)
     imports = (
-        [*base_imports, FromImport("..", ["types"])] if idl.types else base_imports
+        [*base_imports, FromImport("..", ["types"])] if user_types else base_imports
     )
     fields_interface_params: list[TypedParam] = []
     json_interface_params: list[TypedParam] = []
-    ty = cast(IdlTypeDefinitionTyStruct, acc.ty)
+    ty = cast(IdlTypeDefStruct, acc.ty)
     fields = ty.fields
     name = _sanitize(acc.name)
     json_interface_name = _json_interface_name(name)

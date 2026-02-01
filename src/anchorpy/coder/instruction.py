@@ -1,7 +1,7 @@
 """This module deals (de)serializing program instructions."""
 from typing import Any, Dict, Protocol, Tuple, TypeVar, cast
 
-from anchorpy_core.idl import Idl
+from anchorpy_idl import Idl
 from borsh_construct import CStruct
 from construct import Adapter, Bytes, Construct, Container, Sequence, Switch
 from pyheck import snake

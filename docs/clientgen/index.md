@@ -29,7 +29,6 @@ Arguments:
   OUT  Output directory.  [required]
 
 Options:
-  --program-id TEXT  Optional program ID to be included in the code
   --help             Show this message and exit.
 
 ```
@@ -88,7 +87,7 @@ from my_client.instructions import some_instruction
  # call an instruction
 foo_account = Keypair()
 # in real use, fetch this from an RPC
-recent_blockhash = Hash.default() 
+recent_blockhash = Hash.default()
 
 ix = some_instruction({
   "foo_param": "...",
@@ -200,12 +199,4 @@ except RPCException as exc:
 
 ## Program ID
 
-The client generator pulls the program ID from:
-
-- the input IDL
-- the `--program-id` flag
-
-If the IDL doesn't contain the program ID then you will need to pass it via the `--program-id` flag.
-
-This program ID is then written into the `program_id.py` file.
-
+The client generator pulls the program ID from the input IDL.

@@ -2,7 +2,7 @@
 from hashlib import sha256
 from typing import Any, Tuple
 
-from anchorpy_core.idl import Idl
+from anchorpy_idl import Idl
 from construct import Adapter, Bytes, Container, Sequence, Switch
 
 from anchorpy.coder.idl import _typedef_layout
@@ -21,7 +21,11 @@ class AccountsCoder(Adapter):
             idl: The parsed IDL object.
         """
         self._accounts_layout = {
-            acc.name: _typedef_layout(acc, idl.types, acc.name) for acc in idl.accounts
+            acc.name: _typedef_layout(
+                next(t for t in idl.types if t.name == acc.name),
+                idl.types, acc.name
+            )
+            for acc in idl.accounts
         }
         self.acc_name_to_discriminator = {
             acc.name: _account_discriminator(acc.name) for acc in idl.accounts

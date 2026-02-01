@@ -3,12 +3,11 @@ import typing
 from solders.pubkey import Pubkey
 from solders.instruction import Instruction, AccountMeta
 import borsh_construct as borsh
-from .. import types
 from ..program_id import PROGRAM_ID
 
 
 class TypeAliasArgs(typing.TypedDict):
-    u8_array: types.u8_array.U8Array
+    u8_array: list[int]
 
 
 layout = borsh.CStruct("u8_array" / borsh.U8[8])

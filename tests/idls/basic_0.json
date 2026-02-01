@@ -1,14 +1,26 @@
 {
-  "version": "0.0.0",
-  "name": "basic_0",
+  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+  "metadata": {
+    "name": "basic_0",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
       "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
       "accounts": [],
       "args": []
     }
-  ],
-  "metadata": {
-    "address": "8nA4T4UFdYz1sKuEFdnj2mYcJ6hp79Tw14sPvTQVWwVb"
-  }
+  ]
 }

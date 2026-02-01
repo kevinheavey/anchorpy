@@ -1,101 +1,114 @@
 {
-  "version": "0.0.0",
-  "name": "swap",
+  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+  "metadata": {
+    "name": "swap",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
       "name": "swap",
+      "docs": [
+        "Swaps two tokens on a single A/B market, where A is the base currency",
+        "and B is the quote currency. This is just a direct IOC trade that",
+        "instantly settles.",
+        "",
+        "When side is \"bid\", then swaps B for A. When side is \"ask\", then swaps",
+        "A for B.",
+        "",
+        "Arguments:",
+        "",
+        "* `side`                     - The direction to swap.",
+        "* `amount`                   - The amount to swap *from*",
+        "* `min_expected_swap_amount` - The minimum amount of the *to* token the",
+        "client expects to receive from the swap. The instruction fails if",
+        "execution would result in less."
+      ],
+      "discriminator": [
+        248,
+        198,
+        158,
+        145,
+        225,
+        117,
+        135,
+        200
+      ],
       "accounts": [
         {
           "name": "market",
           "accounts": [
             {
               "name": "market",
-              "isMut": true,
-              "isSigner": false
+              "writable": true
             },
             {
-              "name": "openOrders",
-              "isMut": true,
-              "isSigner": false
+              "name": "open_orders",
+              "writable": true
             },
             {
-              "name": "requestQueue",
-              "isMut": true,
-              "isSigner": false
+              "name": "request_queue",
+              "writable": true
             },
             {
-              "name": "eventQueue",
-              "isMut": true,
-              "isSigner": false
+              "name": "event_queue",
+              "writable": true
             },
             {
               "name": "bids",
-              "isMut": true,
-              "isSigner": false
+              "writable": true
             },
             {
               "name": "asks",
-              "isMut": true,
-              "isSigner": false
+              "writable": true
             },
             {
-              "name": "orderPayerTokenAccount",
-              "isMut": true,
-              "isSigner": false
+              "name": "order_payer_token_account",
+              "writable": true
             },
             {
-              "name": "coinVault",
-              "isMut": true,
-              "isSigner": false
+              "name": "coin_vault",
+              "writable": true
             },
             {
-              "name": "pcVault",
-              "isMut": true,
-              "isSigner": false
+              "name": "pc_vault",
+              "writable": true
             },
             {
-              "name": "vaultSigner",
-              "isMut": false,
-              "isSigner": false
+              "name": "vault_signer"
             },
             {
-              "name": "coinWallet",
-              "isMut": true,
-              "isSigner": false
+              "name": "coin_wallet",
+              "writable": true
             }
           ]
         },
         {
           "name": "authority",
-          "isMut": false,
-          "isSigner": true
+          "signer": true
         },
         {
-          "name": "pcWallet",
-          "isMut": true,
-          "isSigner": false
+          "name": "pc_wallet",
+          "writable": true
         },
         {
-          "name": "dexProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "dex_program"
         },
         {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "token_program"
         },
         {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
+          "name": "rent"
         }
       ],
       "args": [
         {
           "name": "side",
           "type": {
-            "defined": "Side"
+            "defined": {
+              "name": "Side"
+            }
           }
         },
         {
@@ -103,71 +116,87 @@
           "type": "u64"
         },
         {
-          "name": "minExpectedSwapAmount",
+          "name": "min_expected_swap_amount",
           "type": "u64"
         }
       ]
     },
     {
-      "name": "swapTransitive",
+      "name": "swap_transitive",
+      "docs": [
+        "Swaps two base currencies across two different markets.",
+        "",
+        "That is, suppose there are two markets, A/USD(x) and B/USD(x).",
+        "Then swaps token A for token B via",
+        "",
+        "* IOC (immediate or cancel) sell order on A/USD(x) market.",
+        "* Settle open orders to get USD(x).",
+        "* IOC buy order on B/USD(x) market to convert USD(x) to token B.",
+        "* Settle open orders to get token B.",
+        "",
+        "Arguments:",
+        "",
+        "* `amount`                  - The amount to swap *from*.",
+        "* `min_expected_swap_amount - The minimum amount of the *to* token the",
+        "client expects to receive from the swap. The instruction fails if",
+        "execution would result in less."
+      ],
+      "discriminator": [
+        129,
+        109,
+        254,
+        207,
+        31,
+        192,
+        47,
+        51
+      ],
       "accounts": [
         {
           "name": "from",
           "accounts": [
             {
               "name": "market",
-              "isMut": true,
-              "isSigner": false
+              "writable": true
             },
             {
-              "name": "openOrders",
-              "isMut": true,
-              "isSigner": false
+              "name": "open_orders",
+              "writable": true
             },
             {
-              "name": "requestQueue",
-              "isMut": true,
-              "isSigner": false
+              "name": "request_queue",
+              "writable": true
             },
             {
-              "name": "eventQueue",
-              "isMut": true,
-              "isSigner": false
+              "name": "event_queue",
+              "writable": true
             },
             {
               "name": "bids",
-              "isMut": true,
-              "isSigner": false
+              "writable": true
             },
             {
               "name": "asks",
-              "isMut": true,
-              "isSigner": false
+              "writable": true
             },
             {
-              "name": "orderPayerTokenAccount",
-              "isMut": true,
-              "isSigner": false
+              "name": "order_payer_token_account",
+              "writable": true
             },
             {
-              "name": "coinVault",
-              "isMut": true,
-              "isSigner": false
+              "name": "coin_vault",
+              "writable": true
             },
             {
-              "name": "pcVault",
-              "isMut": true,
-              "isSigner": false
+              "name": "pc_vault",
+              "writable": true
             },
             {
-              "name": "vaultSigner",
-              "isMut": false,
-              "isSigner": false
+              "name": "vault_signer"
             },
             {
-              "name": "coinWallet",
-              "isMut": true,
-              "isSigner": false
+              "name": "coin_wallet",
+              "writable": true
             }
           ]
         },
@@ -176,85 +205,65 @@
           "accounts": [
             {
               "name": "market",
-              "isMut": true,
-              "isSigner": false
+              "writable": true
             },
             {
-              "name": "openOrders",
-              "isMut": true,
-              "isSigner": false
+              "name": "open_orders",
+              "writable": true
             },
             {
-              "name": "requestQueue",
-              "isMut": true,
-              "isSigner": false
+              "name": "request_queue",
+              "writable": true
             },
             {
-              "name": "eventQueue",
-              "isMut": true,
-              "isSigner": false
+              "name": "event_queue",
+              "writable": true
             },
             {
               "name": "bids",
-              "isMut": true,
-              "isSigner": false
+              "writable": true
             },
             {
               "name": "asks",
-              "isMut": true,
-              "isSigner": false
+              "writable": true
             },
             {
-              "name": "orderPayerTokenAccount",
-              "isMut": true,
-              "isSigner": false
+              "name": "order_payer_token_account",
+              "writable": true
             },
             {
-              "name": "coinVault",
-              "isMut": true,
-              "isSigner": false
+              "name": "coin_vault",
+              "writable": true
             },
             {
-              "name": "pcVault",
-              "isMut": true,
-              "isSigner": false
+              "name": "pc_vault",
+              "writable": true
             },
             {
-              "name": "vaultSigner",
-              "isMut": false,
-              "isSigner": false
+              "name": "vault_signer"
             },
             {
-              "name": "coinWallet",
-              "isMut": true,
-              "isSigner": false
+              "name": "coin_wallet",
+              "writable": true
             }
           ]
         },
         {
           "name": "authority",
-          "isMut": false,
-          "isSigner": true
+          "signer": true
         },
         {
-          "name": "pcWallet",
-          "isMut": true,
-          "isSigner": false
+          "name": "pc_wallet",
+          "writable": true
         },
         {
-          "name": "dexProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "dex_program"
         },
         {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "token_program"
         },
         {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
+          "name": "rent"
         }
       ],
       "args": [
@@ -263,13 +272,84 @@
           "type": "u64"
         },
         {
-          "name": "minExpectedSwapAmount",
+          "name": "min_expected_swap_amount",
           "type": "u64"
         }
       ]
     }
   ],
+  "events": [
+    {
+      "name": "DidSwap",
+      "discriminator": [
+        225,
+        151,
+        200,
+        172,
+        242,
+        216,
+        225,
+        30
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "SwapTokensCannotMatch",
+      "msg": "The tokens being swapped must have different mints"
+    },
+    {
+      "code": 6001,
+      "name": "SlippageExceeded",
+      "msg": "Slippage tolerance exceeded"
+    }
+  ],
   "types": [
+    {
+      "name": "DidSwap",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "given_amount",
+            "type": "u64"
+          },
+          {
+            "name": "min_expected_swap_amount",
+            "type": "u64"
+          },
+          {
+            "name": "from_amount",
+            "type": "u64"
+          },
+          {
+            "name": "to_amount",
+            "type": "u64"
+          },
+          {
+            "name": "spill_amount",
+            "type": "u64"
+          },
+          {
+            "name": "from_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "to_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
     {
       "name": "Side",
       "type": {
@@ -283,70 +363,6 @@
           }
         ]
       }
-    }
-  ],
-  "events": [
-    {
-      "name": "DidSwap",
-      "fields": [
-        {
-          "name": "givenAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "minExpectedSwapAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "fromAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "toAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "spillAmount",
-          "type": "u64",
-          "index": false
-        },
-        {
-          "name": "fromMint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "toMint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "quoteMint",
-          "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "authority",
-          "type": "publicKey",
-          "index": false
-        }
-      ]
-    }
-  ],
-  "errors": [
-    {
-      "code": 300,
-      "name": "SwapTokensCannotMatch",
-      "msg": "The tokens being swapped must have different mints"
-    },
-    {
-      "code": 301,
-      "name": "SlippageExceeded",
-      "msg": "Slippage tolerance exceeded"
     }
   ]
 }

@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, Optional, Union
 
 import toml  # type: ignore
-from anchorpy_core.idl import Idl
+from anchorpy_idl import Idl
 from solders.pubkey import Pubkey
 
 from anchorpy.program.core import Program
@@ -34,10 +34,10 @@ def create_workspace(
     for file in idl_folder.iterdir():
         raw = file.read_text()
         idl = Idl.from_json(raw)
-        name = idl.name
+        name = idl.metadata.name
         program_id = Pubkey.from_string(localnet_programs[name])
         program = Program(idl, program_id, Provider.local(url))
-        result[idl.name] = program
+        result[name] = program
     return result
 
 

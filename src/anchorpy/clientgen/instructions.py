@@ -1,13 +1,11 @@
 from pathlib import Path
-from typing import Optional, Union, cast
+from typing import Optional, cast
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     Idl,
     IdlAccountItem,
-    IdlAccounts,
+    IdlInstructionAccounts,
     IdlSeedConst,
-    IdlTypeArray,
-    IdlTypeSimple,
 )
 from autoflake import fix_code
 from black import FileMode, format_str
@@ -42,7 +40,6 @@ from anchorpy.clientgen.genpy_extension import (
     TypedParam,
 )
 from anchorpy.coder.common import _sighash
-from anchorpy.coder.idl import FIELD_TYPE_MAP
 
 CONST_ACCOUNTS = {
     "associated_token_program": "ASSOCIATED_TOKEN_PROGRAM_ID",
@@ -103,8 +100,8 @@ def recurse_accounts(
     elements: list[str] = []
     for acc in accs:
         names = [*nested_names, _sanitize(snake(acc.name))]
-        if isinstance(acc, IdlAccounts):
-            nested_accs = cast(IdlAccounts, acc)
+        if isinstance(acc, IdlInstructionAccounts):
+            nested_accs = cast(IdlInstructionAccounts, acc)
             new_elements, acc_idx = recurse_accounts(
                 nested_accs.accounts, names, const_accs, acc_idx
             )
@@ -120,11 +117,11 @@ def recurse_accounts(
                     nested_keys = [f'["{key}"]' for key in names]
                     dict_accessor = "".join(nested_keys)
                     pubkey_var = f"accounts{dict_accessor}"
-            if acc.is_optional:
+            if acc.optional:
                 elements.append(
                     f"AccountMeta(pubkey={pubkey_var}, "
-                    f"is_signer={acc.is_signer}, "
-                    f"is_writable={acc.is_mut}) "
+                    f"is_signer={acc.signer}, "
+                    f"is_writable={acc.writable}) "
                     f"if {pubkey_var} else "
                     f"AccountMeta(pubkey=program_id, "
                     f"is_signer=False, is_writable=False)"
@@ -132,23 +129,10 @@ def recurse_accounts(
             else:
                 elements.append(
                     f"AccountMeta(pubkey={pubkey_var}, "
-                    f"is_signer={acc.is_signer}, "
-                    f"is_writable={acc.is_mut})"
+                    f"is_signer={acc.signer}, "
+                    f"is_writable={acc.writable})"
                 )
     return elements, acc_idx
-
-
-def to_buffer_value(
-    ty: Union[IdlTypeSimple, IdlTypeArray], value: Union[str, int, list[int]]
-) -> bytes:
-    if isinstance(value, int):
-        encoder = FIELD_TYPE_MAP[cast(IdlTypeSimple, ty)]
-        return encoder.build(value)
-    if isinstance(value, str):
-        return value.encode()
-    if isinstance(value, list):
-        return bytes(value)
-    raise ValueError(f"Unexpected type. ty: {ty}; value: {value}")
 
 
 GenAccountsRes = tuple[list[TypedDict], list[Assign], dict[int, str], int]
@@ -171,8 +155,8 @@ def gen_accounts(
     const_pdas: list[Assign] = []
     for acc in idl_accs:
         acc_name = _sanitize(snake(acc.name))
-        if isinstance(acc, IdlAccounts):
-            nested_accs = cast(IdlAccounts, acc)
+        if isinstance(acc, IdlInstructionAccounts):
+            nested_accs = cast(IdlInstructionAccounts, acc)
             nested_acc_name = f"{upper_camel(nested_accs.name)}Nested"
             nested_res = gen_accounts(
                 nested_acc_name,
@@ -202,12 +186,7 @@ def gen_accounts(
                     seeds = cast(list[IdlSeedConst], maybe_pda.seeds)
                     const_pda_name = shouty_snake(f"{name}_{acc_name}")
                     const_pda_body_items = [
-                        str(
-                            to_buffer_value(
-                                cast(Union[IdlTypeSimple, IdlTypeArray], seed.ty),
-                                cast(Union[str, int, list[int]], seed.value),
-                            )
-                        )
+                        str(bytes(seed.value))
                         for seed in seeds
                     ]
                     seeds_arg = List(const_pda_body_items)
@@ -226,7 +205,7 @@ def gen_accounts(
                 try:
                     CONST_ACCOUNTS[acc_name]
                 except KeyError:
-                    if acc.is_optional:
+                    if acc.optional:
                         params.append(TypedParam(acc_name, "typing.Optional[Pubkey]"))
                     else:
                         params.append(TypedParam(acc_name, "Pubkey"))

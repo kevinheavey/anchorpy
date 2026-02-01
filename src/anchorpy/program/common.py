@@ -2,10 +2,10 @@
 from dataclasses import dataclass
 from typing import Any, Dict, NamedTuple, Tuple, Union, cast
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     IdlAccountItem,
-    IdlAccounts,
     IdlInstruction,
+    IdlInstructionAccounts,
 )
 from construct import Container
 from pyheck import snake
@@ -69,7 +69,7 @@ def validate_accounts(ix_accounts: list[IdlAccountItem], accounts: Accounts):
     """
     for acc in ix_accounts:
         acc_name = snake(acc.name)
-        if isinstance(acc, IdlAccounts):
+        if isinstance(acc, IdlInstructionAccounts):
             nested = cast(Accounts, accounts[acc_name])
             validate_accounts(acc.accounts, nested)
         elif acc_name not in accounts:

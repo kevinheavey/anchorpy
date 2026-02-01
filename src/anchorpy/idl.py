@@ -2,7 +2,7 @@
 from typing import Sequence, TypedDict
 
 import solders.pubkey
-from anchorpy_core.idl import IdlTypeDefinition
+from anchorpy_idl import IdlTypeDef
 from borsh_construct import U8, CStruct, Vec
 
 from anchorpy.borsh_extension import BorshPubkey
@@ -43,4 +43,4 @@ def _decode_idl_account(data: bytes) -> IdlProgramAccount:
     return IDL_ACCOUNT_LAYOUT.parse(data)
 
 
-TypeDefs = Sequence[IdlTypeDefinition]
+TypeDefs = Sequence[IdlTypeDef]

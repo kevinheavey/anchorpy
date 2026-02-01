@@ -1,40 +1,174 @@
 {
-  "version": "0.0.0",
-  "name": "basic_5",
+  "address": "DuT6R8tQGYa8ACYXyudFJtxDppSALLcmK39b7918jeSC",
+  "metadata": {
+    "name": "basic_5",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
-      "name": "createMint",
+      "name": "create",
+      "discriminator": [
+        24,
+        30,
+        200,
+        40,
+        5,
+        28,
+        7,
+        119
+      ],
       "accounts": [
         {
-          "name": "mint",
-          "isMut": true,
-          "isSigner": false
+          "name": "action_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "createToken",
+      "name": "jump",
+      "discriminator": [
+        115,
+        18,
+        221,
+        88,
+        166,
+        230,
+        219,
+        32
+      ],
       "accounts": [
         {
-          "name": "token",
-          "isMut": true,
-          "isSigner": false
+          "name": "action_state",
+          "writable": true
         },
         {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
+          "name": "user",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "action_state"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "reset",
+      "discriminator": [
+        23,
+        81,
+        251,
+        84,
+        138,
+        183,
+        240,
+        214
+      ],
+      "accounts": [
+        {
+          "name": "action_state",
+          "writable": true
         },
         {
-          "name": "mint",
-          "isMut": false,
-          "isSigner": false
+          "name": "user",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "action_state"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "run",
+      "discriminator": [
+        203,
+        27,
+        228,
+        218,
+        208,
+        69,
+        35,
+        84
+      ],
+      "accounts": [
+        {
+          "name": "action_state",
+          "writable": true
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "user",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "action_state"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "walk",
+      "discriminator": [
+        117,
+        227,
+        10,
+        68,
+        128,
+        250,
+        50,
+        154
+      ],
+      "accounts": [
+        {
+          "name": "action_state",
+          "writable": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "action_state"
+          ]
         }
       ],
       "args": []
@@ -42,39 +176,35 @@
   ],
   "accounts": [
     {
-      "name": "Mint",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "supply",
-            "type": "u32"
-          }
-        ]
-      }
-    },
+      "name": "ActionState",
+      "discriminator": [
+        68,
+        223,
+        59,
+        227,
+        180,
+        86,
+        142,
+        180
+      ]
+    }
+  ],
+  "types": [
     {
-      "name": "Token",
+      "name": "ActionState",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "amount",
-            "type": "u32"
+            "name": "user",
+            "type": "pubkey"
           },
           {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "mint",
-            "type": "publicKey"
+            "name": "action",
+            "type": "u8"
           }
         ]
       }
     }
-  ],
-  "metadata": {
-    "address": "99cGumFqPFhCLTUxs9BoyhXAV6c19Ca44BYZVn6KG1Pu"
-  }
+  ]
 }

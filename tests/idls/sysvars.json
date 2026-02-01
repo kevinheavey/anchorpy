@@ -1,24 +1,36 @@
 {
-  "version": "0.0.0",
-  "name": "sysvars",
+  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+  "metadata": {
+    "name": "sysvars",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
       "name": "sysvars",
+      "discriminator": [
+        90,
+        242,
+        64,
+        221,
+        36,
+        43,
+        183,
+        214
+      ],
       "accounts": [
         {
           "name": "clock",
-          "isMut": false,
-          "isSigner": false
+          "address": "SysvarC1ock11111111111111111111111111111111"
         },
         {
           "name": "rent",
-          "isMut": false,
-          "isSigner": false
+          "address": "SysvarRent111111111111111111111111111111111"
         },
         {
-          "name": "stakeHistory",
-          "isMut": false,
-          "isSigner": false
+          "name": "stake_history",
+          "address": "SysvarStakeHistory1111111111111111111111111"
         }
       ],
       "args": []

@@ -32,13 +32,20 @@ def post_ix() -> Instruction:
 @fixture
 def idl() -> Idl:
     raw = """{
-        "version": "0.0.0",
+        "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
         "name": "basic_0",
+        "metadata": {
+          "name": "basic_0",
+          "version": "0.1.0",
+          "spec": "0.1.0",
+          "description": "Created with Anchor"
+        },
         "instructions": [
             {
                 "name": "initialize",
                 "accounts": [],
-                "args": []
+                "args": [],
+                "discriminator": []
             }
         ]
     }"""

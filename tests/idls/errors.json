@@ -1,62 +1,524 @@
 {
-  "version": "0.0.0",
-  "name": "errors",
+  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+  "metadata": {
+    "name": "errors",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
-      "name": "hello",
-      "accounts": [],
-      "args": []
-    },
-    {
-      "name": "helloNoMsg",
-      "accounts": [],
-      "args": []
-    },
-    {
-      "name": "helloNext",
-      "accounts": [],
-      "args": []
-    },
-    {
-      "name": "mutError",
+      "name": "account_not_initialized_error",
+      "discriminator": [
+        193,
+        215,
+        88,
+        139,
+        156,
+        20,
+        23,
+        84
+      ],
       "accounts": [
         {
-          "name": "myAccount",
-          "isMut": true,
-          "isSigner": false
+          "name": "not_initialized_account"
         }
       ],
       "args": []
     },
     {
-      "name": "hasOneError",
+      "name": "account_owned_by_wrong_program_error",
+      "discriminator": [
+        70,
+        41,
+        199,
+        140,
+        86,
+        133,
+        24,
+        163
+      ],
       "accounts": [
         {
-          "name": "myAccount",
-          "isMut": true,
-          "isSigner": false
+          "name": "wrong_account"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "has_one_error",
+      "discriminator": [
+        29,
+        8,
+        55,
+        11,
+        10,
+        148,
+        122,
+        5
+      ],
+      "accounts": [
+        {
+          "name": "my_account",
+          "writable": true
         },
         {
           "name": "owner",
-          "isMut": false,
-          "isSigner": false
+          "relations": [
+            "my_account"
+          ]
         }
       ],
       "args": []
     },
     {
-      "name": "signerError",
+      "name": "hello",
+      "discriminator": [
+        149,
+        118,
+        59,
+        220,
+        196,
+        127,
+        161,
+        179
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "hello_next",
+      "discriminator": [
+        104,
+        38,
+        158,
+        2,
+        124,
+        13,
+        233,
+        186
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "hello_no_msg",
+      "discriminator": [
+        232,
+        128,
+        249,
+        77,
+        80,
+        205,
+        55,
+        170
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "mut_error",
+      "discriminator": [
+        98,
+        66,
+        59,
+        15,
+        77,
+        13,
+        22,
+        166
+      ],
       "accounts": [
         {
-          "name": "myAccount",
-          "isMut": false,
-          "isSigner": true
+          "name": "my_account",
+          "writable": true
         }
       ],
       "args": []
+    },
+    {
+      "name": "raw_custom_error",
+      "discriminator": [
+        42,
+        148,
+        93,
+        238,
+        77,
+        175,
+        136,
+        65
+      ],
+      "accounts": [
+        {
+          "name": "my_account"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "require_eq",
+      "discriminator": [
+        98,
+        133,
+        48,
+        164,
+        210,
+        81,
+        110,
+        101
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "require_eq_default_error",
+      "discriminator": [
+        32,
+        2,
+        190,
+        106,
+        227,
+        159,
+        59,
+        44
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "require_gt",
+      "discriminator": [
+        191,
+        214,
+        118,
+        68,
+        111,
+        227,
+        197,
+        220
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "require_gt_default_error",
+      "discriminator": [
+        239,
+        69,
+        198,
+        51,
+        184,
+        141,
+        110,
+        124
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "require_gte",
+      "discriminator": [
+        76,
+        116,
+        46,
+        97,
+        107,
+        164,
+        223,
+        213
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "require_gte_default_error",
+      "discriminator": [
+        227,
+        235,
+        188,
+        255,
+        244,
+        128,
+        12,
+        8
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "require_keys_eq",
+      "discriminator": [
+        132,
+        213,
+        230,
+        188,
+        169,
+        114,
+        119,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "some_account"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "require_keys_eq_default_error",
+      "discriminator": [
+        61,
+        54,
+        94,
+        54,
+        241,
+        125,
+        205,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "some_account"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "require_keys_neq",
+      "discriminator": [
+        88,
+        44,
+        34,
+        134,
+        191,
+        103,
+        119,
+        132
+      ],
+      "accounts": [
+        {
+          "name": "some_account"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "require_keys_neq_default_error",
+      "discriminator": [
+        140,
+        7,
+        87,
+        124,
+        209,
+        246,
+        117,
+        157
+      ],
+      "accounts": [
+        {
+          "name": "some_account"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "require_neq",
+      "discriminator": [
+        255,
+        231,
+        90,
+        39,
+        63,
+        203,
+        171,
+        244
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "require_neq_default_error",
+      "discriminator": [
+        138,
+        250,
+        190,
+        18,
+        232,
+        58,
+        186,
+        5
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "signer_error",
+      "discriminator": [
+        254,
+        35,
+        32,
+        46,
+        95,
+        1,
+        115,
+        195
+      ],
+      "accounts": [
+        {
+          "name": "my_account",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "test_err",
+      "discriminator": [
+        64,
+        7,
+        188,
+        238,
+        246,
+        218,
+        180,
+        132
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "test_program_error",
+      "discriminator": [
+        68,
+        132,
+        101,
+        13,
+        231,
+        201,
+        0,
+        70
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "test_program_error_with_source",
+      "discriminator": [
+        216,
+        119,
+        48,
+        174,
+        116,
+        196,
+        123,
+        191
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "test_require",
+      "discriminator": [
+        129,
+        183,
+        213,
+        23,
+        102,
+        66,
+        10,
+        230
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "try_into_integer",
+      "discriminator": [
+        117,
+        194,
+        92,
+        188,
+        190,
+        100,
+        218,
+        218
+      ],
+      "accounts": [],
+      "args": [],
+      "returns": "i64"
     }
   ],
   "accounts": [
+    {
+      "name": "AnyAccount",
+      "discriminator": [
+        149,
+        130,
+        250,
+        134,
+        100,
+        123,
+        89,
+        214
+      ]
+    },
+    {
+      "name": "HasOneAccount",
+      "discriminator": [
+        159,
+        46,
+        74,
+        247,
+        149,
+        119,
+        137,
+        72
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Hello",
+      "msg": "This is an error message clients will automatically display"
+    },
+    {
+      "code": 6123,
+      "name": "HelloNoMsg"
+    },
+    {
+      "code": 6124,
+      "name": "HelloNext"
+    },
+    {
+      "code": 6125,
+      "name": "HelloCustom"
+    },
+    {
+      "code": 6126,
+      "name": "ValueMismatch"
+    },
+    {
+      "code": 6127,
+      "name": "ValueMatch"
+    },
+    {
+      "code": 6128,
+      "name": "ValueLess"
+    },
+    {
+      "code": 6129,
+      "name": "ValueLessOrEqual"
+    }
+  ],
+  "types": [
+    {
+      "name": "AnyAccount",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
     {
       "name": "HasOneAccount",
       "type": {
@@ -64,25 +526,10 @@
         "fields": [
           {
             "name": "owner",
-            "type": "publicKey"
+            "type": "pubkey"
           }
         ]
       }
-    }
-  ],
-  "errors": [
-    {
-      "code": 300,
-      "name": "Hello",
-      "msg": "This is an error message clients will automatically display"
-    },
-    {
-      "code": 423,
-      "name": "HelloNoMsg"
-    },
-    {
-      "code": 424,
-      "name": "HelloNext"
     }
   ]
 }

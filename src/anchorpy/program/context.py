@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
-from anchorpy_core.idl import IdlInstruction
+from anchorpy_idl import IdlInstruction
 from pyheck import snake
 from solana.rpc.types import TxOpts
 from solders.instruction import AccountMeta, Instruction

@@ -2,14 +2,15 @@
 import keyword
 from typing import Optional
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     Idl,
     IdlField,
     IdlType,
     IdlTypeArray,
+    IdlTypeDef,
+    IdlTypeDefAlias,
     IdlTypeDefined,
-    IdlTypeDefinitionTyAlias,
-    IdlTypeDefinitionTyStruct,
+    IdlTypeDefStruct,
     IdlTypeOption,
     IdlTypeSimple,
     IdlTypeVec,
@@ -32,6 +33,22 @@ INT_TYPES = {
 }
 FLOAT_TYPES = {IdlTypeSimple.F32, IdlTypeSimple.F64}
 NUMBER_TYPES = INT_TYPES | FLOAT_TYPES
+
+
+def _partition_idl_types(idl: Idl) -> tuple[list[IdlTypeDef], list[IdlTypeDef]]:
+    """Partition idl.types into (account_types, user_types).
+
+    `Idl.types` includes all types, making it necessary to separate account types from
+    user types.
+    """
+    if not idl.accounts:
+        return [], list(idl.types)
+
+    account_names = {acc.name for acc in idl.accounts}
+    return (
+        [t for t in idl.types if t.name in account_names],
+        [t for t in idl.types if t.name not in account_names],
+    )
 
 
 def _fields_interface_name(type_name: str) -> str:
@@ -92,13 +109,13 @@ def _py_type_from_idl(
             raise ValueError(f"Type not found {defined}")
         typedef_type = filtered[0].ty
         module = _sanitize(snake(ty.defined))
-        if isinstance(typedef_type, IdlTypeDefinitionTyStruct):
+        if isinstance(typedef_type, IdlTypeDefStruct):
             name = (
                 _fields_interface_name(ty.defined)
                 if use_fields_interface_for_struct
                 else defined
             )
-        elif isinstance(typedef_type, IdlTypeDefinitionTyAlias):
+        elif isinstance(typedef_type, IdlTypeDefAlias):
             name = defined
         else:
             # enum
@@ -120,7 +137,7 @@ def _py_type_from_idl(
         return "float"
     if ty == IdlTypeSimple.String:
         return "str"
-    if ty == IdlTypeSimple.PublicKey:
+    if ty == IdlTypeSimple.Pubkey:
         return "Pubkey"
     raise ValueError(f"Unrecognized type: {ty}")
 
@@ -131,7 +148,7 @@ def _layout_for_type(
     types_relative_imports: bool,
     name: Optional[str] = None,
 ) -> str:
-    if ty == IdlTypeSimple.PublicKey:
+    if ty == IdlTypeSimple.Pubkey:
         inner = "BorshPubkey"
     elif isinstance(ty, IdlTypeSimple):
         inner = str(ty).replace("IdlTypeSimple", "borsh")
@@ -158,7 +175,7 @@ def _layout_for_type(
         else:
             filtered = [t for t in idl.types if _sanitize(t.name) == defined]
             typedef_type = filtered[0].ty
-            if isinstance(typedef_type, IdlTypeDefinitionTyAlias):
+            if isinstance(typedef_type, IdlTypeDefAlias):
                 return _layout_for_type(
                     idl, typedef_type.value, types_relative_imports=True, name=name
                 )
@@ -166,7 +183,7 @@ def _layout_for_type(
                 "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
             )
             module = snake(defined)
-            if isinstance(typedef_type, IdlTypeDefinitionTyStruct):
+            if isinstance(typedef_type, IdlTypeDefStruct):
                 inner = f"{defined_types_prefix}{module}.{defined}.layout"
             else:
                 inner = f"{defined_types_prefix}{module}.layout"
@@ -232,7 +249,7 @@ def _field_to_encodable(
                 ty=IdlField(
                     ty_name,
                     docs=None,
-                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.Pubkey}[
                         inner_type
                     ],
                 ),
@@ -251,10 +268,10 @@ def _field_to_encodable(
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
         typedef_type = filtered[0].ty
-        if isinstance(typedef_type, IdlTypeDefinitionTyStruct):
+        if isinstance(typedef_type, IdlTypeDefStruct):
             val_full_name = f"{val_prefix}{ty_name}{val_suffix}"
             return f"{val_full_name}.to_encodable()"
-        if isinstance(typedef_type, IdlTypeDefinitionTyAlias):
+        if isinstance(typedef_type, IdlTypeDefAlias):
             return f"{val_prefix}{ty_name}{val_suffix}"
         return f"{val_prefix}{ty_name}{val_suffix}.to_encodable()"
     if isinstance(ty_type, IdlTypeArray):
@@ -273,7 +290,7 @@ def _field_to_encodable(
         IdlTypeSimple.Bool,
         *NUMBER_TYPES,
         IdlTypeSimple.String,
-        IdlTypeSimple.PublicKey,
+        IdlTypeSimple.Pubkey,
         IdlTypeSimple.Bytes,
     }:
         return f"{val_prefix}{ty_name}{val_suffix}"
@@ -317,7 +334,7 @@ def _field_from_decoded(
                 ty=IdlField(
                     ty_name,
                     docs=None,
-                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.Pubkey}[
                         inner_type
                     ],
                 ),
@@ -334,7 +351,7 @@ def _field_from_decoded(
         typedef_type = filtered[0].ty
         from_decoded_func_path = (
             f"{snake(defined)}.{defined}"
-            if isinstance(typedef_type, IdlTypeDefinitionTyStruct)
+            if isinstance(typedef_type, IdlTypeDefStruct)
             else f"{snake(defined)}"
         )
         defined_types_prefix = (
@@ -358,7 +375,7 @@ def _field_from_decoded(
         IdlTypeSimple.Bool,
         *NUMBER_TYPES,
         IdlTypeSimple.String,
-        IdlTypeSimple.PublicKey,
+        IdlTypeSimple.Pubkey,
         IdlTypeSimple.Bytes,
     }:
         return f"{val_prefix}{ty_name}"
@@ -380,7 +397,7 @@ def _struct_field_initializer(
         if len(filtered) != 1:
             raise ValueError(f"Type not found {defined}")
         typedef_type = filtered[0].ty
-        if isinstance(typedef_type, IdlTypeDefinitionTyStruct):
+        if isinstance(typedef_type, IdlTypeDefStruct):
             module = snake(defined)
             defined_types_prefix = (
                 "" if types_relative_imports else _DEFAULT_DEFINED_TYPES_PREFIX
@@ -428,7 +445,7 @@ def _struct_field_initializer(
         IdlTypeSimple.Bool,
         *NUMBER_TYPES,
         IdlTypeSimple.String,
-        IdlTypeSimple.PublicKey,
+        IdlTypeSimple.Pubkey,
         IdlTypeSimple.Bytes,
     }:
         return f"{prefix}{field_name}{suffix}"
@@ -445,7 +462,7 @@ def _field_to_json(
     ty_type = ty.ty
     maybe_converted = _sanitize(snake(ty.name)) if convert_case else _sanitize(ty.name)
     var_name = f"{val_prefix}{maybe_converted}{val_suffix}"
-    if ty_type == IdlTypeSimple.PublicKey:
+    if ty_type == IdlTypeSimple.Pubkey:
         return f"str({var_name})"
     if isinstance(ty_type, IdlTypeVec):
         map_body = _field_to_json(idl, IdlField("item", docs=None, ty=ty_type.vec))
@@ -482,7 +499,7 @@ def _field_to_json(
                 IdlField(
                     ty.name,
                     docs=None,
-                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.Pubkey}[
                         inner_type
                     ],
                 ),
@@ -543,7 +560,7 @@ def _idl_type_to_json_type(ty: IdlType, types_relative_imports: bool) -> str:
         return "float"
     if ty == IdlTypeSimple.Bytes:
         return "list[int]"
-    if ty in {IdlTypeSimple.String, IdlTypeSimple.PublicKey}:
+    if ty in {IdlTypeSimple.String, IdlTypeSimple.Pubkey}:
         return "str"
     raise ValueError(f"Unrecognized type: {ty}")
 
@@ -559,7 +576,7 @@ def _field_from_json(
     ty_name_snake_unsanitized = snake(ty.name)
     ty_name = _sanitize(ty_name_snake_unsanitized)
     var_name = f"{param_prefix}{ty_name_snake_unsanitized}{param_suffix}"
-    if ty_type == IdlTypeSimple.PublicKey:
+    if ty_type == IdlTypeSimple.Pubkey:
         return f"Pubkey.from_string({var_name})"
     if isinstance(ty_type, IdlTypeVec):
         map_body = _field_from_json(
@@ -608,7 +625,7 @@ def _field_from_json(
                 ty=IdlField(
                     ty_name,
                     docs=None,
-                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.PublicKey}[
+                    ty={"u64": IdlTypeSimple.U64, "Pubkey": IdlTypeSimple.Pubkey}[
                         inner_type
                     ],
                 ),
@@ -625,7 +642,7 @@ def _field_from_json(
         typedef_type = filtered[0].ty
         from_json_func_path = (
             f"{defined_snake}.{defined}"
-            if isinstance(typedef_type, IdlTypeDefinitionTyStruct)
+            if isinstance(typedef_type, IdlTypeDefStruct)
             else f"{defined_snake}"
         )
         defined_types_prefix = (

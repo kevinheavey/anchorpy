@@ -144,26 +144,26 @@ async def test_init_and_account_fetch(
     )
     array_field_expected = ListContainer([True, False, True])
     vec_field_expected = ListContainer([1, 2, 100, 1000, 18446744073709551615])
-    enum_field1_expected = Unnamed(
+    enum_field_1_expected = Unnamed(
         value=(False, 10, BarStruct(some_field=True, other_field=10))
     )
-    assert enum_field1_expected.kind == "Unnamed"
-    assert enum_field1_expected.discriminator == 0
-    enum_field2_expected = Named(
+    assert enum_field_1_expected.kind == "Unnamed"
+    assert enum_field_1_expected.discriminator == 0
+    enum_field_2_expected = Named(
         value={
             "bool_field": True,
             "u8_field": 20,
             "nested": BarStruct(some_field=True, other_field=10),
         }
     )
-    assert enum_field2_expected.kind == "Named"
-    assert enum_field2_expected.discriminator == 2
-    enum_field3_expected = Struct(value=(BarStruct(some_field=True, other_field=10),))
-    assert enum_field3_expected.discriminator == 3
-    assert enum_field3_expected.kind == "Struct"
-    enum_field4_expected = NoFields()
-    assert enum_field4_expected.discriminator == 6
-    assert enum_field4_expected.kind == "NoFields"
+    assert enum_field_2_expected.kind == "Named"
+    assert enum_field_2_expected.discriminator == 2
+    enum_field_3_expected = Struct(value=(BarStruct(some_field=True, other_field=10),))
+    assert enum_field_3_expected.discriminator == 3
+    assert enum_field_3_expected.kind == "Struct"
+    enum_field_4_expected = NoFields()
+    assert enum_field_4_expected.discriminator == 6
+    assert enum_field_4_expected.kind == "NoFields"
     expected = State(
         bool_field=True,
         u8_field=234,
@@ -187,10 +187,10 @@ async def test_init_and_account_fetch(
         option_struct_field=option_struct_field_expected,
         struct_field=struct_field_expected,
         array_field=array_field_expected,
-        enum_field1=enum_field1_expected,
-        enum_field2=enum_field2_expected,
-        enum_field3=enum_field3_expected,
-        enum_field4=enum_field4_expected,
+        enum_field_1=enum_field_1_expected,
+        enum_field_2=enum_field_2_expected,
+        enum_field_3=enum_field_3_expected,
+        enum_field_4=enum_field_4_expected,
     )
     res = await State.fetch(provider.connection, state.pubkey())
     assert res == expected
@@ -265,15 +265,15 @@ async def send_instructions_with_args(
         option_nested=None,
         enum_field=NoFields(),
     )
-    enum_field1 = Unnamed((True, 15, BarStruct(some_field=False, other_field=200)))
-    enum_field2 = Named(
+    enum_field_1 = Unnamed((True, 15, BarStruct(some_field=False, other_field=200)))
+    enum_field_2 = Named(
         {
             "bool_field": True,
             "u8_field": 128,
             "nested": BarStruct(some_field=False, other_field=1),
         }
     )
-    enum_field3 = Struct((BarStruct(some_field=True, other_field=15),))
+    enum_field_3 = Struct((BarStruct(some_field=True, other_field=15),))
     initialize_with_values_args = InitializeWithValuesArgs(
         bool_field=True,
         u8_field=253,
@@ -297,10 +297,10 @@ async def send_instructions_with_args(
         option_struct_field=None,
         struct_field=struct_field,
         array_field=[True, True, False],
-        enum_field1=enum_field1,
-        enum_field2=enum_field2,
-        enum_field3=enum_field3,
-        enum_field4=NoFields(),
+        enum_field_1=enum_field_1,
+        enum_field_2=enum_field_2,
+        enum_field_3=enum_field_3,
+        enum_field_4=NoFields(),
     )
     initialize_with_values_accounts = InitializeWithValuesAccounts(
         state=state.pubkey(),
@@ -368,18 +368,18 @@ async def test_instructions_with_args(
             enum_field=NoFields(),
         ),
         array_field=ListContainer([True, True, False]),
-        enum_field1=Unnamed(
+        enum_field_1=Unnamed(
             value=(True, 15, BarStruct(some_field=False, other_field=200))
         ),
-        enum_field2=Named(
+        enum_field_2=Named(
             value={
                 "bool_field": True,
                 "u8_field": 128,
                 "nested": BarStruct(some_field=False, other_field=1),
             }
         ),
-        enum_field3=Struct(value=(BarStruct(some_field=True, other_field=15),)),
-        enum_field4=NoFields(),
+        enum_field_3=Struct(value=(BarStruct(some_field=True, other_field=15),)),
+        enum_field_4=NoFields(),
     )
     expected2 = State2(vec_of_option=ListContainer([None, None, 20]))
     res = await State.fetch(provider.connection, state.pubkey())

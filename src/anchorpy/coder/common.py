@@ -2,17 +2,17 @@
 from hashlib import sha256
 from typing import Dict, Union
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     Idl,
     IdlEnumVariant,
     IdlField,
     IdlType,
     IdlTypeArray,
     IdlTypeCompound,
+    IdlTypeDef,
+    IdlTypeDefAlias,
+    IdlTypeDefEnum,
     IdlTypeDefined,
-    IdlTypeDefinition,
-    IdlTypeDefinitionTyAlias,
-    IdlTypeDefinitionTyEnum,
     IdlTypeOption,
     IdlTypeSimple,
     IdlTypeVec,
@@ -82,7 +82,7 @@ def _type_size(idl: Idl, ty: IdlType) -> int:
         IdlTypeSimple.F64: 8,
         IdlTypeSimple.U128: 16,
         IdlTypeSimple.I128: 16,
-        IdlTypeSimple.PublicKey: 32,
+        IdlTypeSimple.Pubkey: 32,
     }
     if isinstance(ty, IdlTypeSimple):
         return sizes[ty]
@@ -105,7 +105,7 @@ def _variant_size(idl: Idl, variant: IdlEnumVariant) -> int:
     return sum(field_sizes)
 
 
-def _account_size(idl: Idl, idl_account: IdlTypeDefinition) -> int:
+def _account_size(idl: Idl, idl_account: IdlTypeDef) -> int:
     """Calculate account size in bytes.
 
     Args:
@@ -116,12 +116,12 @@ def _account_size(idl: Idl, idl_account: IdlTypeDefinition) -> int:
         Account size.
     """
     idl_account_type = idl_account.ty
-    if isinstance(idl_account_type, IdlTypeDefinitionTyEnum):
+    if isinstance(idl_account_type, IdlTypeDefEnum):
         variant_sizes = (
             _variant_size(idl, variant) for variant in idl_account_type.variants
         )
         return max(variant_sizes) + 1
-    if isinstance(idl_account_type, IdlTypeDefinitionTyAlias):
+    if isinstance(idl_account_type, IdlTypeDefAlias):
         return _type_size(idl, idl_account_type.value)
     if idl_account_type.fields is None:
         return 0

@@ -36,10 +36,10 @@ class StateJSON(typing.TypedDict):
     option_struct_field: typing.Optional[types.foo_struct.FooStructJSON]
     struct_field: types.foo_struct.FooStructJSON
     array_field: list[bool]
-    enum_field1: types.foo_enum.FooEnumJSON
-    enum_field2: types.foo_enum.FooEnumJSON
-    enum_field3: types.foo_enum.FooEnumJSON
-    enum_field4: types.foo_enum.FooEnumJSON
+    enum_field_1: types.foo_enum.FooEnumJSON
+    enum_field_2: types.foo_enum.FooEnumJSON
+    enum_field_3: types.foo_enum.FooEnumJSON
+    enum_field_4: types.foo_enum.FooEnumJSON
 
 
 @dataclass
@@ -69,10 +69,10 @@ class State:
         "option_struct_field" / borsh.Option(types.foo_struct.FooStruct.layout),
         "struct_field" / types.foo_struct.FooStruct.layout,
         "array_field" / borsh.Bool[3],
-        "enum_field1" / types.foo_enum.layout,
-        "enum_field2" / types.foo_enum.layout,
-        "enum_field3" / types.foo_enum.layout,
-        "enum_field4" / types.foo_enum.layout,
+        "enum_field_1" / types.foo_enum.layout,
+        "enum_field_2" / types.foo_enum.layout,
+        "enum_field_3" / types.foo_enum.layout,
+        "enum_field_4" / types.foo_enum.layout,
     )
     bool_field: bool
     u8_field: int
@@ -96,10 +96,10 @@ class State:
     option_struct_field: typing.Optional[types.foo_struct.FooStruct]
     struct_field: types.foo_struct.FooStruct
     array_field: list[bool]
-    enum_field1: types.foo_enum.FooEnumKind
-    enum_field2: types.foo_enum.FooEnumKind
-    enum_field3: types.foo_enum.FooEnumKind
-    enum_field4: types.foo_enum.FooEnumKind
+    enum_field_1: types.foo_enum.FooEnumKind
+    enum_field_2: types.foo_enum.FooEnumKind
+    enum_field_3: types.foo_enum.FooEnumKind
+    enum_field_4: types.foo_enum.FooEnumKind
 
     @classmethod
     async def fetch(
@@ -176,10 +176,10 @@ class State:
             ),
             struct_field=types.foo_struct.FooStruct.from_decoded(dec.struct_field),
             array_field=dec.array_field,
-            enum_field1=types.foo_enum.from_decoded(dec.enum_field1),
-            enum_field2=types.foo_enum.from_decoded(dec.enum_field2),
-            enum_field3=types.foo_enum.from_decoded(dec.enum_field3),
-            enum_field4=types.foo_enum.from_decoded(dec.enum_field4),
+            enum_field_1=types.foo_enum.from_decoded(dec.enum_field_1),
+            enum_field_2=types.foo_enum.from_decoded(dec.enum_field_2),
+            enum_field_3=types.foo_enum.from_decoded(dec.enum_field_3),
+            enum_field_4=types.foo_enum.from_decoded(dec.enum_field_4),
         )
 
     def to_json(self) -> StateJSON:
@@ -212,10 +212,10 @@ class State:
             ),
             "struct_field": self.struct_field.to_json(),
             "array_field": self.array_field,
-            "enum_field1": self.enum_field1.to_json(),
-            "enum_field2": self.enum_field2.to_json(),
-            "enum_field3": self.enum_field3.to_json(),
-            "enum_field4": self.enum_field4.to_json(),
+            "enum_field_1": self.enum_field_1.to_json(),
+            "enum_field_2": self.enum_field_2.to_json(),
+            "enum_field_3": self.enum_field_3.to_json(),
+            "enum_field_4": self.enum_field_4.to_json(),
         }
 
     @classmethod
@@ -252,8 +252,8 @@ class State:
             ),
             struct_field=types.foo_struct.FooStruct.from_json(obj["struct_field"]),
             array_field=obj["array_field"],
-            enum_field1=types.foo_enum.from_json(obj["enum_field1"]),
-            enum_field2=types.foo_enum.from_json(obj["enum_field2"]),
-            enum_field3=types.foo_enum.from_json(obj["enum_field3"]),
-            enum_field4=types.foo_enum.from_json(obj["enum_field4"]),
+            enum_field_1=types.foo_enum.from_json(obj["enum_field_1"]),
+            enum_field_2=types.foo_enum.from_json(obj["enum_field_2"]),
+            enum_field_3=types.foo_enum.from_json(obj["enum_field_3"]),
+            enum_field_4=types.foo_enum.from_json(obj["enum_field_4"]),
         )

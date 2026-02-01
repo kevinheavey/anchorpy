@@ -1,178 +1,431 @@
 {
-  "version": "0.1.0",
-  "name": "example_program",
+  "address": "3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8",
+  "metadata": {
+    "name": "example_program",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
-      "name": "initialize",
+      "name": "cause_error",
+      "discriminator": [
+        67,
+        104,
+        37,
+        17,
+        2,
+        155,
+        68,
+        17
+      ],
+      "accounts": [],
+      "args": []
+    },
+    {
+      "name": "increment_state_when_present",
+      "discriminator": [
+        241,
+        33,
+        221,
+        40,
+        163,
+        74,
+        121,
+        37
+      ],
       "accounts": [
         {
-          "name": "state",
-          "isMut": true,
-          "isSigner": true
+          "name": "first_state",
+          "writable": true,
+          "optional": true
         },
         {
-          "name": "nested",
-          "accounts": [
-            {
-              "name": "clock",
-              "isMut": false,
-              "isSigner": false
-            },
-            {
-              "name": "rent",
-              "isMut": false,
-              "isSigner": false
-            }
-          ]
+          "name": "second_state"
         },
         {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "initializeWithValues",
+      "name": "init_my_account",
+      "discriminator": [
+        32,
+        59,
+        5,
+        205,
+        94,
+        69,
+        227,
+        122
+      ],
+      "accounts": [
+        {
+          "name": "base"
+        },
+        {
+          "name": "base2"
+        },
+        {
+          "name": "account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  110,
+                  111,
+                  116,
+                  104,
+                  101,
+                  114,
+                  45,
+                  115,
+                  101,
+                  101,
+                  100
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  115,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  105
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  105
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  1
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  2,
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  3,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "nested",
+          "accounts": [
+            {
+              "name": "account_nested",
+              "pda": {
+                "seeds": [
+                  {
+                    "kind": "const",
+                    "value": [
+                      110,
+                      101,
+                      115,
+                      116,
+                      101,
+                      100,
+                      45,
+                      115,
+                      101,
+                      101,
+                      100
+                    ]
+                  },
+                  {
+                    "kind": "const",
+                    "value": [
+                      116,
+                      101,
+                      115,
+                      116
+                    ]
+                  },
+                  {
+                    "kind": "const",
+                    "value": [
+                      104,
+                      105
+                    ]
+                  },
+                  {
+                    "kind": "const",
+                    "value": [
+                      104,
+                      105
+                    ]
+                  },
+                  {
+                    "kind": "const",
+                    "value": [
+                      1
+                    ]
+                  },
+                  {
+                    "kind": "const",
+                    "value": [
+                      2,
+                      0,
+                      0,
+                      0
+                    ]
+                  },
+                  {
+                    "kind": "const",
+                    "value": [
+                      3,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "_seed_a",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
       "accounts": [
         {
           "name": "state",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "nested",
           "accounts": [
             {
               "name": "clock",
-              "isMut": false,
-              "isSigner": false
+              "address": "SysvarC1ock11111111111111111111111111111111"
             },
             {
               "name": "rent",
-              "isMut": false,
-              "isSigner": false
+              "address": "SysvarRent111111111111111111111111111111111"
             }
           ]
         },
         {
           "name": "payer",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize_with_values",
+      "discriminator": [
+        220,
+        73,
+        8,
+        213,
+        178,
+        69,
+        181,
+        141
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "nested",
+          "accounts": [
+            {
+              "name": "clock",
+              "address": "SysvarC1ock11111111111111111111111111111111"
+            },
+            {
+              "name": "rent",
+              "address": "SysvarRent111111111111111111111111111111111"
+            }
+          ]
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "boolField",
+          "name": "bool_field",
           "type": "bool"
         },
         {
-          "name": "u8Field",
+          "name": "u8_field",
           "type": "u8"
         },
         {
-          "name": "i8Field",
+          "name": "i8_field",
           "type": "i8"
         },
         {
-          "name": "u16Field",
+          "name": "u16_field",
           "type": "u16"
         },
         {
-          "name": "i16Field",
+          "name": "i16_field",
           "type": "i16"
         },
         {
-          "name": "u32Field",
+          "name": "u32_field",
           "type": "u32"
         },
         {
-          "name": "i32Field",
+          "name": "i32_field",
           "type": "i32"
         },
         {
-          "name": "f32Field",
+          "name": "f32_field",
           "type": "f32"
         },
         {
-          "name": "u64Field",
+          "name": "u64_field",
           "type": "u64"
         },
         {
-          "name": "i64Field",
+          "name": "i64_field",
           "type": "i64"
         },
         {
-          "name": "f64Field",
+          "name": "f64_field",
           "type": "f64"
         },
         {
-          "name": "u128Field",
+          "name": "u128_field",
           "type": "u128"
         },
         {
-          "name": "i128Field",
+          "name": "i128_field",
           "type": "i128"
         },
         {
-          "name": "bytesField",
+          "name": "bytes_field",
           "type": "bytes"
         },
         {
-          "name": "stringField",
+          "name": "string_field",
           "type": "string"
         },
         {
-          "name": "pubkeyField",
-          "type": "publicKey"
+          "name": "pubkey_field",
+          "type": "pubkey"
         },
         {
-          "name": "vecField",
+          "name": "vec_field",
           "type": {
             "vec": "u64"
           }
         },
         {
-          "name": "vecStructField",
+          "name": "vec_struct_field",
           "type": {
             "vec": {
-              "defined": "FooStruct"
+              "defined": {
+                "name": "FooStruct"
+              }
             }
           }
         },
         {
-          "name": "optionField",
+          "name": "option_field",
           "type": {
             "option": "bool"
           }
         },
         {
-          "name": "optionStructField",
+          "name": "option_struct_field",
           "type": {
             "option": {
-              "defined": "FooStruct"
+              "defined": {
+                "name": "FooStruct"
+              }
             }
           }
         },
         {
-          "name": "structField",
+          "name": "struct_field",
           "type": {
-            "defined": "FooStruct"
+            "defined": {
+              "name": "FooStruct"
+            }
           }
         },
         {
-          "name": "arrayField",
+          "name": "array_field",
           "type": {
             "array": [
               "bool",
@@ -181,53 +434,70 @@
           }
         },
         {
-          "name": "enumField1",
+          "name": "enum_field_1",
           "type": {
-            "defined": "FooEnum"
+            "defined": {
+              "name": "FooEnum"
+            }
           }
         },
         {
-          "name": "enumField2",
+          "name": "enum_field_2",
           "type": {
-            "defined": "FooEnum"
+            "defined": {
+              "name": "FooEnum"
+            }
           }
         },
         {
-          "name": "enumField3",
+          "name": "enum_field_3",
           "type": {
-            "defined": "FooEnum"
+            "defined": {
+              "name": "FooEnum"
+            }
           }
         },
         {
-          "name": "enumField4",
+          "name": "enum_field_4",
           "type": {
-            "defined": "FooEnum"
+            "defined": {
+              "name": "FooEnum"
+            }
           }
         }
       ]
     },
     {
-      "name": "initializeWithValues2",
+      "name": "initialize_with_values2",
+      "discriminator": [
+        248,
+        190,
+        21,
+        97,
+        239,
+        148,
+        39,
+        181
+      ],
       "accounts": [
         {
           "name": "state",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
           "name": "payer",
-          "isMut": true,
-          "isSigner": true
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "vecOfOption",
+          "name": "vec_of_option",
           "type": {
             "vec": {
               "option": "u64"
@@ -237,175 +507,26 @@
       ]
     },
     {
-      "name": "causeError",
-      "accounts": [],
-      "args": []
-    },
-    {
-      "name": "initMyAccount",
-      "accounts": [
-        {
-          "name": "base",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "base2",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "account",
-          "isMut": false,
-          "isSigner": false,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "type": "string",
-                "value": "another-seed"
-              },
-              {
-                "kind": "const",
-                "type": "string",
-                "value": "test"
-              },
-              {
-                "kind": "const",
-                "type": {
-                  "array": [
-                    "u8",
-                    2
-                  ]
-                },
-                "value": [
-                  104,
-                  105
-                ]
-              },
-              {
-                "kind": "const",
-                "type": "string",
-                "value": "hi"
-              },
-              {
-                "kind": "const",
-                "type": "u8",
-                "value": 1
-              },
-              {
-                "kind": "const",
-                "type": "u32",
-                "value": 2
-              },
-              {
-                "kind": "const",
-                "type": "u64",
-                "value": 3
-              }
-            ]
-          }
-        },
-        {
-          "name": "nested",
-          "accounts": [
-            {
-              "name": "accountNested",
-              "isMut": false,
-              "isSigner": false,
-              "pda": {
-                "seeds": [
-                  {
-                    "kind": "const",
-                    "type": "string",
-                    "value": "nested-seed"
-                  },
-                  {
-                    "kind": "const",
-                    "type": "string",
-                    "value": "test"
-                  },
-                  {
-                    "kind": "const",
-                    "type": {
-                      "array": [
-                        "u8",
-                        2
-                      ]
-                    },
-                    "value": [
-                      104,
-                      105
-                    ]
-                  },
-                  {
-                    "kind": "const",
-                    "type": "string",
-                    "value": "hi"
-                  },
-                  {
-                    "kind": "const",
-                    "type": "u8",
-                    "value": 1
-                  },
-                  {
-                    "kind": "const",
-                    "type": "u32",
-                    "value": 2
-                  },
-                  {
-                    "kind": "const",
-                    "type": "u64",
-                    "value": 3
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+      "name": "type_alias",
+      "discriminator": [
+        53,
+        132,
+        17,
+        249,
+        121,
+        194,
+        49,
+        54
       ],
-      "args": [
-        {
-          "name": "seedA",
-          "type": "u8"
-        }
-      ]
-    },
-    {
-      "name": "incrementStateWhenPresent",
-      "accounts": [
-        {
-          "name": "firstState",
-          "isMut": true,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "secondState",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "typeAlias",
       "accounts": [],
       "args": [
         {
-          "name": "u8Array",
+          "name": "u8_array",
           "type": {
-            "defined": "U8Array"
+            "array": [
+              "u8",
+              8
+            ]
           }
         }
       ]
@@ -413,13 +534,83 @@
   ],
   "accounts": [
     {
+      "name": "BaseAccount",
+      "discriminator": [
+        16,
+        90,
+        130,
+        242,
+        159,
+        10,
+        232,
+        133
+      ]
+    },
+    {
       "name": "MyAccount",
+      "discriminator": [
+        246,
+        28,
+        6,
+        87,
+        251,
+        45,
+        50,
+        42
+      ]
+    },
+    {
+      "name": "State",
+      "discriminator": [
+        216,
+        146,
+        107,
+        94,
+        104,
+        75,
+        182,
+        177
+      ]
+    },
+    {
+      "name": "State2",
+      "discriminator": [
+        106,
+        97,
+        255,
+        161,
+        250,
+        205,
+        185,
+        192
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "SomeError",
+      "msg": "Example error."
+    },
+    {
+      "code": 6001,
+      "name": "OtherError",
+      "msg": "Another error."
+    }
+  ],
+  "types": [
+    {
+      "name": "BarStruct",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "data",
-            "type": "u64"
+            "name": "some_field",
+            "type": "bool"
+          },
+          {
+            "name": "other_field",
+            "type": "u8"
           }
         ]
       }
@@ -430,185 +621,100 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "baseData",
+            "name": "base_data",
             "type": "u64"
           },
           {
-            "name": "baseDataKey",
-            "type": "publicKey"
+            "name": "base_data_key",
+            "type": "pubkey"
           }
         ]
       }
     },
     {
-      "name": "State",
+      "name": "FooEnum",
       "type": {
-        "kind": "struct",
-        "fields": [
+        "kind": "enum",
+        "variants": [
           {
-            "name": "boolField",
-            "type": "bool"
-          },
-          {
-            "name": "u8Field",
-            "type": "u8"
-          },
-          {
-            "name": "i8Field",
-            "type": "i8"
-          },
-          {
-            "name": "u16Field",
-            "type": "u16"
-          },
-          {
-            "name": "i16Field",
-            "type": "i16"
-          },
-          {
-            "name": "u32Field",
-            "type": "u32"
-          },
-          {
-            "name": "i32Field",
-            "type": "i32"
-          },
-          {
-            "name": "f32Field",
-            "type": "f32"
-          },
-          {
-            "name": "u64Field",
-            "type": "u64"
-          },
-          {
-            "name": "i64Field",
-            "type": "i64"
-          },
-          {
-            "name": "f64Field",
-            "type": "f64"
-          },
-          {
-            "name": "u128Field",
-            "type": "u128"
-          },
-          {
-            "name": "i128Field",
-            "type": "i128"
-          },
-          {
-            "name": "bytesField",
-            "type": "bytes"
-          },
-          {
-            "name": "stringField",
-            "type": "string"
-          },
-          {
-            "name": "pubkeyField",
-            "type": "publicKey"
-          },
-          {
-            "name": "vecField",
-            "type": {
-              "vec": "u64"
-            }
-          },
-          {
-            "name": "vecStructField",
-            "type": {
-              "vec": {
-                "defined": "FooStruct"
+            "name": "Unnamed",
+            "fields": [
+              "bool",
+              "u8",
+              {
+                "defined": {
+                  "name": "BarStruct"
+                }
               }
-            }
+            ]
           },
           {
-            "name": "optionField",
-            "type": {
-              "option": "bool"
-            }
-          },
-          {
-            "name": "optionStructField",
-            "type": {
-              "option": {
-                "defined": "FooStruct"
+            "name": "UnnamedSingle",
+            "fields": [
+              {
+                "defined": {
+                  "name": "BarStruct"
+                }
               }
-            }
+            ]
           },
           {
-            "name": "structField",
-            "type": {
-              "defined": "FooStruct"
-            }
-          },
-          {
-            "name": "arrayField",
-            "type": {
-              "array": [
-                "bool",
-                3
-              ]
-            }
-          },
-          {
-            "name": "enumField1",
-            "type": {
-              "defined": "FooEnum"
-            }
-          },
-          {
-            "name": "enumField2",
-            "type": {
-              "defined": "FooEnum"
-            }
-          },
-          {
-            "name": "enumField3",
-            "type": {
-              "defined": "FooEnum"
-            }
-          },
-          {
-            "name": "enumField4",
-            "type": {
-              "defined": "FooEnum"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "State2",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "vecOfOption",
-            "type": {
-              "vec": {
-                "option": "u64"
+            "name": "Named",
+            "fields": [
+              {
+                "name": "bool_field",
+                "type": "bool"
+              },
+              {
+                "name": "u8_field",
+                "type": "u8"
+              },
+              {
+                "name": "nested",
+                "type": {
+                  "defined": {
+                    "name": "BarStruct"
+                  }
+                }
               }
-            }
-          }
-        ]
-      }
-    }
-  ],
-  "types": [
-    {
-      "name": "BarStruct",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "someField",
-            "type": "bool"
+            ]
           },
           {
-            "name": "otherField",
-            "type": "u8"
+            "name": "Struct",
+            "fields": [
+              {
+                "defined": {
+                  "name": "BarStruct"
+                }
+              }
+            ]
+          },
+          {
+            "name": "OptionStruct",
+            "fields": [
+              {
+                "option": {
+                  "defined": {
+                    "name": "BarStruct"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "VecStruct",
+            "fields": [
+              {
+                "vec": {
+                  "defined": {
+                    "name": "BarStruct"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "NoFields"
           }
         ]
       }
@@ -629,133 +735,222 @@
           {
             "name": "nested",
             "type": {
-              "defined": "BarStruct"
+              "defined": {
+                "name": "BarStruct"
+              }
             }
           },
           {
-            "name": "vecNested",
+            "name": "vec_nested",
             "type": {
               "vec": {
-                "defined": "BarStruct"
+                "defined": {
+                  "name": "BarStruct"
+                }
               }
             }
           },
           {
-            "name": "optionNested",
+            "name": "option_nested",
             "type": {
               "option": {
-                "defined": "BarStruct"
+                "defined": {
+                  "name": "BarStruct"
+                }
               }
             }
           },
           {
-            "name": "enumField",
+            "name": "enum_field",
             "type": {
-              "defined": "FooEnum"
+              "defined": {
+                "name": "FooEnum"
+              }
             }
           }
         ]
       }
     },
     {
-      "name": "FooEnum",
+      "name": "MyAccount",
       "type": {
-        "kind": "enum",
-        "variants": [
+        "kind": "struct",
+        "fields": [
           {
-            "name": "Unnamed",
-            "fields": [
-              "bool",
-              "u8",
-              {
-                "defined": "BarStruct"
-              }
-            ]
-          },
-          {
-            "name": "UnnamedSingle",
-            "fields": [
-              {
-                "defined": "BarStruct"
-              }
-            ]
-          },
-          {
-            "name": "Named",
-            "fields": [
-              {
-                "name": "boolField",
-                "type": "bool"
-              },
-              {
-                "name": "u8Field",
-                "type": "u8"
-              },
-              {
-                "name": "nested",
-                "type": {
-                  "defined": "BarStruct"
-                }
-              }
-            ]
-          },
-          {
-            "name": "Struct",
-            "fields": [
-              {
-                "defined": "BarStruct"
-              }
-            ]
-          },
-          {
-            "name": "OptionStruct",
-            "fields": [
-              {
-                "option": {
-                  "defined": "BarStruct"
-                }
-              }
-            ]
-          },
-          {
-            "name": "VecStruct",
-            "fields": [
-              {
-                "vec": {
-                  "defined": "BarStruct"
-                }
-              }
-            ]
-          },
-          {
-            "name": "NoFields"
+            "name": "data",
+            "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "U8Array",
+      "name": "State",
       "type": {
-        "kind": "alias",
-        "value": {
-          "array": [
-            "u8",
-            8
-          ]
-        }
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bool_field",
+            "type": "bool"
+          },
+          {
+            "name": "u8_field",
+            "type": "u8"
+          },
+          {
+            "name": "i8_field",
+            "type": "i8"
+          },
+          {
+            "name": "u16_field",
+            "type": "u16"
+          },
+          {
+            "name": "i16_field",
+            "type": "i16"
+          },
+          {
+            "name": "u32_field",
+            "type": "u32"
+          },
+          {
+            "name": "i32_field",
+            "type": "i32"
+          },
+          {
+            "name": "f32_field",
+            "type": "f32"
+          },
+          {
+            "name": "u64_field",
+            "type": "u64"
+          },
+          {
+            "name": "i64_field",
+            "type": "i64"
+          },
+          {
+            "name": "f64_field",
+            "type": "f64"
+          },
+          {
+            "name": "u128_field",
+            "type": "u128"
+          },
+          {
+            "name": "i128_field",
+            "type": "i128"
+          },
+          {
+            "name": "bytes_field",
+            "type": "bytes"
+          },
+          {
+            "name": "string_field",
+            "type": "string"
+          },
+          {
+            "name": "pubkey_field",
+            "type": "pubkey"
+          },
+          {
+            "name": "vec_field",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "vec_struct_field",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "FooStruct"
+                }
+              }
+            }
+          },
+          {
+            "name": "option_field",
+            "type": {
+              "option": "bool"
+            }
+          },
+          {
+            "name": "option_struct_field",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "FooStruct"
+                }
+              }
+            }
+          },
+          {
+            "name": "struct_field",
+            "type": {
+              "defined": {
+                "name": "FooStruct"
+              }
+            }
+          },
+          {
+            "name": "array_field",
+            "type": {
+              "array": [
+                "bool",
+                3
+              ]
+            }
+          },
+          {
+            "name": "enum_field_1",
+            "type": {
+              "defined": {
+                "name": "FooEnum"
+              }
+            }
+          },
+          {
+            "name": "enum_field_2",
+            "type": {
+              "defined": {
+                "name": "FooEnum"
+              }
+            }
+          },
+          {
+            "name": "enum_field_3",
+            "type": {
+              "defined": {
+                "name": "FooEnum"
+              }
+            }
+          },
+          {
+            "name": "enum_field_4",
+            "type": {
+              "defined": {
+                "name": "FooEnum"
+              }
+            }
+          }
+        ]
       }
-    }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "SomeError",
-      "msg": "Example error."
     },
     {
-      "code": 6001,
-      "name": "OtherError",
-      "msg": "Another error."
+      "name": "State2",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vec_of_option",
+            "type": {
+              "vec": {
+                "option": "u64"
+              }
+            }
+          }
+        ]
+      }
     }
   ]
 }

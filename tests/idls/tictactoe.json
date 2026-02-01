@@ -1,179 +1,324 @@
 {
-  "version": "0.1.0",
-  "name": "tic_tac_toe",
+  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+  "metadata": {
+    "name": "tictactoe",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "docs": [
+    "Game State",
+    "0 - Waiting",
+    "1 - XMove",
+    "2 - OMove",
+    "3 - XWon",
+    "4 - OWon",
+    "5 - Draw"
+  ],
   "instructions": [
     {
-      "name": "setupGame",
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
       "accounts": [
         {
+          "name": "player_x",
+          "signer": true
+        },
+        {
+          "name": "dashboard",
+          "writable": true
+        },
+        {
           "name": "game",
-          "isMut": true,
-          "isSigner": true
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize_dashboard",
+      "discriminator": [
+        144,
+        65,
+        29,
+        49,
+        177,
+        28,
+        88,
+        106
+      ],
+      "accounts": [
+        {
+          "name": "dashboard",
+          "writable": true
         },
         {
-          "name": "playerOne",
-          "isMut": true,
-          "isSigner": true
+          "name": "authority",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "player_join",
+      "discriminator": [
+        177,
+        164,
+        86,
+        107,
+        116,
+        37,
+        248,
+        210
+      ],
+      "accounts": [
+        {
+          "name": "player_o",
+          "signer": true
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
+          "name": "game",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "player_move",
+      "discriminator": [
+        42,
+        103,
+        48,
+        170,
+        54,
+        223,
+        66,
+        223
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "signer": true
+        },
+        {
+          "name": "game",
+          "writable": true
         }
       ],
       "args": [
         {
-          "name": "playerTwo",
-          "type": "publicKey"
+          "name": "x_or_o",
+          "type": "u8"
+        },
+        {
+          "name": "player_move",
+          "type": "u8"
         }
       ]
     },
     {
-      "name": "play",
+      "name": "status",
+      "discriminator": [
+        218,
+        160,
+        35,
+        24,
+        130,
+        107,
+        205,
+        125
+      ],
       "accounts": [
         {
-          "name": "game",
-          "isMut": true,
-          "isSigner": false
+          "name": "dashboard"
         },
         {
-          "name": "player",
-          "isMut": false,
-          "isSigner": true
+          "name": "game"
         }
       ],
-      "args": [
-        {
-          "name": "tile",
-          "type": {
-            "defined": "Tile"
-          }
-        }
-      ]
+      "args": []
     }
   ],
   "accounts": [
+    {
+      "name": "Dashboard",
+      "discriminator": [
+        207,
+        27,
+        158,
+        228,
+        248,
+        4,
+        249,
+        64
+      ]
+    },
+    {
+      "name": "Game",
+      "discriminator": [
+        27,
+        90,
+        166,
+        125,
+        74,
+        100,
+        121,
+        18
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "GameStatus",
+      "discriminator": [
+        178,
+        80,
+        174,
+        248,
+        148,
+        187,
+        145,
+        103
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "You are not authorized to perform this action."
+    },
+    {
+      "code": 6001,
+      "name": "Wrongdashboard",
+      "msg": "Wrong dashboard"
+    },
+    {
+      "code": 6002,
+      "name": "Gamestate",
+      "msg": "Wrong expected state"
+    },
+    {
+      "code": 6003,
+      "name": "Initialized",
+      "msg": "Dashboard already initialized"
+    },
+    {
+      "code": 6004,
+      "name": "UnexpectedValue",
+      "msg": "Unexpected value"
+    },
+    {
+      "code": 6005,
+      "name": "Illegalmove",
+      "msg": "Illegal move"
+    }
+  ],
+  "types": [
+    {
+      "name": "Dashboard",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "game_count",
+            "type": "u64"
+          },
+          {
+            "name": "latest_game",
+            "type": "pubkey"
+          },
+          {
+            "name": "address",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
     {
       "name": "Game",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "players",
+            "name": "keep_alive",
             "type": {
-              "array": ["publicKey", 2]
+              "array": [
+                "u64",
+                2
+              ]
             }
           },
           {
-            "name": "turn",
+            "name": "player_x",
+            "type": "pubkey"
+          },
+          {
+            "name": "player_o",
+            "type": "pubkey"
+          },
+          {
+            "name": "game_state",
             "type": "u8"
           },
           {
             "name": "board",
             "type": {
               "array": [
-                {
-                  "array": [
-                    {
-                      "option": {
-                        "defined": "Sign"
-                      }
-                    },
-                    3
-                  ]
-                },
-                3
+                "u8",
+                9
               ]
-            }
-          },
-          {
-            "name": "state",
-            "type": {
-              "defined": "GameState"
             }
           }
         ]
       }
-    }
-  ],
-  "types": [
+    },
     {
-      "name": "Tile",
+      "name": "GameStatus",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "row",
+            "name": "keep_alive",
+            "type": {
+              "array": [
+                "u64",
+                2
+              ]
+            }
+          },
+          {
+            "name": "player_x",
+            "type": "pubkey"
+          },
+          {
+            "name": "player_o",
+            "type": "pubkey"
+          },
+          {
+            "name": "game_state",
             "type": "u8"
           },
           {
-            "name": "column",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "GameState",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Active"
-          },
-          {
-            "name": "Tie"
-          },
-          {
-            "name": "Won",
-            "fields": [
-              {
-                "name": "winner",
-                "type": "publicKey"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "name": "Sign",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "X"
-          },
-          {
-            "name": "O"
+            "name": "board",
+            "type": {
+              "array": [
+                "u8",
+                9
+              ]
+            }
           }
         ]
       }
     }
-  ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "TileOutOfBounds"
-    },
-    {
-      "code": 6001,
-      "name": "TileAlreadySet"
-    },
-    {
-      "code": 6002,
-      "name": "GameAlreadyOver"
-    },
-    {
-      "code": 6003,
-      "name": "NotPlayersTurn"
-    },
-    {
-      "code": 6004,
-      "name": "GameAlreadyStarted"
-    }
-  ],
-  "metadata": {
-    "address": "4V6T2muqU1mHSg5XfK3SMgxZWQRSEUh72LzwGTLHGzsY"
-  }
+  ]
 }

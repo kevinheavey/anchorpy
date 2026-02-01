@@ -4,7 +4,7 @@ from __future__ import annotations
 import zlib
 from typing import Any, Optional
 
-from anchorpy_core.idl import Idl
+from anchorpy_idl import Idl
 from pyheck import snake
 from solders.pubkey import Pubkey
 

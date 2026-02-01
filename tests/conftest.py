@@ -28,7 +28,7 @@ def project_dir(project_parent_dir: Path) -> Path:
     proj_dir = project_parent_dir / "tmp"
     command = (
         f"anchorpy client-gen tests/idls/clientgen_example_program.json {proj_dir} "
-        "--program-id 3rTQ3R4B2PxZrAyx7EUefySPgZY8RhJf16cZajbmrzp8 --pdas"
+        "--pdas"
     )
     subprocess.run(
         command,

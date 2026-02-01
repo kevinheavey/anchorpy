@@ -3,13 +3,13 @@ from pathlib import Path
 from typing import Union as TypingUnion
 from typing import cast
 
-from anchorpy_core.idl import (
+from anchorpy_idl import (
     Idl,
     IdlEnumVariant,
     IdlField,
     IdlType,
-    IdlTypeDefinitionTyAlias,
-    IdlTypeDefinitionTyStruct,
+    IdlTypeDefAlias,
+    IdlTypeDefStruct,
 )
 from autoflake import fix_code
 from black import FileMode, format_str
@@ -36,6 +36,7 @@ from anchorpy.clientgen.common import (
     _json_interface_name,
     _kind_interface_name,
     _layout_for_type,
+    _partition_idl_types,
     _py_type_from_idl,
     _sanitize,
     _value_interface_name,
@@ -59,8 +60,8 @@ from anchorpy.clientgen.genpy_extension import (
 
 
 def gen_types(idl: Idl, root: Path) -> None:
-    types = idl.types
-    if types is None or not types:
+    _, user_types = _partition_idl_types(idl)
+    if not user_types:
         return
     types_dir = root / "types"
     types_dir.mkdir(exist_ok=True)
@@ -76,14 +77,15 @@ def gen_index_file(idl: Idl, types_dir: Path) -> None:
 
 
 def gen_index_code(idl: Idl) -> str:
+    _, user_types = _partition_idl_types(idl)
     imports: list[TypingUnion[Import, FromImport]] = [Import("typing")]
-    for ty in idl.types:
+    for ty in user_types:
         ty_type = ty.ty
         module_name = _sanitize(snake(ty.name))
         imports.append(FromImport(".", [module_name]))
-        if isinstance(ty_type, IdlTypeDefinitionTyStruct):
+        if isinstance(ty_type, IdlTypeDefStruct):
             import_members = [_sanitize(ty.name), _json_interface_name(ty.name)]
-        elif isinstance(ty_type, IdlTypeDefinitionTyAlias):
+        elif isinstance(ty_type, IdlTypeDefAlias):
             import_members = [_sanitize(ty.name)]
         else:
             import_members = [
@@ -108,9 +110,10 @@ def gen_type_files(idl: Idl, types_dir: Path) -> None:
 
 
 def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
+    _, user_types = _partition_idl_types(idl)
     res = {}
-    types_module_names = [_sanitize(snake(ty.name)) for ty in idl.types]
-    for ty in idl.types:
+    types_module_names = [_sanitize(snake(ty.name)) for ty in user_types]
+    for ty in user_types:
         ty_name = _sanitize(ty.name)
         module_name = _sanitize(snake(ty.name))
         relative_import_items = [
@@ -120,7 +123,7 @@ def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
             [FromImport(".", relative_import_items)] if relative_import_items else []
         )
         ty_type = ty.ty
-        if isinstance(ty_type, IdlTypeDefinitionTyAlias):
+        if isinstance(ty_type, IdlTypeDefAlias):
             body = Assign(
                 ty.name,
                 _py_type_from_idl(
@@ -130,7 +133,7 @@ def gen_types_code(idl: Idl, out: Path) -> dict[Path, str]:
                     use_fields_interface_for_struct=False,
                 ),
             )
-        elif isinstance(ty_type, IdlTypeDefinitionTyStruct):
+        elif isinstance(ty_type, IdlTypeDefStruct):
             body = gen_struct(idl, ty_name, ty_type.fields)
         else:
             body = gen_enum(idl, ty_name, ty_type.variants)
