@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from typing import Any, List, Optional
 
-from solana.rpc import types
 from solders.hash import Hash
 from solders.instruction import AccountMeta, Instruction
 from solders.keypair import Keypair
 from solders.signature import Signature
 from solders.transaction import VersionedTransaction
 
+from anchorpy._compat import rpc_types as types
 from anchorpy.program.context import Accounts, Context
 from anchorpy.program.namespace.instruction import _InstructionFn
 from anchorpy.program.namespace.rpc import _RpcFn

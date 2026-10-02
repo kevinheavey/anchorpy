@@ -6,7 +6,7 @@ authors = [{ name = "kevinheavey", email = "kevinheavey123@gmail.com" }]
 requires-python = "~=3.9"
 readme = "README.md"
 dependencies = [
-    "construct-typing>=0.5.1,<0.6",
+    "construct-typing>=0.5.1,<0.9",
     "solana>=0.36.1,<1.0",
     "solders>=0.21.0,<1.0",
     "borsh-construct>=0.1.0,<0.2",

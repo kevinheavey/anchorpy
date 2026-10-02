@@ -4,11 +4,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from anchorpy_core.idl import IdlInstruction
 from pyheck import snake
-from solana.rpc.types import TxOpts
 from solders.instruction import AccountMeta, Instruction
 from solders.keypair import Keypair
 
+from anchorpy._compat import rpc_types
 from anchorpy.error import ArgsError
+
+TxOpts = rpc_types.TxOpts
 
 # should be Dict[str, Union[Pubkey, Accounts]]
 # but mypy doesn't support recursive types
@@ -41,7 +43,7 @@ class Context:
     signers: List[Keypair] = field(default_factory=list)
     pre_instructions: List[Instruction] = field(default_factory=list)
     post_instructions: List[Instruction] = field(default_factory=list)
-    options: Optional[TxOpts] = None
+    options: Optional[rpc_types.TxOpts] = None
 
 
 def _check_args_length(
