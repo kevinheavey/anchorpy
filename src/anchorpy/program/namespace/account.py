@@ -6,12 +6,12 @@ from anchorpy_core.idl import Idl, IdlTypeDefinition
 from based58 import b58encode
 from construct import Container
 from solana.rpc.commitment import Commitment
-from solana.rpc.types import MemcmpOpts
 from solders.instruction import Instruction
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solders.system_program import CreateAccountParams, create_account
 
+from anchorpy._compat import rpc_types
 from anchorpy.coder.accounts import (
     ACCOUNT_DISCRIMINATOR_SIZE,
     _account_discriminator,
@@ -175,7 +175,7 @@ class AccountClient(object):
     async def all(  # noqa: A003
         self,
         buffer: Optional[bytes] = None,
-        filters: Optional[List[Union[int, MemcmpOpts]]] = None,
+        filters: Optional[List[Union[int, rpc_types.MemcmpOpts]]] = None,
     ) -> list[ProgramAccount]:
         """Return all instances of this account type for the program.
 
@@ -189,7 +189,7 @@ class AccountClient(object):
         discriminator = _account_discriminator(self._idl_account.name)
         to_encode = discriminator if buffer is None else discriminator + buffer
         bytes_arg = b58encode(to_encode).decode("ascii")
-        base_memcmp_opt = MemcmpOpts(
+        base_memcmp_opt = rpc_types.MemcmpOpts(
             offset=0,
             bytes=bytes_arg,
         )

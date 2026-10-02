@@ -10,18 +10,21 @@ from solders.rpc.responses import GetAccountInfoResp
 from solders.system_program import CreateAccountParams, create_account
 from solders.transaction import VersionedTransaction
 from spl.token._layouts import ACCOUNT_LAYOUT, MINT_LAYOUT
-from spl.token.async_client import AsyncToken
 from spl.token.constants import TOKEN_PROGRAM_ID
-from spl.token.core import AccountInfo, MintInfo
 from spl.token.instructions import (
-    InitializeAccountParams,
-    InitializeMintParams,
-    MintToParams,
     initialize_account,
     initialize_mint,
     mint_to,
 )
 
+from anchorpy._compat import (
+    AccountInfo,
+    InitializeAccountParams,
+    InitializeMintParams,
+    MintInfo,
+    MintToParams,
+    rpc_types,
+)
 from anchorpy.provider import Provider
 
 
@@ -40,8 +43,20 @@ async def create_token_account(
     Returns:
         The pubkey of the new account.
     """
-    token = AsyncToken(prov.connection, mint, TOKEN_PROGRAM_ID, prov.wallet.payer)
-    return await token.create_account(owner)
+    account = Keypair()
+    instructions = await create_token_account_instrs(
+        prov, account.pubkey(), mint, owner
+    )
+    blockhash = (await prov.connection.get_latest_blockhash()).value.blockhash
+    message = Message.new_with_blockhash(
+        instructions, prov.wallet.public_key, blockhash
+    )
+    transaction = VersionedTransaction(message, [prov.wallet.payer, account])
+    opts = rpc_types.TxOpts(
+        skip_confirmation=False, preflight_commitment=prov.connection.commitment
+    )
+    await prov.connection.send_transaction(transaction, opts=opts)
+    return account.pubkey()
 
 
 async def create_token_account_instrs(

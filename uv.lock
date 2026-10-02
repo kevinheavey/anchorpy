@@ -1,9 +1,10 @@
 version = 1
+revision = 1
 requires-python = ">=3.9, <4"
 
 [[package]]
 name = "anchorpy"
-version = "0.20.2"
+version = "0.21.0"
 source = { editable = "." }
 dependencies = [
     { name = "anchorpy-core" },
@@ -54,7 +55,7 @@ requires-dist = [
     { name = "based58", specifier = ">=0.1.1,<0.2" },
     { name = "black", marker = "extra == 'cli'", specifier = ">=22.3.0,<23" },
     { name = "borsh-construct", specifier = ">=0.1.0,<0.2" },
-    { name = "construct-typing", specifier = ">=0.5.1,<0.6" },
+    { name = "construct-typing", specifier = ">=0.5.1,<0.9" },
     { name = "genpy", marker = "extra == 'cli'", specifier = "~=2021.1" },
     { name = "ipython", marker = "extra == 'cli'", specifier = ">=8.0.1,<9" },
     { name = "py", marker = "extra == 'pytest'", specifier = ">=1.11.0,<2" },
@@ -68,6 +69,7 @@ requires-dist = [
     { name = "toolz", specifier = ">=0.11.2,<0.12" },
     { name = "typer", marker = "extra == 'cli'", specifier = "==0.4.1" },
 ]
+provides-extras = ["cli", "pytest"]
 
 [package.metadata.requires-dev]
 dev = [
